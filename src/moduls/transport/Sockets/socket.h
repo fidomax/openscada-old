@@ -32,11 +32,13 @@
 #define S_NM_TCP	"TCP"
 #define S_NM_UDP	"UDP"
 #define S_NM_UNIX	"UNIX"
+#define S_NM_RAWCAN "RAWCAN"
 
 #define SOCK_FORCE	-1
 #define SOCK_TCP	0
 #define SOCK_UDP	1
 #define SOCK_UNIX	2
+#define SOCK_RAWCAN  3
 
 using namespace OSCADA;
 
