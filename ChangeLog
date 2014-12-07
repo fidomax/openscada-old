@@ -1,3 +1,15 @@
+2014-12-06 Roman
+- !!!!:FIX:DAQ.ICP_DAS: Adapting to complex module I-87026PW.
+
+
+2014-12-05 Roman
+- LibsDB.OscadaLibs.db: JavaLikeCalcLib.Controllers.prescr direct appended by IOs: "f_frq", "f_start", "f_stop", "this".
+- Function,DAQ.JavaLikeCalc: Modify flag set for function object's ioAdd(), ioIns(), ioDel(), ioMove().
+    modifClr() call for "sys_compile" librarie's function.
+    Func::SysAttr flag remove for IOs "f_frq", "f_start", "f_stop", "this" and allow the storring by the libraries priority start.
+- FIX:DAQ.JavaLikeCalc: Early start, at load, for function's libraries is added. Mostly for make allow the functions before DAQ.BlockCalc start.
+
+
 2014-12-03 Roman
 - FIX:SYS: Some build warnings fixed
 - FIX:UI.{VCAEngine,Vision}: Changes down procedure mostly fixed and adapted for update the parent widget into open for edit state.
