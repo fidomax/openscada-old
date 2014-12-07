@@ -236,6 +236,7 @@ string TipContr::compileFunc( const string &lang, TFunction &fnc_cfg, const stri
 	func.at().setUsings(usings);
 	((TFunction&)func.at()).operator=(fnc_cfg);
 	func.at().setStart(true);
+	func.at().modifClr();
     }
     catch(TError err) {
 	if(!func.at().use()) {
@@ -264,13 +265,19 @@ void TipContr::load_( )
 	map<string, bool> itReg;
 
 	// Search into DB
-	SYS->db().at().dbList(db_ls,true);
+	SYS->db().at().dbList(db_ls, true);
 	db_ls.push_back(DB_CFG);
 	for(unsigned i_db = 0; i_db < db_ls.size(); i_db++)
-	    for(int lib_cnt = 0; SYS->db().at().dataSeek(db_ls[i_db]+"."+libTable(),nodePath()+"lib",lib_cnt++,c_el); )
-	    {
+	    for(int lib_cnt = 0; SYS->db().at().dataSeek(db_ls[i_db]+"."+libTable(),nodePath()+"lib",lib_cnt++,c_el); ) {
 		string l_id = c_el.cfg("ID").getS();
-		if(!lbPresent(l_id)) lbReg(new Lib(l_id.c_str(),"",(db_ls[i_db]==SYS->workDB())?"*.*":db_ls[i_db]));
+		if(!lbPresent(l_id)) {
+		    lbReg(new Lib(l_id.c_str(),"",(db_ls[i_db]==SYS->workDB())?"*.*":db_ls[i_db]));
+		    try {
+			lbAt(l_id).at().load();
+			lbAt(l_id).at().setStart(true);
+		    }
+		    catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+		}
 		itReg[l_id] = true;
 	    }
 
@@ -303,7 +310,7 @@ void TipContr::modStart( )
     for(unsigned i_lb = 0; i_lb < lst.size(); i_lb++)
 	lbAt(lst[i_lb]).at().setStart(true);
 
-    TTipDAQ::modStart( );
+    TTipDAQ::modStart();
 }
 
 void TipContr::modStop( )
@@ -312,7 +319,7 @@ void TipContr::modStop( )
     vector<string> lst;
     list(lst);
     for(unsigned i_l = 0; i_l < lst.size(); i_l++)
-	at(lst[i_l]).at().disable( );
+	at(lst[i_l]).at().disable();
 
     //Stop functions
     lbList(lst);
@@ -416,13 +423,12 @@ void Contr::enable_( )
     string wfnc = fnc();
     if(!mod->lbPresent(TSYS::strSepParse(wfnc,0,'.')))
 	throw TError(nodePath().c_str(),_("Functions library '%s' is not present. Please, create functions library!"),TSYS::strSepParse(wfnc,0,'.').c_str());
-    if(!mod->lbAt(TSYS::strSepParse(wfnc,0,'.')).at().present(TSYS::strSepParse(wfnc,1,'.')))
-    {
+    if(!mod->lbAt(TSYS::strSepParse(wfnc,0,'.')).at().present(TSYS::strSepParse(wfnc,1,'.'))) {
 	mess_info(nodePath().c_str(),_("Create new function '%s'."),wfnc.c_str());
 	mod->lbAt(TSYS::strSepParse(wfnc,0,'.')).at().add(TSYS::strSepParse(wfnc,1,'.').c_str());
     }
     setFunc(&mod->lbAt(TSYS::strSepParse(wfnc,0,'.')).at().at(TSYS::strSepParse(wfnc,1,'.')).at());
-    try{ loadFunc( ); }
+    try{ loadFunc(); }
     catch(TError err) {
 	mess_warning(err.cat.c_str(),"%s",err.mess.c_str());
 	mess_warning(nodePath().c_str(),_("Load function and its IO error."));
@@ -447,18 +453,17 @@ void Contr::loadFunc( bool onlyVl )
 	if(!onlyVl) ((Func*)func())->load();
 
 	//Creating special IO
-	if(func()->ioId("f_frq") < 0)	func()->ioIns(new IO("f_frq",_("Function calculate frequency (Hz)"),IO::Real,Func::SysAttr,"1000",false),0);
-	if(func()->ioId("f_start") < 0)	func()->ioIns(new IO("f_start",_("Function start flag"),IO::Boolean,Func::SysAttr,"0",false),1);
-	if(func()->ioId("f_stop") < 0)	func()->ioIns(new IO("f_stop",_("Function stop flag"),IO::Boolean,Func::SysAttr,"0",false),2);
-	if(func()->ioId("this") < 0)	func()->ioIns(new IO("this",_("This controller object link"),IO::Object,Func::SysAttr,"0",false),3);
+	if(func()->ioId("f_frq") < 0)	func()->ioIns(new IO("f_frq",_("Function calculate frequency (Hz)"),IO::Real,0,"1000",false),0);
+	if(func()->ioId("f_start") < 0)	func()->ioIns(new IO("f_start",_("Function start flag"),IO::Boolean,0,"0",false),1);
+	if(func()->ioId("f_stop") < 0)	func()->ioIns(new IO("f_stop",_("Function stop flag"),IO::Boolean,0,"0",false),2);
+	if(func()->ioId("this") < 0)	func()->ioIns(new IO("this",_("This controller object link"),IO::Object,0,"0",false),3);
 
 	//Load values
 	TConfig cfg(&mod->elVal());
 	string bd_tbl = id()+"_val";
 	string bd = DB()+"."+bd_tbl;
 
-	for(int fld_cnt = 0; SYS->db().at().dataSeek(bd,mod->nodePath()+bd_tbl,fld_cnt++,cfg); )
-	{
+	for(int fld_cnt = 0; SYS->db().at().dataSeek(bd,mod->nodePath()+bd_tbl,fld_cnt++,cfg); ) {
 	    int ioId = func()->ioId(cfg.cfg("ID").getS());
 	    if(ioId < 0 || func()->io(ioId)->flg()&Func::SysAttr) continue;
 	    setS(ioId,cfg.cfg("VAL").getS());
@@ -616,8 +621,7 @@ void Contr::cntrCmdProc( XMLNode *opt )
 	    "tp","str","dest","sel_ed","sel_list",TMess::labSecCRONsel(),"help",TMess::labSecCRON());
 	ctrMkNode("fld",opt,-1,"/cntr/cfg/PRIOR",cfg("PRIOR").fld().descr(),startStat()?R_R_R_:RWRWR_,"root",SDAQ_ID,1,"help",TMess::labTaskPrior());
 	if(enableStat() && ctrMkNode("area",opt,-1,"/fnc",_("Calculation"))) {
-	    if(ctrMkNode("table",opt,-1,"/fnc/io",_("Data"),RWRWR_,"root",SDAQ_ID,2,"s_com","add,del,ins,move","rows","15"))
-	    {
+	    if(ctrMkNode("table",opt,-1,"/fnc/io",_("Data"),RWRWR_,"root",SDAQ_ID,2,"s_com","add,del,ins,move","rows","15")) {
 		ctrMkNode("list",opt,-1,"/fnc/io/0",_("Id"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/fnc/io/1",_("Name"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/fnc/io/2",_("Type"),RWRWR_,"root",SDAQ_ID,5,"tp","dec","idm","1","dest","select",
@@ -644,8 +648,7 @@ void Contr::cntrCmdProc( XMLNode *opt )
 	    opt->childAdd("el")->setText(c_path);
 	}
 	if(c_lv) c_path+=".";
-	switch(c_lv)
-	{
+	switch(c_lv) {
 	    case 0:	mod->lbList(lst); break;
 	    case 1:
 		if(mod->lbPresent(TSYS::strSepParse(fnc(),0,'.')))
@@ -691,8 +694,7 @@ void Contr::cntrCmdProc( XMLNode *opt )
 		throw TError(nodePath().c_str(),_("Empty value is not valid."));
 	    if(func()->io(row)->flg()&Func::SysAttr)
 		throw TError(nodePath().c_str(),_("Changing locked attribute is not allowed."));
-	    switch(col)
-	    {
+	    switch(col) {
 		case 0:	func()->io(row)->setId(opt->text());	break;
 		case 1:	func()->io(row)->setName(opt->text());	break;
 		case 2:
@@ -759,8 +761,7 @@ void Prm::enable()
     //Init elements
     vector<string> pls;
     string mio, ionm, aid, anm;
-    for(int io_off = 0; (mio=TSYS::strSepParse(cfg("FLD").getS(),0,'\n',&io_off)).size(); )
-    {
+    for(int io_off = 0; (mio=TSYS::strSepParse(cfg("FLD").getS(),0,'\n',&io_off)).size(); ) {
 	ionm	= TSYS::strSepParse(mio,0,':');
 	aid	= TSYS::strSepParse(mio,1,':');
 	anm	= TSYS::strSepParse(mio,2,':');
@@ -773,8 +774,7 @@ void Prm::enable()
 	if(((Contr &)owner()).ioFlg(io_id)&IO::FullText)		flg |= TFld::FullText;
 	if(!(((Contr &)owner()).ioFlg(io_id) & (IO::Output|IO::Return)))flg |= TFld::NoWrite;
 	TFld::Type	tp  = TFld::type(((Contr &)owner()).ioType(io_id));
-	if(!v_el.fldPresent(aid) || v_el.fldAt(v_el.fldId(aid)).type() != tp || v_el.fldAt(v_el.fldId(aid)).flg() != flg)
-	{
+	if(!v_el.fldPresent(aid) || v_el.fldAt(v_el.fldId(aid)).type() != tp || v_el.fldAt(v_el.fldId(aid)).flg() != flg) {
 	    if(v_el.fldPresent(aid)) v_el.fldDel(v_el.fldId(aid));
 	    v_el.fldAdd(new TFld(aid.c_str(),"",tp,flg));
 	}
