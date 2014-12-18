@@ -209,13 +209,17 @@ string TipContr::compileFunc( const string &lang, TFunction &fnc_cfg, const stri
 
     //Function id generation for "<auto>" or call nodePath() for it
     string funcId = fnc_cfg.id();
-    if(funcId == "<auto>")
-	for(int aId = 1; lbAt("sys_compile").at().present(funcId); aId++)
-	    funcId = TSYS::strMess("Auto_%d",aId);
+    ResAlloc res(parseRes(), true);
+    if(funcId == "<auto>") {
+	funcId = "Auto";
+	for(int iP = 1; lbAt("sys_compile").at().present(funcId); ++iP) funcId = TSYS::strMess("Auto%d",iP);
+    }
     else funcId = fnc_cfg.nodePath('_',true);
 
-    //Connect or use allowed compiled function object
+    // Connect or use allowed compiled function object
     if(!lbAt("sys_compile").at().present(funcId)) lbAt("sys_compile").at().add(funcId.c_str(),"");
+    res.release();
+
     AutoHD<Func> func = lbAt("sys_compile").at().at(funcId);
     if(maxCalcTm > 0) func.at().setMaxCalcTm(maxCalcTm);
 
@@ -674,10 +678,19 @@ void Contr::cntrCmdProc( XMLNode *opt )
 		if(n_val)	n_val->childAdd("el")->setText(getS(id));
 	    }
 	}
-	if(ctrChkNode(opt,"add",RWRWR_,"root",SDAQ_ID,SEC_WR))
-	{ ((Func *)func())->ioAdd( new IO("new","New IO",IO::Real,IO::Default) ); modif(); }
-	if(ctrChkNode(opt,"ins",RWRWR_,"root",SDAQ_ID,SEC_WR))
-	{ ((Func *)func())->ioIns( new IO("new","New IO",IO::Real,IO::Default), s2i(opt->attr("row")) ); modif(); }
+	if(ctrChkNode(opt,"add",RWRWR_,"root",SDAQ_ID,SEC_WR)) {
+	    IO *ioPrev = ((Func*)func())->ioSize() ? ((Func*)func())->io(((Func*)func())->ioSize()-1) : NULL;
+	    if(ioPrev) ((Func*)func())->ioAdd(new IO(TSYS::strLabEnum(ioPrev->id()).c_str(),TSYS::strLabEnum(ioPrev->name()).c_str(),ioPrev->type(),ioPrev->flg()&(~Func::SysAttr)));
+	    else ((Func*)func())->ioAdd(new IO("new","New IO",IO::Real,IO::Default));
+	    modif();
+	}
+	if(ctrChkNode(opt,"ins",RWRWR_,"root",SDAQ_ID,SEC_WR)) {
+	    int row = s2i(opt->attr("row"));
+	    IO *ioPrev = row ? ((Func*)func())->io(row-1) : NULL;
+	    if(ioPrev) ((Func*)func())->ioIns(new IO(TSYS::strLabEnum(ioPrev->id()).c_str(),TSYS::strLabEnum(ioPrev->name()).c_str(),ioPrev->type(),ioPrev->flg()&(~Func::SysAttr)), row);
+	    else ((Func*)func())->ioIns(new IO("new","New IO",IO::Real,IO::Default), row);
+	    modif();
+	}
 	if(ctrChkNode(opt,"del",RWRWR_,"root",SDAQ_ID,SEC_WR)) {
 	    int row = s2i(opt->attr("row"));
 	    if(func()->io(row)->flg()&Func::SysAttr)
@@ -729,7 +742,7 @@ Prm::Prm( string name, TTipParam *tp_prm ) :
 
 }
 
-Prm::~Prm()
+Prm::~Prm( )
 {
     nodeDelAll();
 }
@@ -740,7 +753,7 @@ void Prm::postEnable( int flag )
     if(!vlElemPresent(&v_el)) vlElemAtt(&v_el);
 }
 
-void Prm::enable()
+void Prm::enable( )
 {
     if(enableStat())  return;
 
