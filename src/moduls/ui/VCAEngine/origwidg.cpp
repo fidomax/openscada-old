@@ -571,7 +571,8 @@ bool OrigFormEl::cntrCmdAttributes( XMLNode *opt, Widget *src )
     }
 
     //Process command to page
-    if(ctrChkNode(opt,"SnthHgl",RWRWR_,"root",SUI_ID,SEC_RD)) {
+    string a_path = opt->attr("path");
+    if(a_path == "/attr/items" && ctrChkNode(opt,"SnthHgl",RWRWR_,"root",SUI_ID,SEC_RD)) {
 	opt->childAdd("blk")->setAttr("beg","<!--")->setAttr("end","-->")->setAttr("color","gray")->setAttr("font_italic","1");
 	opt->childAdd("blk")->setAttr("beg","<\\?")->setAttr("end","\\?>")->setAttr("color","#666666");
 	XMLNode *tag = opt->childAdd("blk")->setAttr("beg","<\\w+")->setAttr("end","\\/?>")->setAttr("font_weight","1");
@@ -1290,7 +1291,7 @@ bool OrigDocument::attrChange( Attr &cfg, TVariant prev )
 	string tVl;
 	// Archive position load
 	if((tVl=sw->sessAttr("aCur")).size()) cfg.owner()->attrAt("aCur").at().setS(tVl, false, true);
-	// Current archive socuments load
+	// Current archive documents load
 	if((tVl=sw->sessAttr("doc"+cfg.owner()->attrAt("aCur").at().getS())).size())
 	    cfg.owner()->attrAt("aDoc").at().setS(tVl, false, true);
 	// Set current document
