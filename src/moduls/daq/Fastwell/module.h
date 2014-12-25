@@ -130,6 +130,9 @@ class TTpContr: public TTipDAQ
 	TTpContr( string name );
 	~TTpContr( );
 
+	void FBUS_Start( );
+	void FBUS_finish ( );
+
     protected:
 	//Methods
 	void postEnable( int flag );
@@ -144,6 +147,10 @@ class TTpContr: public TTipDAQ
 	TController *ContrAttach( const string &name, const string &daq_db );
 
 	string optDescr( );
+
+	//Attributes
+	bool	FBUS_initOK;
+	Res	FBUSRes;
 };
 
 extern TTpContr *mod;

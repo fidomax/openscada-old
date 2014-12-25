@@ -29,6 +29,8 @@
 #include <ttiparam.h>
 #include <tdaqs.h>
 
+#include <fbus.h>
+
 #include "module.h"
 
 //*************************************************
@@ -112,12 +114,35 @@ void TTpContr::load_( )
     string argCom, argVl;
     for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
         if(argCom == "h" || argCom == "help")	fprintf(stdout, "%s", optDescr().c_str());
+
+    FBUS_Start();
 }
 
 void TTpContr::save_( )
 {
 
 }
+
+void TTpContr::FBUS_Start( )
+{
+
+   // modif();
+
+    ResAlloc res(FBUSRes, true);
+    if(FBUS_initOK) { FBUS_finish(); FBUS_initOK = false; }
+    if (fbusInitialize() != FBUS_RES_OK) {
+    	throw TError(nodePath().c_str(),"FBUS init failed.");
+    } else {
+    	FBUS_initOK = true;
+    }
+}
+
+void TTpContr::FBUS_finish( )
+{
+    ResAlloc res(FBUSRes, true);
+	fbusDeInitialize();
+}
+
 
 void TTpContr::postEnable( int flag )
 {
@@ -128,9 +153,21 @@ void TTpContr::postEnable( int flag )
     fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
     fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;99"));
 
-    //> Parameter type bd structure
-    int t_prm = tpParmAdd("std", "PRM_BD", _("Standard"));
-    tpPrmAt(t_prm).fldAdd(new TFld("OID_LS",_("OID list (next line separated)"),TFld::String,TFld::FullText|TCfg::NoVal,"100",""));
+    //> Parameter DIM762 bd structure
+	int t_prm = tpParmAdd("tp_DIM762", "PRM_BD_DIM762", _("DIM762"));
+	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
+	tpPrmAt(t_prm).fldAdd(new TFld("DI_DEBOUNCE", _("Debounce"),TFld::Integer,TFld::Selected|TCfg::NoVal,"1","0",
+			"0;1;2",
+			_("No;200us;3ms")));
+
+    //> Parameter AIM791 bd structure
+	t_prm = tpParmAdd("tp_AIM791", "PRM_BD_AIM791", _("AIM791"));
+	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
+	tpPrmAt(t_prm).fldAdd(new TFld("AI_RANGE", _("Input range"),TFld::Integer,TFld::Selected|TCfg::NoVal,"1","0",
+			"0;1;2",
+			_("0..5mA;0..20mA;4..20mA")));
+	tpPrmAt(t_prm).fldAdd(new TFld("AI_SCANRATE", _("Scan Rate"), TFld::Integer, TCfg::NoVal, "3", "1", "1;250"));
+	tpPrmAt(t_prm).fldAdd(new TFld("AI_FILTER", _("Filter depth"), TFld::Integer, TCfg::NoVal, "3", "0", "0;255"));
 }
 
 TController *TTpContr::ContrAttach( const string &name, const string &daq_db )
@@ -315,16 +352,16 @@ void TMdPrm::cntrCmdProc( XMLNode *opt )
     if(opt->name() == "info")
     {
 	TParamContr::cntrCmdProc(opt);
-	ctrMkNode("fld",opt,-1,"/prm/cfg/OID_LS",cfg("OID_LS").fld().descr(),enableStat()?R_R_R_:RWRWR_,"root",SDAQ_ID);
+	//ctrMkNode("fld",opt,-1,"/prm/cfg/OID_LS",cfg("OID_LS").fld().descr(),enableStat()?R_R_R_:RWRWR_,"root",SDAQ_ID);
 	return;
     }
 
     //> Process command to page
-    if(a_path == "/prm/cfg/OID_LS" && ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR))
-    {
-	if(enableStat()) throw TError(nodePath().c_str(),"Parameter is enabled.");
+    //if(a_path == "/prm/cfg/OID_LS" && ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR))
+   // {
+//	if(enableStat()) throw TError(nodePath().c_str(),"Parameter is enabled.");
 //	parseOIDList(opt->text());
-    }
+ //   }
     else TParamContr::cntrCmdProc(opt);
 }
 
