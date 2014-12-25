@@ -146,8 +146,6 @@ class TTpContr: public TTipDAQ
 	//Methods
 	TController *ContrAttach( const string &name, const string &daq_db );
 
-	string optDescr( );
-
 	//Attributes
 	bool	FBUS_initOK;
 	Res	FBUSRes;

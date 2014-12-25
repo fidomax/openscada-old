@@ -96,25 +96,8 @@ TTpContr::~TTpContr( )
 
 }
 
-string TTpContr::optDescr( )
-{
-    char buf[STR_BUF_LEN];
-
-    snprintf(buf,sizeof(buf),_(
-	"======================= The module <%s:%s> options =======================\n"
-	"---------- Parameters of the module section '%s' in config-file ----------\n\n"),
-	MOD_TYPE,MOD_ID,nodePath().c_str());
-
-    return buf;
-}
-
 void TTpContr::load_( )
 {
-    //> Load parameters from command line
-    string argCom, argVl;
-    for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
-        if(argCom == "h" || argCom == "help")	fprintf(stdout, "%s", optDescr().c_str());
-
     FBUS_Start();
 }
 
@@ -149,25 +132,28 @@ void TTpContr::postEnable( int flag )
     TTipDAQ::postEnable(flag);
 
     //> Controler's bd structure
-    fldAdd(new TFld("PRM_BD",_("Parameteres table"),TFld::String,TFld::NoFlag,"30",""));
+    fldAdd(new TFld("PRM_BD_DIM762",_("Parameteres table"),TFld::String,TFld::NoFlag,"30",""));
+    fldAdd(new TFld("PRM_BD_AIM791",_("Parameteres table"),TFld::String,TFld::NoFlag,"30",""));
     fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
     fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;99"));
 
     //> Parameter DIM762 bd structure
-	int t_prm = tpParmAdd("tp_DIM762", "PRM_BD_DIM762", _("DIM762"));
+	int t_prm = tpParmAdd("DIM762", "PRM_BD_DIM762", _("DIM762"),true);
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
 	tpPrmAt(t_prm).fldAdd(new TFld("DI_DEBOUNCE", _("Debounce"),TFld::Integer,TFld::Selected|TCfg::NoVal,"1","0",
 			"0;1;2",
 			_("No;200us;3ms")));
 
     //> Parameter AIM791 bd structure
-	t_prm = tpParmAdd("tp_AIM791", "PRM_BD_AIM791", _("AIM791"));
+	t_prm = tpParmAdd("AIM791", "PRM_BD_AIM791", _("AIM791"));
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
 	tpPrmAt(t_prm).fldAdd(new TFld("AI_RANGE", _("Input range"),TFld::Integer,TFld::Selected|TCfg::NoVal,"1","0",
 			"0;1;2",
 			_("0..5mA;0..20mA;4..20mA")));
 	tpPrmAt(t_prm).fldAdd(new TFld("AI_SCANRATE", _("Scan Rate"), TFld::Integer, TCfg::NoVal, "3", "1", "1;250"));
 	tpPrmAt(t_prm).fldAdd(new TFld("AI_FILTER", _("Filter depth"), TFld::Integer, TCfg::NoVal, "3", "0", "0;255"));
+
+
 }
 
 TController *TTpContr::ContrAttach( const string &name, const string &daq_db )
@@ -182,7 +168,7 @@ TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem ) :
     ::TController(name_c,daq_db,cfgelem), prcSt(false), callSt(false), endrunReq(false), tmGath(0),
     mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR"))
 {
-    cfg("PRM_BD").setS("TmplPrm_"+name_c);
+ //   cfg("PRM_BD").setS("TmplPrm_"+name_c);
 }
 
 TMdContr::~TMdContr( )
