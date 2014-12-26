@@ -132,6 +132,7 @@ class TTpContr: public TTipDAQ
 
 	void FBUS_Start( );
 	void FBUS_finish ( );
+	void FBUS_fbusGetVersion( );
 
     protected:
 	//Methods
@@ -142,6 +143,8 @@ class TTpContr: public TTipDAQ
 
 	bool redntAllow( )	{ return true; }
 
+	int verMajor, verMinor;
+
     private:
 	//Methods
 	TController *ContrAttach( const string &name, const string &daq_db );
@@ -149,6 +152,7 @@ class TTpContr: public TTipDAQ
 	//Attributes
 	bool	FBUS_initOK;
 	Res	FBUSRes;
+
 };
 
 extern TTpContr *mod;

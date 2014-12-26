@@ -112,11 +112,12 @@ void TTpContr::FBUS_Start( )
    // modif();
 
     ResAlloc res(FBUSRes, true);
-    if(FBUS_initOK) { FBUS_finish(); FBUS_initOK = false; }
+    if(FBUS_initOK) FBUS_finish();
     if (fbusInitialize() != FBUS_RES_OK) {
     	throw TError(nodePath().c_str(),"FBUS init failed.");
     } else {
     	FBUS_initOK = true;
+    	FBUS_fbusGetVersion();
     }
 }
 
@@ -124,6 +125,14 @@ void TTpContr::FBUS_finish( )
 {
     ResAlloc res(FBUSRes, true);
 	fbusDeInitialize();
+	FBUS_initOK = false;
+}
+
+void TTpContr::FBUS_fbusGetVersion( )
+{
+    ResAlloc res(FBUSRes, true);
+    fbusGetVersion(&verMajor, &verMinor);
+    mVers = TSYS::strMess("%s FBUS: %d.%d", MOD_VER, verMajor, verMinor);
 }
 
 
