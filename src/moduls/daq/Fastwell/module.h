@@ -29,12 +29,15 @@
 #include <ttipdaq.h>
 #include <tparamcontr.h>
 
+#include <fbus.h>
 #undef _
 #define _(mess) mod->I18N(mess)
 
 using std::string;
 using std::vector;
 using namespace OSCADA;
+
+#define FBUS_MAX_NET 64
 
 namespace ModFastwell
 {
@@ -130,6 +133,10 @@ class TTpContr: public TTipDAQ
 	TTpContr( string name );
 	~TTpContr( );
 
+	void FBUS_Start( );
+	void FBUS_finish ( );
+	void FBUS_fbusGetVersion( );
+
     protected:
 	//Methods
 	void postEnable( int flag );
@@ -139,11 +146,17 @@ class TTpContr: public TTipDAQ
 
 	bool redntAllow( )	{ return true; }
 
+	int verMajor, verMinor;
+
     private:
 	//Methods
 	TController *ContrAttach( const string &name, const string &daq_db );
 
-	string optDescr( );
+	//Attributes
+	bool	FBUS_initOK;
+	Res	FBUSRes;
+	FBUS_HANDLE hNet[FBUS_MAX_NET];
+
 };
 
 extern TTpContr *mod;

@@ -1,4 +1,3 @@
-
 //OpenSCADA system module DAQ.Fastwell file: module.cpp
 /***************************************************************************
  *   Copyright (C) 2014 by Maxim Kochetkov                                 *
@@ -29,6 +28,8 @@
 #include <ttiparam.h>
 #include <tdaqs.h>
 
+#include <fbus.h>
+
 #include "module.h"
 
 //*************************************************
@@ -43,32 +44,33 @@
 #define LICENSE		"GPL2"
 //*************************************************
 
-ModFastwell::TTpContr *ModFastwell::mod;  //Pointer for direct access to the module
+ModFastwell::TTpContr *ModFastwell::mod; //Pointer for direct access to the module
 
 //!!! Required section for binding OpenSCADA core to this module. It provides information and create module root object.
 //!!! Do not remove this section!
 extern "C"
 {
 #ifdef MOD_INCL
-    TModule::SAt daq_Fastwell_module( int n_mod )
+TModule::SAt daq_Fastwell_module( int n_mod )
 #else
-    TModule::SAt module( int n_mod )
+TModule::SAt module (int n_mod)
 #endif
-    {
-	if(n_mod == 0)	return TModule::SAt(MOD_ID, MOD_TYPE, VER_TYPE);
+{
+	if (n_mod == 0)
+		return TModule::SAt(MOD_ID, MOD_TYPE, VER_TYPE);
 	return TModule::SAt("");
-    }
+}
 
 #ifdef MOD_INCL
-    TModule *daq_Fastwell_attach( const TModule::SAt &AtMod, const string &source )
+TModule *daq_Fastwell_attach( const TModule::SAt &AtMod, const string &source )
 #else
-    TModule *attach( const TModule::SAt &AtMod, const string &source )
+TModule *attach (const TModule::SAt &AtMod, const string &source)
 #endif
-    {
-	if(AtMod == TModule::SAt(MOD_ID,MOD_TYPE,VER_TYPE))
-	    return new ModFastwell::TTpContr(source);
+{
+	if (AtMod == TModule::SAt(MOD_ID, MOD_TYPE, VER_TYPE))
+		return new ModFastwell::TTpContr(source);
 	return NULL;
-    }
+}
 }
 
 using namespace ModFastwell;
@@ -76,265 +78,307 @@ using namespace ModFastwell;
 //*************************************************
 //* TTpContr                                      *
 //*************************************************
-TTpContr::TTpContr( string name ) : TTipDAQ(MOD_ID)
+TTpContr::TTpContr (string name) :
+		TTipDAQ(MOD_ID)
 {
-    mod		= this;
+	mod = this;
 
-    mName	= MOD_NAME;
-    mType	= MOD_TYPE;
-    mVers	= MOD_VER;
-    mAuthor	= AUTHORS;
-    mDescr	= DESCRIPTION;
-    mLicense	= LICENSE;
-    mSource	= name;
+	mName = MOD_NAME;
+	mType = MOD_TYPE;
+	mVers = MOD_VER;
+	mAuthor = AUTHORS;
+	mDescr = DESCRIPTION;
+	mLicense = LICENSE;
+	mSource = name;
 }
 
-TTpContr::~TTpContr( )
-{
-
-}
-
-string TTpContr::optDescr( )
-{
-    char buf[STR_BUF_LEN];
-
-    snprintf(buf,sizeof(buf),_(
-	"======================= The module <%s:%s> options =======================\n"
-	"---------- Parameters of the module section '%s' in config-file ----------\n\n"),
-	MOD_TYPE,MOD_ID,nodePath().c_str());
-
-    return buf;
-}
-
-void TTpContr::load_( )
-{
-    //> Load parameters from command line
-    string argCom, argVl;
-    for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
-        if(argCom == "h" || argCom == "help")	fprintf(stdout, "%s", optDescr().c_str());
-}
-
-void TTpContr::save_( )
+TTpContr::~TTpContr ( )
 {
 
 }
 
-void TTpContr::postEnable( int flag )
+void TTpContr::load_ ( )
 {
-    TTipDAQ::postEnable(flag);
-
-    //> Controler's bd structure
-    fldAdd(new TFld("PRM_BD",_("Parameteres table"),TFld::String,TFld::NoFlag,"30",""));
-    fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
-    fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;99"));
-
-    //> Parameter type bd structure
-    int t_prm = tpParmAdd("std", "PRM_BD", _("Standard"));
-    tpPrmAt(t_prm).fldAdd(new TFld("OID_LS",_("OID list (next line separated)"),TFld::String,TFld::FullText|TCfg::NoVal,"100",""));
+	FBUS_Start();
 }
 
-TController *TTpContr::ContrAttach( const string &name, const string &daq_db )
+void TTpContr::save_ ( )
 {
-    return new TMdContr(name, daq_db, this);
+
+}
+
+void TTpContr::FBUS_Start ( )
+{
+
+	// modif();
+
+	ResAlloc res(FBUSRes, true);
+	if (FBUS_initOK)
+		FBUS_finish();
+	if (fbusInitialize() != FBUS_RES_OK) {
+		throw TError(nodePath().c_str(), "FBUS init failed.");
+	} else {
+		FBUS_initOK = true;
+		for (int i = 0; i < FBUS_MAX_NET; i++) {
+			hNet[i] = FBUS_INVALID_HANDLE;
+		}
+		FBUS_fbusGetVersion();
+	}
+}
+
+void TTpContr::FBUS_finish ( )
+{
+	ResAlloc res(FBUSRes, true);
+	fbusDeInitialize();
+	FBUS_initOK = false;
+}
+
+void TTpContr::FBUS_fbusGetVersion ( )
+{
+	ResAlloc res(FBUSRes, true);
+	fbusGetVersion(&verMajor, &verMinor);
+	mVers = TSYS::strMess("%s FBUS: %d.%d", MOD_VER, verMajor, verMinor);
+}
+
+void TTpContr::postEnable (int flag)
+{
+	TTipDAQ::postEnable(flag);
+
+	//> Controler's bd structure
+	fldAdd(new TFld("PRM_BD_DIM762", _("Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+	fldAdd(new TFld("PRM_BD_AIM791", _("Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+	fldAdd(new TFld("SCHEDULE", _("Acquisition schedule"), TFld::String, TFld::NoFlag, "100", "1"));
+	fldAdd(new TFld("PRIOR", _("Gather task priority"), TFld::Integer, TFld::NoFlag, "2", "0", "-1;99"));
+
+	//> Parameter DIM762 bd structure
+	int t_prm = tpParmAdd("DIM762", "PRM_BD_DIM762", _("DIM762"), true);
+	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
+	tpPrmAt(t_prm).fldAdd(new TFld("DI_DEBOUNCE", _("Debounce"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1;2", _("No;200us;3ms")));
+
+	//> Parameter AIM791 bd structure
+	t_prm = tpParmAdd("AIM791", "PRM_BD_AIM791", _("AIM791"));
+	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
+	tpPrmAt(t_prm).fldAdd(new TFld("AI_RANGE", _("Input range"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1;2", _("0..5mA;0..20mA;4..20mA")));
+	tpPrmAt(t_prm).fldAdd(new TFld("AI_SCANRATE", _("Scan Rate"), TFld::Integer, TCfg::NoVal, "3", "1", "1;250"));
+	tpPrmAt(t_prm).fldAdd(new TFld("AI_FILTER", _("Filter depth"), TFld::Integer, TCfg::NoVal, "3", "0", "0;255"));
+
+}
+
+TController *TTpContr::ContrAttach (const string &name, const string &daq_db)
+{
+	return new TMdContr(name, daq_db, this);
 }
 
 //*************************************************
 //* TMdContr                                      *
 //*************************************************
-TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem ) :
-    ::TController(name_c,daq_db,cfgelem), prcSt(false), callSt(false), endrunReq(false), tmGath(0),
-    mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR"))
+TMdContr::TMdContr (string name_c, const string &daq_db, ::TElem *cfgelem) :
+		::TController(name_c, daq_db, cfgelem), prcSt(false), callSt(false), endrunReq(false), tmGath(0), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR"))
 {
-    cfg("PRM_BD").setS("TmplPrm_"+name_c);
+	//   cfg("PRM_BD").setS("TmplPrm_"+name_c);
 }
 
-TMdContr::~TMdContr( )
+TMdContr::~TMdContr ( )
 {
-    if(startStat()) stop();
+	if (startStat())
+		stop();
 }
 
-string TMdContr::getStatus( )
+string TMdContr::getStatus ( )
 {
-    string rez = TController::getStatus();
-    if(startStat() && !redntUse())
-    {
-	if(callSt)	rez += TSYS::strMess(_("Call now. "));
-	if(period())	rez += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-3*period()).c_str());
-	else rez += TSYS::strMess(_("Call next by cron '%s'. "), tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	rez += TSYS::strMess(_("Spent time: %s."), tm2s(tmGath).c_str());
-    }
-    return rez;
+	string rez = TController::getStatus();
+	if (startStat() && !redntUse()) {
+		if (callSt)
+			rez += TSYS::strMess(_("Call now. "));
+		if (period())
+			rez += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-3 * period()).c_str());
+		else
+			rez += TSYS::strMess(_("Call next by cron '%s'. "), tm2s(TSYS::cron(cron()), "%d-%m-%Y %R").c_str());
+		rez += TSYS::strMess(_("Spent time: %s."), tm2s(tmGath).c_str());
+	}
+	return rez;
 }
 
-TParamContr *TMdContr::ParamAttach( const string &name, int type )
+TParamContr *TMdContr::ParamAttach (const string &name, int type)
 {
-    return new TMdPrm(name, &owner().tpPrmAt(type));
+	return new TMdPrm(name, &owner().tpPrmAt(type));
 }
 
-void TMdContr::start_( )
+void TMdContr::start_ ( )
 {
-    //> Schedule process
-    mPer = TSYS::strSepParse(cron(),1,' ').empty() ? vmax(0,(int64_t)(1e9*atof(cron().c_str()))) : 0;
+	//> Schedule process
+	mPer = TSYS::strSepParse(cron(), 1, ' ').empty() ? vmax(0, (int64_t )(1e9 * atof(cron().c_str()))) : 0;
 
-    //> Start the gathering data task
-    SYS->taskCreate(nodePath('.',true), mPrior, TMdContr::Task, this);
+	//> Start the gathering data task
+	SYS->taskCreate(nodePath('.', true), mPrior, TMdContr::Task, this);
 }
 
-void TMdContr::stop_( )
+void TMdContr::stop_ ( )
 {
-    //> Stop the request and calc data task
-    SYS->taskDestroy(nodePath('.',true), &endrunReq);
+	//> Stop the request and calc data task
+	SYS->taskDestroy(nodePath('.', true), &endrunReq);
 }
 
-void TMdContr::prmEn( const string &id, bool val )
+void TMdContr::prmEn (const string &id, bool val)
 {
-    int i_prm;
+	int i_prm;
 
-    ResAlloc res(en_res, true);
-    for(i_prm = 0; i_prm < p_hd.size(); i_prm++)
-	if(p_hd[i_prm].at().id() == id) break;
+	ResAlloc res(en_res, true);
+	for (i_prm = 0; i_prm < p_hd.size(); i_prm++)
+		if (p_hd[i_prm].at().id() == id)
+			break;
 
-    if(val && i_prm >= p_hd.size())	p_hd.push_back(at(id));
-    if(!val && i_prm < p_hd.size())	p_hd.erase(p_hd.begin()+i_prm);
+	if (val && i_prm >= p_hd.size())
+		p_hd.push_back(at(id));
+	if (!val && i_prm < p_hd.size())
+		p_hd.erase(p_hd.begin() + i_prm);
 }
 
-void *TMdContr::Task( void *icntr )
+void *TMdContr::Task (void *icntr)
 {
-    TMdContr &cntr = *(TMdContr *)icntr;
+	TMdContr &cntr = *(TMdContr *) icntr;
 
-    cntr.endrunReq = false;
-    cntr.prcSt = true;
+	cntr.endrunReq = false;
+	cntr.prcSt = true;
 
-    while(!cntr.endrunReq)
-    {
-	int64_t t_cnt = TSYS::curTime();
+	while (!cntr.endrunReq) {
+		int64_t t_cnt = TSYS::curTime();
 
-	//> Update controller's data
-	//!!! Your code for gather data
-	cntr.en_res.resRequestR( );
-	cntr.callSt = true;
-	for(unsigned i_p = 0; i_p < cntr.p_hd.size() && !cntr.redntUse(); i_p++)
-	    try
-	    {
-		//!!! Process parameter code
-	    }
-	    catch(TError err)
-	    { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
-	cntr.callSt = false;
-	cntr.en_res.resRelease();
-	cntr.tmGath = TSYS::curTime()-t_cnt;
+		//> Update controller's data
+		//!!! Your code for gather data
+		cntr.en_res.resRequestR();
+		cntr.callSt = true;
+		for (unsigned i_p = 0; i_p < cntr.p_hd.size() && !cntr.redntUse(); i_p++)
+			try {
+				//!!! Process parameter code
+			} catch (TError err) {
+				mess_err(err.cat.c_str(), "%s", err.mess.c_str());
+			}
+		cntr.callSt = false;
+		cntr.en_res.resRelease();
+		cntr.tmGath = TSYS::curTime() - t_cnt;
 
-	//!!! Wait for next iteration
-	TSYS::taskSleep(cntr.period(), (cntr.period()?0:TSYS::cron(cntr.cron())));
-    }
+		//!!! Wait for next iteration
+		TSYS::taskSleep(cntr.period(), (cntr.period() ? 0 : TSYS::cron(cntr.cron())));
+	}
 
-    cntr.prcSt = false;
+	cntr.prcSt = false;
 
-    return NULL;
+	return NULL;
 }
 
-void TMdContr::cntrCmdProc( XMLNode *opt )
+void TMdContr::cntrCmdProc (XMLNode *opt)
 {
-    //> Get page info
-    if(opt->name() == "info")
-    {
+	//> Get page info
+	if (opt->name() == "info") {
+		TController::cntrCmdProc(opt);
+		ctrMkNode("fld", opt, -1, "/cntr/cfg/SCHEDULE", cfg("SCHEDULE").fld().descr(), startStat() ? R_R_R_ : RWRWR_, "root", SDAQ_ID, 3, "dest", "sel_ed",
+				"sel_list", TMess::labSecCRONsel(), "help", TMess::labSecCRON());
+		ctrMkNode("fld", opt, -1, "/cntr/cfg/PRIOR", cfg("PRIOR").fld().descr(), startStat() ? R_R_R_ : RWRWR_, "root", SDAQ_ID, 1, "help",
+				TMess::labTaskPrior());
+		return;
+	}
+	//> Process command to page
 	TController::cntrCmdProc(opt);
-	ctrMkNode("fld",opt,-1,"/cntr/cfg/SCHEDULE",cfg("SCHEDULE").fld().descr(),startStat()?R_R_R_:RWRWR_,"root",SDAQ_ID,3,
-	    "dest","sel_ed","sel_list",TMess::labSecCRONsel(),"help",TMess::labSecCRON());
-	ctrMkNode("fld",opt,-1,"/cntr/cfg/PRIOR",cfg("PRIOR").fld().descr(),startStat()?R_R_R_:RWRWR_,"root",SDAQ_ID,1,"help",TMess::labTaskPrior());
-	return;
-    }
-    //> Process command to page
-    TController::cntrCmdProc(opt);
 }
 
 //*************************************************
 //* TMdPrm                                        *
 //*************************************************
-TMdPrm::TMdPrm( string name, TTipParam *tp_prm ) :
-    TParamContr(name,tp_prm), p_el("w_attr")
+TMdPrm::TMdPrm (string name, TTipParam *tp_prm) :
+		TParamContr(name, tp_prm), p_el("w_attr")
 {
 
 }
 
-TMdPrm::~TMdPrm( )
+TMdPrm::~TMdPrm ( )
 {
-    //!!! Call for prevent access to data the object from included nodes on destruction.
-    nodeDelAll();
+	//!!! Call for prevent access to data the object from included nodes on destruction.
+	nodeDelAll();
 }
 
-void TMdPrm::postEnable( int flag )
+void TMdPrm::postEnable (int flag)
 {
-    TParamContr::postEnable(flag);
-    if(!vlElemPresent(&p_el))   vlElemAtt(&p_el);
+	TParamContr::postEnable(flag);
+	if (!vlElemPresent(&p_el))
+		vlElemAtt(&p_el);
 }
 
-TMdContr &TMdPrm::owner( )	{ return (TMdContr&)TParamContr::owner(); }
-
-void TMdPrm::enable( )
+TMdContr &TMdPrm::owner ( )
 {
-    if(enableStat())	return;
-
-    TParamContr::enable();
-
-    owner().prmEn(id(), true);
+	return (TMdContr&) TParamContr::owner();
 }
 
-void TMdPrm::disable( )
+void TMdPrm::enable ( )
 {
-    if(!enableStat())  return;
+	if (enableStat())
+		return;
 
-    owner().prmEn(id(), false);
+	TParamContr::enable();
 
-    TParamContr::disable();
-
-    //> Set EVAL to parameter attributes
-    vector<string> ls;
-    elem().fldList(ls);
-    for(int i_el = 0; i_el < ls.size(); i_el++)
-	vlAt(ls[i_el]).at().setS(EVAL_STR, 0, true);
+	owner().prmEn(id(), true);
 }
 
-void TMdPrm::load_( )
+void TMdPrm::disable ( )
 {
-    TParamContr::load_();
+	if (!enableStat())
+		return;
+
+	owner().prmEn(id(), false);
+
+	TParamContr::disable();
+
+	//> Set EVAL to parameter attributes
+	vector<string> ls;
+	elem().fldList(ls);
+	for (int i_el = 0; i_el < ls.size(); i_el++)
+		vlAt(ls[i_el]).at().setS(EVAL_STR, 0, true);
 }
 
-void TMdPrm::save_( )
+void TMdPrm::load_ ( )
 {
-    TParamContr::save_();
+	TParamContr::load_();
 }
 
-void TMdPrm::cntrCmdProc( XMLNode *opt )
+void TMdPrm::save_ ( )
 {
-    //> Service commands process
-    string a_path = opt->attr("path");
-    if(a_path.substr(0,6) == "/serv/")	{ TParamContr::cntrCmdProc(opt); return; }
+	TParamContr::save_();
+}
 
-    //> Get page info
-    if(opt->name() == "info")
-    {
-	TParamContr::cntrCmdProc(opt);
-	ctrMkNode("fld",opt,-1,"/prm/cfg/OID_LS",cfg("OID_LS").fld().descr(),enableStat()?R_R_R_:RWRWR_,"root",SDAQ_ID);
-	return;
-    }
+void TMdPrm::cntrCmdProc (XMLNode *opt)
+{
+	//> Service commands process
+	string a_path = opt->attr("path");
+	if (a_path.substr(0, 6) == "/serv/") {
+		TParamContr::cntrCmdProc(opt);
+		return;
+	}
 
-    //> Process command to page
-    if(a_path == "/prm/cfg/OID_LS" && ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR))
-    {
-	if(enableStat()) throw TError(nodePath().c_str(),"Parameter is enabled.");
+	//> Get page info
+	if (opt->name() == "info") {
+		TParamContr::cntrCmdProc(opt);
+		//ctrMkNode("fld",opt,-1,"/prm/cfg/OID_LS",cfg("OID_LS").fld().descr(),enableStat()?R_R_R_:RWRWR_,"root",SDAQ_ID);
+		return;
+	}
+
+	//> Process command to page
+	//if(a_path == "/prm/cfg/OID_LS" && ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR))
+	// {
+//	if(enableStat()) throw TError(nodePath().c_str(),"Parameter is enabled.");
 //	parseOIDList(opt->text());
-    }
-    else TParamContr::cntrCmdProc(opt);
+	//   }
+	else
+		TParamContr::cntrCmdProc(opt);
 }
 
-void TMdPrm::vlArchMake( TVal &val )
+void TMdPrm::vlArchMake (TVal &val)
 {
-    TParamContr::vlArchMake(val);
+	TParamContr::vlArchMake(val);
 
-    if(val.arch().freeStat()) return;
-    val.arch().at().setSrcMode(TVArchive::PassiveAttr);
-    val.arch().at().setPeriod((int64_t)(owner().period()*1000000));
-    val.arch().at().setHardGrid(true);
-    val.arch().at().setHighResTm(true);
+	if (val.arch().freeStat())
+		return;
+	val.arch().at().setSrcMode(TVArchive::PassiveAttr);
+	val.arch().at().setPeriod((int64_t) (owner().period() * 1000000));
+	val.arch().at().setHardGrid(true);
+	val.arch().at().setHighResTm(true);
 }
