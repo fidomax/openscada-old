@@ -136,6 +136,7 @@ class TTpContr: public TTipDAQ
 	void FBUS_Start( );
 	void FBUS_finish ( );
 	void FBUS_fbusGetVersion( );
+	void FBUS_fbusOpen( );
 
     protected:
 	//Methods
@@ -156,6 +157,7 @@ class TTpContr: public TTipDAQ
 	bool	FBUS_initOK;
 	Res	FBUSRes;
 	FBUS_HANDLE hNet[FBUS_MAX_NET];
+	int modCount[FBUS_MAX_NET];
 
 };
 
