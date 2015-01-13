@@ -116,7 +116,7 @@ void TTpContr::FBUS_Start ( )
 	if (FBUS_initOK)
 		FBUS_finish();
 	if (fbusInitialize() != FBUS_RES_OK) {
-		throw TError(nodePath().c_str(), "FBUS init failed.");
+		throw TError(nodePath().c_str(), _("FBUS init failed."));
 	} else {
 		FBUS_initOK = true;
 		for (int i = 0; i < FBUS_MAX_NET; i++) {
@@ -138,6 +138,24 @@ void TTpContr::FBUS_fbusGetVersion ( )
 	ResAlloc res(FBUSRes, true);
 	fbusGetVersion(&verMajor, &verMinor);
 	mVers = TSYS::strMess("%s FBUS: %d.%d", MOD_VER, verMajor, verMinor);
+}
+
+void TTpContr::FBUS_fbusOpen (int n)
+{
+	if (hNet[n] == FBUS_INVALID_HANDLE) {
+		if (fbusOpen(n, &hNet[n]) != FBUS_RES_OK) {
+			hNet[n] = FBUS_INVALID_HANDLE;
+			throw TError(nodePath().c_str(), _("FBUS open net #%d failed."),n);
+		}
+
+	}
+
+}
+void TTpContr::FBUS_fbusRescan (int n)
+{
+	if (fbusRescan(hNet[n], &(modCount[n])) != FBUS_RES_OK) {
+		throw TError(nodePath().c_str(), _("FBUS rescan net #%d failed."),n);
+	}
 }
 
 void TTpContr::postEnable (int flag)
