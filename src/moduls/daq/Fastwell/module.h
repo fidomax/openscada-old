@@ -1,4 +1,3 @@
-
 //OpenSCADA system module DAQ.Fastwell file: module.h
 /***************************************************************************
  *   Copyright (C) 2014 by Maxim Kochetkov                                 *
@@ -47,33 +46,39 @@ namespace ModFastwell
 //*************************************************
 class TMdContr;
 
-class TMdPrm : public TParamContr
+class TMdPrm: public TParamContr
 {
-    public:
+public:
 	//Methods
-	TMdPrm( string name, TTipParam *tp_prm );
-	~TMdPrm( );
+	TMdPrm (string name, TTipParam *tp_prm);
+	~TMdPrm ( );
 
-	TElem &elem( )		{ return p_el; }
+	TElem &elem ( )
+	{
+		return p_el;
+	}
 
-	void enable( );
-	void disable( );
+	void enable ( );
+	void disable ( );
 
-	TMdContr &owner( );
+	TMdContr &owner ( );
 
-    protected:
+protected:
 	//Methods
-	void load_( );
-	void save_( );
+	void load_ ( );
+	void save_ ( );
 
-    private:
+private:
 	//Methods
-	void postEnable( int flag );
-	void cntrCmdProc( XMLNode *opt );
-	void vlArchMake( TVal &val );
+	void postEnable (int flag);
+	void vlGet (TVal &vo);
+	void cntrCmdProc (XMLNode *opt);
+	void vlArchMake (TVal &val);
 
 	//Attributes
-	TElem	p_el;			//Work atribute elements
+	TElem p_el;			//Work atribute elements
+	FIO_MODULE_DESC mModDesc;
+	TCfg &mID;	// Schedule
 };
 
 //*************************************************
@@ -81,46 +86,61 @@ class TMdPrm : public TParamContr
 //*************************************************
 class TMdContr: public TController
 {
-    friend class TMdPrm;
-    public:
+	friend class TMdPrm;
+public:
 	//Methods
-	TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem );
-	~TMdContr( );
+	TMdContr (string name_c, const string &daq_db, ::TElem *cfgelem);
+	~TMdContr ( );
 
-	string getStatus( );
+	string getStatus ( );
 
-	int64_t	period( )	{ return mPer; }
-	string  cron( )         { return mSched; }
-	int	prior( )	{ return mPrior; }
+	int64_t period ( )
+	{
+		return mPer;
+	}
+	string cron ( )
+	{
+		return mSched;
+	}
+	int prior ( )
+	{
+		return mPrior;
+	}
 
-	AutoHD<TMdPrm> at( const string &nm )	{ return TController::at(nm); }
+	AutoHD<TMdPrm> at (const string &nm)
+	{
+		return TController::at(nm);
+	}
 
-    protected:
+	void GetNodeDescription(int, PFIO_MODULE_DESC );
+protected:
 	//Methods
-	void prmEn( const string &id, bool val );
+	void prmEn (const string &id, bool val);
 
-	void start_( );
-	void stop_( );
+	void start_ ( );
+	void stop_ ( );
 
-    private:
+private:
 	//Methods
-	TParamContr *ParamAttach( const string &name, int type );
-	void cntrCmdProc( XMLNode *opt );
-	static void *Task( void *icntr );
+	TParamContr *ParamAttach (const string &name, int type);
+	void cntrCmdProc (XMLNode *opt);
+	static void *Task (void *icntr);
 
 	//Attributes
-	Res	en_res;		// Resource for enable params
-	TCfg	&mSched,	// Schedule
-		&mPrior;	// Process task priority
-	int64_t	mPer;
+	Res en_res;		// Resource for enable params
+	TCfg &mSched,	// Schedule
+			&mPrior,	// Process task priority
+			&mNet;  // Network number
 
-	bool	prcSt,		// Process task active
- 		callSt,		// Calc now stat
-		endrunReq;	// Request to stop of the Process task
+	int64_t mPer;
 
-	vector< AutoHD<TMdPrm> >  p_hd;
+	bool prcSt,		// Process task active
+			callSt,		// Calc now stat
+			endrunReq;	// Request to stop of the Process task
 
-	double	tmGath;		// Gathering time
+	vector<AutoHD<TMdPrm> > p_hd;
+
+	double tmGath;		// Gathering time
 };
 
 //*************************************************
@@ -128,35 +148,40 @@ class TMdContr: public TController
 //*************************************************
 class TTpContr: public TTipDAQ
 {
-    public:
+public:
 	//Methods
-	TTpContr( string name );
-	~TTpContr( );
+	TTpContr (string name);
+	~TTpContr ( );
 
-	void FBUS_Start( );
+	void FBUS_Start ( );
 	void FBUS_finish ( );
-	void FBUS_fbusGetVersion( );
-	void FBUS_fbusOpen( int );
-	void FBUS_fbusRescan( int );
+	void FBUS_fbusGetVersion ( );
+	void FBUS_fbusOpen (int);
+	void FBUS_fbusClose (int);
+	void FBUS_fbusRescan (int);
+	void FBUS_fbusGetNodeDescription (int, int, PFIO_MODULE_DESC);
 
-    protected:
+protected:
 	//Methods
-	void postEnable( int flag );
+	void postEnable (int flag);
 
-	void load_( );
-	void save_( );
+	void load_ ( );
+	void save_ ( );
 
-	bool redntAllow( )	{ return true; }
+	bool redntAllow ( )
+	{
+		return true;
+	}
 
 	int verMajor, verMinor;
 
-    private:
+private:
 	//Methods
-	TController *ContrAttach( const string &name, const string &daq_db );
+	TController *ContrAttach (const string &name, const string &daq_db);
 
 	//Attributes
-	bool	FBUS_initOK;
-	Res	FBUSRes;
+	bool FBUS_initOK;
+	Res FBUSRes;
 	FBUS_HANDLE hNet[FBUS_MAX_NET];
 	size_t modCount[FBUS_MAX_NET];
 

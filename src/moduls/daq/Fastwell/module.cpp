@@ -28,7 +28,7 @@
 #include <ttiparam.h>
 #include <tdaqs.h>
 
-#include <fbus.h>
+//#include <fbus.h>
 
 #include "module.h"
 
@@ -145,16 +145,33 @@ void TTpContr::FBUS_fbusOpen (int n)
 	if (hNet[n] == FBUS_INVALID_HANDLE) {
 		if (fbusOpen(n, &hNet[n]) != FBUS_RES_OK) {
 			hNet[n] = FBUS_INVALID_HANDLE;
-			throw TError(nodePath().c_str(), _("FBUS open net #%d failed."),n);
+			throw TError(nodePath().c_str(), _("FBUS open net #%d failed."), n);
 		}
-
 	}
-
 }
+
+void TTpContr::FBUS_fbusClose (int n)
+{
+	if (hNet[n] != FBUS_INVALID_HANDLE) {
+		if (fbusClose(n) != FBUS_RES_OK) {
+			throw TError(nodePath().c_str(), _("FBUS open net #%d failed."), n);
+		} else {
+			hNet[n] = FBUS_INVALID_HANDLE;
+		}
+	}
+}
+
 void TTpContr::FBUS_fbusRescan (int n)
 {
 	if (fbusRescan(hNet[n], &(modCount[n])) != FBUS_RES_OK) {
-		throw TError(nodePath().c_str(), _("FBUS rescan net #%d failed."),n);
+		throw TError(nodePath().c_str(), _("FBUS rescan net #%d failed."), n);
+	}
+}
+
+void TTpContr::FBUS_fbusGetNodeDescription (int n, int id, PFIO_MODULE_DESC modDesc)
+{
+	if (fbusGetNodeDescription(hNet[n], id, modDesc, sizeof(FIO_MODULE_DESC)) != FBUS_RES_OK) {
+		throw TError(nodePath().c_str(), _("FBUS GetNodeDescription net #%d, #id  failed."), n, id);
 	}
 }
 
@@ -167,6 +184,7 @@ void TTpContr::postEnable (int flag)
 	fldAdd(new TFld("PRM_BD_AIM791", _("Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
 	fldAdd(new TFld("SCHEDULE", _("Acquisition schedule"), TFld::String, TFld::NoFlag, "100", "1"));
 	fldAdd(new TFld("PRIOR", _("Gather task priority"), TFld::Integer, TFld::NoFlag, "2", "0", "-1;99"));
+	fldAdd(new TFld("NET_ID", _("Network number"), TFld::Integer, TFld::NoFlag, "0", "0", "0;63"));
 
 	//> Parameter DIM762 bd structure
 	int t_prm = tpParmAdd("DIM762", "PRM_BD_DIM762", _("DIM762"), true);
@@ -191,15 +209,21 @@ TController *TTpContr::ContrAttach (const string &name, const string &daq_db)
 //* TMdContr                                      *
 //*************************************************
 TMdContr::TMdContr (string name_c, const string &daq_db, ::TElem *cfgelem) :
-		::TController(name_c, daq_db, cfgelem), prcSt(false), callSt(false), endrunReq(false), tmGath(0), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR"))
+		::TController(name_c, daq_db, cfgelem), prcSt(false), callSt(false), endrunReq(false), tmGath(0), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR")), mNet(cfg("NET_ID"))
 {
-	//   cfg("PRM_BD").setS("TmplPrm_"+name_c);
+	   cfg("PRM_BD_DIM762").setS("FBUSPrmDIM762_"+name_c);
+	   cfg("PRM_BD_AIM791").setS("FBUSPrmAIM791_"+name_c);
 }
 
 TMdContr::~TMdContr ( )
 {
 	if (startStat())
 		stop();
+}
+
+void TMdContr::GetNodeDescription(int id, PFIO_MODULE_DESC modDesc)
+{
+	mod->FBUS_fbusGetNodeDescription(mNet,id,modDesc);
 }
 
 string TMdContr::getStatus ( )
@@ -226,7 +250,8 @@ void TMdContr::start_ ( )
 {
 	//> Schedule process
 	mPer = TSYS::strSepParse(cron(), 1, ' ').empty() ? vmax(0, (int64_t )(1e9 * atof(cron().c_str()))) : 0;
-
+	mod->FBUS_fbusOpen(mNet);
+	mod->FBUS_fbusRescan(mNet);
 	//> Start the gathering data task
 	SYS->taskCreate(nodePath('.', true), mPrior, TMdContr::Task, this);
 }
@@ -235,6 +260,7 @@ void TMdContr::stop_ ( )
 {
 	//> Stop the request and calc data task
 	SYS->taskDestroy(nodePath('.', true), &endrunReq);
+	mod->FBUS_fbusClose(mNet);
 }
 
 void TMdContr::prmEn (const string &id, bool val)
@@ -304,7 +330,7 @@ void TMdContr::cntrCmdProc (XMLNode *opt)
 //* TMdPrm                                        *
 //*************************************************
 TMdPrm::TMdPrm (string name, TTipParam *tp_prm) :
-		TParamContr(name, tp_prm), p_el("w_attr")
+		TParamContr(name, tp_prm), p_el("w_attr"),mID(cfg("DEV_ID"))
 {
 
 }
@@ -335,6 +361,7 @@ void TMdPrm::enable ( )
 	TParamContr::enable();
 
 	owner().prmEn(id(), true);
+	owner().GetNodeDescription(mID,&mModDesc);
 }
 
 void TMdPrm::disable ( )
@@ -361,6 +388,24 @@ void TMdPrm::load_ ( )
 void TMdPrm::save_ ( )
 {
 	TParamContr::save_();
+}
+
+void TMdPrm::vlGet( TVal &val )
+{
+    if(!enableStat() || !owner().startStat()) {
+	if(val.name() == "err") {
+	    if(!enableStat())			val.setS(_("1:Parameter is disabled."),0,true);
+	    else if(!owner().startStat())	val.setS(_("2:Acquisition is stopped."),0,true);
+	}
+	else val.setS(EVAL_STR,0,true);
+	return;
+    }
+
+    if(owner().redntUse()) return;
+
+    if(val.name() == "err") {
+    	val.setS(TSYS::strMess("0: Normal: %s", mModDesc.typeName));
+    }
 }
 
 void TMdPrm::cntrCmdProc (XMLNode *opt)
