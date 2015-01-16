@@ -366,7 +366,12 @@ void TMdPrm::enable ( )
 	TParamContr::enable();
 
 	owner().prmEn(id(), true);
-	owner().GetNodeDescription(mID,&mModDesc);
+	try{
+		owner().GetNodeDescription(mID,&mModDesc);
+	} catch (TError err) {
+		mess_err(err.cat.c_str(), "%s", err.mess.c_str());
+		disable();
+	}
 }
 
 void TMdPrm::disable ( )
