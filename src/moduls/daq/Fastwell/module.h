@@ -116,7 +116,7 @@ public:
 protected:
 	//Methods
 	void prmEn (const string &id, bool val);
-
+	void enable_( )
 	void start_ ( );
 	void stop_ ( );
 

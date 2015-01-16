@@ -170,8 +170,8 @@ void TTpContr::FBUS_fbusRescan (int n)
 
 void TTpContr::FBUS_fbusGetNodeDescription (int n, int id, PFIO_MODULE_DESC modDesc)
 {
-	if (fbusGetNodeDescription(hNet[n], id, modDesc, sizeof(FIO_MODULE_DESC)) != FBUS_RES_OK) {
-		throw TError(nodePath().c_str(), _("FBUS GetNodeDescription net #%d, #id  failed."), n, id);
+	if (fbusGetNodeDescription(hNet[n], id, modDesc, sizeof(*modDesc)) != FBUS_RES_OK) {
+		throw TError(nodePath().c_str(), _("FBUS GetNodeDescription net #%d, #id%d  failed."), n, id);
 	}
 }
 
@@ -246,12 +246,17 @@ TParamContr *TMdContr::ParamAttach (const string &name, int type)
 	return new TMdPrm(name, &owner().tpPrmAt(type));
 }
 
+void TMdContr::enable_( )
+{
+	mod->FBUS_fbusOpen(mNet);
+	mod->FBUS_fbusRescan(mNet);
+}
+
 void TMdContr::start_ ( )
 {
 	//> Schedule process
 	mPer = TSYS::strSepParse(cron(), 1, ' ').empty() ? vmax(0, (int64_t )(1e9 * atof(cron().c_str()))) : 0;
-	mod->FBUS_fbusOpen(mNet);
-	mod->FBUS_fbusRescan(mNet);
+
 	//> Start the gathering data task
 	SYS->taskCreate(nodePath('.', true), mPrior, TMdContr::Task, this);
 }
