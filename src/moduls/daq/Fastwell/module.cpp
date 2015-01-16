@@ -409,7 +409,7 @@ void TMdPrm::vlGet( TVal &val )
     if(owner().redntUse()) return;
 
     if(val.name() == "err") {
-    	val.setS(TSYS::strMess("0: Normal: %s", mModDesc.typeName));
+    	val.setS(TSYS::strMess(_("0: Normal: %s"), mModDesc.typeName));
     }
 }
 
