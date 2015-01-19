@@ -335,7 +335,7 @@ void TMdContr::cntrCmdProc (XMLNode *opt)
 //* TMdPrm                                        *
 //*************************************************
 TMdPrm::TMdPrm (string name, TTipParam *tp_prm) :
-		TParamContr(name, tp_prm), p_el("w_attr"),mID(cfg("DEV_ID"))
+		TParamContr(name, tp_prm), p_el("w_attr"),mID(cfg("DEV_ID")),mState(StateUndef)
 {
 
 }
@@ -368,6 +368,11 @@ void TMdPrm::enable ( )
 	owner().prmEn(id(), true);
 	try{
 		owner().GetNodeDescription(mID,&mModDesc);
+		if (type().name == mModDesc.typeName){
+			mState = StateWork;
+		} else {
+			mState = StateWrongType;
+		}
 	} catch (TError err) {
 		mess_err(err.cat.c_str(), "%s", err.mess.c_str());
 		disable();
@@ -414,7 +419,15 @@ void TMdPrm::vlGet( TVal &val )
     if(owner().redntUse()) return;
 
     if(val.name() == "err") {
-    	val.setS(TSYS::strMess(_("0: Normal: %s"), mModDesc.typeName),0,true);
+    	switch (mState){
+    	case StateWork:
+    		val.setS(_("0: Normal"),0,true);
+    		break;
+    	case StateWrongType:
+    		val.setS(TSYS::strMess(_("3: Wrong type: %s"), mModDesc.typeName),0,true);
+    		break;
+    	}
+
     }
 }
 

@@ -79,6 +79,12 @@ private:
 	TElem p_el;			//Work atribute elements
 	FIO_MODULE_DESC mModDesc;
 	TCfg &mID;	// Schedule
+	enum mState {
+	    // Generic
+	    StateWork	= 0,
+		StateWrongType	= 1,
+		StateUndef	= 0xFF,
+	};
 };
 
 //*************************************************
