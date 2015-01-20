@@ -49,6 +49,12 @@ class TMdContr;
 class TMdPrm: public TParamContr
 {
 public:
+	enum State {
+	    // Generic
+	    StateWork	= 0,
+		StateWrongType	= 1,
+		StateUndef	= 0xFF,
+	};
 	//Methods
 	TMdPrm (string name, TTipParam *tp_prm);
 	~TMdPrm ( );
@@ -79,12 +85,8 @@ private:
 	TElem p_el;			//Work atribute elements
 	FIO_MODULE_DESC mModDesc;
 	TCfg &mID;	// Schedule
-	enum mState {
-	    // Generic
-	    StateWork	= 0,
-		StateWrongType	= 1,
-		StateUndef	= 0xFF,
-	};
+	uint32_t mState;
+
 };
 
 //*************************************************
