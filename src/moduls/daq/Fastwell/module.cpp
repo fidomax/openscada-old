@@ -175,6 +175,11 @@ void TTpContr::FBUS_fbusGetNodeDescription (int n, int id, PFIO_MODULE_DESC modD
 	}
 }
 
+int TTpContr::FBUS_fbusReadInputs (int n, int id, void *Buf, size_t offset, size_t size)
+{
+	return fbusReadInputs(hNet[n], id, Buf, offset, size);
+}
+
 void TTpContr::postEnable (int flag)
 {
 	TTipDAQ::postEnable(flag);
@@ -224,6 +229,11 @@ TMdContr::~TMdContr ( )
 void TMdContr::GetNodeDescription(int id, PFIO_MODULE_DESC modDesc)
 {
 	mod->FBUS_fbusGetNodeDescription(mNet,id,modDesc);
+}
+
+int TMdContr::ReadInputs(int id, void *buf, size_t offset, size_t size)
+{
+	return mod->FBUS_fbusReadInputs(mNet,id,buf,offset,size);
 }
 
 string TMdContr::getStatus ( )
@@ -299,7 +309,7 @@ void *TMdContr::Task (void *icntr)
 		cntr.callSt = true;
 		for (unsigned i_p = 0; i_p < cntr.p_hd.size() && !cntr.redntUse(); i_p++)
 			try {
-				//!!! Process parameter code
+			     cntr.p_hd[i_p].at().getVals();
 			} catch (TError err) {
 				mess_err(err.cat.c_str(), "%s", err.mess.c_str());
 			}
@@ -364,12 +374,34 @@ void TMdPrm::enable ( )
 		return;
 
 	TParamContr::enable();
+	//Delete DAQ parameter's attributes
+	for (unsigned i_f = 0; i_f < p_el.fldSize();) {
+		try {
+			p_el.fldDel(i_f);
+			continue;
+		} catch (TError err) {
+			mess_warning(err.cat.c_str(), err.mess.c_str());
+		}
+		i_f++;
+	}
 
 	owner().prmEn(id(), true);
 	try{
 		owner().GetNodeDescription(mID,&mModDesc);
 		if (type().name == mModDesc.typeName){
 			mState = StateWork;
+			switch (mModDesc.type){
+			case FIO_MODULE_DIM762:
+				for(unsigned i_p = 0; i_p < 8; i_p++){
+				    p_el.fldAdd(new TFld(TSYS::strMess("DI%d",i_p).c_str(),TSYS::strMess("DI%d",i_p).c_str(),
+					    TFld::Boolean,TFld::NoWrite|TVal::DirRead,"","","","",""));
+			    }
+				break;
+			case FIO_MODULE_UNKNOWN:
+				if (mModDesc.typeName == "AIM791")
+				break;
+			default : break;
+			}
 		} else {
 			mState = StateWrongType;
 		}
@@ -377,6 +409,7 @@ void TMdPrm::enable ( )
 		mess_err(err.cat.c_str(), "%s", err.mess.c_str());
 		disable();
 	}
+
 }
 
 void TMdPrm::disable ( )
@@ -429,6 +462,27 @@ void TMdPrm::vlGet( TVal &val )
     	}
 
     }
+}
+
+int TMdPrm::getVals( )
+{
+	uint8_t buf[256];
+	if (mState == StateWork) {
+		if (owner().ReadInputs(mID, buf, 0, mModDesc.inputsSize) == FBUS_RES_OK) {
+			switch (mModDesc.type) {
+			case FIO_MODULE_DIM762:
+				for(unsigned i_p = 0; i_p < 8; i_p++){
+					vlAt(TSYS::strMess("DI%d",i_p).c_str()).at().setB(((((DIM_INPUTS_COUNTERS *) buf)->inputStates)>>i_p) & 1,0,true);
+				}
+				break;
+			case FIO_MODULE_UNKNOWN:
+				if (mModDesc.typeName == "AIM791")
+					break;
+			default:
+				break;
+			}
+		}
+	}
 }
 
 void TMdPrm::cntrCmdProc (XMLNode *opt)
