@@ -2015,7 +2015,7 @@ void ShapeDiagram::makeSpectrumPicture( WdgView *w )
 	//>> Set grid pen
 	grdPen.setColor(shD->sclColor);
 	grdPen.setStyle(Qt::SolidLine);
-	grdPen.setWidth(vmax(1,TSYS::realRound(vmin(w->xScale(true),w->yScale(true)))));
+	grdPen.setWidth(vmax(1,rRnd(vmin(w->xScale(true),w->yScale(true)))));
 	// Set markers font and color
 	if(sclHor&FD_MARKS || sclVer&FD_MARKS) {
 	    mrkPen.setColor(shD->sclMarkColor);
@@ -2244,7 +2244,7 @@ void ShapeDiagram::makeSpectrumPicture( WdgView *w )
 	//  Set trend's pen
 	QPen trpen(cP.color());
 	trpen.setStyle(Qt::SolidLine);
-	trpen.setWidth(vmax(1,vmin(10,(int)TSYS::realRound(cP.width()*vmin(w->xScale(true),w->yScale(true))))));
+	trpen.setWidth(vmax(1,vmin(10,(int)rRnd(cP.width()*vmin(w->xScale(true),w->yScale(true))))));
 #if QT_VERSION < 0x050000
 	if(trpen.width() > 1) trpen.setCapStyle(Qt::RoundCap);
 #else
@@ -2345,7 +2345,7 @@ void ShapeDiagram::makeTrendsPicture( WdgView *w )
 	// Set grid pen
 	grdPen.setColor(shD->sclColor);
 	grdPen.setStyle(Qt::SolidLine);
-	grdPen.setWidth(vmax(1,(int)TSYS::realRound(vmin(w->xScale(true),w->yScale(true)))));
+	grdPen.setWidth(vmax(1,(int)rRnd(vmin(w->xScale(true),w->yScale(true)))));
 
 	// Set markers font and color
 	if(sclHor&FD_MARKS || sclVer&FD_MARKS) {
@@ -2671,7 +2671,7 @@ void ShapeDiagram::makeTrendsPicture( WdgView *w )
 	// Set trend's pen
 	QPen trpen(cP.color());
 	trpen.setStyle(Qt::SolidLine);
-	trpen.setWidth(vmax(1,vmin(10,(int)TSYS::realRound(cP.width()*vmin(w->xScale(true),w->yScale(true))))));
+	trpen.setWidth(vmax(1,vmin(10,(int)rRnd(cP.width()*vmin(w->xScale(true),w->yScale(true))))));
 #if QT_VERSION < 0x050000
 	if(cP.valTp() != 0 && trpen.width() > 1) trpen.setCapStyle(Qt::RoundCap);
 #else
@@ -3054,8 +3054,7 @@ void ShapeDiagram::TrendObj::loadTrendsData( bool full )
 		if(valEnd() && (lst_tm-valEnd())/vmax(wantPer,trcPer) > 2) vals.push_back(SHg(lst_tm-trcPer,EVAL_REAL));
 		else if((lst_tm-valEnd()) >= wantPer) vals.push_back(SHg(lst_tm,curVal));
 		else if((lst_tm == valEnd() && curVal != EVAL_REAL) || vals[vals.size()-1].val == EVAL_REAL) vals[vals.size()-1].val = curVal;
-		else if(curVal != EVAL_REAL)
-		{
+		else if(curVal != EVAL_REAL) {
 		    int s_k = lst_tm-wantPer*(lst_tm/wantPer), n_k = trcPer;
 		    vals[vals.size()-1].val = (vals[vals.size()-1].val*s_k+curVal*n_k)/(s_k+n_k);
 		}
@@ -3066,7 +3065,18 @@ void ShapeDiagram::TrendObj::loadTrendsData( bool full )
     }
     else	//Data direct into address field by searilised XML string or horizontal line
 	try {
-	    if(addr().compare(0,5,"data:") == 0) req.load(addr().substr(5));
+	    if(addr().compare(0,5,"data:") == 0) {
+		req.load(addr().substr(5));
+		bool inSec = s2i(req.attr("s"));
+		arh_beg = s2ll(req.attr("tm_grnd")) * (inSec?1000000ll:1ll);
+		if(!arh_beg) arh_beg = tTimeGrnd;
+		req.setAttr("tm_grnd", ll2s(arh_beg));
+		arh_end = s2ll(req.attr("tm")) * (inSec?1000000ll:1ll);
+		if(!arh_end) arh_end = tTime;
+		req.setAttr("tm", ll2s(arh_end));
+		arh_per = s2ll(req.attr("per")) * (inSec?1000000ll:1ll);
+		req.setAttr("per", ll2s(arh_per));
+	    }
 	    else if(addr().compare(0,5,"line:") == 0)
 		req.setAttr("vtp", i2s(TFld::Real))->
 		    setAttr("tm", ll2s(tTime))->
@@ -3123,7 +3133,7 @@ void ShapeDiagram::TrendObj::loadTrendsData( bool full )
 	if(view->cntrIfCmd(req,true)) return;
     }
 
-    //> Get data buffer parameters
+    //Get data buffer parameters
     bbeg = s2ll(req.attr("tm_grnd"));
     bend = s2ll(req.attr("tm"));
     bper = s2ll(req.attr("per"));
@@ -3148,8 +3158,9 @@ void ShapeDiagram::TrendObj::loadTrendsData( bool full )
 	prevVal = curVal;
     }
 
-    //> Append buffer to values deque
-    if(toEnd) {
+    //Append buffer to values deque
+    if(isDataDir) vals.assign(buf.begin(), buf.end());
+    else if(toEnd) {
 	vals.insert(vals.end()-endBlks, buf.begin(), buf.end());
 	while(vals.size() > bufLim) vals.pop_front();
 	endBlks += buf.size();
@@ -3159,7 +3170,7 @@ void ShapeDiagram::TrendObj::loadTrendsData( bool full )
 	while(vals.size() > bufLim) vals.pop_back();
     }
 
-    //> Check for archive jump
+    //Check for archive jump
     if(!isDataDir && shD->valArch.empty() && (bbeg-tTimeGrnd)/bper && bper < bbeg_prev) {
 	bbeg_prev = bper;
 	tTime = bbeg-bper;
