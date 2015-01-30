@@ -165,9 +165,9 @@ void TUIMod::postEnable( int flag )
 
 void TUIMod::postDisable( int flag )
 {
-    if(run_st)
-	try { SYS->taskDestroy(nodePath('.',true), &end_run); }
-	catch(TError err){ mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+    if(run_st) SYS->taskDestroy(nodePath('.',true), &end_run);
+    /*try { 
+    catch(TError err){ mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }*/
 }
 
 void TUIMod::load_( )
@@ -327,7 +327,7 @@ void *TUIMod::Task( void * )
 
     st_time = time(NULL);
     while(!mod->endRun()) {
-	SYS->archive().at().messGet( st_time, time(NULL), recs, "", TMess::Debug, BUF_ARCH_NM );
+	SYS->archive().at().messGet(st_time, time(NULL), recs, "", TMess::Debug, BUF_ARCH_NM);
 	QString mess;
 	for(int i_m = recs.size()-1; i_m >= 0 && i_m > ((int)recs.size()-10); i_m--)
 	    mess += QString("\n%1: %2").arg(recs[i_m].categ.c_str()).arg(recs[i_m].mess.c_str());
