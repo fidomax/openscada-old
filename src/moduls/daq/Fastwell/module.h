@@ -89,6 +89,10 @@ private:
 	TCfg &mID;	// Schedule
 	uint32_t mState;
 
+	uint32_t mNDI;
+	uint32_t mOffset;
+	uint32_t mSize;
+
 };
 
 //*************************************************
