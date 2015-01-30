@@ -1,3 +1,57 @@
+2015-01-28 Roman
+- FIX:UI.{Vision,WebVision}: For primitive "Diagram" expanded address variant "data:{XMLNodeData}" for allow pass "tm", "tm_grnd" and
+	possibility set in seconds by attribute 's'.
+    Assign loaded values but not the append to the values buffer for direct address variants "line:{value}" and "data:{XMLNodeData}" is fixed.
+
+
+2015-01-27 Roman
+- !!!!:FIX:SYS: For prevent race condition the functions preEnable(), postEnable(), preDisable() and postDisable() sets to lock free.
+    Disabled nodes allowed to list also as checking for present.
+    Flags MkDisable, Disable, MkEnable, Enable renamed to DoDisable, Disabled, DoEnable, Enabled.
+    Flag NodeRestore removed.
+- Transport.Sockets: Property MSS is added for control TCP-segment size for bad channels.
+- UI.Vision: ElFig: next stage for clean up; Some smarter control for control point 1 and 2 of Arc is added.
+
+
+2015-01-24 Roman
+- UI.WebVision: root user or users into group "root" allowed for multiple sessions open into any cases.
+
+
+2015-01-23 Roman
+- Transports,Transports::Sockets: TTransportIn::assTrs() expanded by argument "checkForCleanClosed" for allow checking to clean up and
+    used for force clean up into achiving to limits, possible for unstick from the limit.
+
+
+2015-01-22 Roman
+- FIX:DB: Radial image mnEls.rad_l_127 fixed for edge and make equal to mnEls.rad_r_127.
+- SYS.TCntrNode: Set for original message print at exception into chldDel() or mostly into heir's postDisable().
+- !:FIX:DAQ.JavaLikeCalc: Zero value divizer for operation '%' processing is fixed, for crash prevent.
+- UI.QTStarter: For main UI task destroy set timeout to 60 seconds and an execution generation allowed at the destroying timeout.
+- UI.Vision: ElFigure's source code next some cleaned.
+    Append remnant from the widget placing into parent container temporary removed from scaleRotate() and unScaleRotate()
+	for prevent flaws between inundations into some cases.
+	inundationItem() some cleaned.
+	createInundationPath() some prepared for the source next convolution.
+
+
+2015-01-21 Roman
+- !:SYS: POT files generated and left into the source tree for allow fast translation start to different languages.
+- FIX:Transport.Serial: The source code cleaned from doubles TSYS::strNoSpace() and some other.
+
+
+2015-01-15 Roman
+- DB: LibsDB.vcaBase.db: mnEls: All gradient's figures of mnemos expanded to 100 pixels, for exclude unstick from edges at the scaling.
+    mnEls.Compressor: Spare arc figure removed.
+- DB: ModelsDB.Boiler.St.db: Fixed for the graphics groups using for the title into attribute "name".
+- SYS: Main start script openscada_start some updated for multiple starts prevent only by check into "ps -C | grep", and without lock file with PID.
+    Short global function-link rRnd() (into namespace OSCADA) to TSYS::realRound() is added.
+- DAQ.BFN: Adapted to new node's resources locking scheme.
+- !:UI.{VCAEngine,Vision}: To primitive ElFigure attribute "mirror" is added for allow the primitive's shapes mirroring.
+    Into UI.Vision implemented only main funtions and some problems present now for arcs.
+- !!:UI.Vision: TSYS::realRound() everywhere replaced to short variant rRnd().
+    !!:FIX:ElFigure's source code significant cleaned for next step. Some bugs fixed. Starting implement for mirroring.
+
+
 2015-01-05 Roman
 - !!!!:SYS: Generic node resources locking separated to the childs (function) and the common data methods and the moved to mutex from RW-locks
 	for prevent some locks workaraund and dead locks at try relock Read after lock as Write or contrary from the complex node accessing.
