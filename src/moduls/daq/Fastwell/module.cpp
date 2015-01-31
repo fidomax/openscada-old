@@ -443,7 +443,7 @@ void TMdPrm::enable ( )
 			case FIO_MODULE_UNKNOWN:
 				if (mModDesc.typeName == "AIM791") {
 					nAI = 8;
-					owner().ReadConfig(mID);
+					/*owner().ReadConfig(mID);
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 					AIM7912_CONFIGURATION * pConfig = (AIM7912_CONFIGURATION*) mModConfig;
 					bool fConfig = false;
@@ -456,7 +456,7 @@ void TMdPrm::enable ( )
 					if (fConfig) {
 						owner().SetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 						owner().WriteConfig(mID);
-					}
+					}*/
 					switch (cfg("DEV_ID").getI()) {
 					case 0:
 						kAI = 5.125 / 65535;
