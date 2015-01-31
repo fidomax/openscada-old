@@ -89,9 +89,9 @@ private:
 	TCfg &mID;	// Schedule
 	uint32_t mState;
 
-	uint32_t mNDI;
-	uint32_t mOffset;
-	uint32_t mSize;
+	uint32_t nDI,nAI;
+	double kAI;
+	uint8_t mModConfig[64];
 
 };
 
@@ -128,6 +128,10 @@ public:
 
 	void GetNodeDescription(int, PFIO_MODULE_DESC );
 	int ReadInputs(int, void *, size_t, size_t);
+	int SetNodeSpecificParameters(int, void *, size_t, size_t);
+	int GetNodeSpecificParameters(int, void *, size_t, size_t);
+	int WriteConfig(int);
+	int ReadConfig(int);
 protected:
 	//Methods
 	void prmEn (const string &id, bool val);
@@ -176,6 +180,10 @@ public:
 	void FBUS_fbusRescan (int);
 	void FBUS_fbusGetNodeDescription (int, int, PFIO_MODULE_DESC);
 	int FBUS_fbusReadInputs (int, int, void *, size_t, size_t);
+	int FBUS_fbusWriteConfig (int, int);
+	int FBUS_fbusReadConfig (int, int);
+	int FBUS_fbusSetNodeSpecificParameters(int, int,void *, size_t, size_t);
+	int FBUS_fbusGetNodeSpecificParameters(int, int,void *, size_t, size_t);
 
 protected:
 	//Methods

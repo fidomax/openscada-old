@@ -180,6 +180,26 @@ int TTpContr::FBUS_fbusReadInputs (int n, int id, void *Buf, size_t offset, size
 	return fbusReadInputs(hNet[n], id, Buf, offset, size);
 }
 
+int TTpContr::FBUS_fbusSetNodeSpecificParameters (int n, int id, void *Buf, size_t offset, size_t size)
+{
+	return fbusSetNodeSpecificParameters(hNet[n], id, Buf, offset, size);
+}
+
+int TTpContr::FBUS_fbusGetNodeSpecificParameters (int n, int id, void *Buf, size_t offset, size_t size)
+{
+	return fbusGetNodeSpecificParameters(hNet[n], id, Buf, offset, size);
+}
+
+int TTpContr::FBUS_fbusWriteConfig (int n, int id)
+{
+	return fbusWriteConfig(hNet[n], id);
+}
+
+int TTpContr::FBUS_fbusReadConfig (int n, int id)
+{
+	return fbusReadConfig(hNet[n], id);
+}
+
 void TTpContr::postEnable (int flag)
 {
 	TTipDAQ::postEnable(flag);
@@ -214,10 +234,11 @@ TController *TTpContr::ContrAttach (const string &name, const string &daq_db)
 //* TMdContr                                      *
 //*************************************************
 TMdContr::TMdContr (string name_c, const string &daq_db, ::TElem *cfgelem) :
-		::TController(name_c, daq_db, cfgelem), prcSt(false), callSt(false), endrunReq(false), tmGath(0), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR")), mNet(cfg("NET_ID"))
+		::TController(name_c, daq_db, cfgelem), prcSt(false), callSt(false), endrunReq(false), tmGath(0), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR")), mNet(
+				cfg("NET_ID"))
 {
-	   cfg("PRM_BD_DIM762").setS("FBUSPrmDIM762_"+name_c);
-	   cfg("PRM_BD_AIM791").setS("FBUSPrmAIM791_"+name_c);
+	cfg("PRM_BD_DIM762").setS("FBUSPrmDIM762_" + name_c);
+	cfg("PRM_BD_AIM791").setS("FBUSPrmAIM791_" + name_c);
 }
 
 TMdContr::~TMdContr ( )
@@ -226,14 +247,34 @@ TMdContr::~TMdContr ( )
 		stop();
 }
 
-void TMdContr::GetNodeDescription(int id, PFIO_MODULE_DESC modDesc)
+void TMdContr::GetNodeDescription (int id, PFIO_MODULE_DESC modDesc)
 {
-	mod->FBUS_fbusGetNodeDescription(mNet,id,modDesc);
+	mod->FBUS_fbusGetNodeDescription(mNet, id, modDesc);
 }
 
-int TMdContr::ReadInputs(int id, void *buf, size_t offset, size_t size)
+int TMdContr::ReadInputs (int id, void *buf, size_t offset, size_t size)
 {
-	return mod->FBUS_fbusReadInputs(mNet,id,buf,offset,size);
+	return mod->FBUS_fbusReadInputs(mNet, id, buf, offset, size);
+}
+
+int TMdContr::SetNodeSpecificParameters (int id, void *buf, size_t offset, size_t size)
+{
+	return mod->FBUS_fbusSetNodeSpecificParameters(mNet, id, buf, offset, size);
+}
+
+int TMdContr::GetNodeSpecificParameters (int id, void *buf, size_t offset, size_t size)
+{
+	return mod->FBUS_fbusGetNodeSpecificParameters(mNet, id, buf, offset, size);
+}
+
+int TMdContr::WriteConfig (int id)
+{
+	return mod->FBUS_fbusWriteConfig(mNet, id);
+}
+
+int TMdContr::ReadConfig (int id)
+{
+	return mod->FBUS_fbusReadConfig(mNet, id);
 }
 
 string TMdContr::getStatus ( )
@@ -256,7 +297,7 @@ TParamContr *TMdContr::ParamAttach (const string &name, int type)
 	return new TMdPrm(name, &owner().tpPrmAt(type));
 }
 
-void TMdContr::enable_( )
+void TMdContr::enable_ ( )
 {
 	mod->FBUS_fbusOpen(mNet);
 	mod->FBUS_fbusRescan(mNet);
@@ -309,7 +350,7 @@ void *TMdContr::Task (void *icntr)
 		cntr.callSt = true;
 		for (unsigned i_p = 0; i_p < cntr.p_hd.size() && !cntr.redntUse(); i_p++)
 			try {
-			     cntr.p_hd[i_p].at().getVals();
+				cntr.p_hd[i_p].at().getVals();
 			} catch (TError err) {
 				mess_err(err.cat.c_str(), "%s", err.mess.c_str());
 			}
@@ -345,7 +386,7 @@ void TMdContr::cntrCmdProc (XMLNode *opt)
 //* TMdPrm                                        *
 //*************************************************
 TMdPrm::TMdPrm (string name, TTipParam *tp_prm) :
-		TParamContr(name, tp_prm), p_el("w_attr"),mID(cfg("DEV_ID")),mState(StateUndef)
+		TParamContr(name, tp_prm), p_el("w_attr"), mID(cfg("DEV_ID")), mState(StateUndef)
 {
 
 }
@@ -386,21 +427,54 @@ void TMdPrm::enable ( )
 	}
 
 	owner().prmEn(id(), true);
-	try{
-		owner().GetNodeDescription(mID,&mModDesc);
-		if (type().name == mModDesc.typeName){
+	try {
+		owner().GetNodeDescription(mID, &mModDesc);
+		if (type().name == mModDesc.typeName) {
 			mState = StateWork;
-			switch (mModDesc.type){
+			switch (mModDesc.type) {
 			case FIO_MODULE_DIM762:
-				for(unsigned i_p = 0; i_p < 8; i_p++){
-				    p_el.fldAdd(new TFld(TSYS::strMess("DI%d",i_p).c_str(),TSYS::strMess("DI%d",i_p).c_str(),
-					    TFld::Boolean,TFld::NoWrite|TVal::DirRead,"","","","",""));
-			    }
+				nDI = 8;
+				for (unsigned i_p = 0; i_p < nDI; i_p++) {
+					p_el.fldAdd(
+							new TFld(TSYS::strMess("DI%d", i_p).c_str(), TSYS::strMess("DI%d", i_p).c_str(), TFld::Boolean, TFld::NoWrite | TVal::DirRead, "",
+									"", "", "", ""));
+				}
 				break;
 			case FIO_MODULE_UNKNOWN:
-				if (mModDesc.typeName == "AIM791")
+				if (mModDesc.typeName == "AIM791") {
+					nAI = 8;
+					owner().ReadConfig(mID);
+					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
+					AIM7912_CONFIGURATION * pConfig = (AIM7912_CONFIGURATION*) mModConfig;
+					bool fConfig = false;
+					for (unsigned i_p = 0; i_p < nAI; i_p++) {
+						if (pConfig->channelRanges[i_p] != cfg("DEV_ID").getI()) {
+							fConfig = true;
+							pConfig->channelRanges[i_p] = cfg("DEV_ID").getI();
+						}
+					}
+					if (fConfig) {
+						owner().SetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
+						owner().WriteConfig(mID);
+					}
+					switch (cfg("DEV_ID").getI()) {
+					case 0:
+						kAI = 5.125 / 65535;
+						break;
+					case 1:
+					case 2:
+						kAI = 20.5 / 65535;
+						break;
+					}
+					for (unsigned i_p = 0; i_p < nAI; i_p++) {
+						p_el.fldAdd(
+								new TFld(TSYS::strMess("AI%d", i_p).c_str(), TSYS::strMess("AI%d", i_p).c_str(), TFld::Double, TFld::NoWrite | TVal::DirRead,
+										"", "", "", "", ""));
+					}
+				}
 				break;
-			default : break;
+			default:
+				break;
 			}
 		} else {
 			mState = StateWrongType;
@@ -438,46 +512,53 @@ void TMdPrm::save_ ( )
 	TParamContr::save_();
 }
 
-void TMdPrm::vlGet( TVal &val )
+void TMdPrm::vlGet (TVal &val)
 {
-    if(!enableStat() || !owner().startStat()) {
-	if(val.name() == "err") {
-	    if(!enableStat())			val.setS(_("1:Parameter is disabled."),0,true);
-	    else if(!owner().startStat())	val.setS(_("2:Acquisition is stopped."),0,true);
+	if (!enableStat() || !owner().startStat()) {
+		if (val.name() == "err") {
+			if (!enableStat())
+				val.setS(_("1:Parameter is disabled."), 0, true);
+			else if (!owner().startStat())
+				val.setS(_("2:Acquisition is stopped."), 0, true);
+		} else
+			val.setS(EVAL_STR, 0, true);
+		return;
 	}
-	else val.setS(EVAL_STR,0,true);
-	return;
-    }
 
-    if(owner().redntUse()) return;
+	if (owner().redntUse())
+		return;
 
-    if(val.name() == "err") {
-    	switch (mState){
-    	case StateWork:
-    		val.setS(_("0: Normal"),0,true);
-    		break;
-    	case StateWrongType:
-    		val.setS(TSYS::strMess(_("3: Wrong type: %s"), mModDesc.typeName),0,true);
-    		break;
-    	}
+	if (val.name() == "err") {
+		switch (mState) {
+		case StateWork:
+			val.setS(_("0: Normal"), 0, true);
+			break;
+		case StateWrongType:
+			val.setS(TSYS::strMess(_("3: Wrong type: %s"), mModDesc.typeName), 0, true);
+			break;
+		}
 
-    }
+	}
 }
 
-int TMdPrm::getVals( )
+int TMdPrm::getVals ( )
 {
 	uint8_t buf[256];
 	if (mState == StateWork) {
 		if (owner().ReadInputs(mID, buf, 0, mModDesc.inputsSize) == FBUS_RES_OK) {
 			switch (mModDesc.type) {
 			case FIO_MODULE_DIM762:
-				for(unsigned i_p = 0; i_p < 8; i_p++){
-					vlAt(TSYS::strMess("DI%d",i_p).c_str()).at().setB(((((DIM_INPUTS_COUNTERS *) buf)->inputStates)>>i_p) & 1,0,true);
+				for (unsigned i_p = 0; i_p < nDI; i_p++) {
+					vlAt(TSYS::strMess("DI%d", i_p).c_str()).at().setB(((((DIM_INPUTS_COUNTERS *) buf)->inputStates) >> i_p) & 1, 0, true);
 				}
 				break;
 			case FIO_MODULE_UNKNOWN:
-				if (mModDesc.typeName == "AIM791")
-					break;
+				if (mModDesc.typeName == "AIM791") {
+					for (unsigned i_p = 0; i_p < nAI; i_p++) {
+						vlAt(TSYS::strMess("AI%d", i_p).c_str()).at().setR(((AIM7912_INPUTS *) buf)->values[i_p] * kAI, 0, true);
+					}
+				}
+				break;
 			default:
 				break;
 			}
