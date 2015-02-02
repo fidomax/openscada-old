@@ -443,7 +443,7 @@ void TMdPrm::enable ( )
 				break;
 			case FIO_MODULE_UNKNOWN:
 
-				if (typeName == "AIM791") {
+				//if (typeName == "AIM791") {
 					nAI = 8;
 					/*owner().ReadConfig(mID);
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
@@ -473,7 +473,7 @@ void TMdPrm::enable ( )
 								new TFld(TSYS::strMess("AI%d", i_p).c_str(), TSYS::strMess("AI%d", i_p).c_str(), TFld::Double, TFld::NoWrite | TVal::DirRead,
 										"", "", "", "", ""));
 					}
-				}
+				//}
 				break;
 			default:
 				break;
@@ -555,11 +555,11 @@ int TMdPrm::getVals ( )
 				}
 				break;
 			case FIO_MODULE_UNKNOWN:
-				if (mModDesc.typeName == "AIM791") {
+//				if (mModDesc.typeName == "AIM791") {
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
 						vlAt(TSYS::strMess("AI%d", i_p).c_str()).at().setR(((AIM7912_INPUTS *) buf)->values[i_p] * kAI, 0, true);
 					}
-				}
+//				}
 				break;
 			default:
 				break;
