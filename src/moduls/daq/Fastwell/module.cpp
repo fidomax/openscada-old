@@ -427,6 +427,7 @@ void TMdPrm::enable ( )
 	}
 
 	owner().prmEn(id(), true);
+	string typeName = mModDesc.typeName;
 	try {
 		owner().GetNodeDescription(mID, &mModDesc);
 		if (type().name == mModDesc.typeName) {
@@ -441,7 +442,7 @@ void TMdPrm::enable ( )
 				}
 				break;
 			case FIO_MODULE_UNKNOWN:
-				string typeName = mModDesc.typeName;
+
 				if (typeName == "AIM791") {
 					nAI = 8;
 					/*owner().ReadConfig(mID);
