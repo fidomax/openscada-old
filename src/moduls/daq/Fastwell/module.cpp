@@ -441,7 +441,8 @@ void TMdPrm::enable ( )
 				}
 				break;
 			case FIO_MODULE_UNKNOWN:
-				if (mModDesc.typeName == "AIM791") {
+				string typeName = mModDesc.typeName;
+				if (typeName == "AIM791") {
 					nAI = 8;
 					/*owner().ReadConfig(mID);
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
