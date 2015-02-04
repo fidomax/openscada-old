@@ -412,6 +412,7 @@ TMdContr &TMdPrm::owner ( )
 
 void TMdPrm::enable ( )
 {
+	mess_info(nodePath().c_str(),_("enable"));
 	if (enableStat())
 		return;
 
@@ -450,8 +451,10 @@ void TMdPrm::enable ( )
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 					AIM7912_CONFIGURATION * pConfig = (AIM7912_CONFIGURATION*) mModConfig;
 					bool fConfig = false;
+				    mess_info(nodePath().c_str(),_("AIM792 enable"));
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
 						if (pConfig->channelRanges[i_p] != cfg("AI_SCANRATE").getI()) {
+						    mess_info(nodePath().c_str(),_("AIM792 cfg wrong %d, %d"),pConfig->channelRanges[i_p],cfg("AI_SCANRATE").getI());
 							fConfig = true;
 							pConfig->channelRanges[i_p] = cfg("AI_SCANRATE").getI();
 						}
@@ -462,10 +465,12 @@ void TMdPrm::enable ( )
 					}
 					switch (cfg("AI_SCANRATE").getI()) {
 					case 0:
+						mess_info(nodePath().c_str(),_("AIM792 5mA"));
 						kAI = 5.125 / 65535;
 						break;
 					case 1:
 					case 2:
+						mess_info(nodePath().c_str(),_("AIM792 20mA"));
 						kAI = 20.5 / 65535;
 						break;
 					}
