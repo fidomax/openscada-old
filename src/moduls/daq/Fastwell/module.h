@@ -88,6 +88,7 @@ private:
 	FIO_MODULE_DESC mModDesc;
 	TCfg &mID;	// Schedule
 	uint32_t mState;
+	string mTypeName;
 
 	uint32_t nDI,nAI;
 	double kAI;
