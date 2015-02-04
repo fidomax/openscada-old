@@ -450,9 +450,9 @@ void TMdPrm::enable ( )
 					AIM7912_CONFIGURATION * pConfig = (AIM7912_CONFIGURATION*) mModConfig;
 					bool fConfig = false;
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
-						if (pConfig->channelRanges[i_p] != cfg("DEV_ID").getI()) {
+						if (pConfig->channelRanges[i_p] != cfg("AI_SCANRATE").getI()) {
 							fConfig = true;
-							pConfig->channelRanges[i_p] = cfg("DEV_ID").getI();
+							pConfig->channelRanges[i_p] = cfg("AI_SCANRATE").getI();
 						}
 					}
 					if (fConfig) {
