@@ -192,8 +192,7 @@ int TTpContr::FBUS_fbusGetNodeSpecificParameters (int n, int id, void *Buf, size
 
 int TTpContr::FBUS_fbusWriteConfig (int n, int id)
 {
- fbusWriteConfig(hNet[n], id);
-	return fbusSaveConfig(hNet[n], id);
+	return fbusWriteConfig(hNet[n], id);
 }
 
 int TTpContr::FBUS_fbusReadConfig (int n, int id)
@@ -412,7 +411,7 @@ TMdContr &TMdPrm::owner ( )
 
 void TMdPrm::enable ( )
 {
-	mess_info(nodePath().c_str(),_("enable"));
+	mess_info(nodePath().c_str(), _("enable"));
 	if (enableStat())
 		return;
 
@@ -429,9 +428,10 @@ void TMdPrm::enable ( )
 	}
 
 	owner().prmEn(id(), true);
-	mTypeName = mModDesc.typeName;
 	try {
 		owner().GetNodeDescription(mID, &mModDesc);
+		mTypeName = mModDesc.typeName;
+		mess_info(nodePath().c_str(), _("typename %s"),mModDesc.typeName);
 		if (type().name == mModDesc.typeName) {
 			mState = StateWork;
 			switch (mModDesc.type) {
@@ -451,10 +451,10 @@ void TMdPrm::enable ( )
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 					AIM7912_CONFIGURATION * pConfig = (AIM7912_CONFIGURATION*) mModConfig;
 					bool fConfig = false;
-				    mess_info(nodePath().c_str(),_("AIM792 enable"));
+					mess_info(nodePath().c_str(), _("AIM792 enable"));
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
 						if (pConfig->channelRanges[i_p] != cfg("AI_RANGE").getI()) {
-						    mess_info(nodePath().c_str(),_("AIM792 cfg wrong %d, %d"),pConfig->channelRanges[i_p],cfg("AI_RANGE").getI());
+							mess_info(nodePath().c_str(), _("AIM792 cfg wrong %d, %d"), pConfig->channelRanges[i_p], cfg("AI_RANGE").getI());
 							fConfig = true;
 							pConfig->channelRanges[i_p] = cfg("AI_RANGE").getI();
 						}
@@ -465,12 +465,12 @@ void TMdPrm::enable ( )
 					}
 					switch (cfg("AI_RANGE").getI()) {
 					case 0:
-						mess_info(nodePath().c_str(),_("AIM792 5mA"));
+						mess_info(nodePath().c_str(), _("AIM792 5mA"));
 						kAI = 5.125 / 65535;
 						break;
 					case 1:
 					case 2:
-						mess_info(nodePath().c_str(),_("AIM792 20mA"));
+						mess_info(nodePath().c_str(), _("AIM792 20mA"));
 						kAI = 20.5 / 65535;
 						break;
 					}
