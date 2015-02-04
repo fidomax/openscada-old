@@ -453,17 +453,17 @@ void TMdPrm::enable ( )
 					bool fConfig = false;
 				    mess_info(nodePath().c_str(),_("AIM792 enable"));
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
-						if (pConfig->channelRanges[i_p] != cfg("AI_SCANRATE").getI()) {
-						    mess_info(nodePath().c_str(),_("AIM792 cfg wrong %d, %d"),pConfig->channelRanges[i_p],cfg("AI_SCANRATE").getI());
+						if (pConfig->channelRanges[i_p] != cfg("AI_RANGE").getI()) {
+						    mess_info(nodePath().c_str(),_("AIM792 cfg wrong %d, %d"),pConfig->channelRanges[i_p],cfg("AI_RANGE").getI());
 							fConfig = true;
-							pConfig->channelRanges[i_p] = cfg("AI_SCANRATE").getI();
+							pConfig->channelRanges[i_p] = cfg("AI_RANGE").getI();
 						}
 					}
 					if (fConfig) {
 						owner().SetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 						owner().WriteConfig(mID);
 					}
-					switch (cfg("AI_SCANRATE").getI()) {
+					switch (cfg("AI_RANGE").getI()) {
 					case 0:
 						mess_info(nodePath().c_str(),_("AIM792 5mA"));
 						kAI = 5.125 / 65535;
