@@ -192,7 +192,8 @@ int TTpContr::FBUS_fbusGetNodeSpecificParameters (int n, int id, void *Buf, size
 
 int TTpContr::FBUS_fbusWriteConfig (int n, int id)
 {
-	return fbusWriteConfig(hNet[n], id);
+ fbusWriteConfig(hNet[n], id);
+	return fbusSaveConfig(hNet[n], id);
 }
 
 int TTpContr::FBUS_fbusReadConfig (int n, int id)
@@ -459,7 +460,7 @@ void TMdPrm::enable ( )
 						owner().SetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 						owner().WriteConfig(mID);
 					}
-					switch (cfg("DEV_ID").getI()) {
+					switch (cfg("AI_SCANRATE").getI()) {
 					case 0:
 						kAI = 5.125 / 65535;
 						break;
