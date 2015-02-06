@@ -226,7 +226,7 @@ void TTpContr::postEnable (int flag)
 	tpPrmAt(t_prm).fldAdd(new TFld("DI_DEBOUNCE", _("Debounce"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1;2", _("No;200us;3ms")));
 
 	//> Parameter DIM718 bd structure
-	int t_prm = tpParmAdd("DIM718", "PRM_BD_DIM718", _("DIM718"), true);
+	t_prm = tpParmAdd("DIM718", "PRM_BD_DIM718", _("DIM718"), true);
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
 
 	//> Parameter AIM791 bd structure
