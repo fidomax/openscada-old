@@ -456,7 +456,8 @@ void TMdPrm::enable ( )
 		}
 		i_f++;
 	}
-
+	AIM72X_2_CONFIGURATION * pConfig72X_2;
+	AIM7912_CONFIGURATION * pConfig7912;
 	owner().prmEn(id(), true);
 	try {
 		owner().GetNodeDescription(mID, &mModDesc);
@@ -486,7 +487,7 @@ void TMdPrm::enable ( )
 				nAI = 2;
 				owner().ReadConfig(mID);
 				owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
-				AIM72X_2_CONFIGURATION * pConfig72X_2 = (AIM72X_2_CONFIGURATION*) mModConfig;
+				pConfig72X_2 = (AIM72X_2_CONFIGURATION*) mModConfig;
 				kAI = 40 / 8388607;
 				for (unsigned i_p = 0; i_p < nAI; i_p++) {
 					p_el.fldAdd(
@@ -500,7 +501,7 @@ void TMdPrm::enable ( )
 					nAI = 8;
 					owner().ReadConfig(mID);
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
-					AIM7912_CONFIGURATION * pConfig7912 = (AIM7912_CONFIGURATION*) mModConfig;
+					pConfig7912 = (AIM7912_CONFIGURATION*) mModConfig;
 					bool fConfig = false;
 					mess_info(nodePath().c_str(), _("AIM792 enable"));
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
