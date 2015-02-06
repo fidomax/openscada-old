@@ -214,8 +214,10 @@ void TTpContr::postEnable (int flag)
 	TTipDAQ::postEnable(flag);
 
 	//> Controler's bd structure
-	fldAdd(new TFld("PRM_BD_DIM762", _("Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-	fldAdd(new TFld("PRM_BD_AIM791", _("Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+	fldAdd(new TFld("PRM_BD_DIM762", _("DIM762 Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+	fldAdd(new TFld("PRM_BD_DIM718", _("DIM718 Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+	fldAdd(new TFld("PRM_BD_AIM791", _("AIM791 Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+	fldAdd(new TFld("PRM_BD_AIM726", _("AIM726 Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
 	fldAdd(new TFld("SCHEDULE", _("Acquisition schedule"), TFld::String, TFld::NoFlag, "100", "1"));
 	fldAdd(new TFld("PRIOR", _("Gather task priority"), TFld::Integer, TFld::NoFlag, "2", "0", "-1;99"));
 	fldAdd(new TFld("NET_ID", _("Network number"), TFld::Integer, TFld::NoFlag, "0", "0", "0;63"));
