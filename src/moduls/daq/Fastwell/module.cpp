@@ -486,7 +486,7 @@ void TMdPrm::enable ( )
 				nAI = 2;
 				owner().ReadConfig(mID);
 				owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
-				AIM72X_2_CONFIGURATION * pConfig = (AIM72X_2_CONFIGURATION*) mModConfig;
+				AIM72X_2_CONFIGURATION * pConfig72X_2 = (AIM72X_2_CONFIGURATION*) mModConfig;
 				kAI = 40 / 8388607;
 				for (unsigned i_p = 0; i_p < nAI; i_p++) {
 					p_el.fldAdd(
@@ -500,14 +500,14 @@ void TMdPrm::enable ( )
 					nAI = 8;
 					owner().ReadConfig(mID);
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
-					AIM7912_CONFIGURATION * pConfig = (AIM7912_CONFIGURATION*) mModConfig;
+					AIM7912_CONFIGURATION * pConfig7912 = (AIM7912_CONFIGURATION*) mModConfig;
 					bool fConfig = false;
 					mess_info(nodePath().c_str(), _("AIM792 enable"));
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
-						if (pConfig->channelRanges[i_p] != cfg("AI_RANGE").getI()) {
-							mess_info(nodePath().c_str(), _("AIM792 cfg wrong %d, %d"), pConfig->channelRanges[i_p], cfg("AI_RANGE").getI());
+						if (pConfig7912->channelRanges[i_p] != cfg("AI_RANGE").getI()) {
+							mess_info(nodePath().c_str(), _("AIM792 cfg wrong %d, %d"), pConfig7912->channelRanges[i_p], cfg("AI_RANGE").getI());
 							fConfig = true;
-							pConfig->channelRanges[i_p] = cfg("AI_RANGE").getI();
+							pConfig7912->channelRanges[i_p] = cfg("AI_RANGE").getI();
 						}
 					}
 
