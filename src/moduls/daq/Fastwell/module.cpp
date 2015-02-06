@@ -251,6 +251,7 @@ TMdContr::TMdContr (string name_c, const string &daq_db, ::TElem *cfgelem) :
 				cfg("NET_ID"))
 {
 	cfg("PRM_BD_DIM762").setS("FBUSPrmDIM762_" + name_c);
+	cfg("PRM_BD_AIM718").setS("FBUSPrmAIM718_" + name_c);
 	cfg("PRM_BD_AIM791").setS("FBUSPrmAIM791_" + name_c);
 }
 
