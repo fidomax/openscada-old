@@ -236,6 +236,11 @@ void TTpContr::postEnable (int flag)
 	tpPrmAt(t_prm).fldAdd(new TFld("AI_SCANRATE", _("Scan Rate"), TFld::Integer, TCfg::NoVal, "3", "1", "1;250"));
 	tpPrmAt(t_prm).fldAdd(new TFld("AI_FILTER", _("Filter depth"), TFld::Integer, TCfg::NoVal, "3", "0", "0;255"));
 
+	//> Parameter AIM726 bd structure
+	t_prm = tpParmAdd("AIM726", "PRM_BD_AIM726", _("AIM726"));
+	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
+	tpPrmAt(t_prm).fldAdd(new TFld("AI_FILTER", _("Filter depth"), TFld::Integer, TCfg::NoVal, "3", "0", "0;255"));
+
 }
 
 TController *TTpContr::ContrAttach (const string &name, const string &daq_db)
@@ -253,6 +258,7 @@ TMdContr::TMdContr (string name_c, const string &daq_db, ::TElem *cfgelem) :
 	cfg("PRM_BD_DIM762").setS("FBUSPrmDIM762_" + name_c);
 	cfg("PRM_BD_AIM718").setS("FBUSPrmAIM718_" + name_c);
 	cfg("PRM_BD_AIM791").setS("FBUSPrmAIM791_" + name_c);
+	cfg("PRM_BD_AIM726").setS("FBUSPrmAIM726_" + name_c);
 }
 
 TMdContr::~TMdContr ( )
@@ -476,6 +482,18 @@ void TMdPrm::enable ( )
 									"", "", "", ""));
 				}
 				break;
+			case FIO_MODULE_AIM726:
+				nAI = 2;
+				owner().ReadConfig(mID);
+				owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
+				AIM72X_2_CONFIGURATION * pConfig = (AIM72X_2_CONFIGURATION*) mModConfig;
+				kAI = 40 / 8388607;
+				for (unsigned i_p = 0; i_p < nAI; i_p++) {
+					p_el.fldAdd(
+							new TFld(TSYS::strMess("AI%d", i_p).c_str(), TSYS::strMess("AI%d", i_p).c_str(), TFld::Double, TFld::NoWrite | TVal::DirRead,
+									"", "", "", "", ""));
+				}
+				break;
 			case FIO_MODULE_UNKNOWN:
 
 				if (mTypeName == "AIM791") {
@@ -516,6 +534,8 @@ void TMdPrm::enable ( )
 					}
 				}
 				break;
+
+
 			default:
 				break;
 			}
@@ -593,6 +613,11 @@ int TMdPrm::getVals ( )
 			case FIO_MODULE_DIM762:
 				for (unsigned i_p = 0; i_p < nDI; i_p++) {
 					vlAt(TSYS::strMess("DI%d", i_p).c_str()).at().setB(((((DIM_INPUTS_COUNTERS *) buf)->inputStates) >> i_p) & 1, 0, true);
+				}
+				break;
+			case FIO_MODULE_AIM726:
+				for (unsigned i_p = 0; i_p < nAI; i_p++) {
+					vlAt(TSYS::strMess("AI%d", i_p).c_str()).at().setR(((AIM7912_INPUTS *) buf)->values[i_p] * kAI, 0, true);
 				}
 				break;
 			case FIO_MODULE_UNKNOWN:
