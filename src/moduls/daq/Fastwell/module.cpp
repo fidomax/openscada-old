@@ -200,6 +200,15 @@ int TTpContr::FBUS_fbusReadConfig (int n, int id)
 	return fbusReadConfig(hNet[n], id);
 }
 
+int TTpContr::FBUS_fbusSaveConfig (int n, int id)
+{
+	return fbusSaveConfig(hNet[n], id);
+}
+
+int TTpContr::FBUS_fbusWriteOutputs (int n, int id, void *Buf, size_t offset, size_t size)
+{
+	return fbusWriteOutputs(hNet[n], id, Buf, offset, size);
+}
 void TTpContr::postEnable (int flag)
 {
 	TTipDAQ::postEnable(flag);
@@ -215,6 +224,10 @@ void TTpContr::postEnable (int flag)
 	int t_prm = tpParmAdd("DIM762", "PRM_BD_DIM762", _("DIM762"), true);
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
 	tpPrmAt(t_prm).fldAdd(new TFld("DI_DEBOUNCE", _("Debounce"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1;2", _("No;200us;3ms")));
+
+	//> Parameter DIM718 bd structure
+	int t_prm = tpParmAdd("DIM718", "PRM_BD_DIM718", _("DIM718"), true);
+	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
 
 	//> Parameter AIM791 bd structure
 	t_prm = tpParmAdd("AIM791", "PRM_BD_AIM791", _("AIM791"));
@@ -257,6 +270,11 @@ int TMdContr::ReadInputs (int id, void *buf, size_t offset, size_t size)
 	return mod->FBUS_fbusReadInputs(mNet, id, buf, offset, size);
 }
 
+int TMdContr::WriteOutputs (int id, void *buf, size_t offset, size_t size)
+{
+	return mod->FBUS_fbusWriteOutputs(mNet, id, buf, offset, size);
+}
+
 int TMdContr::SetNodeSpecificParameters (int id, void *buf, size_t offset, size_t size)
 {
 	return mod->FBUS_fbusSetNodeSpecificParameters(mNet, id, buf, offset, size);
@@ -275,6 +293,11 @@ int TMdContr::WriteConfig (int id)
 int TMdContr::ReadConfig (int id)
 {
 	return mod->FBUS_fbusReadConfig(mNet, id);
+}
+
+int TMdContr::SaveConfig (int id)
+{
+	return mod->FBUS_fbusSaveConfig(mNet, id);
 }
 
 string TMdContr::getStatus ( )
@@ -431,7 +454,7 @@ void TMdPrm::enable ( )
 	try {
 		owner().GetNodeDescription(mID, &mModDesc);
 		mTypeName = mModDesc.typeName;
-		mess_info(nodePath().c_str(), _("typename %s"),mModDesc.typeName);
+		mess_info(nodePath().c_str(), _("typename %s"), mModDesc.typeName);
 		if (type().name == mModDesc.typeName) {
 			mState = StateWork;
 			switch (mModDesc.type) {
@@ -440,6 +463,15 @@ void TMdPrm::enable ( )
 				for (unsigned i_p = 0; i_p < nDI; i_p++) {
 					p_el.fldAdd(
 							new TFld(TSYS::strMess("DI%d", i_p).c_str(), TSYS::strMess("DI%d", i_p).c_str(), TFld::Boolean, TFld::NoWrite | TVal::DirRead, "",
+									"", "", "", ""));
+				}
+				break;
+			case FIO_MODULE_DIM718:
+				nDO = 4;
+				mDOState = 0;
+				for (unsigned i_p = 0; i_p < nDO; i_p++) {
+					p_el.fldAdd(
+							new TFld(TSYS::strMess("DO%d", i_p).c_str(), TSYS::strMess("DO%d", i_p).c_str(), TFld::Boolean, TVal::DirRead | TVal::DirWrite, "",
 									"", "", "", ""));
 				}
 				break;
@@ -459,9 +491,11 @@ void TMdPrm::enable ( )
 							pConfig->channelRanges[i_p] = cfg("AI_RANGE").getI();
 						}
 					}
+
 					if (fConfig) {
 						owner().SetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 						owner().WriteConfig(mID);
+						owner().SaveConfig(mID);
 					}
 					switch (cfg("AI_RANGE").getI()) {
 					case 0:
@@ -571,6 +605,39 @@ int TMdPrm::getVals ( )
 				break;
 			}
 		}
+	}
+}
+
+void TMdPrm::vlSet (TVal &vo, const TVariant &vl, const TVariant &pvl)
+{
+	if (!enableStat() || !owner().startStat())
+		vo.setS(EVAL_STR, 0, true);
+
+	if (vl.isEVal() || vl == pvl)
+		return;
+
+	//Send to active reserve station
+	if (owner().redntUse()) {
+		XMLNode req("set");
+		req.setAttr("path", nodePath(0, true) + "/%2fserv%2fattr")->childAdd("el")->setAttr("id", vo.name())->setText(vl.getS());
+		SYS->daq().at().rdStRequest(owner().workId(), req);
+		return;
+	}
+	switch (mModDesc.type) {
+	case FIO_MODULE_DIM718:
+		if (vo.name().compare(0, 2, "DO") == 0) {
+			if (vl.getB()) {
+				mDOState |= 1 << s2i(vo.name().substr(2, vo.name().size() - 2));
+			} else {
+				mDOState &= ~(1 << s2i(vo.name().substr(2, vo.name().size() - 2)));
+			}
+			owner().WriteOutputs(mID, &mDOState, 0, 1);
+		}
+
+		break;
+	default:
+		break;
+
 	}
 }
 

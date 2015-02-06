@@ -80,6 +80,7 @@ private:
 	//Methods
 	void postEnable (int flag);
 	void vlGet (TVal &vo);
+	void vlSet (TVal &vo, const TVariant &vl, const TVariant &pvl);
 	void cntrCmdProc (XMLNode *opt);
 	void vlArchMake (TVal &val);
 
@@ -90,8 +91,9 @@ private:
 	uint32_t mState;
 	string mTypeName;
 
-	uint32_t nDI,nAI;
+	uint32_t nDI,nAI,nDO;
 	double kAI;
+	uint8_t mDOState;
 	uint8_t mModConfig[64];
 
 };
@@ -129,10 +131,12 @@ public:
 
 	void GetNodeDescription(int, PFIO_MODULE_DESC );
 	int ReadInputs(int, void *, size_t, size_t);
+	int WriteOutputs(int, void *, size_t, size_t);
 	int SetNodeSpecificParameters(int, void *, size_t, size_t);
 	int GetNodeSpecificParameters(int, void *, size_t, size_t);
 	int WriteConfig(int);
 	int ReadConfig(int);
+	int SaveConfig(int);
 protected:
 	//Methods
 	void prmEn (const string &id, bool val);
@@ -181,8 +185,10 @@ public:
 	void FBUS_fbusRescan (int);
 	void FBUS_fbusGetNodeDescription (int, int, PFIO_MODULE_DESC);
 	int FBUS_fbusReadInputs (int, int, void *, size_t, size_t);
+	int FBUS_fbusWriteOutputs (int, int, void *, size_t, size_t);
 	int FBUS_fbusWriteConfig (int, int);
 	int FBUS_fbusReadConfig (int, int);
+	int FBUS_fbusSaveConfig (int, int);
 	int FBUS_fbusSetNodeSpecificParameters(int, int,void *, size_t, size_t);
 	int FBUS_fbusGetNodeSpecificParameters(int, int,void *, size_t, size_t);
 
