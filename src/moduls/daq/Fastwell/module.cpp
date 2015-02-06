@@ -490,7 +490,7 @@ void TMdPrm::enable ( )
 				owner().ReadConfig(mID);
 				owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 				pConfig72X_2 = (AIM72X_2_CONFIGURATION*) mModConfig;
-				kAI = 40 / 8388607;
+				kAI = 40.0 / 8388607;
 				for (unsigned i_p = 0; i_p < nAI; i_p++) {
 					p_el.fldAdd(
 							new TFld(TSYS::strMess("AI%d", i_p).c_str(), TSYS::strMess("AI%d", i_p).c_str(), TFld::Double, TFld::NoWrite | TVal::DirRead,
