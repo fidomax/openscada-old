@@ -466,6 +466,7 @@ void TMdPrm::enable ( )
 	AIM72X_2_CONFIGURATION * pConfig72X_2;
 	AIM7912_CONFIGURATION * pConfig7912;
 	AIM730_CONFIGURATION * pConfig730;
+	bool fConfig;
 	owner().prmEn(id(), true);
 	try {
 		owner().GetNodeDescription(mID, &mModDesc);
@@ -513,7 +514,7 @@ void TMdPrm::enable ( )
 							new TFld(TSYS::strMess("AO%d", i_p).c_str(), TSYS::strMess("AO%d", i_p).c_str(), TFld::Double, TFld::NoWrite | TVal::DirRead, "",
 									"", "", "", ""));
 				}
-				bool fConfig = false;
+				fConfig = false;
 
 				if (pConfig730->outputRange0 != cfg("AO_RANGE").getI()) {
 					fConfig = true;
@@ -547,7 +548,7 @@ void TMdPrm::enable ( )
 					owner().ReadConfig(mID);
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 					pConfig7912 = (AIM7912_CONFIGURATION*) mModConfig;
-					bool fConfig = false;
+					fConfig = false;
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
 						if (pConfig7912->channelRanges[i_p] != cfg("AI_RANGE").getI()) {
 							fConfig = true;
