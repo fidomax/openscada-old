@@ -712,7 +712,9 @@ void TMdPrm::vlSet (TVal &vo, const TVariant &vl, const TVariant &pvl)
 	case FIO_MODULE_AIM730:
 		if (vo.name().compare(0, 2, "AO") == 0) {
 			uint16_t output = (vl.getR() - dAO) / kAO;
+			mess_info(nodePath().c_str(), _("AIM730 write %f"),vl.getR());
 			owner().WriteOutputs(mID, &output, s2i(vo.name().substr(2, vo.name().size() - 2)), 1);
+			mess_info(nodePath().c_str(), _("AIM730 write to module %d %d"),output,s2i(vo.name().substr(2, vo.name().size() - 2)));
 		}
 		break;
 	default:
