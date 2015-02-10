@@ -512,7 +512,7 @@ void TMdPrm::enable ( )
 				pConfig730 = (AIM730_CONFIGURATION*) mModConfig;
 				for (unsigned i_p = 0; i_p < nAO; i_p++) {
 					p_el.fldAdd(
-							new TFld(TSYS::strMess("AO%d", i_p).c_str(), TSYS::strMess("AO%d", i_p).c_str(), TFld::Double, TFld::NoWrite | TVal::DirRead, "",
+							new TFld(TSYS::strMess("AO%d", i_p).c_str(), TSYS::strMess("AO%d", i_p).c_str(), TFld::Double, TVal::DirRead | TVal::DirWrite, "",
 									"", "", "", ""));
 				}
 				fConfig = false;
