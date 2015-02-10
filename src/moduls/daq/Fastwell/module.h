@@ -49,11 +49,12 @@ class TMdContr;
 class TMdPrm: public TParamContr
 {
 public:
-	enum State {
-	    // Generic
-	    StateWork	= 0,
-		StateWrongType	= 1,
-		StateUndef	= 0xFF,
+	enum State
+	{
+		// Generic
+		StateWork = 0,
+		StateWrongType = 1,
+		StateUndef = 0xFF,
 	};
 	//Methods
 	TMdPrm (string name, TTipParam *tp_prm);
@@ -67,7 +68,7 @@ public:
 	void enable ( );
 	void disable ( );
 
-	int getVals( );
+	int getVals ( );
 
 	TMdContr &owner ( );
 
@@ -91,9 +92,10 @@ private:
 	uint32_t mState;
 	string mTypeName;
 
-	uint32_t nDI,nAI,nDO;
-	double kAI;
+	uint32_t nDI, nAI, nDO, nAO;
+	double kAI, kAO, dAO;
 	uint8_t mDOState;
+
 	uint8_t mModConfig[64];
 
 };
@@ -129,18 +131,18 @@ public:
 		return TController::at(nm);
 	}
 
-	void GetNodeDescription(int, PFIO_MODULE_DESC );
-	int ReadInputs(int, void *, size_t, size_t);
-	int WriteOutputs(int, void *, size_t, size_t);
-	int SetNodeSpecificParameters(int, void *, size_t, size_t);
-	int GetNodeSpecificParameters(int, void *, size_t, size_t);
-	int WriteConfig(int);
-	int ReadConfig(int);
-	int SaveConfig(int);
+	void GetNodeDescription (int, PFIO_MODULE_DESC);
+	int ReadInputs (int, void *, size_t, size_t);
+	int WriteOutputs (int, void *, size_t, size_t);
+	int SetNodeSpecificParameters (int, void *, size_t, size_t);
+	int GetNodeSpecificParameters (int, void *, size_t, size_t);
+	int WriteConfig (int);
+	int ReadConfig (int);
+	int SaveConfig (int);
 protected:
 	//Methods
 	void prmEn (const string &id, bool val);
-	void enable_( );
+	void enable_ ( );
 	void start_ ( );
 	void stop_ ( );
 
@@ -189,8 +191,8 @@ public:
 	int FBUS_fbusWriteConfig (int, int);
 	int FBUS_fbusReadConfig (int, int);
 	int FBUS_fbusSaveConfig (int, int);
-	int FBUS_fbusSetNodeSpecificParameters(int, int,void *, size_t, size_t);
-	int FBUS_fbusGetNodeSpecificParameters(int, int,void *, size_t, size_t);
+	int FBUS_fbusSetNodeSpecificParameters (int, int, void *, size_t, size_t);
+	int FBUS_fbusGetNodeSpecificParameters (int, int, void *, size_t, size_t);
 
 protected:
 	//Methods

@@ -243,6 +243,11 @@ void TTpContr::postEnable (int flag)
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
 	tpPrmAt(t_prm).fldAdd(new TFld("AI_FILTER", _("Filter depth"), TFld::Integer, TCfg::NoVal, "3", "0", "0;255"));
 
+	//> Parameter AIM730 bd structure
+	t_prm = tpParmAdd("AIM730", "PRM_BD_AIM730", _("AIM730"));
+	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
+	tpPrmAt(t_prm).fldAdd(new TFld("AO_RANGE", _("Output range"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1", _("0..20mA;4..20mA")));
+
 }
 
 TController *TTpContr::ContrAttach (const string &name, const string &daq_db)
@@ -261,6 +266,7 @@ TMdContr::TMdContr (string name_c, const string &daq_db, ::TElem *cfgelem) :
 	cfg("PRM_BD_DIM718").setS("FBUSPrmDIM718_" + name_c);
 	cfg("PRM_BD_AIM791").setS("FBUSPrmAIM791_" + name_c);
 	cfg("PRM_BD_AIM726").setS("FBUSPrmAIM726_" + name_c);
+	cfg("PRM_BD_AIM730").setS("FBUSPrmAIM730_" + name_c);
 }
 
 TMdContr::~TMdContr ( )
@@ -443,7 +449,6 @@ TMdContr &TMdPrm::owner ( )
 
 void TMdPrm::enable ( )
 {
-	mess_info(nodePath().c_str(), _("enable"));
 	if (enableStat())
 		return;
 
@@ -460,6 +465,7 @@ void TMdPrm::enable ( )
 	}
 	AIM72X_2_CONFIGURATION * pConfig72X_2;
 	AIM7912_CONFIGURATION * pConfig7912;
+	AIM730_CONFIGURATION * pConfig730;
 	owner().prmEn(id(), true);
 	try {
 		owner().GetNodeDescription(mID, &mModDesc);
@@ -493,8 +499,45 @@ void TMdPrm::enable ( )
 				kAI = 40.0 / 8388607;
 				for (unsigned i_p = 0; i_p < nAI; i_p++) {
 					p_el.fldAdd(
-							new TFld(TSYS::strMess("AI%d", i_p).c_str(), TSYS::strMess("AI%d", i_p).c_str(), TFld::Double, TFld::NoWrite | TVal::DirRead,
-									"", "", "", "", ""));
+							new TFld(TSYS::strMess("AI%d", i_p).c_str(), TSYS::strMess("AI%d", i_p).c_str(), TFld::Double, TFld::NoWrite | TVal::DirRead, "",
+									"", "", "", ""));
+				}
+				break;
+			case FIO_MODULE_AIM730:
+				nAO = 2;
+				owner().ReadConfig(mID);
+				owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
+				pConfig730 = (AIM730_CONFIGURATION*) mModConfig;
+				for (unsigned i_p = 0; i_p < nAO; i_p++) {
+					p_el.fldAdd(
+							new TFld(TSYS::strMess("AO%d", i_p).c_str(), TSYS::strMess("AO%d", i_p).c_str(), TFld::Double, TFld::NoWrite | TVal::DirRead, "",
+									"", "", "", ""));
+				}
+				bool fConfig = false;
+
+				if (pConfig730->outputRange0 != cfg("AO_RANGE").getI()) {
+					fConfig = true;
+					pConfig730->outputRange0 = cfg("AO_RANGE").getI();
+				}
+				if (pConfig730->outputRange1 != cfg("AO_RANGE").getI()) {
+					fConfig = true;
+					pConfig730->outputRange1 = cfg("AO_RANGE").getI();
+				}
+
+				if (fConfig) {
+					owner().SetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
+					owner().WriteConfig(mID);
+					owner().SaveConfig(mID);
+				}
+				switch (cfg("AO_RANGE").getI()) {
+				case 0:
+					kAO = 20.0 / 65535;
+					dAO = 0;
+					break;
+				case 1:
+					kAO = 16.0 / 65535;
+					dAO = 4;
+					break;
 				}
 				break;
 			case FIO_MODULE_UNKNOWN:
@@ -505,10 +548,8 @@ void TMdPrm::enable ( )
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 					pConfig7912 = (AIM7912_CONFIGURATION*) mModConfig;
 					bool fConfig = false;
-					mess_info(nodePath().c_str(), _("AIM792 enable"));
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
 						if (pConfig7912->channelRanges[i_p] != cfg("AI_RANGE").getI()) {
-							mess_info(nodePath().c_str(), _("AIM792 cfg wrong %d, %d"), pConfig7912->channelRanges[i_p], cfg("AI_RANGE").getI());
 							fConfig = true;
 							pConfig7912->channelRanges[i_p] = cfg("AI_RANGE").getI();
 						}
@@ -521,12 +562,10 @@ void TMdPrm::enable ( )
 					}
 					switch (cfg("AI_RANGE").getI()) {
 					case 0:
-						mess_info(nodePath().c_str(), _("AIM792 5mA"));
 						kAI = 5.125 / 65535;
 						break;
 					case 1:
 					case 2:
-						mess_info(nodePath().c_str(), _("AIM792 20mA"));
 						kAI = 20.5 / 65535;
 						break;
 					}
@@ -537,7 +576,6 @@ void TMdPrm::enable ( )
 					}
 				}
 				break;
-
 
 			default:
 				break;
@@ -619,9 +657,13 @@ int TMdPrm::getVals ( )
 				}
 				break;
 			case FIO_MODULE_AIM726:
-					vlAt(TSYS::strMess("AI0").c_str()).at().setR(((AIM72X_2_INPUTS *) buf)->input0 * kAI, 0, true);
-					vlAt(TSYS::strMess("AI1").c_str()).at().setR(((AIM72X_2_INPUTS *) buf)->input1 * kAI, 0, true);
+				vlAt(TSYS::strMess("AI0").c_str()).at().setR(((AIM72X_2_INPUTS *) buf)->input0 * kAI, 0, true);
+				vlAt(TSYS::strMess("AI1").c_str()).at().setR(((AIM72X_2_INPUTS *) buf)->input1 * kAI, 0, true);
 
+				break;
+			case FIO_MODULE_AIM730:
+				vlAt(TSYS::strMess("AO0").c_str()).at().setR(((AIM73X_INPUTS *) buf)->outputValue0 * kAO + dAO, 0, true);
+				vlAt(TSYS::strMess("AO1").c_str()).at().setR(((AIM73X_INPUTS *) buf)->outputValue1 * kAO + dAO, 0, true);
 				break;
 			case FIO_MODULE_UNKNOWN:
 				if (mTypeName == "AIM791") {
@@ -630,6 +672,7 @@ int TMdPrm::getVals ( )
 					}
 				}
 				break;
+
 			default:
 				break;
 			}
@@ -663,6 +706,12 @@ void TMdPrm::vlSet (TVal &vo, const TVariant &vl, const TVariant &pvl)
 			owner().WriteOutputs(mID, &mDOState, 0, 1);
 		}
 
+		break;
+	case FIO_MODULE_AIM730:
+		if (vo.name().compare(0, 2, "AO") == 0) {
+			uint16_t output = (vl.getR() - dAO) / kAO;
+			owner().WriteOutputs(mID, &output, s2i(vo.name().substr(2, vo.name().size() - 2)), 1);
+		}
 		break;
 	default:
 		break;
