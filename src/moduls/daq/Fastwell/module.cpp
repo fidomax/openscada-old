@@ -684,6 +684,8 @@ int TMdPrm::getVals ( )
 
 void TMdPrm::vlSet (TVal &vo, const TVariant &vl, const TVariant &pvl)
 {
+	uint8_t buf[256];
+	uint16_t i;
 	if (!enableStat() || !owner().startStat())
 		vo.setS(EVAL_STR, 0, true);
 
@@ -711,10 +713,25 @@ void TMdPrm::vlSet (TVal &vo, const TVariant &vl, const TVariant &pvl)
 		break;
 	case FIO_MODULE_AIM730:
 		if (vo.name().compare(0, 2, "AO") == 0) {
-			uint16_t output = (vl.getR() - dAO) / kAO;
-			mess_info(nodePath().c_str(), _("AIM730 write %f"),vl.getR());
-			owner().WriteOutputs(mID, &output, s2i(vo.name().substr(2, vo.name().size() - 2))*2, 2);
-			mess_info(nodePath().c_str(), _("AIM730 write to module %d %d"),output,s2i(vo.name().substr(2, vo.name().size() - 2)));
+			for (int i=0; i<nAO; i++) {
+				switch (i){
+				case 0:
+					if (s2i(vo.name().substr(2, vo.name().size() - 2)) == 0){
+						((AIM73X_OUTPUTS *) buf)->output0 = (vl.getR() - dAO) / kAO;
+					} else {
+						((AIM73X_OUTPUTS *) buf)->output0 = (vlAt(TSYS::strMess("AO0").c_str()).at().getR() - dAO) / kAO;
+					}
+					break;
+				case 1:
+					if (s2i(vo.name().substr(2, vo.name().size() - 2)) == 1){
+						((AIM73X_OUTPUTS *) buf)->output1 = (vl.getR() - dAO) / kAO;
+					} else {
+						((AIM73X_OUTPUTS *) buf)->output1 = (vlAt(TSYS::strMess("AO1").c_str()).at().getR() - dAO) / kAO;
+					}
+					break;
+				}
+			}
+			owner().WriteOutputs(mID, buf, 0, nAO*2);
 		}
 		break;
 	default:
