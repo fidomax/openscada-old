@@ -237,7 +237,7 @@ void TTpContr::postEnable (int flag)
 	int t_prm = tpParmAdd("DIM762", "PRM_BD_DIM762", _("DIM762"), true);
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
 	tpPrmAt(t_prm).fldAdd(new TFld("DI_DEBOUNCE", _("Debounce"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1;2", _("No;200us;3ms")));
-	tpPrmAt(t_prm).fldAdd(new TFld("DI_COUNT", _("Enable counting"), TFld::Boolean, TFld::Selected | TCfg::NoVal, "1", "0"));
+	tpPrmAt(t_prm).fldAdd(new TFld("DI_COUNT", _("Enable counting"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
 	//> Parameter DIM718 bd structure
 	t_prm = tpParmAdd("DIM718", "PRM_BD_DIM718", _("DIM718"), true);
