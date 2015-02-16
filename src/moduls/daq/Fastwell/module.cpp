@@ -190,6 +190,16 @@ int TTpContr::FBUS_fbusGetNodeSpecificParameters (int n, int id, void *Buf, size
 	return fbusGetNodeSpecificParameters(hNet[n], id, Buf, offset, size);
 }
 
+int TTpContr::FBUS_fbusGetNodeCommonParameters (int n, int id, PFIO_MODULE_COMMON_CONF Buf, size_t size)
+{
+	return fbusGetNodeCommonParameters(hNet[n], id, Buf, size);
+}
+
+int TTpContr::FBUS_fbusSetNodeCommonParameters (int n, int id, PFIO_MODULE_COMMON_CONF Buf, size_t size)
+{
+	return fbusSetNodeCommonParameters(hNet[n], id, Buf, size);
+}
+
 int TTpContr::FBUS_fbusWriteConfig (int n, int id)
 {
 	return fbusWriteConfig(hNet[n], id);
@@ -227,6 +237,7 @@ void TTpContr::postEnable (int flag)
 	int t_prm = tpParmAdd("DIM762", "PRM_BD_DIM762", _("DIM762"), true);
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
 	tpPrmAt(t_prm).fldAdd(new TFld("DI_DEBOUNCE", _("Debounce"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1;2", _("No;200us;3ms")));
+	tpPrmAt(t_prm).fldAdd(new TFld("DI_COUNT", _("Enable counting"), TFld::Boolean, TFld::Selected | TCfg::NoVal, "1", "0"));
 
 	//> Parameter DIM718 bd structure
 	t_prm = tpParmAdd("DIM718", "PRM_BD_DIM718", _("DIM718"), true);
@@ -299,6 +310,16 @@ int TMdContr::SetNodeSpecificParameters (int id, void *buf, size_t offset, size_
 int TMdContr::GetNodeSpecificParameters (int id, void *buf, size_t offset, size_t size)
 {
 	return mod->FBUS_fbusGetNodeSpecificParameters(mNet, id, buf, offset, size);
+}
+
+int TMdContr::GetNodeCommonParameters (int id, PFIO_MODULE_COMMON_CONF buf, size_t size)
+{
+	return mod->FBUS_fbusGetNodeCommonParameters(mNet, id, buf, size);
+}
+
+int TMdContr::SetNodeCommonParameters (int id, PFIO_MODULE_COMMON_CONF buf, size_t size)
+{
+	return mod->FBUS_fbusSetNodeCommonParameters(mNet, id, buf, size);
 }
 
 int TMdContr::WriteConfig (int id)
@@ -467,10 +488,22 @@ void TMdPrm::enable ( )
 	AIM72X_2_CONFIGURATION * pConfig72X_2;
 	AIM7912_CONFIGURATION * pConfig7912;
 	AIM730_CONFIGURATION * pConfig730;
-	bool fConfig;
+	DIM_CONFIGURATION * pConfigDIM;
+	bool fConfig = false;
 	owner().prmEn(id(), true);
 	try {
 		owner().GetNodeDescription(mID, &mModDesc);
+		owner().ReadConfig(mID);
+		owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
+		owner().GetNodeCommonParameters(mID, &mModComConfig,sizeof(mModComConfig));
+		if (mModComConfig.inputSync!=FBUS_UNDEFINED_SYNC_ID){
+			fConfig = true;
+			mModComConfig.inputSync=FBUS_UNDEFINED_SYNC_ID;
+		}
+		if (mModComConfig.outputSync!=FBUS_UNDEFINED_SYNC_ID){
+			fConfig = true;
+			mModComConfig.outputSync=FBUS_UNDEFINED_SYNC_ID;
+		}
 		mTypeName = mModDesc.typeName;
 		mess_info(nodePath().c_str(), _("typename %s"), mModDesc.typeName);
 		if (type().name == mModDesc.typeName) {
@@ -482,6 +515,17 @@ void TMdPrm::enable ( )
 					p_el.fldAdd(
 							new TFld(TSYS::strMess("DI%d", i_p).c_str(), TSYS::strMess("DI%d", i_p).c_str(), TFld::Boolean, TFld::NoWrite | TVal::DirRead, "",
 									"", "", "", ""));
+				}
+				p_el.fldAdd(new TFld("C0", "C0", TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+				p_el.fldAdd(new TFld("C1", "C1", TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+				pConfigDIM = (DIM_CONFIGURATION*) mModConfig;
+				if (pConfigDIM->debounce != cfg("DI_DEBOUNCE").getI()) {
+					fConfig = true;
+					pConfigDIM->debounce = cfg("DI_DEBOUNCE").getI();
+				}
+				if (pConfigDIM->enableCounting != cfg("DI_COUNT").getI()) {
+					fConfig = true;
+					pConfigDIM->enableCounting = cfg("DI_COUNT").getI();
 				}
 				break;
 			case FIO_MODULE_DIM718:
@@ -495,8 +539,6 @@ void TMdPrm::enable ( )
 				break;
 			case FIO_MODULE_AIM726:
 				nAI = 2;
-				owner().ReadConfig(mID);
-				owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 				pConfig72X_2 = (AIM72X_2_CONFIGURATION*) mModConfig;
 				kAI = 40.0 / 8388607;
 				for (unsigned i_p = 0; i_p < nAI; i_p++) {
@@ -515,8 +557,6 @@ void TMdPrm::enable ( )
 							new TFld(TSYS::strMess("AO%d", i_p).c_str(), TSYS::strMess("AO%d", i_p).c_str(), TFld::Double, TVal::DirRead | TVal::DirWrite, "",
 									"", "", "", ""));
 				}
-				fConfig = false;
-
 				if (pConfig730->outputRange0 != cfg("AO_RANGE").getI()) {
 					fConfig = true;
 					pConfig730->outputRange0 = cfg("AO_RANGE").getI();
@@ -524,12 +564,6 @@ void TMdPrm::enable ( )
 				if (pConfig730->outputRange1 != cfg("AO_RANGE").getI()) {
 					fConfig = true;
 					pConfig730->outputRange1 = cfg("AO_RANGE").getI();
-				}
-
-				if (fConfig) {
-					owner().SetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
-					owner().WriteConfig(mID);
-					owner().SaveConfig(mID);
 				}
 				switch (cfg("AO_RANGE").getI()) {
 				case 0:
@@ -549,7 +583,6 @@ void TMdPrm::enable ( )
 					owner().ReadConfig(mID);
 					owner().GetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
 					pConfig7912 = (AIM7912_CONFIGURATION*) mModConfig;
-					fConfig = false;
 					for (unsigned i_p = 0; i_p < nAI; i_p++) {
 						if (pConfig7912->channelRanges[i_p] != cfg("AI_RANGE").getI()) {
 							fConfig = true;
@@ -557,11 +590,6 @@ void TMdPrm::enable ( )
 						}
 					}
 
-					if (fConfig) {
-						owner().SetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
-						owner().WriteConfig(mID);
-						owner().SaveConfig(mID);
-					}
 					switch (cfg("AI_RANGE").getI()) {
 					case 0:
 						kAI = 5.125 / 65535;
@@ -581,6 +609,12 @@ void TMdPrm::enable ( )
 
 			default:
 				break;
+			}
+			if (fConfig) {
+				owner().SetNodeSpecificParameters(mID, mModConfig, 0, mModDesc.specificRwSize);
+				owner().SetNodeCommonParameters(mID, &mModComConfig,sizeof(mModComConfig));
+				owner().WriteConfig(mID);
+				owner().SaveConfig(mID);
 			}
 		} else {
 			mState = StateWrongType;
@@ -657,6 +691,8 @@ int TMdPrm::getVals ( )
 				for (unsigned i_p = 0; i_p < nDI; i_p++) {
 					vlAt(TSYS::strMess("DI%d", i_p).c_str()).at().setB(((((DIM_INPUTS_COUNTERS *) buf)->inputStates) >> i_p) & 1, 0, true);
 				}
+				vlAt("C0").at().setI((((DIM_INPUTS_COUNTERS *) buf)->counter0), 0, true);
+				vlAt("C1").at().setI((((DIM_INPUTS_COUNTERS *) buf)->counter1), 0, true);
 				break;
 			case FIO_MODULE_AIM726:
 				vlAt(TSYS::strMess("AI0").c_str()).at().setR(((AIM72X_2_INPUTS *) buf)->input0 * kAI, 0, true);
@@ -713,17 +749,17 @@ void TMdPrm::vlSet (TVal &vo, const TVariant &vl, const TVariant &pvl)
 		break;
 	case FIO_MODULE_AIM730:
 		if (vo.name().compare(0, 2, "AO") == 0) {
-			for (int i=0; i<nAO; i++) {
-				switch (i){
+			for (int i = 0; i < nAO; i++) {
+				switch (i) {
 				case 0:
-					if (s2i(vo.name().substr(2, vo.name().size() - 2)) == 0){
+					if (s2i(vo.name().substr(2, vo.name().size() - 2)) == 0) {
 						((AIM73X_OUTPUTS *) buf)->output0 = (vl.getR() - dAO) / kAO;
 					} else {
 						((AIM73X_OUTPUTS *) buf)->output0 = (vlAt(TSYS::strMess("AO0").c_str()).at().getR() - dAO) / kAO;
 					}
 					break;
 				case 1:
-					if (s2i(vo.name().substr(2, vo.name().size() - 2)) == 1){
+					if (s2i(vo.name().substr(2, vo.name().size() - 2)) == 1) {
 						((AIM73X_OUTPUTS *) buf)->output1 = (vl.getR() - dAO) / kAO;
 					} else {
 						((AIM73X_OUTPUTS *) buf)->output1 = (vlAt(TSYS::strMess("AO1").c_str()).at().getR() - dAO) / kAO;
@@ -731,7 +767,7 @@ void TMdPrm::vlSet (TVal &vo, const TVariant &vl, const TVariant &pvl)
 					break;
 				}
 			}
-			owner().WriteOutputs(mID, buf, 0, nAO*2);
+			owner().WriteOutputs(mID, buf, 0, nAO * 2);
 		}
 		break;
 	default:

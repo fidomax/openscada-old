@@ -97,6 +97,7 @@ private:
 	uint8_t mDOState;
 
 	uint8_t mModConfig[64];
+	FIO_MODULE_COMMON_CONF mModComConfig;
 
 };
 
@@ -136,6 +137,8 @@ public:
 	int WriteOutputs (int, void *, size_t, size_t);
 	int SetNodeSpecificParameters (int, void *, size_t, size_t);
 	int GetNodeSpecificParameters (int, void *, size_t, size_t);
+	int GetNodeCommonParameters (int, PFIO_MODULE_COMMON_CONF, size_t);
+	int SetNodeCommonParameters (int, PFIO_MODULE_COMMON_CONF, size_t);
 	int WriteConfig (int);
 	int ReadConfig (int);
 	int SaveConfig (int);
@@ -191,8 +194,10 @@ public:
 	int FBUS_fbusWriteConfig (int, int);
 	int FBUS_fbusReadConfig (int, int);
 	int FBUS_fbusSaveConfig (int, int);
-	int FBUS_fbusSetNodeSpecificParameters (int, int, void *, size_t, size_t);
 	int FBUS_fbusGetNodeSpecificParameters (int, int, void *, size_t, size_t);
+	int FBUS_fbusSetNodeSpecificParameters (int, int, void *, size_t, size_t);
+	int FBUS_fbusGetNodeCommonParameters (int, int, PFIO_MODULE_COMMON_CONF, size_t);
+	int FBUS_fbusSetNodeCommonParameters (int, int, PFIO_MODULE_COMMON_CONF, size_t);
 
 protected:
 	//Methods
