@@ -1,3 +1,23 @@
+2015-02-17 Roman
+- FIX:DAQ.OPC_UA.libOPC_UA: TranslateBrowsePathsToNodeIdsRequest service fixed for processing no OK paths.
+- DAQ.OPC_UA: Limit limRetrQueueTm() for retransmission queue time control. For all limits control tab "Data" with limits is added.
+- FIX:UI.Vision: Remote projects and sessions list obtain fixed to proper users for started user's field.
+    Scale margin for runtime session decreased from 5% to 2%.
+
+
+2015-02-12 Roman
+- !!!!:SYS:
+    Classes TTipBD, TTipDAQ, TTipParam, TTipArchivator, TTipTransport  renamed to TTypeBD, TTypeDAQ, TTypeParam, TTypeArchivator, TTypeTransport at last.
+    Source tree's files ttipdaq.h, ttipdaq.cpp, ttiparam.h renamed to ttypedaq.h, ttypedaq.cpp, ttypeparam.h.
+    Core library version rised to 3:3:0.
+    DB subsystem type modules version rised to 7.
+    DAQ subsystem type modules version rised to 8.
+    Archive subsystem type modules version rised to 7.
+    Transports subsystem type modules version rised to 7.
+- !!!!:Transport.Sockets: Initiative connection for input transport types TCP and UNIX support is added
+    when the input transport do not wait a connection from remote but self connected and continue waiting request by the established connection.
+
+
 2015-02-10 Roman
 - DB: LibsDB.vcaBase.db: Main.cntrPaspExt expanded for allow text's attributes edit into multiline.
 - FIX:UI.Vision: Prevented hang at zero length from center to first radius. Some trivial fixes.
