@@ -1,0 +1,373 @@
+# OpenSCADA.DAQ.FT3 translate to Russian.
+# Copyright (C) 2007-2010 Olga Avdeyeva
+# This file is distributed under the same license as the OpenSCADA.DAQ.FT3 package module.
+#
+# Olga Avdeyeva, 2007-2010.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenSCADA.FT3 0.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-06-03 13:00+0300\n"
+"PO-Revision-Date: 2007-10-29 10:21+0200\n"
+"Last-Translator: Maxim Kothetkov, Olga Avdeyeva, Olga Kuzmickaya\n"
+"Language-Team: \n"
+"Language: RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "DAQ FT3"
+msgstr "АПСТМ (FT3)"
+
+msgid "Maxim Kothetkov, Olga Avdeyeva, Olga Kuzmickaya"
+msgstr "Максим Кочетков, Ольга Авдеева, Ольга Кузьмицкая"
+
+msgid "Allow realisation of FT3 client service"
+msgstr "Предоставляет реализацию клиентского сервиса протокола FT3 для контроллеров АПСТМ"
+
+msgid "Gather data time %.6g ms. "
+msgstr "Время сбора данных %.6g мс. "
+
+msgid "BUC Parameteres table"
+msgstr "Таблица параметров БУЦ"
+
+msgid "BVTS Parameteres table"
+msgstr "Таблица параметров БВТС"
+
+msgid "BVT Parameteres table"
+msgstr "Таблица параметров БВТ"
+
+msgid "BIP Parameteres table"
+msgstr "Таблица параметров БИП"
+
+msgid "BVI Parameteres table"
+msgstr "Таблица параметров БВИ"
+
+msgid "PAUK Parameteres table"
+msgstr "Таблица параметров ПАУК"
+
+msgid "BTU Parameteres table"
+msgstr "Таблица параметров БТУ"
+
+msgid "ACCOUNT Parameteres table"
+msgstr "Таблица параметров Узла учета"
+
+msgid "Parameteres table"
+msgstr "Таблица параметров"
+
+msgid "Gather data period (s)"
+msgstr "Период сбора данных"
+
+msgid "Gather data priority (s)"
+msgstr "Уровень приоритета даты сбора данных"
+
+msgid "Gather task priority"
+msgstr "Уровень приоритета задачи"
+
+msgid "Blocs"
+msgstr "Блоки"
+
+msgid "FT3 protocol"
+msgstr "FT3 протокол"
+
+msgid "BUC"
+msgstr "БУЦ"
+
+msgid "BVTS"
+msgstr "БВТС"
+
+msgid "BVI"
+msgstr "БВИ"
+
+msgid "BVT"
+msgstr "БВТ"
+
+msgid "BIP"
+msgstr "БИП"
+
+msgid "PAUK"
+msgstr "ПАУК"
+
+msgid "BTU"
+msgstr "БТУ"
+
+msgid "ACCOUNT"
+msgstr "Узел учета"
+
+msgid "BTR"
+msgstr "БТР"
+
+msgid "Addres"
+msgstr "Адрес контроллера"
+
+msgid "Device address"
+msgstr "Адрес блока"
+
+msgid "Channels count"
+msgstr "Число каналов"
+
+msgid "With parameters"
+msgstr "С параметрами"
+
+msgid "State"
+msgstr "Состояние"
+
+msgid "State %d"
+msgstr "Состояние %d"
+
+msgid "Value %d"
+msgstr "Значение %d"
+
+msgid "Measure period %d"
+msgstr "Период измерений %d"
+
+msgid "Pulse counter %d"
+msgstr "Счетчик импульсов %d"
+
+msgid "Modification"
+msgstr "Модификация"
+
+msgid "Timer state"
+msgstr "Состояние таймера"
+
+msgid "Current datetime"
+msgstr "Текущие дата-время"
+
+msgid "Stop datetime"
+msgstr "Дата-время последнего останова"
+
+msgid "Telegram buffer"
+msgstr "Буфер телеграмм"
+
+msgid "Delay 1"
+msgstr "Величина задержки 1"
+
+msgid "Delay 2"
+msgstr "Величина задержки 2"
+
+msgid "Counter PV %d"
+msgstr "Счетчик ФВ %d"
+
+msgid "Sensitivity %d"
+msgstr "Чувствительность %d"
+
+msgid "Factor %d"
+msgstr "Коэффициент (множитель) %d"
+
+msgid "Dimension %d"
+msgstr "Размерность %d"
+
+msgid "Mask %d"
+msgstr "Маска %d"
+
+msgid "Sensitivity PV %d"
+msgstr "Чувствительность ФВ %d"
+
+msgid "Sensor minimum %d"
+msgstr "Мин. датчика %d"
+
+msgid "Sensor maximum %d"
+msgstr "Макс. датчика %d"
+
+msgid "PV minimum %d"
+msgstr "Мин. ФВ %d"
+
+msgid "PV maximum %d"
+msgstr "Макс. ФВ %d"
+
+msgid "Warning minimum %d"
+msgstr "Мин. предупред. %d"
+
+msgid "Warning maximum %d"
+msgstr "Макс. предупред. %d"
+
+msgid "Alarm minimum %d"
+msgstr "Мин. аварии ФВ %d"
+
+msgid "Alarm maximum %d"
+msgstr "Макс. аварии ФВ %d"
+
+msgid "Range factor %d"
+msgstr "Коэффициент расширения диапазона %d"
+
+msgid "Correcting factor %d"
+msgstr "Корректирующий коэффициент %d"
+
+msgid "Rate of change %d"
+msgstr "Средняя скорость изм. %d"
+
+msgid "Calcs count %d"
+msgstr "Количество вычислений %d"
+
+msgid "Rate limit %d"
+msgstr "Предельная скорость %d"
+
+msgid "Rate sensitivity %d"
+msgstr "Чувствительность скорости %d"
+
+msgid "Minimum %d"
+msgstr "Минимум %d"
+
+msgid "Maximum %d"
+msgstr "Максимум %d"
+
+msgid "Minimum frequency %d"
+msgstr "Минимум частоты %d"
+
+msgid "Maximum frequency %d"
+msgstr "Максимум частоты %d"
+
+msgid "Valve select"
+msgstr "Выбор крана"
+
+msgid "Execution"
+msgstr "Исполнение"
+
+msgid "Valve state %d"
+msgstr "Состояние крана"
+
+msgid "Control"
+msgstr "Управление"
+
+msgid "Errors"
+msgstr "Ошибки"
+
+msgid "Persistence time %d"
+msgstr "Время выжержки ТУ %d"
+
+msgid "Persistence astime %d"
+msgstr "Доп. время выжержки ТУ %d"
+
+msgid "Select TU"
+msgstr "Выбор ТУ"
+
+msgid "TC bind %d"
+msgstr "ТС концевиков %d"
+
+msgid "Expense"
+msgstr "Расход"
+
+msgid "Quantity point"
+msgstr "Количество точек учета"
+
+msgid "Current flow %d"
+msgstr "Расход (Q) %d"
+
+msgid "Sensor 1 %d"
+msgstr "Номер датчика 1 %d"
+
+msgid "Sensor 2 %d"
+msgstr "Номер датчика 2 %d"
+
+msgid "Sensor T %d"
+msgstr "Номер датчика t %d"
+
+msgid "Sensor P %d"
+msgstr "Номер датчика P %d"
+
+msgid "Service flow %d"
+msgstr "Расход при нештатных ситуациях %d"
+
+msgid "Contract hour %d"
+msgstr "Контрактный час %d"
+
+msgid "Hourly flow %d"
+msgstr "Объем текущего часа %d"
+
+msgid "Counter Q %d"
+msgstr "Счетчик объема %d"
+
+msgid "Hour Q %d"
+msgstr "Среднее Q за предыдущий час %d"
+
+msgid "Hour dP %d"
+msgstr "Среднее dP за предыдущий час %d"
+
+msgid "Hour t %d"
+msgstr "Среднее t за предыдущий час %d"
+
+msgid "Hour P %d"
+msgstr "Среднее P за предыдущий час %d"
+
+msgid "Hour E %d"
+msgstr "Среднее E за предыдущий час %d"
+
+msgid "Datetime %d"
+msgstr "Период %d"
+
+msgid "Period %d"
+msgstr "Количество часов %d"
+
+msgid "Avg Q %d"
+msgstr "Среднее Q за период %d"
+
+msgid "Avg dP %d"
+msgstr "Среднее dP за период %d"
+
+msgid "Avg t %d"
+msgstr "Среднее t за период %d"
+
+msgid "Avg P %d"
+msgstr "Среднее P за период %d"
+
+msgid "Avg E %d"
+msgstr "Среднее E за период %d"
+
+msgid "Periodicly Q %d"
+msgstr "Объем за период %d"
+
+msgid "Density %d"
+msgstr "Плотность газа в НУ %d"
+
+msgid "Equivalence asperity %d"
+msgstr "Эквивалентная шероховатость %d"
+
+msgid "N concentration %d"
+msgstr "Молярная концентрация азота %d"
+
+msgid "CO concentration %d"
+msgstr "Молярная концентрация углекислого газа %d"
+
+msgid "Membrane diameter %d"
+msgstr "Диаметр диафрагмы %d"
+
+msgid "Membrane factor %d"
+msgstr "Коэфф. телового расширения диафрагмы %d"
+
+msgid "Pipe diameter %d"
+msgstr "Диаметр трубопровода %d"
+
+msgid "Pipe factor %d"
+msgstr "Коэфф. телового расширения трубопровода %d"
+
+msgid "Measure method %d"
+msgstr "Метод измерения %d"
+
+msgid "Test dP/TI %d"
+msgstr "Тестовые значения dP/TI %d"
+
+msgid "Test t %d"
+msgstr "Тестовые значения t %d"
+
+msgid "Test P %d"
+msgstr "Тестовые значения P %d"
+
+msgid "Test rate %d"
+msgstr "Тестовый расход %d"
+
+msgid "Membrane radius %d"
+msgstr "Ср. радиус закругления кромки диаф. %d"
+
+msgid "Atmospheric pressure %d"
+msgstr "Атмосферное давление %d"
+
+msgid "Setting %d"
+msgstr "Уставка %d"
+
+msgid "Channels count TU"
+msgstr "Число каналов ТУ"
+
+msgid "Channels count TR"
+msgstr "Число каналов ТР"
+
