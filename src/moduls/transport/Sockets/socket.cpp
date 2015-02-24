@@ -61,7 +61,7 @@
 #define VER_TYPE	STR_VER
 #define MOD_VER		"1.5.1"
 #define AUTHORS		_("Roman Savochenko")
-#define DESCRIPTION	_("Allow sockets based transport. Support inet and unix sockets. Inet socket use TCP and UDP protocols.")
+#define DESCRIPTION	_("Provides sockets based transport. Support inet and unix sockets. Inet socket uses TCP, UDP and RAWCAN protocols.")
 #define LICENSE		"GPL2"
 //************************************************
 
@@ -130,20 +130,10 @@ void TTransSock::perSYSCall( unsigned int cnt )
 {
     vector<string> trls;
 
-    try {
-	//Iniciative input protocols check for restart/reconnect need.
-	inList(trls);
-	for(unsigned iTr = 0; iTr < trls.size(); iTr++) {
-	    AutoHD<TSocketIn> tr = inAt(trls[iTr]);
-	    if((tr.at().toStart() || tr.at().startStat()) && tr.at().mode() == 2 &&
-		(!tr.at().startStat() || time(NULL) > (tr.at().lastConn()+tr.at().keepAliveTm())))
-	    {
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Restart by no ingoing activity to '%s'."), tr.at().addr().c_str());
-		if(tr.at().startStat()) tr.at().stop();
-		tr.at().start();
-	    }
-	}
-    } catch(...){ }
+    //Iniciative input protocols check for restart/reconnect need.
+    inList(trls);
+    for(unsigned iTr = 0; iTr < trls.size(); iTr++)
+	((AutoHD<TSocketIn>)inAt(trls[iTr])).at().check();
 }
 
 TTransportIn *TTransSock::In( const string &name, const string &idb )	{ return new TSocketIn(name, idb, &owner().inEl()); }
@@ -376,6 +366,33 @@ void TSocketIn::stop( )
     TTransportIn::stop();
 }
 
+void TSocketIn::check( )
+{
+    try {
+	//Check for activity for initiative mode
+	if(mode() == 2 && (toStart() || startStat()) && (!startStat() || time(NULL) > (lastConn()+keepAliveTm()))) {
+	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Restart by no ingoing activity to '%s'."), addr().c_str());
+	    if(startStat()) stop();
+	    start();
+	}
+
+	//Check the assigned to that output transports for inactivity
+	/*vector<AutoHD<TTransportOut> > aTrLs = assTrs(true);
+	for(unsigned iTr = 0; iTr < aTrLs.size(); iTr++) {
+	    if(!aTrLs[iTr].at().startStat() || aTrLs[iTr].at().addr().compare(0,5,"SOCK:") != 0) continue;
+	    int oSockFd = s2i(TSYS::strSepParse(aTrLs[iTr].at().addr(),1,':'));
+	    //struct sockaddr aNm;
+	    //socklen_t aLn = sizeof(aNm);
+	    //int fRes = getpeername(oSockFd, &aNm, &aLn);
+
+	    int error = 0;
+	    socklen_t slen = sizeof(error);
+	    int fRes = getsockopt(oSockFd, SOL_SOCKET, SO_ERROR, &error, &slen);
+	    printf("TEST 01: fRes=%d; error=%d\n", fRes, error);
+	}*/
+    } catch(...){ }
+}
+
 int TSocketIn::writeTo( const string &sender, const string &data )
 {
     fd_set		rw_fd;
@@ -459,13 +476,13 @@ void *TSocketIn::Task( void *sock_in )
 	if(sock->type == SOCK_TCP) {
 	    int sock_fd_CL = accept(sock->sock_fd, (sockaddr *)&name_cl, &name_cl_len);
 	    if(sock_fd_CL != -1) {
-		if(sock->maxFork() <= (int)sock->cl_id.size()) {
+		if(sock->maxFork() <= sock->cl_id.size()) {
 		    sock->clsConnByLim++;
 		    close(sock_fd_CL);
 		    continue;
 		}
 		//Create presenting the client connection output transport
-		if(sock->protocol().empty() && (int)sock->assTrs(true).size() <= sock->maxFork()) {
+		if(sock->protocol().empty() && sock->assTrs(true).size() <= sock->maxFork()) {
 		    sock->assTrO("SOCK:"+i2s(sock_fd_CL));
 		    sock->connNumb++;
 		    continue;
@@ -487,7 +504,7 @@ void *TSocketIn::Task( void *sock_in )
 	else if(sock->type == SOCK_UNIX) {
 	    int sock_fd_CL = accept(sock->sock_fd, NULL, NULL);
 	    if(sock_fd_CL != -1) {
-		if(sock->maxFork() <= (int)sock->cl_id.size()) {
+		if(sock->maxFork() <= sock->cl_id.size()) {
 		    sock->clsConnByLim++;
 		    close(sock_fd_CL);
 		    continue;
@@ -564,7 +581,7 @@ void *TSocketIn::Task( void *sock_in )
 void *TSocketIn::ClTask( void *s_inf )
 {
     SSockIn &s = *(SSockIn*)s_inf;
-    int cnt = 0;		//Requests counter
+    unsigned cnt = 0;		//Requests counter
     int tm = s.s->connTm = time(NULL);	//Last connection time
 
     if(mess_lev() == TMess::Debug)
@@ -623,8 +640,8 @@ void *TSocketIn::ClTask( void *s_inf )
 	cnt++;
 	tm = s.s->connTm = time(NULL);
 	sessOk = true;
-    } while(!s.s->endrun_cl && (s.s->mode() == 2 || (!s.s->keepAliveTm() || (time(NULL)-tm) < s.s->keepAliveTm()) &&
-	    (!sessOk || ((s.s->mode() == 1 || !prot_in.freeStat()) && (!s.s->keepAliveReqs() || cnt < s.s->keepAliveReqs())))));
+    } while(!s.s->endrun_cl && (s.s->mode() == 2 || ((!s.s->keepAliveTm() || (time(NULL)-tm) < s.s->keepAliveTm()) &&
+	    (!sessOk || ((s.s->mode() == 1 || !prot_in.freeStat()) && (!s.s->keepAliveReqs() || cnt < s.s->keepAliveReqs()))))));
 
     //Close protocol on broken connection
     if(!prot_in.freeStat()) {
@@ -720,7 +737,9 @@ void TSocketIn::cntrCmdProc( XMLNode *opt )
 	    "  UNIX:{name}:{mode} - UNIX socket:\n"
 	    "    name - UNIX-socket's file name;\n"
 	    "    mode - work mode (0 - break connection; 1 - keep alive; 2 - initiative connection)."));
-	ctrMkNode("fld", opt, -1, "/prm/cfg/PROT", EVAL_STR, startStat()?R_R_R_:RWRWR_, "root", STR_ID);
+	ctrMkNode("fld", opt, -1, "/prm/cfg/PROT", EVAL_STR, startStat()?R_R_R_:RWRWR_, "root", STR_ID, 1,
+	    "help",_("Empty value for the protocol selection switchs the transport to mode\n"
+		     "of creation associated output transports for each connection to one."));
 	ctrMkNode("fld", opt, -1, "/prm/cfg/bfLn", _("Input buffer (kbyte)"), startStat()?R_R_R_:RWRWR_, "root", STR_ID, 1, "tp","dec");
 	ctrMkNode("fld", opt, -1, "/prm/cfg/taskPrior", _("Priority"), startStat()?R_R_R_:RWRWR_, "root", STR_ID, 4,
 	    "tp","dec", "min","-1", "max","99", "help",TMess::labTaskPrior());
@@ -776,7 +795,7 @@ void TSocketIn::cntrCmdProc( XMLNode *opt )
 //* TSocketOut                                   *
 //************************************************
 TSocketOut::TSocketOut(string name, const string &idb, TElem *el) :
-    TTransportOut(name,idb,el), sock_fd(-1), mMSS(0), mLstReqTm(0)
+    TTransportOut(name,idb,el), mMSS(0), sock_fd(-1), mLstReqTm(0)
 {
     setAddr("TCP:localhost:10002");
     setTimings("5:1");
