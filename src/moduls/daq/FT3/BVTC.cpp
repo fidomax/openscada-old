@@ -20,8 +20,6 @@
 
 #include <sys/times.h>
 
-#include <tsys.h>
-
 #include "mod_FT3.h"
 #include "BVTC.h"
 
@@ -36,12 +34,15 @@ B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
     TFld * fld;
     mPrm->p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
-    for(int i = 1; i <= count_n; i++) {
-	mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("TC_%d", i).c_str(), TSYS::strMess(_("State %d"), i).c_str(), TFld::Boolean, TFld::NoWrite));
-	fld->setReserve("1:" + TSYS::int2str((i - 1) / 8));
+    for(int i = 0; i < count_n; i++) {
+	data.push_back(STCchannel(i));
+	mPrm->p_el.fldAdd(fld = new TFld(data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmDesc.c_str(), TFld::Boolean, TFld::NoWrite));
+	lnk.push_back(data[i].ValueLink);
+	fld->setReserve("1:" + TSYS::int2str((i) / 8));
 	if(with_params) {
-	    mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("Mask_%d", i).c_str(), TSYS::strMess(_("Mask %d"), i).c_str(), TFld::Boolean, TVal::DirWrite));
-	    fld->setReserve("2:" + TSYS::int2str((i - 1) / 8));
+	    lnk.push_back(data[i].MaskLink);
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
+	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
 	}
     }
 

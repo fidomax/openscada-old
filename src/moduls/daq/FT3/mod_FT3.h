@@ -172,6 +172,7 @@ namespace FT3
 	    return TController::at(nm);
 	}
 
+	bool isLogic();
 	bool Transact(tagMsg * t);
 
 	time_t DateTimeToTime_t(uint8_t *);
@@ -244,21 +245,15 @@ namespace FT3
     {
     public:
 	//Methods
-	//!!! Constructor for Root module object.
 	TTpContr(string name);
-	//!!! Destructor for Root module object.
 	~TTpContr();
 
+	TElem	&prmIOE( )	{ return elPrmIO; }
     protected:
 	//Methods
-	//!!! Post-enable processing virtual function
 	void postEnable(int flag);
-
-	//!!! Processing virtual functions for load and save Root module to DB
 	void load_();
 	void save_();
-
-	//!!! The flag for redundantion mechanism support by module detection
 	bool redntAllow()
 	{
 	    return true;
@@ -266,11 +261,9 @@ namespace FT3
 
     private:
 	//Methods
-	//!!! Processing virtual functions for self object-controller creation.
 	TController *ContrAttach(const string &name, const string &daq_db);
-
-	//!!! Module's comandline options for print help function.
-	string optDescr();
+	//Attributes
+	TElem	elPrmIO;
     };
 
 //!!! The module root link

@@ -61,7 +61,6 @@ extern "C"
     }
 }
 
-//!!! Include for default enter to your module namespace.
 using namespace FT3;
 
 time_t TMdContr::DateTimeToTime_t(uint8_t * D)
@@ -75,7 +74,6 @@ time_t TMdContr::DateTimeToTime_t(uint8_t * D)
     uint16_t d = TSYS::getUnalign16(D) >> 9;
     months[1] = (d & 3) ? 28 : 29;
     timeinfo->tm_year = d + 100;
-    //mess_info(nodePath().c_str(),_("Year: %d"),timeinfo->tm_year);
     d = TSYS::getUnalign16(D) & 0x1FF;
     if(d)
 	m = 1;
@@ -108,7 +106,6 @@ void TMdContr::Time_tToDateTime(uint8_t * D, time_t time)
     mess_info(nodePath().c_str(), _("tm_min: %d"), timeinfo->tm_min);
     mess_info(nodePath().c_str(), _("tm_sec: %d"), timeinfo->tm_sec);
     uint16_t ms = timeinfo->tm_min * 600 + timeinfo->tm_sec * 10;
-//	timeinfo->tm_year = d + 100;
     D[0] = (timeinfo->tm_yday + 1) & 0xFF;
     D[1] = ((timeinfo->tm_year - 100) << 1) | ((timeinfo->tm_yday + 1) >> 8);
     D[2] = timeinfo->tm_hour;
@@ -248,19 +245,6 @@ TTpContr::~TTpContr()
 //mess_info(nodePath().c_str(),_("TTpContr::~TTpContr"));
 }
 
-//!!! Module's comandline options for print help function.
-string TTpContr::optDescr()
-{
-//mess_info(nodePath().c_str(),_("TTpContr::optDescr"));
-    char buf[STR_BUF_LEN];
-
-    snprintf(buf, sizeof(buf), _("======================= The module <%s:%s> options =======================\n"
-	    "---------- Parameters of the module section <%s> in config file ----------\n\n"),
-    MOD_TYPE, MOD_ID, nodePath().c_str());
-
-    return buf;
-}
-
 //!!! Processing virtual function for load Root module to DB
 void TTpContr::load_()
 {
@@ -352,7 +336,9 @@ void TTpContr::postEnable(int flag)
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count TE"), TFld::Integer, TCfg::NoVal, "3", "1", "0;63"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    //tpPrmAt(t_prm).fldAdd( new TFld("OID_LS",_("OID list (next line separated)"),TFld::String,TFld::FullText|TCfg::NoVal,"100","") );
+    elPrmIO.fldAdd(new TFld("PRM_ID", _("Parameter ID"), TFld::String, TCfg::Key, i2s(atoi(OBJ_ID_SZ) * 6).c_str()));
+    elPrmIO.fldAdd(new TFld("ID", _("ID"), TFld::String, TCfg::Key, OBJ_ID_SZ));
+    elPrmIO.fldAdd(new TFld("VALUE", _("Value"), TFld::String, TCfg::TransltText, "200"));
 }
 
 //!!! Processing virtual functions for self object-controller creation.
@@ -389,20 +375,17 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
 
 uint16_t TMdContr::CRC(char *data, uint16_t length)
 {
-    /*unsigned char *p = data; */uint16_t CRC = 0, buf;
+    uint16_t CRC = 0, buf;
     uint16_t i, j;
     for(i = 0; i < length; i++) {
-	//CRC ^= ((unsigned short)*p++ << 8);
 	CRC ^= ((uint8_t) data[i] << 8);
-
-	for(j = 0; j < 8; j++)   // полином: X16+X13+X12+X11+X10+X8+X6+X5+X2+1
-		{
+	// X16+X13+X12+X11+X10+X8+X6+X5+X2+1
+	for(j = 0; j < 8; j++) {
 	    buf = CRC;
 	    CRC <<= 1;
 	    if(buf & 0x8000) CRC ^= 0x3D65;
 	}
     }
-    //   mess_info(nodePath().c_str(),_("CRC %04X"),~CRC);
     return ~CRC;
 }
 //--------------------------------------------------------------------------------------
@@ -739,6 +722,14 @@ string TMdContr::getStatus()
     return rez;
 }
 
+bool TMdContr::isLogic()
+{
+    if(cfg("CTRTYPE").getS() == "Logic") {
+	return true;
+    } else {
+	return false;
+    }
+}
 //!!! Processing virtual functions for self object-parameter creation.
 TParamContr *TMdContr::ParamAttach(const string &name, int type)
 {
@@ -891,7 +882,7 @@ void *TMdContr::LogicTask(void *icntr)
 
 void TMdContr::cntrCmdProc(XMLNode *opt)
 {
-//    mess_info(opt->name().c_str(),_("TMdContr::cntrCmdProc"));
+
     //> Get page info
     if(opt->name() == "info") {
 	TController::cntrCmdProc(opt);
@@ -1125,6 +1116,15 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
     //> Get page info
     if(opt->name() == "info") {
 	TParamContr::cntrCmdProc(opt);
+	if(owner().isLogic() && ctrMkNode("area", opt, -1, "/cfg", _("Parameters configuration"))) {
+	    if(ctrMkNode("area",opt,-1,"/cfg/ext",_("External links"))){
+
+	    }
+	    if(ctrMkNode("area",opt,-1,"/cfg/prm",_("Parameters"))){
+
+	    }
+
+	}
 
 //	ctrMkNode("fld",opt,-1,"/prm/cfg/DEV_TP",cfg("DEV_TP").fld().descr(),RWRWR_,"root",SDAQ_ID,3,"tp","str","dest","select","select","/prm/cfg/devLst");
 

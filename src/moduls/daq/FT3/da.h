@@ -22,6 +22,7 @@
 #ifndef DA_H
 #define DA_H
 
+#include <tsys.h>
 using namespace OSCADA;
 
 namespace FT3
@@ -54,6 +55,17 @@ class DA: public TElem
 		SDataRec(void ): state (0){};
 		int		state;		//Channel state
 	};
+	//Data
+	class SLnk {
+	    public:
+		SLnk( const string &iprmName, const string &iprmDesc, const string &iprmAttr = "" ) :  prmAttr(iprmAttr),prmName(iprmName),prmDesc(iprmDesc) { }
+		string	prmAttr;
+		string	prmName;
+		string	prmDesc;
+		AutoHD<TVal> aprm;
+	};
+
+	vector<SLnk> lnk;
 	//Attributes
 	TMdPrm *mPrm;
 	bool NeedInit;

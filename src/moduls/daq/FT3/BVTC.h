@@ -1,4 +1,3 @@
-
 /***************************************************************************
  *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
@@ -22,25 +21,38 @@
 
 #include "da.h"
 
-
-
-
 namespace FT3
-{                                                                                                        
-class B_BVTC: public DA
 {
+    class B_BVTC: public DA
+    {
     public:
 	//Methods
-	B_BVTC( TMdPrm *prm, uint16_t id, uint16_t n, bool has_params);
-	~B_BVTC( );
+	B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params);
+	~B_BVTC();
 	uint16_t ID;
 	uint16_t count_n;
 	bool with_params;
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
-	string  getStatus(void );
-};
+	string getStatus(void);
+	class STCchannel
+	{
+	public:
+	    STCchannel(uint8_t iid) :
+		    id(iid), Mask(0), Value(0),
+		    ValueLink(SLnk(TSYS::strMess("TC_%d", id+1).c_str(), TSYS::strMess(_("TC %d"), id+1).c_str())),
+		    MaskLink(SLnk(TSYS::strMess("Mask_%d", id+1).c_str(), TSYS::strMess(_("Mask %d"), id+1).c_str()))
+	    {
+	    }
+	    uint8_t id;
+	    uint8_t Mask;
+	    SLnk MaskLink;
+	    uint8_t Value;
+	    SLnk ValueLink;
+	};
+	vector<STCchannel> data;
+    };
 
 } //End namespace
 
