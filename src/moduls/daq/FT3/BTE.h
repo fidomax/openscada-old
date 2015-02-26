@@ -1,7 +1,6 @@
-
 /***************************************************************************
- *   Copyright (C) 2010 by Maxim Kochetkov                                 *
- *   rom_as@oscada.org, fido_max@inbox.ru                                  *
+ *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,28 +21,25 @@
 
 #include "da.h"
 
-
-
-
 namespace FT3
 {
-class B_BTE: public DA
-{
+    class B_BTE: public DA
+    {
     public:
 	//Methods
-	B_BTE( TMdPrm *prm, uint16_t id, uint16_t n, bool has_params);
-	~B_BTE( );
+	B_BTE(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params);
+	~B_BTE();
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
-	string  getStatus(void );
-	
+	string getStatus(void);
+
 	//Attributes
 	uint16_t ID;
 	uint16_t count_n;
 	bool with_params;
 
-};
+    };
 
 } //End namespace
 

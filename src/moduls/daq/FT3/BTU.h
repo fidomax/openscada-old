@@ -1,4 +1,3 @@
-
 /***************************************************************************
  *   Copyright (C) 2010 by Roman Savochenko                                *
  *   rom_as@oscada.org, rom_as@fromru.com                                  *
@@ -22,47 +21,24 @@
 
 #include "da.h"
 
-
-
-
 namespace FT3
 {
-class B_BTU: public DA
-{
+    class B_BTU: public DA
+    {
     public:
 	//Methods
-	B_BTU( TMdPrm *prm, uint16_t id, uint16_t n, bool has_params);
-	~B_BTU( );
+	B_BTU(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params);
+	~B_BTU();
 	uint16_t ID;
 	uint16_t count_n;
 	bool with_params;
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
-	string  getStatus(void );
+	string getStatus(void);
 
-	
-	//uint16_t Task(uint16_t);
-//	bool cntrCmdProc( XMLNode *opt );
-//	bool cntrCmdProc( XMLNode *opt );
-
-	//private:
-	//int mKolvo;
-
-
-
-        //Attributes
-//	int	devAddr;			//Device address
-//	string	mAttrs;
-//	bool	mMerge;
-//	vector<SDataRec>	acqBlks;	//Acquisition data blocks for registers
-	//float	numReg;
-
-};
+    };
 
 } //End namespace
 
-//*************************************************
-//* BTU                                         *
-//*************************************************
 #endif //DA_BTU_H

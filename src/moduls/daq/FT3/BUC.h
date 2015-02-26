@@ -1,7 +1,7 @@
 //OpenSCADA system module DAQ.AMRDevs file: da_Ergomera.h
 /***************************************************************************
- *   Copyright (C) 2010 by Roman Savochenko                                *
- *   rom_as@oscada.org, rom_as@fromru.com                                  *
+ *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,40 +24,31 @@
 
 namespace FT3
 {
-class B_BUC: public DA
-{
+    class B_BUC: public DA
+    {
     public:
 	//Methods
-	B_BUC( TMdPrm *prm, uint16_t id);
-	~B_BUC( );
+	B_BUC(TMdPrm *prm, uint16_t id);
+	~B_BUC();
 	uint16_t ID;
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
-	string  getStatus(void );
+	string getStatus(void);
 	uint8_t GetData(uint16_t, uint8_t *);
-
-//	bool cntrCmdProc( XMLNode *opt );
 
 	uint8_t months[12];
 
-	uint16_t mod_KP;//-----------модификация КП
-	uint8_t state;//------------состояние
-	uint8_t stateWatch;//-------состояние: 0 - норма, 1 - не установлен
-	uint8_t s_tm;//-------------адрес установившей станции
-	uint8_t wt1;//--------------задержка после включения передатчика модема
-	uint8_t wt2;//--------------задержка перед выключением передатчика модема
-	uint8_t s_wt1;//------------адрес станции установившей параметр
-	uint8_t s_wt2;//------------адрес станции установившей параметр
+	uint16_t mod_KP; //-----------модификация КП
+	uint8_t state; //------------состояние
+	uint8_t stateWatch; //-------состояние: 0 - норма, 1 - не установлен
+	uint8_t s_tm; //-------------адрес установившей станции
+	uint8_t wt1; //--------------задержка после включения передатчика модема
+	uint8_t wt2; //--------------задержка перед выключением передатчика модема
+	uint8_t s_wt1; //------------адрес станции установившей параметр
+	uint8_t s_wt2; //------------адрес станции установившей параметр
 
-        //Attributes
-//	int	devAddr;			//Device address
-//	string	mAttrs;
-//	bool	mMerge;
-//	vector<SDataRec>	acqBlks;	//Acquisition data blocks for registers
-	//float	numReg;
-
-};
+    };
 
 } //End namespace
 

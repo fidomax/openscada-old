@@ -1,7 +1,6 @@
-
 /***************************************************************************
- *   Copyright (C) 2010 by Roman Savochenko                                *
- *   rom_as@oscada.org, rom_as@fromru.com                                  *
+ *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,17 +21,14 @@
 
 #include "da.h"
 
-
-
-
 namespace FT3
 {
-class B_BTR: public DA
-{
+    class B_BTR: public DA
+    {
     public:
 	//Methods
-	B_BTR( TMdPrm *prm, uint16_t id, uint16_t nu, uint16_t nr,bool has_params);
-	~B_BTR( );
+	B_BTR(TMdPrm *prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params);
+	~B_BTR();
 	uint16_t ID;
 	uint16_t count_nu;
 	uint16_t count_nr;
@@ -40,32 +36,9 @@ class B_BTR: public DA
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
-	string  getStatus(void );
-	
-
-
-	
-	//uint16_t Task(uint16_t);
-//	bool cntrCmdProc( XMLNode *opt );
-//	bool cntrCmdProc( XMLNode *opt );
-
-	//private:
-	//int mKolvo;
-
-
-
-        //Attributes
-//	int	devAddr;			//Device address
-//	string	mAttrs;
-//	bool	mMerge;
-//	vector<SDataRec>	acqBlks;	//Acquisition data blocks for registers
-	//float	numReg;
-
-};
+	string getStatus(void);
+    };
 
 } //End namespace
 
-//*************************************************
-//* BTR                                         *
-//*************************************************
 #endif //DA_BTR_H

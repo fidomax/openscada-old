@@ -1,6 +1,6 @@
 //OpenSCADA system module Protocol.FT3 file: FT3_prt.h
 /***************************************************************************
- *   Copyright (C) 2011-2014 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -53,55 +53,70 @@ namespace FT3
 //*************************************************
 //* TProtIn                                       *
 //*************************************************
-class TProt;
-class Node;
+    class TProt;
+    class Node;
 //class NodeBlock;
 
-class TProtIn: public TProtocolIn
-{
+    class TProtIn: public TProtocolIn
+    {
     public:
 	//Methods
-	TProtIn( string name );
-	~TProtIn( );
+	TProtIn(string name);
+	~TProtIn();
 
-	bool mess( const string &request, string &answer/*, const string &sender */);
+	bool mess(const string &request, string &answer/*, const string &sender */);
 
-	TProt &owner( );
+	TProt &owner();
 
     public:
 	//Attributes
 	string req_buf;
-};
+    };
 
 //*************************************************
 //* Node: FT3 input protocol parameter.           *
 //*************************************************
 
-class NodeBlock :  public TConfig, public TFunction//public TCntrNode
-{
+    class NodeBlock: public TConfig, public TFunction //public TCntrNode
+    {
     public:
 	//> Addition flags for IO
-/*	enum IONodeFlgs
-	{
-	    IsLink	= 0x10,	//Link to subsystem's "DAQ" data
-	    LockAttr	= 0x20	//Lock attribute
-	};*/
+	/*	enum IONodeFlgs
+	 {
+	 IsLink	= 0x10,	//Link to subsystem's "DAQ" data
+	 LockAttr	= 0x20	//Lock attribute
+	 };*/
 
 	//Methods
-	NodeBlock( const string &iid, const string &db, TElem *el );
-	~NodeBlock( );
+	NodeBlock(const string &iid, const string &db, TElem *el);
+	~NodeBlock();
 
-	TCntrNode &operator=( TCntrNode &node );
+	TCntrNode &operator=(TCntrNode &node);
 
-	string id( )		{ return mId; }
-	string name( );
-	string descr( )		{ return cfg("DESCR").getS(); }
-	bool toEnable( )	{ return mAEn; }
-	bool enableStat( )	{ return mEn; }
-	int addr( );
+	string id()
+	{
+	    return mId;
+	}
+	string name();
+	string descr()
+	{
+	    return cfg("DESCR").getS();
+	}
+	bool toEnable()
+	{
+	    return mAEn;
+	}
+	bool enableStat()
+	{
+	    return mEn;
+	}
+	int addr();
 //	string inTransport( );
-	string prt( );
-	void nList( vector<string> &ls )	{ chldList(mNode,ls); }
+	string prt();
+	void nList(vector<string> &ls)
+	{
+	    chldList(mNode, ls);
+	}
 //	AutoHD<NodeParam> nAt( const string &id )	{ return chldAt(mNode,id); }
 //	int mode( );
 
@@ -109,77 +124,94 @@ class NodeBlock :  public TConfig, public TFunction//public TCntrNode
 //	string progLang( );
 //	string prog( );
 
-	string getStatus( );
+	string getStatus();
 
-	string DB( )		{ return mDB; }
-	string tbl( );
-	string fullDB( )	{ return DB()+'.'+tbl(); }
+	string DB()
+	{
+	    return mDB;
+	}
+	string tbl();
+	string fullDB()
+	{
+	    return DB() + '.' + tbl();
+	}
 
-	void setName( const string &name )	{ mName = name; }
-	void setDescr( const string &idsc )	{ mDscr = idsc; }
+	void setName(const string &name)
+	{
+	    mName = name;
+	}
+	void setDescr(const string &idsc)
+	{
+	    mDscr = idsc;
+	}
 //	void setToEnable( bool vl )		{ mAEn = vl; modif(); }
-	void setEnable( bool vl );
+	void setEnable(bool vl);
 //	void setProgLang( const string &ilng );
 //	void setProg( const string &iprg );
 
 //	void setDB( const string &vl )		{ mDB = vl; modifG(); }
 
-	bool req( const string &tr, const string &prt, unsigned char node, string &pdu );
+	bool req(const string &tr, const string &prt, unsigned char node, string &pdu);
 
-	Node &owner( );
+	Node &owner();
 
     protected:
 	//Methods
-	void load_( );
-	void save_( );
+	void load_();
+	void save_();
 
     private:
 	//Data
 	class SData
 	{
-	    public:
-		SData( ) : rReg(0), wReg(0), rCoil(0), wCoil(0)	{ }
+	public:
+	    SData() :
+		    rReg(0), wReg(0), rCoil(0), wCoil(0)
+	    {
+	    }
 
-		TValFunc	val;
-		map<int,AutoHD<TVal> > lnk;
-		map<int,int> reg, coil;
-		float rReg, wReg, rCoil, wCoil;
+	    TValFunc val;
+	    map<int, AutoHD<TVal> > lnk;
+	    map<int, int> reg, coil;
+	    float rReg, wReg, rCoil, wCoil;
 	};
 
 	//Methods
-	const char *nodeName( )	{ return mId.getSd(); }
+	const char *nodeName()
+	{
+	    return mId.getSd();
+	}
 
-	void cntrCmdProc( XMLNode *opt );	//Control interface command process
+	void cntrCmdProc(XMLNode *opt);	//Control interface command process
 
 //	void postEnable( int flag );
 //	void postDisable( int flag );		//Delete all DB if flag 1
-	bool cfgChange( TCfg &cfg );
+	bool cfgChange(TCfg &cfg);
 
-	static void *Task( void *icntr );
+	static void *Task(void *icntr);
 
 	//Attributes
-	Res	nRes;
-	SData	*data;
+	Res nRes;
+	SData *data;
 
-	TCfg	&mId, &mName, &mDscr;
+	TCfg &mId, &mName, &mDscr;
 //	double	&mPer;
-	char	&mAEn, mEn;
+	char &mAEn, mEn;
 //	bool mEn;
-	string	mDB;
+	string mDB;
 
+	int mNode;
+	bool prcSt, endrunRun;
 
-	int	mNode;
-	bool	prcSt, endrunRun;
+	float tmProc, cntReq;
+    };
 
-	float	tmProc, cntReq;
-};
-
-class NodeBUC :  public NodeBlock
-{
+    class NodeBUC: public NodeBlock
+    {
     public:
 	//Methods
-	NodeBUC( const string &iid, const string &db, TElem *el );
-	~NodeBUC( );
+	NodeBUC(const string &iid, const string &db, TElem *el);
+	~NodeBUC();
 //	AutoHD<NodeParam> nAt( const string &id )	{ return chldAt(mNode,id); }
 
 //	bool req( const string &tr, const string &prt, unsigned char node, string &pdu );
@@ -191,139 +223,208 @@ class NodeBUC :  public NodeBlock
 //	void load_( );
 //	void save_( );
 
-
 //	void cntrCmdProc( XMLNode *opt );	//Control interface command process
 
 //	static void *Task( void *icntr );
 
-};
+    };
 
 //*************************************************
 //* Node: FT3 input protocol node.             *
 //*************************************************
-class Node : public TCntrNode, public TConfig
-{
+    class Node: public TCntrNode, public TConfig
+    {
     public:
 	//> Addition flags for IO
 	enum IONodeFlgs
 	{
-	    IsLink	= 0x10,	//Link to subsystem's "DAQ" data
-	    LockAttr	= 0x20	//Lock attribute
+	    IsLink = 0x10,	//Link to subsystem's "DAQ" data
+	    LockAttr = 0x20	//Lock attribute
 	};
 
 	//Methods
-	Node( const string &iid, const string &db, TElem *el );
-	~Node( );
+	Node(const string &iid, const string &db, TElem *el);
+	~Node();
 
-	TCntrNode &operator=( TCntrNode &node );
+	TCntrNode &operator=(TCntrNode &node);
 
-	string id( )		{ return mId; }
-	string name( );
-	string descr( )		{ return cfg("DESCR").getS(); }
-	uint16_t NodeAddr( )		{ return cfg("ADDR").getI(); }
-	bool toEnable( )	{ return mAEn; }
-	bool enableStat( )	{ return mEn; }
-	int addr( );
-	string inTransport( );
-	string prt( );
-	void nListBUC( vector<string> &ls )	{ chldList(mNodeBUC,ls); }
-	bool nPresentBUC( const string &id )	{ return chldPresent(mNodeBUC,id); }
-	void nAddBUC( const string &id, const string &db = "*.*" );
-	void nDelBUC( const string &id )		{ chldDel(mNodeBUC,id); }
+	string id()
+	{
+	    return mId;
+	}
+	string name();
+	string descr()
+	{
+	    return cfg("DESCR").getS();
+	}
+	uint16_t NodeAddr()
+	{
+	    return cfg("ADDR").getI();
+	}
+	bool toEnable()
+	{
+	    return mAEn;
+	}
+	bool enableStat()
+	{
+	    return mEn;
+	}
+	int addr();
+	string inTransport();
+	string prt();
+	void nListBUC(vector<string> &ls)
+	{
+	    chldList(mNodeBUC, ls);
+	}
+	bool nPresentBUC(const string &id)
+	{
+	    return chldPresent(mNodeBUC, id);
+	}
+	void nAddBUC(const string &id, const string &db = "*.*");
+	void nDelBUC(const string &id)
+	{
+	    chldDel(mNodeBUC, id);
+	}
 //	AutoHD<Node> nAtBUC( const string &id )	{ return chldAt(mNodeBUC,id); }
-	AutoHD<NodeBlock> nAtBUC( const string &id )	{ return chldAt(mNodeBUC,id); }
+	AutoHD<NodeBlock> nAtBUC(const string &id)
+	{
+	    return chldAt(mNodeBUC, id);
+	}
 //	int mode( );
 
-	double period( )	{ return mPer; }
-	string progLang( );
-	string prog( );
+	double period()
+	{
+	    return mPer;
+	}
+	string progLang();
+	string prog();
 
-	string getStatus( );
+	string getStatus();
 
-	string DB( )		{ return mDB; }
-	string tbl( );
-	string fullDB( )	{ return DB()+'.'+tbl(); }
+	string DB()
+	{
+	    return mDB;
+	}
+	string tbl();
+	string fullDB()
+	{
+	    return DB() + '.' + tbl();
+	}
 
-	void setName( const string &name )	{ mName = name; }
-	void setDescr( const string &idsc )	{ mDscr = idsc; }
-	void setToEnable( bool vl )		{ mAEn = vl; modif(); }
-	void setEnable( bool vl );
-	void setProgLang( const string &ilng );
-	void setProg( const string &iprg );
+	void setName(const string &name)
+	{
+	    mName = name;
+	}
+	void setDescr(const string &idsc)
+	{
+	    mDscr = idsc;
+	}
+	void setToEnable(bool vl)
+	{
+	    mAEn = vl;
+	    modif();
+	}
+	void setEnable(bool vl);
+	void setProgLang(const string &ilng);
+	void setProg(const string &iprg);
 
-	void setDB( const string &vl )		{ mDB = vl; modifG(); }
+	void setDB(const string &vl)
+	{
+	    mDB = vl;
+	    modifG();
+	}
 
-	bool req( const string &tr, tagMsg *msg );
+	bool req(const string &tr, tagMsg *msg);
 
-	TProt &owner( );
-	TElem &nodeElBUC( )	{ return mNodeElBUC; }
+	TProt &owner();
+	TElem &nodeElBUC()
+	{
+	    return mNodeElBUC;
+	}
 
     protected:
 	//Methods
-	void load_( );
-	void save_( );
+	void load_();
+	void save_();
 
     private:
 	uint8_t FCB2, FCB3;
 	//Data
 	class SData
 	{
-	    public:
-		SData( ) : rReg(0), wReg(0), rCoil(0), wCoil(0)	{ }
+	public:
+	    SData() :
+		    rReg(0), wReg(0), rCoil(0), wCoil(0)
+	    {
+	    }
 
-		TValFunc	val;
-		map<int,AutoHD<TVal> > lnk;
-		map<int,int> reg, coil;
-		float rReg, wReg, rCoil, wCoil;
+	    TValFunc val;
+	    map<int, AutoHD<TVal> > lnk;
+	    map<int, int> reg, coil;
+	    float rReg, wReg, rCoil, wCoil;
 	};
 
 	//Methods
-	const char *nodeName( )	{ return mId.getSd(); }
+	const char *nodeName()
+	{
+	    return mId.getSd();
+	}
 
-	void cntrCmdProc( XMLNode *opt );	//Control interface command process
+	void cntrCmdProc(XMLNode *opt);	//Control interface command process
 
-	void postEnable( int flag );
-	void postDisable( int flag );		//Delete all DB if flag 1
-	bool cfgChange( TCfg &cfg );
+	void postEnable(int flag);
+	void postDisable(int flag);		//Delete all DB if flag 1
+	bool cfgChange(TCfg &cfg);
 
-	static void *Task( void *icntr );
+	static void *Task(void *icntr);
 
 	//Attributes
-	Res	nRes;
-	SData	*data;
-	TCfg	&mId, &mName, &mDscr;
-	double	&mPer;
-	char	&mAEn, mEn;
-	string	mDB;
+	Res nRes;
+	SData *data;
+	TCfg &mId, &mName, &mDscr;
+	double &mPer;
+	char &mAEn, mEn;
+	string mDB;
 
-
-	int	mNodeBUC,mNodeBVT,mNodeBVTC,mNodeBTU;
-	bool	prcSt, endrunRun;
-	TElem	mNodeElBUC;
-	float	tmProc, cntReq;
-};
+	int mNodeBUC, mNodeBVT, mNodeBVTC, mNodeBTU;
+	bool prcSt, endrunRun;
+	TElem mNodeElBUC;
+	float tmProc, cntReq;
+    };
 
 //*************************************************
 //* TProt                                         *
 //*************************************************
-class TProt: public TProtocol
-{
+    class TProt: public TProtocol
+    {
     public:
 	//Methods
-	TProt( string name );
-	~TProt( );
+	TProt(string name);
+	~TProt();
 
-	void modStart( );
-	void modStop( );
+	void modStart();
+	void modStop();
 
 	//> Node's functions
-	void nList( vector<string> &ls )	{ chldList(mNode,ls); }
-	bool nPresent( const string &id )	{ return chldPresent(mNode,id); }
-	void nAdd( const string &id, const string &db = "*.*" );
-	void nDel( const string &id )		{ chldDel(mNode,id); }
-	AutoHD<Node> nAt( const string &id )	{ return chldAt(mNode,id); }
+	void nList(vector<string> &ls)
+	{
+	    chldList(mNode, ls);
+	}
+	bool nPresent(const string &id)
+	{
+	    return chldPresent(mNode, id);
+	}
+	void nAdd(const string &id, const string &db = "*.*");
+	void nDel(const string &id)
+	{
+	    chldDel(mNode, id);
+	}
+	AutoHD<Node> nAt(const string &id)
+	{
+	    return chldAt(mNode, id);
+	}
 
-	void outMess( XMLNode &io, TTransportOut &tro );
+	void outMess(XMLNode &io, TTransportOut &tro);
 
 	//> Special FT3 protocol's functions
 	uint16_t CRC(const char *data, uint16_t length);
@@ -332,49 +433,61 @@ class TProt: public TProtocol
 	uint16_t VerifyPacket(string &pdu);
 	uint16_t ParsePacket(string &pdu, tagMsg * msg);
 	uint16_t Len(uint16_t l);
-	uint8_t	LRC( const string &mbap );
-	string	DataToASCII( const string &in );
-	string	ASCIIToData( const string &in );
+	uint8_t LRC(const string &mbap);
+	string DataToASCII(const string &in);
+	string ASCIIToData(const string &in);
 
 	//> Protocol
-	int prtLen( )		{ return mPrtLen; }
-	void setPrtLen( int vl );
-	void pushPrtMess( const string &vl );
+	int prtLen()
+	{
+	    return mPrtLen;
+	}
+	void setPrtLen(int vl);
+	void pushPrtMess(const string &vl);
 
-	TElem &nodeEl( )	{ return mNodeEl; }
-	TElem &nodeIOEl( )	{ return mNodeIOEl; }
+	TElem &nodeEl()
+	{
+	    return mNodeEl;
+	}
+	TElem &nodeIOEl()
+	{
+	    return mNodeIOEl;
+	}
 
-	Res &nodeRes( )		{ return nRes; }
+	Res &nodeRes()
+	{
+	    return nRes;
+	}
 
     protected:
 	//Methods
-	void load_( );
-	void save_( );
+	void load_();
+	void save_();
 
     private:
 	//Attribute
 	//> Protocol
-	int	mPrtLen;
-	deque<string>	mPrt;
+	int mPrtLen;
+	deque<string> mPrt;
 
 	//> Special FT3 protocol's attributes
 	static uint8_t CRCHi[];
 	static uint8_t CRCLo[];
 
 	//Methods
-	TProtocolIn *in_open( const string &name );
+	TProtocolIn *in_open(const string &name);
 
-	void cntrCmdProc( XMLNode *opt );	//Control interface command process
+	void cntrCmdProc(XMLNode *opt);	//Control interface command process
 
 	//Attributes
-	int	mNode;
+	int mNode;
 
-	TElem	mNodeEl, mNodeIOEl;
+	TElem mNodeEl, mNodeIOEl;
 
-	Res	nRes;
-};
+	Res nRes;
+    };
 
-extern TProt *modPrt;
+    extern TProt *modPrt;
 } //End namespace FT3
 
 #endif //FT3_PRT_H

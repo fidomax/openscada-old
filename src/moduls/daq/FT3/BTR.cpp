@@ -1,7 +1,7 @@
 //OpenSCADA system module DAQ.AMRDevs file: da_Ergomera.cpp
 /***************************************************************************
- *   Copyright (C) 2010 by Roman Savochenko                                *
- *   rom_as@oscada.org, rom_as@fromru.com                                  *
+ *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,265 +25,247 @@
 #include "mod_FT3.h"
 #include "BTR.h"
 
-
 using namespace FT3;
-//*************************************************
-//* BTR                                           *
-//*************************************************
 
-B_BTR::B_BTR( TMdPrm *prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params) : DA(prm), ID(id<<12), count_nu(nu), count_nr(nr), with_params(has_params)//, numReg(0)
+B_BTR::B_BTR(TMdPrm *prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params) :
+	DA(prm), ID(id << 12), count_nu(nu), count_nr(nr), with_params(has_params)
 
 {
-	TFld * fld;
-	mPrm->p_el.fldAdd(fld = new TFld("state",_("State"),TFld::Integer,TFld::NoWrite));
-	                                         //mPrm->p_el.fldAdd(fld = new TFld("state",_("State"),TFld::Integer,TFld::NoWrite) );
-	fld->setReserve("0:0");
-	if (count_nu) {
-		mPrm->p_el.fldAdd(fld = new TFld("selection",_("Select TU"),TFld::Integer,TVal::DirWrite));
-		fld->setReserve("0:1");
-		mPrm->p_el.fldAdd(fld = new TFld("execution",_("Execution"),TFld::Integer,TVal::DirWrite));
-		fld->setReserve("0:2");
-	}
+    TFld * fld;
+    mPrm->p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
+    fld->setReserve("0:0");
+    if(count_nu) {
+	mPrm->p_el.fldAdd(fld = new TFld("selection", _("Select TU"), TFld::Integer, TVal::DirWrite));
+	fld->setReserve("0:1");
+	mPrm->p_el.fldAdd(fld = new TFld("execution", _("Execution"), TFld::Integer, TVal::DirWrite));
+	fld->setReserve("0:2");
+    }
 
-	for (int i = 1; i <= count_nu; i++)	{
-		if (with_params) {
-			mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("time_%d",i).c_str(),TSYS::strMess(_("Persistence time %d"),i).c_str(),TFld::Integer,TVal::DirWrite));
-			fld->setReserve(TSYS::strMess("%d:0",i));		
-			mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("TC_%d",i).c_str(),TSYS::strMess(_("TC bind %d"),i).c_str(),TFld::Integer,TVal::DirWrite));
-			fld->setReserve(TSYS::strMess("%d:1",i));
-			mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("astime_%d",i).c_str(),TSYS::strMess(_("Persistence astime %d"),i).c_str(),TFld::Integer,TVal::DirWrite));
-			fld->setReserve(TSYS::strMess("%d:2",i));
-		}
+    for(int i = 1; i <= count_nu; i++) {
+	if(with_params) {
+	    mPrm->p_el.fldAdd(
+		    fld = new TFld(TSYS::strMess("time_%d", i).c_str(), TSYS::strMess(_("Persistence time %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
+	    fld->setReserve(TSYS::strMess("%d:0", i));
+	    mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("TC_%d", i).c_str(), TSYS::strMess(_("TC bind %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
+	    fld->setReserve(TSYS::strMess("%d:1", i));
+	    mPrm->p_el.fldAdd(
+		    fld = new TFld(TSYS::strMess("astime_%d", i).c_str(), TSYS::strMess(_("Persistence astime %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
+	    fld->setReserve(TSYS::strMess("%d:2", i));
 	}
-	for (int i = 1; i <= count_nr; i++)	{
-		mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("sett_%d",i).c_str(),TSYS::strMess(_("Setting %d"),i).c_str(),TFld::Real,TVal::DirWrite));
-		fld->setReserve(TSYS::strMess("%d:0",i + count_nu));
-	}
-    	
-}
-
-B_BTR::~B_BTR( )
-{
+    }
+    for(int i = 1; i <= count_nr; i++) {
+	mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("sett_%d", i).c_str(), TSYS::strMess(_("Setting %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	fld->setReserve(TSYS::strMess("%d:0", i + count_nu));
+    }
 
 }
 
-string  B_BTR::getStatus(void )
+B_BTR::~B_BTR()
 {
-	string rez;
-	if (NeedInit){
-		rez = "20: Опрос";
-	} else {
-		rez = "0: Норма";
-	}
-	return rez;
+
+}
+
+string B_BTR::getStatus(void)
+{
+    string rez;
+    if(NeedInit) {
+	rez = "20: Опрос";
+    } else {
+	rez = "0: Норма";
+    }
+    return rez;
 
 }
 
 uint16_t B_BTR::Task(uint16_t uc)
 {
     tagMsg Msg;
-	uint16_t rc = 0;
-	switch (uc){
-		case TaskRefresh:
-		    Msg.L = 9;
-		    Msg.C = AddrReq;
-		    *((uint16_t *)Msg.D) 		= ID|( 0<<6 )|( 0); //состояние
-		    *((uint16_t *)(Msg.D + 2)) 	= ID|( 0<<6 )|( 1); //выбор ТУ
-		    *((uint16_t *)(Msg.D + 4)) 	= ID|( 0<<6 )|( 2); //исполнение
-			if (mPrm->owner().Transact(&Msg)) {
-				if (Msg.C == GOOD3) {
-					//mess_info(mPrm->nodePath().c_str(),_("Data"));
-					mPrm->vlAt("state").at().setI(Msg.D[7],0,true);
-					mPrm->vlAt("selection").at().setI(Msg.D[13],0,true);
-					mPrm->vlAt("execution").at().setI(Msg.D[19],0,true);
+    uint16_t rc = 0;
+    switch(uc) {
+    case TaskRefresh:
+	Msg.L = 9;
+	Msg.C = AddrReq;
+	*((uint16_t *) Msg.D) = ID | (0 << 6) | (0); //состояние
+	*((uint16_t *) (Msg.D + 2)) = ID | (0 << 6) | (1); //выбор ТУ
+	*((uint16_t *) (Msg.D + 4)) = ID | (0 << 6) | (2); //исполнение
+	if(mPrm->owner().Transact(&Msg)) {
+	    if(Msg.C == GOOD3) {
+		mPrm->vlAt("state").at().setI(Msg.D[7], 0, true);
+		mPrm->vlAt("selection").at().setI(Msg.D[13], 0, true);
+		mPrm->vlAt("execution").at().setI(Msg.D[19], 0, true);
+		if(with_params) {
+		    for(int i = 1; i <= count_nu; i++) {
+			Msg.L = 9;
+			Msg.C = AddrReq;
+			*((uint16_t *) Msg.D) = ID | (i << 6) | (0); //время выдержки
+			*((uint16_t *) (Msg.D + 2)) = ID | (i << 6) | (1); //ТС
+			*((uint16_t *) (Msg.D + 4)) = ID | (i << 6) | (2); //доп время выдержки
 
-					if (with_params){
-						for (int i = 1; i <= count_nu; i++)	{
-							Msg.L = 9;
-							Msg.C = AddrReq;
-							*((uint16_t *)Msg.D) 		= ID|( i<<6 )|( 0); //время выдержки
-							*((uint16_t *)(Msg.D + 2))	= ID|( i<<6 )|( 1); //ТС
-							*((uint16_t *)(Msg.D + 4))	= ID|( i<<6 )|( 2); //доп время выдержки
-
-							if (mPrm->owner().Transact(&Msg)) {
-								if (Msg.C == GOOD3)  {
-									mPrm->vlAt(TSYS::strMess("time_%d",i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 8),0,true);
-									mPrm->vlAt(TSYS::strMess("TC_%d",i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 15),0,true);
-									mPrm->vlAt(TSYS::strMess("astime_%d",i).c_str()).at().setI(Msg.D[22],0,true);
-									rc = 1;
-								} else {
-									rc = 0;
-									break;
-								}
-							} else {
-								rc = 0;
-								break;
-							}
-
-						}
-
-
-					for (int i = 1; i <= count_nr; i++)	{
-							Msg.L = 5;
-							Msg.C = AddrReq;
-							*((uint16_t *)Msg.D) 		= ID|( (i + count_nu)<<6 )|( 0); //уставка
-							
-
-							if (mPrm->owner().Transact(&Msg)) {
-								if (Msg.C == GOOD3)  {
-									mPrm->vlAt(TSYS::strMess("sett_%d",i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 8),0,true);
-									rc = 1;
-								} else {
-									rc = 0;
-									break;
-								}
-							} else {
-								rc = 0;
-								break;
-							}
-
-						}					
-
-
-					} else {
-						rc = 1;
-					}
-				}
+			if(mPrm->owner().Transact(&Msg)) {
+			    if(Msg.C == GOOD3) {
+				mPrm->vlAt(TSYS::strMess("time_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 8), 0, true);
+				mPrm->vlAt(TSYS::strMess("TC_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 15), 0, true);
+				mPrm->vlAt(TSYS::strMess("astime_%d", i).c_str()).at().setI(Msg.D[22], 0, true);
+				rc = 1;
+			    } else {
+				rc = 0;
+				break;
+			    }
+			} else {
+			    rc = 0;
+			    break;
+			}
 
 		    }
-			if (rc) NeedInit = false;
-			break;
+		    for(int i = 1; i <= count_nr; i++) {
+			Msg.L = 5;
+			Msg.C = AddrReq;
+			*((uint16_t *) Msg.D) = ID | ((i + count_nu) << 6) | (0); //уставка
+			if(mPrm->owner().Transact(&Msg)) {
+			    if(Msg.C == GOOD3) {
+				mPrm->vlAt(TSYS::strMess("sett_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 8), 0, true);
+				rc = 1;
+			    } else {
+				rc = 0;
+				break;
+			    }
+			} else {
+			    rc = 0;
+			    break;
+			}
+		    }
+		} else {
+		    rc = 1;
+		}
+	    }
 	}
-	return rc;
+	if(rc) NeedInit = false;
+	break;
+    }
+    return rc;
 }
 uint16_t B_BTR::HandleEvent(uint8_t * D)
 {
-	if ((TSYS::getUnalign16(D) & 0xF000) != ID) return 0;
-	//mess_info(mPrm->nodePath().c_str(),_("B_BVI::HandleEvent"));
-	uint16_t l = 0;
-	uint16_t k = (TSYS::getUnalign16(D) >> 6) & 0x3F; // номер объекта
-	uint16_t n = TSYS::getUnalign16(D) & 0x3F;  // номер параметра
+    if((TSYS::getUnalign16(D) & 0xF000) != ID) return 0;
+    uint16_t l = 0;
+    uint16_t k = (TSYS::getUnalign16(D) >> 6) & 0x3F; // номер объекта
+    uint16_t n = TSYS::getUnalign16(D) & 0x3F;  // номер параметра
 
-	switch (k) {
-		case 0:
-			switch (n) {
-				case 0:
-					mPrm->vlAt("state").at().setI(D[2],0,true);
-					l = 3;
-					break;
-				case 1:
-					mPrm->vlAt(TSYS::strMess("selection").c_str()).at().setI(D[3],0,true);
-					l = 4;
-					break;
-				case 2:
-					mPrm->vlAt(TSYS::strMess("execution").c_str()).at().setI(D[3],0,true);
-					l = 4;
-					break;
-				}
-			break;
-		default:
-			if (k && (k <= count_nu)) {
-				switch (n) {
-					case 0:
-						mPrm->vlAt(TSYS::strMess("time_%d",k).c_str()).at().setI(TSYS::getUnalign16(D + 3),0,true);
-						l = 5;
-						break;
-					
-					case 1:
-						if (with_params){
-							mPrm->vlAt(TSYS::strMess("TC_%d",k).c_str()).at().setI(TSYS::getUnalign16(D + 3),0,true);
-						}
-						l = 5;
-						break;
-					case 2:
-						if (with_params){
-							mPrm->vlAt(TSYS::strMess("astime_%d",k).c_str()).at().setI(D[3],0,true);;
-						}
-						l = 4;
-						break;
-					
-				}
-			}
-			break;
-		
-			if (k && (k <= count_nr)) {
-				switch (n) {
-					case 0:
-						mPrm->vlAt(TSYS::strMess("sett_%d",k).c_str()).at().setR(TSYS::getUnalignFloat(D +3),0,true);
-						l = 7;
-						break;
-					
-					}
-			}
-			break;
+    switch(k) {
+    case 0:
+	switch(n) {
+	case 0:
+	    mPrm->vlAt("state").at().setI(D[2], 0, true);
+	    l = 3;
+	    break;
+	case 1:
+	    mPrm->vlAt(TSYS::strMess("selection").c_str()).at().setI(D[3], 0, true);
+	    l = 4;
+	    break;
+	case 2:
+	    mPrm->vlAt(TSYS::strMess("execution").c_str()).at().setI(D[3], 0, true);
+	    l = 4;
+	    break;
 	}
-	return l;
+	break;
+    default:
+	if(k && (k <= count_nu)) {
+	    switch(n) {
+	    case 0:
+		mPrm->vlAt(TSYS::strMess("time_%d", k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
+		l = 5;
+		break;
+
+	    case 1:
+		if(with_params) {
+		    mPrm->vlAt(TSYS::strMess("TC_%d", k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
+		}
+		l = 5;
+		break;
+	    case 2:
+		if(with_params) {
+		    mPrm->vlAt(TSYS::strMess("astime_%d", k).c_str()).at().setI(D[3], 0, true);
+		    ;
+		}
+		l = 4;
+		break;
+
+	    }
+	}
+	break;
+	if(k && (k <= count_nr)) {
+	    switch(n) {
+	    case 0:
+		mPrm->vlAt(TSYS::strMess("sett_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
+		l = 7;
+		break;
+
+	    }
+	}
+	break;
+    }
+    return l;
 }
 
 uint16_t B_BTR::setVal(TVal &val)
 {
-	int off = 0;
-	uint16_t k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(),NULL,0); // номер объекта
-	uint16_t n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(),NULL,0); // номер параметра
-	uint16_t addr = ID | (k <<6) | n;
-
+    int off = 0;
+    uint16_t k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
+    uint16_t n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    uint16_t addr = ID | (k << 6) | n;
     tagMsg Msg;
-    switch (k) {
-		case 0:
-			switch (n) {
-				case 1: case 2:
-					Msg.L = 6;
-					Msg.C = SetData;
-					Msg.D[0] = addr & 0xFF;
-					Msg.D[1] = (addr >> 8) & 0xFF;
-					Msg.D[2] = val.get(NULL,true).getI();
-					if ( (n == 2) && (Msg.D[2] != 0x55)){
-						Msg.D[2] = 0;
-					}
-					mPrm->owner().Transact(&Msg);
-					break;
-			}
-			break;
-		default :
-			switch (n) {
-				case 0: case 1:
-					Msg.L = 7;
-					Msg.C = SetData;
-					Msg.D[0] = addr & 0xFF;
-					Msg.D[1] = (addr >> 8) & 0xFF;
-					*(uint16_t *)(Msg.D + 2) = (uint16_t)val.get(NULL,true).getI();
-					mPrm->owner().Transact(&Msg);
-					break;
-				case 2:
-					Msg.L = 6;
-					Msg.C = SetData;
-					Msg.D[0] = addr & 0xFF;
-					Msg.D[1] = (addr >> 8) & 0xFF;
-					Msg.D[2] = val.get(NULL,true).getI();
-					mPrm->owner().Transact(&Msg);
-					break;
-			}
-			break;
-		
-			switch (n) {
-				case 0: 
-					Msg.L = 9;
-					Msg.C = SetData;
-					Msg.D[0] = addr & 0xFF;
-					Msg.D[1] = (addr >> 8) & 0xFF;
-					*(float *)(Msg.D + 2)  = (float)val.get(NULL,true).getR();
-					mPrm->owner().Transact(&Msg);
-					break;
-				}
-			break;
+    switch(k) {
+    case 0:
+	switch(n) {
+	case 1:
+	case 2:
+	    Msg.L = 6;
+	    Msg.C = SetData;
+	    Msg.D[0] = addr & 0xFF;
+	    Msg.D[1] = (addr >> 8) & 0xFF;
+	    Msg.D[2] = val.get(NULL, true).getI();
+	    if((n == 2) && (Msg.D[2] != 0x55)) {
+		Msg.D[2] = 0;
+	    }
+	    mPrm->owner().Transact(&Msg);
+	    break;
+	}
+	break;
+    default:
+	switch(n) {
+	case 0:
+	case 1:
+	    Msg.L = 7;
+	    Msg.C = SetData;
+	    Msg.D[0] = addr & 0xFF;
+	    Msg.D[1] = (addr >> 8) & 0xFF;
+	    *(uint16_t *) (Msg.D + 2) = (uint16_t) val.get(NULL, true).getI();
+	    mPrm->owner().Transact(&Msg);
+	    break;
+	case 2:
+	    Msg.L = 6;
+	    Msg.C = SetData;
+	    Msg.D[0] = addr & 0xFF;
+	    Msg.D[1] = (addr >> 8) & 0xFF;
+	    Msg.D[2] = val.get(NULL, true).getI();
+	    mPrm->owner().Transact(&Msg);
+	    break;
+	}
+	break;
+
+	switch(n) {
+	case 0:
+	    Msg.L = 9;
+	    Msg.C = SetData;
+	    Msg.D[0] = addr & 0xFF;
+	    Msg.D[1] = (addr >> 8) & 0xFF;
+	    *(float *) (Msg.D + 2) = (float) val.get(NULL, true).getR();
+	    mPrm->owner().Transact(&Msg);
+	    break;
+	}
+	break;
     }
-	return 0;
+    return 0;
 }
-
-
-
-
-		
-		
 
 //---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 
 /***************************************************************************
- *   Copyright (C) 2010 by Roman Savochenko                                *
- *   rom_as@oscada.org, rom_as@fromru.com                                  *
+ *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -40,30 +40,8 @@ class B_BVTC: public DA
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
 	string  getStatus(void );
-
-
-	
-	//uint16_t Task(uint16_t);
-//	bool cntrCmdProc( XMLNode *opt );
-//	bool cntrCmdProc( XMLNode *opt );
-
-	//private:
-	//int mKolvo;
-
-
-
-        //Attributes
-//	int	devAddr;			//Device address
-//	string	mAttrs;
-//	bool	mMerge;
-//	vector<SDataRec>	acqBlks;	//Acquisition data blocks for registers
-	//float	numReg;
-
 };
 
 } //End namespace
 
-//*************************************************
-//* BVTC                                           *
-//*************************************************
 #endif //DA_BVTC_H

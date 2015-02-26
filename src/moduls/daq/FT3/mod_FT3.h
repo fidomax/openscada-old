@@ -1,7 +1,6 @@
-//!!! Module name, file name and module's license. Change for your need.
 //OpenSCADA system module DAQ.ft3 file: mod_ft3.h
 /***************************************************************************
- *   Copyright (C) 2014 by Maxim Kochetkov                                 *
+ *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *

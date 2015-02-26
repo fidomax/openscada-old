@@ -1,8 +1,8 @@
 
 //OpenSCADA system module DAQ.AMRDevs file: da.h
 /***************************************************************************
- *   Copyright (C) 2010 by Roman Savochenko                                *
- *   rom_as@oscada.org, rom_as@fromru.com                                  *
+ *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -27,9 +27,6 @@ using namespace OSCADA;
 namespace FT3
 {
 
-//*************************************************
-//* DA                                            *
-//*************************************************
 class TMdPrm;
 class TMdContr;
 

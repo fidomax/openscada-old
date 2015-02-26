@@ -1,6 +1,6 @@
 //OpenSCADA system module DAQ.ft3 file: mod_FT3.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2014 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -18,16 +18,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-//#include <getopt.h>
-//#include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
 
-//#include <terror.h>
-//#include <tsys.h>
-//#include <tmess.h>
 #include <ttypeparam.h>
-//#include <tdaqs.h>
 
 #include "BUC.h"
 #include "BVI.h"
@@ -40,14 +34,10 @@
 #include "BTR.h"
 #include "BTE.h"
 
-//!!! Self your module's includings. Add need for your module includings.
 #include "mod_FT3.h"
 #include "FT3_prt.h"
 
-FT3::TTpContr *FT3::mod;  //Pointer for direct access to module
-
-//!!! Required section for binding OpenSCADA core to this module. It give information and create module root object.
-//!!! Not remove this section!
+FT3::TTpContr *FT3::mod;
 extern "C"
 {
     TModule::SAt module(int nMod)
