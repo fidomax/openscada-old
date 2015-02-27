@@ -1142,12 +1142,36 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
     	    }
     	    else opt->setText(lnk_val);
     	}
+	if(ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR)) {
+	    string no_set;
+	    mess_info(nodePath().c_str(), _("======%s"),opt->text().c_str());
+	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr = opt->text();
+/*	    string p_nm = TSYS::strSepParse(tmpl->val.func()->io(lnk(lnkId(s2i(a_path.substr(12)))).ioId)->def(),0,'|');
+	    string p_vl = TSYS::strParse(opt->text(), 0, " ");
+	    if(p_vl == DAQPath()) throw TError(nodePath().c_str(),_("Self to self linking error."));
+	    AutoHD<TValue> prm = SYS->daq().at().prmAt(p_vl, '.', true);
+
+	    for(int i_l = 0; i_l < lnkSize(); i_l++)
+		if(p_nm == TSYS::strSepParse(tmpl->val.func()->io(lnk(i_l).ioId)->def(),0,'|')) {
+		    lnk(i_l).prmAttr = p_vl;
+		    string p_attr = TSYS::strSepParse(tmpl->val.func()->io(lnk(i_l).ioId)->def(),1,'|');
+		    if(!prm.freeStat()) {
+			if(prm.at().vlPresent(p_attr)) {
+			    lnk(i_l).prmAttr= p_vl+"."+p_attr;
+			    modif();
+			}
+			else no_set += p_attr+",";
+		    }
+		}
+//	    initTmplLnks();*/
+	}
     } else if( (a_path.compare(0,12, "/cfg/prm/pl_") == 0 || a_path.compare(0, 12, "/cfg/prm/ls_") == 0) && ctrChkNode(opt)) {
-	bool is_pl = (a_path.compare(0, 12, "/cfg/prm/pl_") == 0);
+//	bool is_pl = (a_path.compare(0, 12, "/cfg/prm/pl_") == 0);
 	string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;;
-	if(is_pl && !SYS->daq().at().attrAt(m_prm, '.', true).freeStat()) m_prm = m_prm.substr(0, m_prm.rfind("."));
+//	mess_info(nodePath().c_str(), _("====prmAttr== %s"),m_prm.c_str());
+	if(!SYS->daq().at().attrAt(m_prm, '.', true).freeStat()) m_prm = m_prm.substr(0, m_prm.rfind("."));
 	//mess_info(nodePath().c_str(), _("++++++++++++++"));
-	SYS->daq().at().ctrListPrmAttr(opt, m_prm, is_pl, '.');
+	SYS->daq().at().ctrListPrmAttr(opt, m_prm, false, '.');
     }
     TParamContr::cntrCmdProc(opt);
 
