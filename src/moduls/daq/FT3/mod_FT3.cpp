@@ -866,6 +866,12 @@ void *TMdContr::LogicTask(void *icntr)
 	MtxAlloc prmRes(cntr.enRes, true);
 
 	//TODO FT3 logic handler
+	    vector<string> lst;
+	    cntr.list(lst);
+	    for(int i_l = 0; i_l < lst.size(); i_l++) {
+		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
+		t.at().tmHandler();
+	    }
 
 	prmRes.unlock();
 
@@ -1030,14 +1036,21 @@ uint16_t TMdPrm::Task(uint16_t cod)
 }
 
 uint16_t TMdPrm::HandleEvent(uint8_t * D)
-
-//string req, rez;
 {
-//    mess_info(nodePath().c_str(),_("TMdContr::Task_Mdprm"));
     if(mDA) {
 	return mDA->HandleEvent(D);
     } else {
 	return 0;
+    }
+
+}
+
+void TMdPrm::tmHandler()
+{
+    if(mDA) {
+	mDA->tmHandler();
+    } else {
+	return;
     }
 
 }
@@ -1124,9 +1137,6 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
 		}
 
 	    }
-/*	    if(ctrMkNode("area", opt, -1, "/cfg/prm", _("Parameters"))) {
-
-	    }*/
 
 	}
 
@@ -1135,7 +1145,6 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
     if(a_path.substr(0,12) == "/cfg/prm/pr_") {
     	if(ctrChkNode(opt,"get",RWRWR_,"root",SDAQ_ID,SEC_RD)) {
     	    string lnk_val = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
-    	    //mess_info(nodePath().c_str(), _("--%s --%s"),a_path.substr(9).c_str(),lnk_val.c_str());
     	    if(!SYS->daq().at().attrAt(TSYS::strParse(lnk_val,0,"#"),'.',true).freeStat()) {
     		opt->setText(lnk_val.substr(0,lnk_val.rfind(".")));
     		opt->setText(opt->text()+" (+)");
@@ -1144,33 +1153,11 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
     	}
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR)) {
 	    string no_set;
-	    mess_info(nodePath().c_str(), _("======%s"),opt->text().c_str());
 	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr = opt->text();
-/*	    string p_nm = TSYS::strSepParse(tmpl->val.func()->io(lnk(lnkId(s2i(a_path.substr(12)))).ioId)->def(),0,'|');
-	    string p_vl = TSYS::strParse(opt->text(), 0, " ");
-	    if(p_vl == DAQPath()) throw TError(nodePath().c_str(),_("Self to self linking error."));
-	    AutoHD<TValue> prm = SYS->daq().at().prmAt(p_vl, '.', true);
-
-	    for(int i_l = 0; i_l < lnkSize(); i_l++)
-		if(p_nm == TSYS::strSepParse(tmpl->val.func()->io(lnk(i_l).ioId)->def(),0,'|')) {
-		    lnk(i_l).prmAttr = p_vl;
-		    string p_attr = TSYS::strSepParse(tmpl->val.func()->io(lnk(i_l).ioId)->def(),1,'|');
-		    if(!prm.freeStat()) {
-			if(prm.at().vlPresent(p_attr)) {
-			    lnk(i_l).prmAttr= p_vl+"."+p_attr;
-			    modif();
-			}
-			else no_set += p_attr+",";
-		    }
-		}
-//	    initTmplLnks();*/
 	}
-    } else if( (a_path.compare(0,12, "/cfg/prm/pl_") == 0 || a_path.compare(0, 12, "/cfg/prm/ls_") == 0) && ctrChkNode(opt)) {
-//	bool is_pl = (a_path.compare(0, 12, "/cfg/prm/pl_") == 0);
+    } else if( (a_path.compare(0,12, "/cfg/prm/pl_") == 0 ) && ctrChkNode(opt)) {
 	string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;;
-//	mess_info(nodePath().c_str(), _("====prmAttr== %s"),m_prm.c_str());
 	if(!SYS->daq().at().attrAt(m_prm, '.', true).freeStat()) m_prm = m_prm.substr(0, m_prm.rfind("."));
-	//mess_info(nodePath().c_str(), _("++++++++++++++"));
 	SYS->daq().at().ctrListPrmAttr(opt, m_prm, false, '.');
     }
     TParamContr::cntrCmdProc(opt);

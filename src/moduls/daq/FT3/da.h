@@ -45,6 +45,7 @@ class DA: public TElem
 	virtual uint8_t GetData(uint16_t, uint8_t *) {}
 	virtual bool cntrCmdProc( XMLNode *opt )	{ return false; }
 	virtual string getStatus( )	{ }
+	virtual void tmHandler(void) { }
 	void setInit(bool bInit) {NeedInit = bInit;}
 	bool IsNeedUpdate() {return NeedInit;}
 

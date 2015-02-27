@@ -120,6 +120,7 @@ namespace FT3
 	uint8_t GetData(uint16_t, uint8_t *);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
+	void tmHandler(void);
 	TElem p_el;			//Work atribute elements
 
     protected:

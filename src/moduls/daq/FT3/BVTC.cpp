@@ -65,6 +65,11 @@ string B_BVTC::getStatus(void)
 
 }
 
+void B_BVTC::tmHandler(void)
+{
+
+}
+
 uint16_t B_BVTC::Task(uint16_t uc)
 {
     tagMsg Msg;

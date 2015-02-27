@@ -36,6 +36,7 @@ namespace FT3
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
+	void tmHandler(void);
 	class STCchannel
 	{
 	public:
