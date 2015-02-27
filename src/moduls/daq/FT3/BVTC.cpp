@@ -37,10 +37,10 @@ B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
     for(int i = 0; i < count_n; i++) {
 	data.push_back(STCchannel(i));
 	mPrm->p_el.fldAdd(fld = new TFld(data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmDesc.c_str(), TFld::Boolean, TFld::NoWrite));
-	lnk.push_back(data[i].ValueLink);
+	mlnk.push_back(data[i].ValueLink);
 	fld->setReserve("1:" + TSYS::int2str((i) / 8));
 	if(with_params) {
-	    lnk.push_back(data[i].MaskLink);
+	    mlnk.push_back(data[i].MaskLink);
 	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
 	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
 	}

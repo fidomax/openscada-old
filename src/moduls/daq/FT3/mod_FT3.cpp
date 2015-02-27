@@ -1105,8 +1105,6 @@ void TMdPrm::save_()
 //!!! Processing virtual function for OpenSCADA control interface comands
 void TMdPrm::cntrCmdProc(XMLNode *opt)
 {
-//	mess_info(opt->name().c_str(),_("cntrCmdProc"));
-    //> Service commands process
     string a_path = opt->attr("path");
     if(a_path.substr(0, 6) == "/serv/") {
 	TParamContr::cntrCmdProc(opt);
@@ -1117,56 +1115,40 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
     if(opt->name() == "info") {
 	TParamContr::cntrCmdProc(opt);
 	if(owner().isLogic() && ctrMkNode("area", opt, -1, "/cfg", _("Parameters configuration"))) {
-	    if(ctrMkNode("area",opt,-1,"/cfg/ext",_("External links"))){
+	    if(ctrMkNode("area", opt, -1, "/cfg/prm", _("Parameters"))) {
+		if(mDA) {
+		    for(int i_io = 0; i_io < mDA->lnkSize(); i_io++) {
+			ctrMkNode("fld", opt, -1, (string("/cfg/prm/pr_") + mDA->lnk(i_io).prmName).c_str(), mDA->lnk(i_io).prmDesc, RWRWR_, "root", SDAQ_ID, 3,
+				"tp", "str", "dest", "sel_ed", "select", (string("/cfg/prm/pl_") + mDA->lnk(i_io).prmName).c_str());
+		    }
+		}
 
 	    }
-	    if(ctrMkNode("area",opt,-1,"/cfg/prm",_("Parameters"))){
+/*	    if(ctrMkNode("area", opt, -1, "/cfg/prm", _("Parameters"))) {
 
-	    }
+	    }*/
 
 	}
 
-//	ctrMkNode("fld",opt,-1,"/prm/cfg/DEV_TP",cfg("DEV_TP").fld().descr(),RWRWR_,"root",SDAQ_ID,3,"tp","str","dest","select","select","/prm/cfg/devLst");
-
-//	ctrMkNode("fld",opt,-1,"/prm/cfg/OID_LS",cfg("OID_LS").fld().descr(),enableStat()?R_R_R_:RWRWR_,"root",SDAQ_ID);
-//	ctrMkNode(new TFld("TO_PRTR",_("Blocs"),TFld::String,TFld::Selected,"5","BUC","BUC;BTR;BVT;BVTS;BPI",_("BUC;BTR;BVT;BVTS;BPI")));
-	/*	TParamContr::cntrCmdProc(opt);
-	 ctrMkNode("fld",opt,-1,"/prm/cfg/OID_LS",cfg("OID_LS").fld().descr(),RWRWR_,"root",SDAQ_ID,3,"rows","8","SnthHgl","1",
-	 "help",_("Attributes configuration list. List must be written by lines in format: [dt:numb:rw:id:name]\n"
-	 "Where:\n"
-	 "  dt - FT3 data type (R-register[3,6(16)],C-coil[1,5(15)],RI-input register[4],CI-input coil[2]).\n"
-	 "       R and RI can expanded by suffixes: i2-Int16, i4-Int32, f-Float, b5-Bit5;\n"
-	 "  numb - ModBus device's data address (dec, hex or octal);\n"
-	 "  rw - read-write mode (r-read; w-write; rw-readwrite);\n"
-	 "  id - created attribute identifier;\n"
-	 "  name - created attribute name.\n"
-	 "Example:\n"
-	 "  'R:0x300:rw:var:Variable' - register access;\n"
-	 "  'C:100:r:var1:Variable 1' - coin access;\n"
-	 "  'R_f:200:r:float:Float' - get float from registers 200 and 201;\n"
-	 "  'R_i4:300,400:r:int32:Int32' - get int32 from registers 300 and 400;\n"
-	 "  'R_b10:25:r:rBit:Reg bit' - get bit 10 from register 25."));*/
-
 	return;
     }
-
-    //> Process command to page
-    /*    if(a_path == "/prm/cfg/OID_LS" && ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR))
-     {
-     if(enableStat())	throw TError(nodePath().c_str(),"Parameter is enabled.");
-     //	parseOIDList(opt->text());
-     opt->childAdd("rule")->setAttr("expr",":(r|w|rw):")->setAttr("color","red");
-     opt->childAdd("rule")->setAttr("expr",":(0[xX][0-9a-fA-F]*|[0-9]*)")->setAttr("color","blue");
-     opt->childAdd("rule")->setAttr("expr","^(C|CI|R|RI|RI?_[ibf]\\d*)")->setAttr("color","darkorange");
-     opt->childAdd("rule")->setAttr("expr","\\:")->setAttr("color","blue");
-
-     }*/
-//    if(a_path == "/prm/cfg/devLst" && ctrChkNode(opt))
-    //   {
-//	opt->childAdd("el")->setAttr("id","TP_BUC")->setText(_("BUC"));
-//	opt->childAdd("el")->setAttr("id","TP_BVTC")->setText(_("BVTC"));
-    //   }
-    //   else
+    if(a_path.substr(0,12) == "/cfg/prm/pr_") {
+    	if(ctrChkNode(opt,"get",RWRWR_,"root",SDAQ_ID,SEC_RD)) {
+    	    string lnk_val = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
+    	    //mess_info(nodePath().c_str(), _("--%s --%s"),a_path.substr(9).c_str(),lnk_val.c_str());
+    	    if(!SYS->daq().at().attrAt(TSYS::strParse(lnk_val,0,"#"),'.',true).freeStat()) {
+    		opt->setText(lnk_val.substr(0,lnk_val.rfind(".")));
+    		opt->setText(opt->text()+" (+)");
+    	    }
+    	    else opt->setText(lnk_val);
+    	}
+    } else if( (a_path.compare(0,12, "/cfg/prm/pl_") == 0 || a_path.compare(0, 12, "/cfg/prm/ls_") == 0) && ctrChkNode(opt)) {
+	bool is_pl = (a_path.compare(0, 12, "/cfg/prm/pl_") == 0);
+	string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;;
+	if(is_pl && !SYS->daq().at().attrAt(m_prm, '.', true).freeStat()) m_prm = m_prm.substr(0, m_prm.rfind("."));
+	//mess_info(nodePath().c_str(), _("++++++++++++++"));
+	SYS->daq().at().ctrListPrmAttr(opt, m_prm, is_pl, '.');
+    }
     TParamContr::cntrCmdProc(opt);
 
 }
