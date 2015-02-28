@@ -1154,6 +1154,7 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR)) {
 	    string no_set;
 	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr = opt->text();
+	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).aprm = SYS->daq().at().attrAt(mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr, '.', true);
 	}
     } else if( (a_path.compare(0,12, "/cfg/prm/pl_") == 0 ) && ctrChkNode(opt)) {
 	string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;;

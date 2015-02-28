@@ -47,12 +47,50 @@ namespace FT3
 	    {
 	    }
 	    uint8_t id;
-	    uint8_t Mask;
-	    SLnk MaskLink;
 	    uint8_t Value;
 	    SLnk ValueLink;
+	    uint8_t Mask;
+	    SLnk MaskLink;
 	};
 	vector<STCchannel> data;
+	int lnkSize( ){
+	    if(with_params) {
+		return data.size() * 2;
+	    } else {
+		return data.size();
+	    }
+	}
+	int lnkId( const string &id ){
+	    if(with_params) {
+		for(int i_l = 0; i_l < data.size(); i_l++) {
+		    if(data[i_l].ValueLink.prmName == id) {
+			return i_l * 2;
+		    }
+		    if(data[i_l].MaskLink.prmName == id) {
+			return i_l * 2 + 1;
+		    }
+		}
+	    } else {
+		for(int i_l = 0; i_l < data.size(); i_l++) {
+		    if(data[i_l].ValueLink.prmName == id) {
+			return i_l;
+		    }
+		}
+	    }
+	    return -1;
+	}
+	SLnk &lnk(int num)
+	{
+	    if(with_params) {
+		switch(num % 2) {
+		case 0:
+		    return data[num / 2].ValueLink;
+		case 1:
+		    return data[num / 2].MaskLink;
+		}
+	    } else
+		return data[num].ValueLink;
+	}
     };
 
 } //End namespace

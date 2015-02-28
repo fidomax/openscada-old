@@ -50,6 +50,7 @@ class DA: public TElem
 	bool IsNeedUpdate() {return NeedInit;}
 
 
+
     protected:
 	class SDataRec
 	{
@@ -67,27 +68,16 @@ class DA: public TElem
 		AutoHD<TVal> aprm;
 	};
 
-	vector<SLnk> mlnk;
+	//vector<SLnk> mlnk;
 	//Attributes
 	TMdPrm *mPrm;
 	bool NeedInit;
     public:
+	virtual int lnkSize( ){}
 
-	int lnkSize( ){
-	    return mlnk.size();
-	}
-	int lnkId( const string &id ){
-	    for(int i_l = 0; i_l < lnkSize(); i_l++) {
-		if(mlnk[i_l].prmName == id) {
-		    return i_l;
-		}
-	    }
-	    return -1;
-	}
-	SLnk &lnk(int num)
-	{
-	    return mlnk[num];
-	}
+	virtual int lnkId( const string &id ){}
+	virtual SLnk &lnk(int num) {}
+
 };
 
 } //End namespace

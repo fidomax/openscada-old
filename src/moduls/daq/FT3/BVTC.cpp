@@ -37,10 +37,10 @@ B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
     for(int i = 0; i < count_n; i++) {
 	data.push_back(STCchannel(i));
 	mPrm->p_el.fldAdd(fld = new TFld(data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmDesc.c_str(), TFld::Boolean, TFld::NoWrite));
-	mlnk.push_back(data[i].ValueLink);
+//	mlnk.push_back(data[i].ValueLink);
 	fld->setReserve("1:" + TSYS::int2str((i) / 8));
 	if(with_params) {
-	    mlnk.push_back(data[i].MaskLink);
+//	    mlnk.push_back(data[i].MaskLink);
 	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
 	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
 	}
@@ -67,7 +67,14 @@ string B_BVTC::getStatus(void)
 
 void B_BVTC::tmHandler(void)
 {
-
+    mess_info("tmHandler", _("data[0].ValueLink.prmAttr %s"), data[0].ValueLink.prmAttr.c_str());
+//    mess_info("tmHandler", _("mlnk[0].prmAttr %s"), mlnk[0].prmAttr.c_str());
+    if(data[0].ValueLink.aprm.freeStat()){
+	mess_info("tmHandler", _("data[0].ValueLink NULL"));
+    } else {
+	data[0].Value = data[0].ValueLink.aprm.at().getI();
+	mess_info("tmHandler", _("data[0].ValueLink %d"),data[0].Value);
+    }
 }
 
 uint16_t B_BVTC::Task(uint16_t uc)
