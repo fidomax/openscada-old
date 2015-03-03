@@ -41,7 +41,7 @@ namespace FT3
 	{
 	public:
 	    STCchannel(uint8_t iid) :
-		    id(iid), Mask(0), Value(0),
+		    id(iid), Mask(0), Value(EVAL_BOOL),
 		    ValueLink(SLnk(TSYS::strMess("TC_%d", id+1).c_str(), TSYS::strMess(_("TC %d"), id+1).c_str())),
 		    MaskLink(SLnk(TSYS::strMess("Mask_%d", id+1).c_str(), TSYS::strMess(_("Mask %d"), id+1).c_str()))
 	    {

@@ -40,6 +40,7 @@ B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
 //	mlnk.push_back(data[i].ValueLink);
 	fld->setReserve("1:" + TSYS::int2str((i) / 8));
 	if(with_params) {
+	    data[i].Mask = EVAL_BOOL;
 //	    mlnk.push_back(data[i].MaskLink);
 	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
 	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
@@ -68,22 +69,38 @@ string B_BVTC::getStatus(void)
 void B_BVTC::tmHandler(void)
 {
     for(int i = 0; i < count_n; i++) {
+	uint8_t tmpval;
+	mess_info("TC tmHandler", _("%d"), i);
 	if(data[i].Mask == 0) {
-	    uint8_t tmpval = data[i].ValueLink.aprm.at().getB();
-	    if(tmpval != data[i].Value) {
-		data[i].Value = tmpval;
-		mPrm->vlAt(data[i].ValueLink.prmName.c_str()).at().setB(tmpval,0,true);
-		//TODO putinBE;
-	    }
-	    if(with_params) {
-		tmpval = data[i].MaskLink.aprm.at().getB();
-		    if(tmpval != data[i].Mask) {
-			data[i].Mask = tmpval;
-			mPrm->vlAt(data[i].MaskLink.prmName.c_str()).at().setB(tmpval,0,true);
-			//TODO putinBE;
-		    }
+	    mess_info("TC tmHandler", _("%d enabled"), i);
+	    if(data[i].ValueLink.aprm.freeStat()) {
+		//no connection
+		data[i].Value = EVAL_BOOL;
+	    } else {
+		tmpval = data[i].ValueLink.aprm.at().getB();
+		if(tmpval != data[i].Value) {
+		    mess_info("TC tmHandler", _("%d new val %d"), i, tmpval);
+		    data[i].Value = tmpval;
+		    mPrm->vlAt(data[i].ValueLink.prmName.c_str()).at().setB(tmpval, 0, true);
+		    //TODO putinBE;
+		}
 	    }
 	}
+	if(with_params) {
+	    if(data[i].MaskLink.aprm.freeStat()) {
+		//no connection
+		data[i].Mask = EVAL_BOOL;
+	    } else {
+		tmpval = data[i].MaskLink.aprm.at().getB();
+		if(tmpval != data[i].Mask) {
+		    mess_info("TC tmHandler", _("%d new mask %d"), i, tmpval);
+		    data[i].Mask = tmpval;
+		    mPrm->vlAt(data[i].MaskLink.prmName.c_str()).at().setB(tmpval, 0, true);
+		    //TODO putinBE;
+		}
+	    }
+	}
+
     }
 }
 
