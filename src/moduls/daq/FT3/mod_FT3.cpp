@@ -1145,9 +1145,8 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
     if(a_path.substr(0,12) == "/cfg/prm/pr_") {
     	if(ctrChkNode(opt,"get",RWRWR_,"root",SDAQ_ID,SEC_RD)) {
     	    string lnk_val = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
-    	    if(!SYS->daq().at().attrAt(TSYS::strParse(lnk_val,0,"#"),'.',true).freeStat()) {
-    		opt->setText(lnk_val.substr(0,lnk_val.rfind(".")));
-    		opt->setText(opt->text()+" (+)");
+    	    if(!SYS->daq().at().attrAt(lnk_val,'.',true).freeStat()) {
+    		opt->setText(lnk_val + " (+)");
     	    }
     	    else opt->setText(lnk_val);
     	}

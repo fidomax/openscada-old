@@ -67,13 +67,23 @@ string B_BVTC::getStatus(void)
 
 void B_BVTC::tmHandler(void)
 {
-    mess_info("tmHandler", _("data[0].ValueLink.prmAttr %s"), data[0].ValueLink.prmAttr.c_str());
-//    mess_info("tmHandler", _("mlnk[0].prmAttr %s"), mlnk[0].prmAttr.c_str());
-    if(data[0].ValueLink.aprm.freeStat()){
-	mess_info("tmHandler", _("data[0].ValueLink NULL"));
-    } else {
-	data[0].Value = data[0].ValueLink.aprm.at().getI();
-	mess_info("tmHandler", _("data[0].ValueLink %d"),data[0].Value);
+    for(int i = 0; i < count_n; i++) {
+	if(data[i].Mask == 0) {
+	    uint8_t tmpval = data[i].ValueLink.aprm.at().getB();
+	    if(tmpval != data[i].Value) {
+		data[i].Value = tmpval;
+		mPrm->vlAt(data[i].ValueLink.prmName.c_str()).at().setB(tmpval,0,true);
+		//TODO putinBE;
+	    }
+	    if(with_params) {
+		tmpval = data[i].MaskLink.aprm.at().getB();
+		    if(tmpval != data[i].Mask) {
+			data[i].Mask = tmpval;
+			mPrm->vlAt(data[i].MaskLink.prmName.c_str()).at().setB(tmpval,0,true);
+			//TODO putinBE;
+		    }
+	    }
+	}
     }
 }
 
