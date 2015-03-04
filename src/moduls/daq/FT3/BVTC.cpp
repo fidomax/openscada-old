@@ -199,6 +199,62 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
     return l;
 }
 
+uint8_t B_BVTC::GetData(uint16_t prmID, uint8_t * out)
+{
+    if((prmID & 0xF000) != ID) return false;
+    uint16_t k = (prmID >> 6) & 0x3F; // номер объекта
+    uint16_t n = prmID & 0x3F;  // номер параметра
+    uint l = 0;
+    uint16_t nTC = (count_n / 8 + (count_n % 8 ? 1 : 0));
+    switch(k) {
+    case 0:
+	switch(n) {
+	case 0:
+	    //state
+	    out[0] = 0;
+	    l = 1;
+	    break;
+	case 1:
+	    out[0] = 0;
+	    l = 1;
+	    //value
+	    for(uint8_t i = 0; i < nTC; i++) {
+		out[i + 1] = 0;
+		for(uint8_t j = i * 8; j < (i + 1) * 8; j++)
+		    out[i + 1] |= (data[j].Value & 0x01) << (j % 8);
+		l++;
+	    }
+	    //mask;
+	    for(uint8_t i = 0; i < nTC; i++) {
+		out[i+nTC+1] = 0;
+		for(uint8_t j = i * 8; j < (i + 1) * 8; j++)
+		    out[i * 2 + 2] |= (data[j].Mask & 0x01) << (j % 8);
+		l++;
+	    }
+	    break;
+	}
+	break;
+
+    case 1:
+	//value
+	if(n < nTC) {
+	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++)
+		out[0] |= (data[j].Value & 0x01) << (j % 8);
+	    l = 1;
+	}
+	break;
+    case 2:
+	//mask
+	if(n < nTC) {
+	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++)
+		out[1] |= (data[j].Mask & 0x01) << (j % 8);
+	    l = 2;
+	}
+	break;
+    }
+    return l;
+}
+
 uint16_t B_BVTC::setVal(TVal &val)
 {
     int off = 0;
