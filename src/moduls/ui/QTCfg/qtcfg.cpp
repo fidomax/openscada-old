@@ -990,16 +990,16 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 	// Set node icon
 	if(node.childGet("id","ico",true)) {
 	    XMLNode req("get");
-	    req.setAttr("path",TSYS::strEncode(a_path+"ico",TSYS::PathEl));
-	    if((rez=cntrIfCmd(req)) > 0) mod->postMess(req.attr("mcat"),req.text(),TUIMod::Error,this);
+	    req.setAttr("path", TSYS::strEncode(a_path+"ico",TSYS::PathEl));
+	    if((rez=cntrIfCmd(req)) > 0) mod->postMess(req.attr("mcat"), req.text(), TUIMod::Error, this);
 	    else if(rez == 0) {
-		string simg = TSYS::strDecode(req.text(),TSYS::base64);
+		string simg = TSYS::strDecode(req.text(), TSYS::base64);
 		QImage img;
 		if(img.loadFromData((const uchar*)simg.c_str(),simg.size()))
 		    titleIco->setPixmap(QPixmap::fromImage(img.scaled(32,32,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
 		else titleIco->clear();
 	    }
-	}else titleIco->clear();
+	} else titleIco->clear();
 
 	// Set title
 	titleLab->setText((string("<p align='center'><i><b>")+TSYS::strEncode(node.attr("dscr"),TSYS::Html)+"</b></i></p>").c_str());
@@ -1055,9 +1055,60 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 		    //tabs->showPage(tabs->currentWidget());
 
 		    //  Mark last drawed tabs
-		    t_s.setAttr("qview","1");
+		    t_s.setAttr("qview", "1");
 		}
-		else selectChildRecArea(t_s,a_path+t_s.attr("id")+"/");
+		else selectChildRecArea(t_s, a_path+t_s.attr("id")+"/");
+
+		// Get scalable by vertical elements and grow its up to scroll appear into the container
+		QScrollArea *scrl = (QScrollArea*)tabs->widget(i_area);
+		QWidget *lstFitWdg = NULL;
+		QList<TextEdit*> texts = scrl->findChildren<TextEdit*>();
+		//QList<QTableWidget*> tbls = scrl->findChildren<QTableWidget*>();
+		//QList<QListWidget*> lsts = scrl->findChildren<QListWidget*>();
+		bool sclCnt = true;
+		for(int fitStp = 10, safeCntr = 0; safeCntr < scrl->maximumViewportSize().height() && sclCnt; safeCntr += fitStp) {
+		    QAbstractScrollArea *tEl = NULL;
+		    sclCnt = false;
+		    //  Texts
+		    for(int iEl = 0; iEl < texts.length() && scrl->widget()->height() <= scrl->maximumViewportSize().height(); iEl++) {
+			if(!(tEl=dynamic_cast<QAbstractScrollArea*>(texts[iEl]->edit()))) break;
+			if(!tEl->verticalScrollBar() || !tEl->verticalScrollBar()->maximum()) continue;
+			lstFitWdg = texts[iEl];
+			lstFitWdg->setMinimumHeight(lstFitWdg->minimumHeight()+fitStp);
+			qApp->processEvents();
+			sclCnt = true;
+		    }
+		    if(scrl->widget()->height() > scrl->maximumViewportSize().height() && lstFitWdg) {
+			lstFitWdg->setMinimumHeight(lstFitWdg->minimumHeight()-fitStp);
+			break;
+		    }
+		    //  Tables
+		    /*for(int iEl = 0; iEl < tbls.length() && scrl->widget()->height() <= scrl->maximumViewportSize().height(); iEl++) {
+			if(!(tEl=dynamic_cast<QAbstractScrollArea*>(tbls[iEl]))) break;
+			if(!tEl->verticalScrollBar() || !tEl->verticalScrollBar()->maximum()) continue;
+			lstFitWdg = tbls[iEl];
+			lstFitWdg->setMinimumHeight(lstFitWdg->minimumHeight()+fitStp);
+			qApp->processEvents();
+			sclCnt = true;
+		    }
+		    if(scrl->widget()->height() > scrl->maximumViewportSize().height() && lstFitWdg) {
+			lstFitWdg->setMinimumHeight(lstFitWdg->minimumHeight()-fitStp);
+			break;
+		    }
+		    //  Lists
+		    for(int iEl = 0; iEl < lsts.length() && scrl->widget()->height() <= scrl->maximumViewportSize().height(); iEl++) {
+			if(!(tEl=dynamic_cast<QAbstractScrollArea*>(lsts[iEl]))) break;
+			if(!tEl->verticalScrollBar() || !tEl->verticalScrollBar()->maximum()) continue;
+			lstFitWdg = lsts[iEl];
+			lstFitWdg->setMinimumHeight(lstFitWdg->minimumHeight()+fitStp);
+			qApp->processEvents();
+			sclCnt = true;
+		    }
+		    if(scrl->widget()->height() > scrl->maximumViewportSize().height() && lstFitWdg) {
+			lstFitWdg->setMinimumHeight(lstFitWdg->minimumHeight()-fitStp);
+			break;
+		    }*/
+		}
 	    }
 	    //else t_s.attr("qview","0");	//Mark no view tabs
 	    i_area++;
@@ -1083,7 +1134,7 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 		//w_lay->setAlignment( Qt::AlignTop );
 		widget->layout()->addWidget(wdg);
 	    }
-	    selectChildRecArea(t_s,a_path+t_s.attr("id")+'/',wdg);
+	    selectChildRecArea(t_s, a_path+t_s.attr("id")+'/', wdg);
 	}
 	// View list elements
 	else if(t_s.name() == "list") {
@@ -1111,15 +1162,15 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 		vbox->setAlignment(Qt::AlignLeft);
 		lab = new QLabel(widget);
 		vbox->addWidget(lab);
-                vbox->addWidget(lstbox);
+		vbox->addWidget(lstbox);
 		widget->layout()->addItem(vbox);
 
-		t_s.setAttr("addr_lab",TSYS::addr2str(lab));
-		t_s.setAttr("addr_el",TSYS::addr2str(lstbox));
+		t_s.setAttr("addr_lab", TSYS::addr2str(lab));
+		t_s.setAttr("addr_el", TSYS::addr2str(lstbox));
 	    }
 	    else {
-		lab    = (QLabel *)TSYS::str2addr(t_s.attr("addr_lab"));
-		lstbox = (QListWidget *)TSYS::str2addr(t_s.attr("addr_el"));
+		lab	= (QLabel*)TSYS::str2addr(t_s.attr("addr_lab"));
+		lstbox	= (QListWidget*)TSYS::str2addr(t_s.attr("addr_el"));
 		lstbox->clear();
 	    }
 	    //  Fill list
@@ -1137,7 +1188,7 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 	}
 	// View table elements
 	else if(t_s.name() == "table") {
-	    string br_path = TSYS::strEncode(a_path+t_s.attr("id"),TSYS::PathEl);
+	    string br_path = TSYS::strEncode(a_path+t_s.attr("id"), TSYS::PathEl);
 
 	    //QLabel *lab;
 	    CfgTable *tbl;
@@ -1580,8 +1631,7 @@ void ConfApp::basicFields( XMLNode &t_s, const string &a_path, QWidget *widget, 
 	    }
 	}
 	//View edit fields
-	else if(t_s.attr("tp") == "str" && (t_s.attr("rows").size() || t_s.attr("cols").size()))
-	{
+	else if(t_s.attr("tp") == "str" && (t_s.attr("rows").size() || t_s.attr("cols").size())) {
 	    QLabel *lab;
 	    TextEdit *edit;
 
@@ -1590,23 +1640,9 @@ void ConfApp::basicFields( XMLNode &t_s, const string &a_path, QWidget *widget, 
 		lab->setTextInteractionFlags(Qt::TextSelectableByMouse);
 		widget->layout()->addWidget(lab);
 
-		edit = new TextEdit(widget,br_path.c_str());
+		edit = new TextEdit(widget, br_path.c_str());
 		edit->setStatusTip((sel_path+"/"+br_path).c_str());
-		if(s2i(t_s.attr("rows")) < 10) {
-		    edit->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
-		    edit->edit()->setFixedHeight(2*edit->edit()->currentFont().pointSize()*s2i(t_s.attr("rows")));
-		}
-		else {
-		    QSizePolicy sp(QSizePolicy::Preferred, QSizePolicy::Expanding);
-		    sp.setVerticalStretch(2);
-		    edit->setSizePolicy(sp);
-		    edit->edit()->setMinimumHeight(2*edit->edit()->currentFont().pointSize()*s2i(t_s.attr("rows")));
-		}
-		if(s2i(t_s.attr("cols"))) {
-		    edit->edit()->setLineWrapMode(QTextEdit::FixedColumnWidth);
-		    edit->edit()->setLineWrapColumnOrWidth(s2i(t_s.attr("cols")));
-		}
-		else edit->edit()->setLineWrapMode(QTextEdit::NoWrap);
+		edit->setRowsCols(s2i(t_s.attr("cols")), s2i(t_s.attr("rows")));
 		widget->layout()->addWidget(edit);
 
 		if(!wr)	edit->edit()->setReadOnly(true);

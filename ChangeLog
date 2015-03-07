@@ -1,3 +1,78 @@
+2015-03-06 Roman
+- DB: LibsDB.OscadaLibs.db, FIX:Protocol.UserProtocol: Translation for user protocols fixed and appended.
+- DB: LibsDB.vcaBase.db, Model.AGLKS.vca.db, Model.Boiler.St.db:
+    Main.ElCadr for "digComs" and writing to "com_text" tested, fixed and adapted into all projects.
+- UI.VCAEngine: Checking for accessibility output links for allow the check into user's script by EVAL.
+
+
+2015-03-05 Roman
+- DB: LibsDB.OscadaLibs.db: User protocols and the data templates were appended by protocol SMDP.
+- DB: LibsDB.vcaBase.db: Main.{ElCadr,TextLab}: expanded by free commands into "digComs" and writing to "com_text".
+    For Main.ElCadr also appened "st_text" for current state.
+- DAQ.DAQGate: Configuration "SYNCPER" type changed from real to int.
+- !!!!:DAQ.ICP_DAS: libi8k.a and the headers updated to one wich I-8014 support and for all.
+    Watchdog for I-8x81 by EnableWDT() replaced by EnableSysWDT().
+- !!:DAQ.MMS: Expanded for prevent requests to no connOK(), getNameList service caching.
+    Configuration "SYNCPER" type changed from real to int.
+    For dataRes used dataRes() allowed for the node core.
+- DAQ.{OPC_UA,MMS}: Synchronization time "SYNCPER" seprated to Restore timeout "TM_REST" which used for same restoring control.
+- FIX:DAQ.{ModBus,DAQGate}: Configuration "TM_REST" size fixed to maximum limit.
+- DAQ.MMS: enRes moved to mutex. Generic resources set unified.
+
+
+2015-02-27 Roman
+- FIX:DAQ.OPC_UA: Big message's parts into the input protocol's part merge and wait fix.
+- FIX:DB.{FireBird,MySQL,PostgreSQL,SQLite}: getVal() expanded by RqFlg for TCfg::ExtValTwo into key and TFld::DateTimeDec using fix.
+- UI.QTCfg: Expanded for TextEdit fields fit to full page, for busy. TextEdit rewrote for internal layout remove.
+
+
+2015-02-26 Roman
+- DB: LibsDB.OscadaLibs.db: User protocols and the data templates some make unified for: UPS, VKT7.
+- FIX:DAQ.OPC_UA: Input: Possible spare requests part drop after no need for now and no error requests fix.
+- Protocol.UserProtocol: Timestamp for last the user object modification is added.
+- Transport.Sockets: Some debug messages about the input protocol interaction (create and close) is added.
+- UI.QTCfg: Strong words wrap set to TextEdit widget, mostly for long descriptions.
+    Some preparings to fit widgets like to TextEdit, CfgTable and List to full page size by vertical.
+- UI.{Vision,WebVision}: True include widgets size scaling is added by scale edged point, for correct fit each to other at any scale.
+    The new size scale policy excluded and used minimal for pages, to UI.Vision, for allow fit to containers without the scroll appear.
+
+
+2015-02-23 Roman
+- FIX:SYS,Transport.Sockets,UI.{Vision,WebVision}: Some warnings about comparing signed and unsigned fix.
+- FIX:DAQ.MMS: RejectErrs and ConfirmErrs obtain fixed.
+- FIX:DAQ.Siemens: LibnoDave: Pointer to int cast fixed by replace the cast to long.
+- FIX:SYS: Debian's init script fixed by remove force LC_ALL set and that break down individual LC_NUMERIC=C setting
+    for different to C,POSIX or English locales.
+
+
+2015-02-22 Roman
+- DB: LibsDB.OscadaLibs.db: User protocols and the data templates some make unified for: SCU750, TMH, TM510x, SMS, DCON.
+- DB: ModelsDB.AGLKS.St.db: User protocols DCON and TM510x moved to LibsDB.OscadaLibs.db.
+
+
+2015-02-21 Roman
+- Transport.Sockets: Help message to input protocol selection about the empty value is added.
+- FIX:UI.VCAEngine: Link to widget's attribute from the wiget by "wdg:a_XXX" fixed.
+
+
+2015-02-20 Roman
+- DAQ.Fastwell: Addition headers included to distribution.
+- FIX:DAQ.Siemens: Into Libnodave file nodave.h #pragma pack(1) is replaced to #pragma pack(push,1) ... #pragma pack(pop).
+- FIX:DAQ.Siemens,Special.SystemTests: Integer type expanded next to int64_t.
+- UI.{VCAEngine,Vision}: Some warnings added for try add already present items and paste, after copy or cut, to already present item.
+- Transport.Sockets: Checking for activity for initiative mode moved to the input protocol function check()
+    and unsuccess checking for lost TCP connection tried.
+
+
+2015-02-19 Roman
+- DAQ.OPC_UA: Debug error messages for input requests fixed. Sequence number is added to "MSG Req:" messages for sync allow.
+- DAQ.Siemens: LibnoDave version updated to 0.8.5 (last from 05/17/13).
+
+
+2015-02-18 fido_max
+- New module DAQ.Fastwell implement for Fastwell IO FBUS client implementation.
+
+
 2015-02-17 Roman
 - FIX:DAQ.OPC_UA.libOPC_UA: TranslateBrowsePathsToNodeIdsRequest service fixed for processing no OK paths.
 - DAQ.OPC_UA: Limit limRetrQueueTm() for retransmission queue time control. For all limits control tab "Data" with limits is added.

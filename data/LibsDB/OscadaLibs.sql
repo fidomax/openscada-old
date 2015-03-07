@@ -25,7 +25,7 @@ INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','error','0','','');
 INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','abort','0','','');
 INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','rez','1','','');
 INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','arg1','10','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','tmp1','9.4','','');
+INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','tmp1','0','','');
 INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','f_frq','5','','');
 INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','f_start','0','','');
 INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','f_stop','0','','');
@@ -37,7 +37,7 @@ INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','stop','1','','');
 CREATE TABLE 'ParamTemplLibs' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"DB" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "ParamTemplLibs" VALUES('S7','S7','','Templates library of parameters for PLC series S7 of firm Siemens.','Бібліотека шаблонів параметрів для контролерів фірми Siemens серії S7.','tmplib_S7','','Библиотека шаблонов параметров для контроллеров фирмы Siemens серии S7.');
 INSERT INTO "ParamTemplLibs" VALUES('base','Main templates','Базові шаблони','Allow realisation of the main templates.','Надає реалізацію базових шаблонів.','tmplib_base','Базовые шаблоны','Предоставляет реализацию базовых шаблонов.');
-INSERT INTO "ParamTemplLibs" VALUES('DevLib','Devices lib','Бібліотека пристроїв','Library for realization acquisition from various devices.','Бібліотека реалізації опитування для різноманітних пристроїв.','tmplib_DevLib','Библиотека устройств','Библиотека реализации сбора с различных устройств.');
+INSERT INTO "ParamTemplLibs" VALUES('DevLib','Devices lib','Бібліотека пристроїв','The templates library provides common templates and related functions for custom access to wide range of devices'' data with simple protocol to implement into User Protocol module, present complex protocols (ModBus, OPC_UA, HTTP) or direct at internal language and also for some integration the devices data.','','tmplib_DevLib','Библиотека устройств','');
 INSERT INTO "ParamTemplLibs" VALUES('PrescrTempl','Prescription templates','Шаблони рецепту','','','tmplib_PrescrTempl','Шаблоны рецепта','');
 CREATE TABLE 'UserFuncLibs' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"DB" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"PROG_TR" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "UserFuncLibs" VALUES('techApp','Technological devices','The models of the technological process devices.
@@ -1092,14 +1092,14 @@ INSERT INTO "prescr_val" VALUES('curMode','-2');
 INSERT INTO "prescr_val" VALUES('prog','abcd');
 INSERT INTO "prescr_val" VALUES('startTm','1413479709');
 INSERT INTO "prescr_val" VALUES('curCom','3');
-INSERT INTO "prescr_val" VALUES('work','<XMLNodeObj:prg comCur="1" comN="" comPath="" name="abcd" seekPos="1" wtm="52">
-<XMLNodeObj:com arg1="5" arg2="0" arg3="0" arg4="0" arg5="0" descr="Typical timer. Hold run up to time elapse." id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" proc="&lt;EVAL&gt;" rez="1:Waiting 5s expired" tm="1413479709">
+INSERT INTO "prescr_val" VALUES('work','<XMLNodeObj:prg name="abcd" seekPos="1" wtm="52">
+<XMLNodeObj:com arg1="5" arg2="0" arg3="0" arg4="0" arg5="0" descr="Typical timer. Hold run up to time elapse." id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" proc="&lt;EVAL&gt;">
 </XMLNodeObj:com>
-<XMLNodeObj:com arg1="10" arg2="0" arg3="0" arg4="0" arg5="0" descr="Таймер уровень 1" id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" name="Таймер ур.1" proc="&lt;EVAL&gt;" rez="1:Waiting 10s expired" tm="1413479715">
-<XMLNodeObj:com arg1="15" arg2="0" arg3="0" arg4="0" arg5="0" descr="Typical timer. Hold run up to time elapse." id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" name="Таймер ур.2" proc="&lt;EVAL&gt;" rez="1:Waiting 15s expired" tm="1413479725">
+<XMLNodeObj:com arg1="10" arg2="0" arg3="0" arg4="0" arg5="0" descr="Таймер уровень 1" id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" name="Таймер ур.1" proc="&lt;EVAL&gt;">
+<XMLNodeObj:com arg1="15" arg2="0" arg3="0" arg4="0" arg5="0" descr="Typical timer. Hold run up to time elapse." id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" name="Таймер ур.2" proc="&lt;EVAL&gt;">
 </XMLNodeObj:com>
 </XMLNodeObj:com>
-<XMLNodeObj:com arg1="20" arg2="0" arg3="0" arg4="0" arg5="0" descr="Typical timer. Hold run up to time elapse." id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" proc="&lt;EVAL&gt;" rez="1:Waiting 20s expired" tm="1413479741">
+<XMLNodeObj:com arg1="20" arg2="0" arg3="0" arg4="0" arg5="0" descr="Typical timer. Hold run up to time elapse." id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" proc="&lt;EVAL&gt;">
 </XMLNodeObj:com>
 </XMLNodeObj:prg>
 ');
@@ -1117,7 +1117,11 @@ INSERT INTO "prescr_val" VALUES('comLs','<TVarObj>
 </TVarObj>
 </TVarObj>
 ');
-INSERT INTO "prescr_val" VALUES('clcCnt','10281614');
+INSERT INTO "prescr_val" VALUES('clcCnt','10314183');
+INSERT INTO "prescr_val" VALUES('f_frq','5');
+INSERT INTO "prescr_val" VALUES('f_start','0');
+INSERT INTO "prescr_val" VALUES('f_stop','0');
+INSERT INTO "prescr_val" VALUES('this','<TCntrNodeObj path="/sub_DAQ/mod_JavaLikeCalc/cntr_prescr/"/>');
 CREATE TABLE 'techApp' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '' ,"FORMULA" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "techApp" VALUES('lag','Lag','Lag model. You can use this for sensors'' variables lag imitation.',10,'out-=(out-in)/(t_lg*f_frq);','Затримка','Модель затримки. Може використовуватися для імітації запізнення значень давачів.','Запаздывание','Модель задержки. Может использоваться для имитации запаздывания
 значений датчиков.
@@ -1743,7 +1747,7 @@ INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','trAddr','Transport',0,64,'Transpor
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','arhH','Archiver: hours',0,64,'',2,'Архиватор: часы','','Архіватор: години','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','arhD','Archiver: days',0,64,'',3,'Архиватор: дни','','Архіватор: дні','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','arhRes','Archiver: results-month',0,64,'',4,'Архиватор: результаты-месяцы','','Архіватор: результати-місяці','');
-INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','maxDayDepth','Archiver: maximum readed depth for no hours archiver, days',1,64,'366',5,'Архиватор: максимум читаемой глубины для нечасового архиватора, дней','','Архіватор: максимум глибини читання для негодинного архіватора, днів','');
+INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','maxDayDepth','Archiver: maximum read depth for no hours archiver, days',1,64,'366',5,'Архиватор: максимум читаемой глубины для нечасового архиватора, дней','','Архіватор: максимум глибини читання для негодинного архіватора, днів','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','lastResTm','Last result months read time (s)',1,33,'0',6,'Время последнего чтения результирующих месяцев (с)','','Час останього читання результуючих місяців (с)','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','leftResTm','Left result months for read from archive',1,17,'',7,'Осталось результ. месяцев для чтения из архива','','Залишилося результ. місяців для читання із архіву','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','lastDTm','Last days read time (s)',1,33,'0',8,'Время последнего чтения дней (с)','','Час останього читання днів (с)','');
@@ -1752,10 +1756,10 @@ INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','lastHTm','Last hours read time (s)
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','leftHTm','Left hours for read from archive',1,17,'',11,'Осталось часов для чтения из архива','','Залишилося годин для читання із архіву','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','diffTm','Difference time (server-counter), hours',1,16,'',12,'Разница времени (сервер-счётчик), часы','','Різниця часу (сервер-лічильник), години','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','firmVer','Firmware version',2,16,'',13,'Версия прошивки','','Версія прошивки','');
-INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','abonId','Abonent ID',0,16,'',14,'ID абонента','','ID абоненту','');
+INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','abonId','Subscriber ID',0,16,'',14,'ID абонента','','ID абоненту','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','repDay','Report day',1,16,'',15,'День отчёта','','День звіту','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','netNum','Network number',1,16,'',16,'Сетевой номер','','Мережевий номер','');
-INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','modelImpl','Model implementaton',1,16,'',17,'Реализация модели','','Реалізація моделі','');
+INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','modelImpl','Model implementation',1,16,'',17,'Реализация модели','','Реалізація моделі','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','tTypeM','t: dimension',0,16,'',18,'t: ед. измерения','','t: од. виміру','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','GTypeM','G: dimension',0,16,'',19,'G: ед. измерения','','G: од. виміру','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','VTypeM','V: dimension',0,16,'',20,'V: ед. измерения','','V: од. виміру','');
@@ -1803,6 +1807,35 @@ INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','BOC_2','ВОС (Tв2)',2,32,'',61,
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','G1_2','G1 (Tв2)',2,32,'',62,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','G2_2','G2 (Tв2)',2,32,'',63,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','this','This parameter object',4,0,'',64,'Объект параметра','','Об''єкт параметру','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','transport','Transport',0,64,'SMDP',0,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','addr','Device address (16...254)',1,64,'16',1,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','perGet','Period data getting (s)',2,64,'10',2,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','version','Firmware Version',0,16,'',3,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','CfgPrmSSID','Configuration parameter session ID',1,16,'',4,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Srlno','Measurement serial number',1,16,'',5,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','RawFreq','Channel freq.',2,16,'',6,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','GoodFreq','Last used, good channel freq. (Hz)',2,16,'',7,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','RawThick','Computed raw thickness, from frequency. (A)',2,16,'',8,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalThick','Computed material related thickness, can be zeroed. (A)',2,16,'',9,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalThick_F','Filtered computed material related thickness, can be zeroed. (A)',2,16,'',10,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalRate','Rate, angstroms per second.',2,16,'',11,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalRate_F','Rate, angstroms per second, filtered.',2,16,'',12,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalLife','XtalLife (%)',2,16,'',13,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalQual','Quality level (0-9).',1,16,'',14,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalQualPeak','Highest quality level seen (0-9).',1,16,'',15,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalStab','Stability level (0-9).',1,16,'',16,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalStabPeak','Highest stability level seen (0-9).',1,16,'',17,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalStat','Channel status.',0,16,'',18,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalLife_C','XtalLife (%).',1,16,'',19,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','SessId','Session ID',1,32,'',20,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Fq','Xtal start freq. (Hz)',2,32,'',21,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Fm','Xtal min freq. (Hz)',2,32,'',22,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Density','Material density (gm/cc).',2,32,'',23,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Zratio','Material Z ratio. Not scaled or unitized.',2,32,'',24,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Tooling','1.000 is 100 % tooling (unity).',2,32,'',25,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','RateReq','Requested rate (A/S).',2,32,'',26,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','QlvlTrip','Quality threshold, if non 0 and exceeded, xtal fail occurs.',1,32,'',27,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','SlvlTrip','Stability threshold, if non 0 and exceeded, xtal fail occurs.',1,32,'',28,'','','','');
 CREATE TABLE 'tmplib_PrescrTempl_io' ("TMPL_ID" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"TYPE" INTEGER DEFAULT '' ,"FLAGS" INTEGER DEFAULT '' ,"VALUE" TEXT DEFAULT '' ,"POS" INTEGER DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#VALUE" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#VALUE" TEXT DEFAULT '' , PRIMARY KEY ("TMPL_ID","ID"));
 INSERT INTO "tmplib_PrescrTempl_io" VALUES('timer','run','Command: run',3,32,'0',4,'Команда: исполнение','','Команда: виконання','');
 INSERT INTO "tmplib_PrescrTempl_io" VALUES('timer','pause','Command: pause',3,32,'0',5,'Команда: пауза','','Команда: пауза','');
@@ -3172,192 +3205,6 @@ if(!isAdmin || cnts.length || urlPrms["selUser"].isEVal() || !urlPrms["selUser"]
 //Save template
 rez = pgTree.save();
 //SYS.messDebug("TEST Dev","TEST 00: "+typeof(devLs[formEl["cat"]+"."+itId]));',1377261537,'Диспетчер пользователей','Диспетчер користувачів');
-CREATE TABLE 'UserProtocol_uPrt' ("ID" TEXT DEFAULT '''''''''''''' ,"NAME" TEXT DEFAULT '''''''''''''' ,"uk#NAME" TEXT DEFAULT '''''''''''''' ,"DESCR" TEXT DEFAULT '''''''''''''' ,"uk#DESCR" TEXT DEFAULT '''''''''''''' ,"EN" INTEGER DEFAULT '''''''0''''''' ,"InPROG" TEXT DEFAULT '''''''''''''' ,"uk#InPROG" TEXT DEFAULT '''''''''''''' ,"OutPROG" TEXT DEFAULT '''''''''''''' ,"uk#OutPROG" TEXT DEFAULT '''''''''''''' ,"ru#NAME" TEXT DEFAULT '''''' ,"ru#DESCR" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
-INSERT INTO "UserProtocol_uPrt" VALUES('SMS','','','','',1,'','','JavaLikeCalc.JavaScript
-// Process SEND SMS message
-// <name> - "send"
-// pin - SIM card PIN-cod
-// tel - recipient telephone number
-// <text> - message
-if(io.name()=="send")
-{
-	//> Prepare PDU
-	var pdu = "001100";	//SMS center number (default) + SMS-Submit
-	//> Telephone number encode
-	var tel = io.attr("tel");
-	if(!tel.length || tel[0] != "+") { io.setAttr("err","100:Telephone number error."); return; }
-	tel = tel.slice(1);
-	pdu += tel.length.toString(16,2)+"91";	//Telephone length and type
-	while(tel.length < 12) tel += "F";
-	for(i=0; i < 6; i++) pdu += tel[i*2+1]+tel[i*2];
-	//> Message encode
-	var text = SYS.strCodeConv(io.text(),"","UCS2");
-	if((text.length/2) > 70) { io.setAttr("err","101:Long length ("+(text.length/2)+") of the message."); return; }
-	pdu += "0018C1"+(text.length).toString(16,2);
-	for(i=0; i < text.length/2; i++) pdu += text.charCodeAt(i*2+1).toString(16,2)+text.charCodeAt(i*2).toString(16,2);
-	//SYS.messDebug("TEST SMS","PDU :"+pdu);
-	//> Send request
-	if(!io.attr("pin").isEVal())
-	{
-		var rez = tr.messIO("AT+CPIN="+io.attr("pin")+"\r");
-		if(rez.search("OK\r") < 0)	{ io.setAttr("err","10:Error set PIN-code."); return; }
-	}
-	//>> Switch to PDU SMS mode
-	var rez = tr.messIO("AT+CMGF=0\r");
-	if(rez.search("OK\r") < 0)	{ io.setAttr("err","10:Error set PDU mode."); return; }
-	//>> Send PDU message
-	var rez = tr.messIO("AT+CMGS="+(pdu.length/2-1)+"\r");
-	if(rez.search(">") < 0)	{ io.setAttr("err","10:Error sent SMS."); return; }
-	var rez = tr.messIO(pdu+"\x1A");
-	for(var i_tr = 0; i_tr < 5 && rez.search("OK\r") < 0; i_tr++) rez += tr.messIO("");
-	if(rez.search("OK\r") < 0)	{ io.setAttr("err","10:Error sent SMS PDU"); return; }
-	io.setAttr("err","0");
-	//SYS.messDebug("TEST SMS","PDU REZ :"+rez);
-}','','','');
-INSERT INTO "UserProtocol_uPrt" VALUES('SCU750','Control Unit SCU750','Блок керування SCU750','Transport level protocol realization for EDWARDS TURBOMOLECULAR PUMPS.','Реалізація рівня транспортного протоколу для EDWARDS TURBOMOLECULAR PUMPS.',1,'JavaLikeCalc.JavaScript
-','','JavaLikeCalc.JavaScript
-//Request form:
-//<mess addr="1">{req}</mess> - message tag
-//  addr - remote station address (<0 - single; >=0 - multy port)
-
-if(io.text().length > 255*255) { io.setAttr("err","1:Message''s length more 255*255"); return; }
-addr = io.attr("addr").toInt();
-k=ceil(io.text().length/255);  //transmission blocks
-for(i_k = 1; i_k <= k; i_k++)
-{
-	request = "\x02"+k.toString(16,3)+io.text().slice((i_k-1)*255,(i_k-1)*255+min(255,io.text().length-(i_k-1)*255))+((k>1&&i_k<k)?"\x17":"\x03");
-	//> Calc LRC
-	LRC = 0xFF;
-	for(i = 0; i < request.length; i++) LRC = LRC^request.charCodeAt(i);
-	request += SYS.strFromCharCode(LRC);
-
-	//> Multy port
-	if(addr>=0) request = "@"+addr.toString(16,2)+request;
-	//SYS.messDebug("PRT","Request: "+Special.FLibSYS.strDec4Bin(request));
-
-	//Send request
-	resp = tr.messIO(request);
-	while(resp.length)
-	{
-		tresp = tr.messIO("");
-		if(!tresp.length) break;
-  		resp += tresp;
-	}
-	if(!resp.length) { io.setAttr("err","2:No respond"); return; }
-	//SYS.messDebug("PRT","Ack: "+Special.FLibSYS.strDec4Bin(resp));
-	if(resp.charCodeAt(0) != 6) { io.setAttr("err","3:No acknowledgment"); return; }
-	//> Pass included acknowledgement
-	resp = resp.slice((addr>=0)?3:1);
-
-	//> Read data blocks
-	io.setText("");
-	for(i_k = 1; true; i_k++)
-	{
-		//Send application acknowledgement and wait data
-		if(!resp.length)
-		{
-			request = "\x06";
-			if(addr>=0) request += addr.toString(16,2);
-			resp = tr.messIO(request);
-			while(resp.length)
-			{
-				tresp = tr.messIO("");
-				if(!tresp.length) break;
-  				resp += tresp;
-			}
-			if(!resp.length) { io.setAttr("err","4:No data block get"); return; }
-		}
-		if(resp.length < ((addr>=0)?10:7) || resp.charCodeAt(0) != 0x40) { io.setAttr("err","5:Data block short or error"); return; }
-
-		//SYS.messDebug("PRT","BLK "+i_k+": "+Special.FLibSYS.strDec4Bin(resp));
-
-		if(addr>=0) resp = resp.slice(3);
-		LRC = 0xFF;
-		for(i = 0; i < (resp.length-1); i++) LRC = LRC^resp.charCodeAt(i);
-		if(LRC != resp.charCodeAt(resp.length-1)) { io.setAttr("err","6:LRC error."); return; }
-		if(i_k != resp.slice(1,4).toInt(16)) { io.setAttr("err","7:Block sequence."); return; }
-		io.setText(io.text()+resp.slice(4,resp.length-2));
-		if(resp.charCodeAt(resp.length-2) == 0x03) break;
-		if(resp.charCodeAt(resp.length-2) == 0x17) { resp = ""; continue; }
-		io.setAttr("err","8:Unknown block end.");
-		return;
-	}
-}','','Блок управления SCU750','Реализация уровня транспортного протокола для EDWARDS TURBOMOLECULAR PUMPS.');
-INSERT INTO "UserProtocol_uPrt" VALUES('TMH','TMP-xx03','','Power supply for turbomolecular pumps, model EI-R04M.','Джерело живлення для турбомолекулярного насосу, модель EI-R04M.',1,'JavaLikeCalc.JavaScript
-','','JavaLikeCalc.JavaScript
-//Request form:
-//<mess addr="1">{req}</mess> - message tag
-//  addr - remote station address (1...32)
-
-io.setAttr("err","");
-addr = io.attr("addr").toInt();
-if(addr < 1 || addr > 32) { io.setAttr("err","1:Device address out of range 1...32"); return; }
-request = "MJ"+addr.toString(10,2)+io.text();
-//> Calc CRC
-CRC = 0;
-for(i = 0; i < request.length; i++) CRC += request.charCodeAt(i);
-request += (CRC&0xFF).toString(16,2)+"\r";
-//SYS.messDebug("PRT","Request: "+Special.FLibSYS.strDec4Bin(request));
-
-//Send request
-resp = tr.messIO(request);
-while(resp.length && resp[resp.length-1] != "\r")
-{
-	tresp = tr.messIO("");
-	if(!tresp.length) break;
-  	resp += tresp;
-}
-if(resp.length < 6 || resp[resp.length-1] != "\r" || resp.slice(0,2) != "MJ" || resp.slice(2,4).toInt() != addr)
-{ io.setAttr("err","2:No or error respond"); return; }
-//SYS.messDebug("PRT","Respond: "+Special.FLibSYS.strDec4Bin(resp));
-CRC = 0;
-for(i = 0; i < (resp.length-3); i++) CRC += resp.charCodeAt(i);
-if((CRC&0xFF) != resp.slice(resp.length-3,resp.length-1).toInt(16)) { io.setAttr("err","6:CRC error."); return; }
-io.setText(resp.slice(4,resp.length-3));','','','Источник питания для турбомолекулярного насоса, модель EI-R04M.');
-INSERT INTO "UserProtocol_uPrt" VALUES('VKT7','VKT-7','','Firm "Teplocom" (http://www.teplocom.spb.ru) computer "VKT-7", St.Peterburg.','Фірма "Teplocom" (http://www.teplocom.spb.ru) комп''ютер "VKT-7", St.Peterburg.',1,'','','JavaLikeCalc.JavaScript
-//Request form:
-//<mess addr="1">{req}</mess> - message tag
-//  addr - remote station address (0...254)
-
-io.setAttr("err","");
-addr = io.attr("addr").toInt();
-if(addr < 0 || addr > 254) { io.setAttr("err","1:Device address out of range 0...254"); return; }
-request = SYS.strFromCharCode(addr)+io.text();
-//> Calc KS
-KS = 0xFFFF;
-for(i = 0; i < request.length; i++)
-{
-	KS = KS ^ request.charCodeAt(i);
-	for(j = 0; j < 8; j++)
-		KS = (KS&0x01) ? (KS >> 1)^0xA001 : (KS >> 1);
-}
-request = SYS.strFromCharCode(0xFF,0xFF)+request+SYS.strFromCharCode(KS,KS>>8);
-SYS.messDebug("/VKT7/PRT","Request: "+Special.FLibSYS.strDec4Bin(request));
-
-//Send request
-resp = tr.messIO(request);
-while(resp.length)
-{
-	tresp = tr.messIO("");
-	if(!tresp.length) break;
-  	resp += tresp;
-}
-if(resp.length < 4 || resp.charCodeAt(0) != addr)	{ io.setAttr("err","2:No or error respond"); return; }
-SYS.messDebug("/VKT7/PRT","Respond: "+Special.FLibSYS.strDec4Bin(resp));
-
-//> Calc KS
-KS = 0xFFFF;
-for(i = 0; i < (resp.length-2); i++)
-{
-	KS = KS ^ resp.charCodeAt(i);
-	for(j = 0; j < 8; j++)
-		KS = (KS&0x01) ? (KS >> 1)^0xA001 : (KS >> 1);
-}
-if(KS != ((resp.charCodeAt(resp.length-1)<<8)|resp.charCodeAt(resp.length-2)))
-{ io.setAttr("err","6:KS error "+KS.toString(16,4)+"=="+((resp.charCodeAt(resp.length-1)<<8)|resp.charCodeAt(resp.length-2)).toString(16,4)); return; }
-if(resp.charCodeAt(1)&0x80)
-{ io.setAttr("err","7:"+resp.charCodeAt(2)+":Request error."); return; }
-io.setText(resp.slice(1,-2));','','','Фирма "Teplocom" (http://www.teplocom.spb.ru) компьютер "VKT-7", St.Peterburg.');
 CREATE TABLE 'WebUser_uPg' ("ID" TEXT DEFAULT '''''''''''''' ,"NAME" TEXT DEFAULT '''''''''''''' ,"uk#NAME" TEXT DEFAULT '''''''''''''' ,"DESCR" TEXT DEFAULT '''''''''''''' ,"uk#DESCR" TEXT DEFAULT '''''''''''''' ,"EN" INTEGER DEFAULT '''''''0''''''' ,"PROG" TEXT DEFAULT '''''''''''''' ,"uk#PROG" TEXT DEFAULT '''''''''''''' ,"TIMESTAMP" INTEGER DEFAULT '''''''''''''' ,"ru#DESCR" TEXT DEFAULT '''''' ,"ru#NAME" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "WebUser_uPg" VALUES('tmpl','XHTML-template','XHTML-шаблон','Site from XHTML template.','Сайт із XHTML шаблону',1,'JavaLikeCalc.JavaScript
 var pgDir = "Web/";
@@ -3549,8 +3396,52 @@ INSERT INTO "Trs" VALUES('Deceleration failure','Помилка гальмува
 INSERT INTO "Trs" VALUES('Request for service info.','','');
 INSERT INTO "Trs" VALUES('Request for counter time and hour archive begin.','','');
 INSERT INTO "Trs" VALUES('Request for dimensions and precisions.','','');
+INSERT INTO "Trs" VALUES('No connect','','');
+INSERT INTO "Trs" VALUES('No Problems. The rest below are prioritized.','','');
+INSERT INTO "Trs" VALUES('Frequency of xtal is > Fq or < Fm. Halts all other calculations.','','');
+INSERT INTO "Trs" VALUES('Frequency was bad (previous XtalStat was XPROB_FREQ) and frequency is now in range, but life is less than 3%.','','');
+INSERT INTO "Trs" VALUES('Stability level XtalStab of xtal >= SlvlTrip.','','');
+INSERT INTO "Trs" VALUES('Unable to determine rate because of a computation error, most likely caused by a parameter (density, z-ratio, etc) having a zero or otherwise invalid (non numeric or infinity) value.','','');
+INSERT INTO "Trs" VALUES('XtalQual of xtal >= QlvlTrip.','','');
+INSERT INTO "Trs" VALUES('Error or no response.','','');
+INSERT INTO "Trs" VALUES('CRC error.','','');
+INSERT INTO "Trs" VALUES('DCON error.','','');
+INSERT INTO "Trs" VALUES('Message''s length more 255*255','','');
+INSERT INTO "Trs" VALUES('No respond','','');
+INSERT INTO "Trs" VALUES('No acknowledgment','','');
+INSERT INTO "Trs" VALUES('No data block get','','');
+INSERT INTO "Trs" VALUES('Data block short or error','','');
+INSERT INTO "Trs" VALUES('LRC error.','','');
+INSERT INTO "Trs" VALUES('Block sequence.','','');
+INSERT INTO "Trs" VALUES('Unknown block end.','','');
+INSERT INTO "Trs" VALUES('Message empty','','');
+INSERT INTO "Trs" VALUES('Request:','','');
+INSERT INTO "Trs" VALUES('Not full respond','','');
+INSERT INTO "Trs" VALUES('Wrong respond','','');
+INSERT INTO "Trs" VALUES('Respond:','','');
+INSERT INTO "Trs" VALUES('Illegal command (CMD code not valid).','','');
+INSERT INTO "Trs" VALUES('Syntax error. (Too many bytes in data field, not enough bytes, etc).','','');
+INSERT INTO "Trs" VALUES('Data range error.','','');
+INSERT INTO "Trs" VALUES('Inhibited.','','');
+INSERT INTO "Trs" VALUES('Obsolete command. No action taken, but not really an error.','','');
+INSERT INTO "Trs" VALUES('Unknown error.','','');
+INSERT INTO "Trs" VALUES('Telephone number error.','','');
+INSERT INTO "Trs" VALUES('Long length (%1) of the message.','','');
+INSERT INTO "Trs" VALUES('Error set PIN-code.','','');
+INSERT INTO "Trs" VALUES('Error set PDU mode.','','');
+INSERT INTO "Trs" VALUES('Error sent SMS.','','');
+INSERT INTO "Trs" VALUES('Error sent SMS PDU','','');
+INSERT INTO "Trs" VALUES('Device address out of range 1...254','','');
+INSERT INTO "Trs" VALUES('No or error respond','','');
+INSERT INTO "Trs" VALUES('KS error.','','');
+INSERT INTO "Trs" VALUES('Device address out of range 1...32','','');
+INSERT INTO "Trs" VALUES('Device address out of range 0...254','','');
+INSERT INTO "Trs" VALUES('KS error','','');
+INSERT INTO "Trs" VALUES('Request error.','','');
 CREATE TABLE 'tmplib_DevLib' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"PROGRAM" TEXT DEFAULT '' ,"uk#PROGRAM" TEXT DEFAULT '' ,"ru#PROGRAM" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
-INSERT INTO "tmplib_DevLib" VALUES('SCU750','','','','Typical EDWARDS TURBOMOLECULAR PUMPS data request by SCU750 Cotrol Unit protocol.','Опитування даних типових EDWARDS TURBOMOLECULAR PUMPS за допомогою протоколу блоків керування SCU750.','Опрос данных типовых EDWARDS TURBOMOLECULAR PUMPS с помощью протокола блоков управления SCU750.',10,0,'JavaLikeCalc.JavaScript
+INSERT INTO "tmplib_DevLib" VALUES('SCU750','EDWARDS TURBOMOLECULAR PUMPS','','','Typical EDWARDS TURBOMOLECULAR PUMPS (http://edwardsvacuum.com) data request by SCU750 Cotrol Unit protocol.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vacuum technologies laboratory (http://e-beam.ru).','','',10,0,'JavaLikeCalc.JavaScript
 if(f_start) {
 	version = "";
 	operModes = new Object();
@@ -3680,8 +3571,10 @@ else {
 	}
 }
 
-f_err = t_err;','','',1416655551);
-INSERT INTO "tmplib_DevLib" VALUES('TMH','TMP-xx03','TMP-xx03','','Power supply for turbomolecular pumps, model EI-R04M.','Джерело живлення для турбомолекулярного насосу, модель EI-R04M.','Источник питания для турбомолекулярного насоса, модель EI-R04M.',10,0,'JavaLikeCalc.JavaScript
+f_err = t_err;','','',1424623455);
+INSERT INTO "tmplib_DevLib" VALUES('TMH','Power supply for turbomolecular pumps','','','Power supply for turbomolecular pumps of firm SHIMADZU (http://www.shimadzu.com), model EI-R04M.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vacuum technologies laboratory (http://e-beam.ru).','','',10,0,'JavaLikeCalc.JavaScript
 tr = SYS.Transport.Serial.nodeAt("out_"+transport);
 req = SYS.XMLNode("mess").setAttr("ProtIt","TMH").setAttr("addr",addr);
 
@@ -3857,19 +3750,20 @@ else {
 	else MP_Z = req.text().slice(4).toInt();
 }
 
-f_err = t_err;','','',1416655709);
-INSERT INTO "tmplib_DevLib" VALUES('TM510x','Elemer TM510x','','','Elemer TM5102 and TM5103.','Elemer TM5102 та TM5103.','Elemer TM5102 и TM5103.',10,0,'JavaLikeCalc.JavaScript
+f_err = t_err;','','',1424632678);
+INSERT INTO "tmplib_DevLib" VALUES('TM510x','Elemer TM510x','','','Multichannels thermometer Elemer TM5102 and TM5103 of firm Elemer (http://www.elemer.ru).
+Author: Roman Savochenko <rom_as@oscada.org>','','',10,0,'JavaLikeCalc.JavaScript
 if(f_start) devTp = EVAL_INT;
 
 tr = SYS.Transport.Serial.nodeAt("out_"+transport);
-req = SYS.XMLNode("mess").setAttr("ProtIt","TM510x").setAttr("addr",addr);
+req = SYS.XMLNode("mess").setAttr("ProtIt", "TM510x").setAttr("addr", addr);
 
 t_err = "";
 
 //Device type get
 if(devTp.isEVal() || !devTp) {
 	req.setText("0");
-	tr.messIO(req,"UserProtocol");
+	tr.messIO(req, "UserProtocol");
 	if(req.attr("err").length)	t_err = req.attr("err");
 	else devTp = req.text().toInt();
 }
@@ -3904,8 +3798,9 @@ else {
 	}
 }
 
-f_err = t_err;','','',1416652969);
-INSERT INTO "tmplib_DevLib" VALUES('UPS','','','','','','',10,0,'JavaLikeCalc.JavaScript
+f_err = t_err;','','',1424633101);
+INSERT INTO "tmplib_DevLib" VALUES('UPS','','','','Uninterruptible power supply unifying data for provide all the data into single attribute of object type "All items" for next the control as the object with the data provide as table, alarming and allowing set writable attributes. The template aimed for using with module "System" data source as "UPS" and widget "Main.objProps" as the data presenter. The template also you can use as example for create like other data unification as complex object with properties, alarming and writing.
+Author: Roman Savochenko <rom_as@oscada.org>','','',10,0,'JavaLikeCalc.JavaScript
 if(f_start)	{ srcPrm = false; items = new Object(); }
 
 alLev = 0;
@@ -4010,8 +3905,10 @@ if(tErr.toInt() && tErr.toInt() != f_err.toInt())
 	this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tErr.parse(1,":"), -(2+alLev), SHIFR);
 else if(f_err.toInt() && !tErr.toInt())
 	this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tr("NORMA"), 1, SHIFR);
-f_err = tErr;','','',1416765527);
-INSERT INTO "tmplib_DevLib" VALUES('VKT7','VKT-7','VKT-7','','Firm "Teplocom" (http://www.teplocom.spb.ru) computer "VKT-7", St.Peterburg.','Фірма "Teplocom" (http://www.teplocom.spb.ru) комп''ютер "VKT-7", St.Peterburg.','Фирма "Teplocom" (http://www.teplocom.spb.ru) компьютер "VKT-7", St.Peterburg.',60,0,'JavaLikeCalc.JavaScript
+f_err = tErr;','','',1424792709);
+INSERT INTO "tmplib_DevLib" VALUES('VKT7','VKT-7','VKT-7','','Firm "Teplocom" (http://www.teplocom.spb.ru) computer "VKT-7" for complex heat measurement and the count. The device complex enough by provide more parameters, more history to its and access by nonlinear Serial-based protocol at low speed. The template implement acquisition for all significant parameters, get history by hours, days and result months. Also you can simple enough append for process other left parameters.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vladislav Chubuk','Фірма "Teplocom" (http://www.teplocom.spb.ru) комп''ютер "VKT-7", St.Peterburg.','Фирма "Teplocom" (http://www.teplocom.spb.ru) компьютер "VKT-7", St.Peterburg.',60,0,'JavaLikeCalc.JavaScript
 using Special.FLibSYS;
 
 if(f_start) {
@@ -4363,7 +4260,253 @@ if(t_err.length) {
 	f_err = t_err;
 	for(var cA in varsLs) arguments[cA] = EVAL_REAL;
 }
-else f_err = errAttrs.length ? "11:"+tr("Quality errors")+": "+errAttrs : "0";','','',1416766326);
+else f_err = errAttrs.length ? "11:"+tr("Quality errors")+": "+errAttrs : "0";','','',1424878121);
+INSERT INTO "tmplib_DevLib" VALUES('SMDP','Sycon Multi Drop Protocol','','','STM devices for resonant frequency measurement for mass of deposited films attached to its surface by Sycon Instruments, Inc. (http://www.sycon.com).
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vacuum technologies laboratory (http://e-beam.ru).','','',10,0,'JavaLikeCalc.JavaScript
+if(f_stop) return;
+if(f_start) {
+	cnt = 0;
+	version = "";
+	SessId_ = SessId = QlvlTrip_ = QlvlTrip = SlvlTrip_ = SlvlTrip = EVAL_INT;
+	Fq_ = Fq = Fm_ = Fm = Density_ = Density = Zratio_ = Zratio = Tooling_ = Tooling = RateReq_ = RateReq = EVAL_REAL;
+}
+
+tr = SYS.Transport.Serial.nodeAt("out_"+transport);
+req = SYS.XMLNode("mess").setAttr("ProtIt","SMDP").setAttr("addr",addr).setAttr("try",3);
+
+t_err = "";
+
+//Configurations first write
+// Session ID.
+if(SessId != SessId_) {
+	SYS.messDebug("/SMDP/tmpl",""+SessId+"!="+SessId_);	
+	req.setAttr("err","1:"+tr("No connect")).setText("\xD0\x41"+SessId); tr.messIO(req,"UserProtocol");
+	if(!(t_err=req.attr("err")).length) SessId_ = SessId; else SessId = SessId_;
+}
+// Xtal start freq. (Hz)
+if(Fq != Fq_) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xD0\x42"+Fq); tr.messIO(req,"UserProtocol");
+	if(!(t_err=req.attr("err")).length) Fq_ = Fq; else Fq = Fq_;
+}
+// Xtal min freq. (Hz)
+if(Fm != Fm_) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xD0\x43"+Fm); tr.messIO(req,"UserProtocol");
+	if(!(t_err=req.attr("err")).length) Fm_ = Fm; else Fm = Fm_;
+}
+// Material density (gm/cc).
+if(Density != Density_) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xD0\x44"+Density); tr.messIO(req,"UserProtocol");
+	if(!(t_err=req.attr("err")).length) Density_ = Density; else Density = Density_;
+}
+// Material Z ratio. Not scaled or unitized.
+if(Zratio != Zratio_) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xD0\x45"+Zratio); tr.messIO(req,"UserProtocol");
+	if(!(t_err=req.attr("err")).length) Zratio_ = Zratio; else Zratio = Zratio_;
+}
+// 1.000 is 100 % tooling (unity).
+if(Tooling != Tooling_) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xD0\x46"+Tooling); tr.messIO(req,"UserProtocol");
+	if(!(t_err=req.attr("err")).length) Tooling_ = Tooling; else Tooling = Tooling_;
+}
+// Requested rate (A/S).
+if(RateReq != RateReq_) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xD0\x47"+RateReq); tr.messIO(req,"UserProtocol");
+	if(!(t_err=req.attr("err")).length) RateReq_ = RateReq; else RateReq = RateReq_;
+}
+// Quality threshold, if non 0 and exceeded, xtal fail occurs.
+if(QlvlTrip != QlvlTrip_) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xD0\x48"+QlvlTrip); tr.messIO(req,"UserProtocol");
+	if(!(t_err=req.attr("err")).length) QlvlTrip_ = QlvlTrip; else QlvlTrip = QlvlTrip_;
+}
+// Stability threshold, if non 0 and exceeded, xtal fail occurs.
+if(SlvlTrip != SlvlTrip_) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xD0\x49"+SlvlTrip); tr.messIO(req,"UserProtocol");
+	if(!(t_err=req.attr("err")).length) SlvlTrip_ = SlvlTrip; else SlvlTrip = SlvlTrip_;
+}
+
+//======= Data getting (by self bigger period) ========
+if((cnt++)%max(1,perGet*f_frq))	return;
+
+//Configurations first read
+// Session ID.
+if(!t_err.length && SessId.isEVal()) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x41"); tr.messIO(req,"UserProtocol");
+	SessId = SessId_ = (t_err=req.attr("err")).length ? EVAL_INT : req.text().slice(2).toInt(10);
+}
+// Xtal start freq. (Hz)
+if(!t_err.length && Fq.isEVal()) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x42"); tr.messIO(req,"UserProtocol");
+	Fq = Fq_ = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+// Xtal min freq. (Hz)
+if(!t_err.length && Fm.isEVal()) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x43"); tr.messIO(req,"UserProtocol");
+	Fm = Fm_ = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+// Material density (gm/cc).
+if(!t_err.length && Density.isEVal()) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x44"); tr.messIO(req,"UserProtocol");
+	Density = Density_ = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+// Material Z ratio. Not scaled or unitized.
+if(!t_err.length && Zratio.isEVal()) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x45"); tr.messIO(req,"UserProtocol");
+	Zratio = Zratio_ = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+// 1.000 is 100 % tooling (unity).
+if(!t_err.length && Tooling.isEVal()) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x46"); tr.messIO(req,"UserProtocol");
+	Tooling = Tooling_ = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+// Requested rate (A/S).
+if(!t_err.length && RateReq.isEVal()) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x47"); tr.messIO(req,"UserProtocol");
+	RateReq = RateReq_ = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+// Quality threshold, if non 0 and exceeded, xtal fail occurs.
+if(!t_err.length && QlvlTrip.isEVal()) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x48"); tr.messIO(req,"UserProtocol");
+	QlvlTrip = QlvlTrip_ = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toInt(10);
+}
+// Stability threshold, if non 0 and exceeded, xtal fail occurs.
+if(!t_err.length && SlvlTrip.isEVal()) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x49"); tr.messIO(req,"UserProtocol");
+	SlvlTrip = SlvlTrip_ = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toInt(10);
+}
+
+//Runtime variables
+// Read version, single
+if(!t_err.length && (!version.length || version.isEVal())) {
+	req.setAttr("err","1:"+tr("No connect")).setText("\x40"); tr.messIO(req,"UserProtocol");
+	version = (t_err=req.attr("err")).length ? EVAL_STR : req.text().slice(1);
+}
+
+// Read Configuration parameter session ID
+if(t_err.length) CfgPrmSSID = EVAL_INT;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x61"); tr.messIO(req,"UserProtocol");
+	CfgPrmSSID = (t_err=req.attr("err")).length ? EVAL_INT : req.text().slice(2).toInt(10);
+	//SYS.messDebug("/SMDP/tmpl","CfgPrmSSID: "+req.text());
+}
+
+// Read Measurement serial number
+if(t_err.length) Srlno = EVAL_INT;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x62"); tr.messIO(req,"UserProtocol");
+	Srlno = (t_err=req.attr("err")).length ? EVAL_INT : req.text().slice(2).toInt(10);
+}
+
+// Read Channel freq.
+if(t_err.length) RawFreq = EVAL_REAL;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x63"); tr.messIO(req,"UserProtocol");
+	RawFreq = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+
+// Read Last used, good channel freq. (Hz)
+if(t_err.length) GoodFreq = EVAL_REAL;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x64"); tr.messIO(req,"UserProtocol");
+	GoodFreq = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+
+// Read Computed raw thickness, from frequency. (A)
+if(t_err.length) RawThick = EVAL_REAL;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x65"); tr.messIO(req,"UserProtocol");
+	RawThick = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+
+// Read Computed material related thickness, can be zeroed. (A)
+if(t_err.length) XtalThick = EVAL_REAL;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x66"); tr.messIO(req,"UserProtocol");
+	XtalThick = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+
+// Read Filtered computed material related thickness, can be zeroed. (A)
+if(t_err.length) XtalThick_F = EVAL_REAL;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x67"); tr.messIO(req,"UserProtocol");
+	XtalThick_F = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+
+// Read Rate, angstroms per second.
+if(t_err.length) XtalRate = EVAL_REAL;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x68"); tr.messIO(req,"UserProtocol");
+	XtalRate = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+
+// Read Rate, angstroms per second, filtered.
+if(t_err.length) XtalRate_F = EVAL_REAL;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x69"); tr.messIO(req,"UserProtocol");
+	XtalRate_F = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+
+// Read XtalLife (%)
+if(t_err.length) XtalLife = EVAL_REAL;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x6A"); tr.messIO(req,"UserProtocol");
+	XtalLife = (t_err=req.attr("err")).length ? EVAL_REAL : req.text().slice(2).toReal();
+}
+
+// Read Quality level (0-9).
+if(t_err.length) XtalQual = EVAL_INT;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x6B"); tr.messIO(req,"UserProtocol");
+	XtalQual = (t_err=req.attr("err")).length ? EVAL_INT : req.text().slice(2).toInt(10);
+}
+
+// Read Highest quality level seen (0-9).
+if(t_err.length) XtalQualPeak = EVAL_INT;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x6C"); tr.messIO(req,"UserProtocol");
+	XtalQualPeak = (t_err=req.attr("err")).length ? EVAL_INT : req.text().slice(2).toInt(10);
+}
+
+// Read Stability level (0-9).
+if(t_err.length) XtalStab = EVAL_INT;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x6D"); tr.messIO(req,"UserProtocol");
+	XtalStab = (t_err=req.attr("err")).length ? EVAL_INT : req.text().slice(2).toInt(10);
+}
+
+// Read Highest stability level seen (0-9).
+if(t_err.length) XtalStabPeak = EVAL_INT;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x6E"); tr.messIO(req,"UserProtocol");
+	XtalStabPeak = (t_err=req.attr("err")).length ? EVAL_INT : req.text().slice(2).toInt(10);
+}
+
+// Read Channel status.
+if(t_err.length) XtalStat = EVAL_STR;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x6F"); tr.messIO(req,"UserProtocol");
+	if((t_err=req.attr("err")).length) XtalStat = EVAL_STR;
+	else {
+		stCd = req.text().slice(2).toInt(10);
+		stLab = tr("Unknown");
+		if(stCd == 0)			stLab = "XPROB_NONE: "+tr("No Problems. The rest below are prioritized.");
+		else if(stCd == 1)	stLab = "XPROB_FREQ: "+tr("Frequency of xtal is > Fq or < Fm. Halts all other calculations.");
+		else if(stCd == 2)	stLab = "XPROB_LOWLIFE: "+tr("Frequency was bad (previous XtalStat was XPROB_FREQ) and frequency is now in range, but life is less than 3%.");
+		else if(stCd == 3)	stLab = "XPROB_S_FAIL: "+tr("Stability level XtalStab of xtal >= SlvlTrip.");
+		else if(stCd == 4)	stLab = "XPROB_MATH: "+tr("Unable to determine rate because of a computation error, most likely caused by a parameter (density, z-ratio, etc) having a zero or otherwise invalid (non numeric or infinity) value.");
+		else if(stCd == 5)	stLab = "XPROB_Q_FAIL: "+tr("XtalQual of xtal >= QlvlTrip.");
+		XtalStat = ""+stCd+":"+stLab;
+	}
+}
+
+// Read XtalLife (%).
+if(t_err.length) XtalLife_C = EVAL_INT;
+else {
+	req.setAttr("err","1:"+tr("No connect")).setText("\xC0\x70"); tr.messIO(req,"UserProtocol");
+	XtalLife_C = (t_err=req.attr("err")).length ? EVAL_INT : req.text().slice(2).toInt(10);
+}
+
+f_err = t_err.length ? t_err : "0";','','',1425146566);
 CREATE TABLE 'tmplib_PrescrTempl' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"PROGRAM" TEXT DEFAULT '' ,"uk#PROGRAM" TEXT DEFAULT '' ,"ru#PROGRAM" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "tmplib_PrescrTempl" VALUES('timer','Timer','Таймер','Таймер','Typical timer. Hold run up to time elapse.','Типовий таймер. Утримує виконання до завершення часу.','Типовой таймер. Удерживает выполнение до завершения времени.',10,0,'JavaLikeCalc.JavaScript
 //Reset to default
@@ -5761,4 +5904,348 @@ if( impAnImit )
   return max(0,min(100,out));
 }
 return impAnOut;','','','');
+CREATE TABLE 'UserProtocol_uPrt' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"EN" INTEGER DEFAULT '0' ,"PR_TR" INTEGER DEFAULT '1' ,"InPROG" TEXT DEFAULT '' ,"uk#InPROG" TEXT DEFAULT '' ,"OutPROG" TEXT DEFAULT '' ,"uk#OutPROG" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
+INSERT INTO "UserProtocol_uPrt" VALUES('SMS','SMS','','','Provides operations with SMS by GSM-modem connected as serial device. For now supported only sending SMS messages to a number of remote cell phone or GSM modem.
+Author: Roman Savochenko <rom_as@oscada.org>','','',1,0,'','','JavaLikeCalc.JavaScript
+//Request form:
+//<cmd pin="1111" tel="+380XXXXXXXXX" addr="1" err="1:Error">{text}</cmd>**
+//  cmd - command, for now only "send" allowed;
+//  pin - PIN code to the SIM card access;
+//  tel - telephone number for receiver (remote cell phone or GSM modem);
+//  text - the message text;
+//  err - sets for the request result.
+if(io.name() == "send") {
+	//Prepare PDU
+	var pdu = "001100";	//SMS center number (default) + SMS-Submit
+	//Telephone number encode
+	var tel = io.attr("tel");
+	if(!tel.length || tel[0] != "+") { io.setAttr("err","100:"+tr("Telephone number error.")); return; }
+	tel = tel.slice(1);
+	pdu += tel.length.toString(16,2) + "91";	//Telephone length and type
+	while(tel.length < 12) tel += "F";
+	for(i = 0; i < 6; i++) pdu += tel[i*2+1]+tel[i*2];
+	//Message encode
+	var text = SYS.strCodeConv(io.text(),"","UCS2");
+	if((text.length/2) > 70) { io.setAttr("err","101:"+tr("Long length (%1) of the message.").replace("%1",(text.length/2))); return; }
+	pdu += "0018C1"+(text.length).toString(16,2);
+	for(i = 0; i < text.length/2; i++) pdu += text.charCodeAt(i*2+1).toString(16,2)+text.charCodeAt(i*2).toString(16,2);
+	//SYS.messDebug("TEST SMS","PDU :"+pdu);
+	//Send request
+	if(!io.attr("pin").isEVal()) {
+		var rez = tr.messIO("AT+CPIN="+io.attr("pin")+"\r");
+		if(rez.search("OK\r") < 0)	{ io.setAttr("err","10:"+tr("Error set PIN-code.")); return; }
+	}
+	// Switch to PDU SMS mode
+	var rez = tr.messIO("AT+CMGF=0\r");
+	if(rez.search("OK\r") < 0)	{ io.setAttr("err","10:"+tr("Error set PDU mode.")); return; }
+	// Send PDU message
+	var rez = tr.messIO("AT+CMGS="+(pdu.length/2-1)+"\r");
+	if(rez.search(">") < 0)	{ io.setAttr("err","10:"+tr("Error sent SMS.")); return; }
+	var rez = tr.messIO(pdu+"\x1A");
+	for(var i_tr = 0; i_tr < 5 && rez.search("OK\r") < 0; i_tr++) rez += tr.messIO("");
+	if(rez.search("OK\r") < 0)	{ io.setAttr("err","10:"+tr("Error sent SMS PDU")); return; }
+	io.setAttr("err", "0");
+	//SYS.messDebug("TEST SMS","PDU REZ :"+rez);
+}','',1424879673);
+INSERT INTO "UserProtocol_uPrt" VALUES('SCU750','EDWARDS TURBOMOLECULAR PUMPS','','','Protocol level of typical EDWARDS TURBOMOLECULAR PUMPS (http://edwardsvacuum.com) data request by SCU750 Cotrol Unit protocol.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vacuum technologies laboratory (http://e-beam.ru).','','',1,0,'','','JavaLikeCalc.JavaScript
+//Request form:
+//<mess addr="1" err="1:Error">{req}</mess> - message tag
+//  req - request/respond data;
+//  addr - remote station address (<0 - single; >=0 - multi port);
+//  err - sets for the request result.
+if(io.text().length > 255*255) { io.setAttr("err","1:"+tr("Message''s length more 255*255")); return; }
+addr = io.attr("addr").toInt();
+k = ceil(io.text().length/255);	//transmission blocks
+for(i_k = 1; i_k <= k; i_k++) {
+	request = "\x02"+k.toString(16,3) + io.text().slice((i_k-1)*255,(i_k-1)*255+min(255,io.text().length-(i_k-1)*255)) + ((k>1&&i_k<k)?"\x17":"\x03");
+	// Calc LRC
+	LRC = 0xFF;
+	for(i = 0; i < request.length; i++) LRC = LRC^request.charCodeAt(i);
+	request += SYS.strFromCharCode(LRC);
+
+	// Multy port
+	if(addr>=0) request = "@"+addr.toString(16,2)+request;
+	//SYS.messDebug("PRT","Request: "+Special.FLibSYS.strDec4Bin(request));
+
+	//Send the request
+	resp = tr.messIO(request);
+	while(resp.length) {
+		tresp = tr.messIO("");
+		if(!tresp.length) break;
+  		resp += tresp;
+	}
+	if(!resp.length) { io.setAttr("err","2:"+tr("No respond")); return; }
+	//SYS.messDebug("PRT","Ack: "+Special.FLibSYS.strDec4Bin(resp));
+	if(resp.charCodeAt(0) != 6) { io.setAttr("err","3:"+tr("No acknowledgment")); return; }
+	// Pass included acknowledgement
+	resp = resp.slice((addr>=0)?3:1);
+
+	// Read data blocks
+	io.setText("");
+	for(i_k = 1; true; i_k++) {
+		//Send application acknowledgement and wait data
+		if(!resp.length) {
+			request = "\x06";
+			if(addr >= 0) request += addr.toString(16,2);
+			resp = tr.messIO(request);
+			while(resp.length) {
+				tresp = tr.messIO("");
+				if(!tresp.length) break;
+  				resp += tresp;
+			}
+			if(!resp.length) { io.setAttr("err","4:"+tr("No data block get")); return; }
+		}
+		if(resp.length < ((addr>=0)?10:7) || resp.charCodeAt(0) != 0x40) { io.setAttr("err","5:"+tr("Data block short or error")); return; }
+
+		//SYS.messDebug("PRT","BLK "+i_k+": "+Special.FLibSYS.strDec4Bin(resp));
+
+		if(addr >= 0) resp = resp.slice(3);
+		LRC = 0xFF;
+		for(i = 0; i < (resp.length-1); i++) LRC = LRC^resp.charCodeAt(i);
+		if(LRC != resp.charCodeAt(resp.length-1)) { io.setAttr("err","6:"+tr("LRC error.")); return; }
+		if(i_k != resp.slice(1,4).toInt(16)) { io.setAttr("err","7:"+tr("Block sequence.")); return; }
+		io.setText(io.text()+resp.slice(4,resp.length-2));
+		if(resp.charCodeAt(resp.length-2) == 0x03) break;
+		if(resp.charCodeAt(resp.length-2) == 0x17) { resp = ""; continue; }
+		io.setAttr("err","8:"+tr("Unknown block end."));
+		return;
+	}
+}','',1424879664);
+INSERT INTO "UserProtocol_uPrt" VALUES('TMH','Power supply for turbomolecular pumps','','','Protocol level of power supply for turbomolecular pumps of firm SHIMADZU (http://www.shimadzu.com), model EI-R04M.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vacuum technologies laboratory (http://e-beam.ru).','','',1,0,'','','JavaLikeCalc.JavaScript
+//Request form:
+//<mess addr="1" err="1:Error">{req}</mess> - message tag
+//  req - request/respond data;
+//  addr - remote station address (1...32);
+//  err - sets for the request result.
+
+io.setAttr("err","");
+addr = io.attr("addr").toInt();
+if(addr < 1 || addr > 32) { io.setAttr("err","1:"+tr("Device address out of range 1...32")); return; }
+request = "MJ"+addr.toString(10,2)+io.text();
+//Calc CRC
+CRC = 0;
+for(i = 0; i < request.length; i++) CRC += request.charCodeAt(i);
+request += (CRC&0xFF).toString(16,2)+"\r";
+//SYS.messDebug("PRT","Request: "+Special.FLibSYS.strDec4Bin(request));
+
+//Send request
+resp = tr.messIO(request);
+while(resp.length && resp[resp.length-1] != "\r") {
+	tresp = tr.messIO("");
+	if(!tresp.length) break;
+  	resp += tresp;
+}
+if(resp.length < 6 || resp[resp.length-1] != "\r" || resp.slice(0,2) != "MJ" || resp.slice(2,4).toInt() != addr)
+{ io.setAttr("err","2:"+tr("No or error respond")); return; }
+//SYS.messDebug("PRT","Respond: "+Special.FLibSYS.strDec4Bin(resp));
+CRC = 0;
+for(i = 0; i < (resp.length-3); i++) CRC += resp.charCodeAt(i);
+if((CRC&0xFF) != resp.slice(resp.length-3,resp.length-1).toInt(16)) { io.setAttr("err","6:"+tr("CRC error.")); return; }
+io.setText(resp.slice(4,resp.length-3));','',1424879695);
+INSERT INTO "UserProtocol_uPrt" VALUES('VKT7','VKT-7','','','Protocol level of firm "Teplocom" (http://www.teplocom.spb.ru) computer "VKT-7" for complex heat measurement and the count. The device complex enough by provide more parameters, more history to its and access by nonlinear Serial-based protocol at low speed.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vladislav Chubuk','','',1,0,'','','JavaLikeCalc.JavaScript
+//Request form:
+//<mess addr="1" err="1:Error">{req}</mess> - message tag
+//  req - request/respond data;
+//  addr - remote station address (0...254);
+//  err - sets for the request result.
+io.setAttr("err", "");
+addr = io.attr("addr").toInt();
+if(addr < 0 || addr > 254) { io.setAttr("err", "1:"+tr("Device address out of range 0...254")); return; }
+request = SYS.strFromCharCode(addr) + io.text();
+//Calc KS
+KS = 0xFFFF;
+for(i = 0; i < request.length; i++) {
+	KS = KS ^ request.charCodeAt(i);
+	for(j = 0; j < 8; j++)
+		KS = (KS&0x01) ? (KS >> 1)^0xA001 : (KS >> 1);
+}
+request = SYS.strFromCharCode(0xFF,0xFF) + request + SYS.strFromCharCode(KS,KS>>8);
+SYS.messDebug("/VKT7/PRT","Request: "+Special.FLibSYS.strDec4Bin(request));
+
+//Send request
+resp = tr.messIO(request);
+while(resp.length) {
+	tresp = tr.messIO("");
+	if(!tresp.length) break;
+  	resp += tresp;
+}
+if(resp.length < 4 || resp.charCodeAt(0) != addr)	{ io.setAttr("err", "2:"+tr("No or error respond")); return; }
+SYS.messDebug("/VKT7/PRT","Respond: "+Special.FLibSYS.strDec4Bin(resp));
+
+//Calc KS
+KS = 0xFFFF;
+for(i = 0; i < (resp.length-2); i++) {
+	KS = KS ^ resp.charCodeAt(i);
+	for(j = 0; j < 8; j++)
+		KS = (KS&0x01) ? (KS >> 1)^0xA001 : (KS >> 1);
+}
+if(KS != ((resp.charCodeAt(resp.length-1)<<8)|resp.charCodeAt(resp.length-2)))
+{ io.setAttr("err","6:"+tr("KS error")+" "+KS.toString(16,4)+"=="+((resp.charCodeAt(resp.length-1)<<8)|resp.charCodeAt(resp.length-2)).toString(16,4)); return; }
+if(resp.charCodeAt(1)&0x80)
+{ io.setAttr("err","7:"+resp.charCodeAt(2)+":"+tr("Request error.")); return; }
+io.setText(resp.slice(1,-2));','',1424879706);
+INSERT INTO "UserProtocol_uPrt" VALUES('DCON','DCON','','','Mostly aimed for example implement user protocols into OpenSCADA and contains only main functions into the protocol part.
+Author: Roman Savochenko <rom_as@oscada.org>','','',1,0,'JavaLikeCalc.JavaScript
+//Processing: test implements only processing for requests ''#'' and ''@'' with fixed reply data.
+
+var enCRC = true;
+//SYS.messDebug("TEST REQ: ",request);
+//Test request for full
+if(request.length < 4 || request[request.length-1] != "\r") {
+  if(request.length > 10) request = "";
+  return true;
+}
+//Check for integrity of the request (CRC) and address
+if(enCRC) {
+	CRC = 0;
+	for(i = 0; i < (request.length-3); i++) CRC += request.charCodeAt(i);
+	if(CRC != request.slice(request.length-3,request.length-1).toInt(16) || request.slice(1,3).toInt(16) != 10) return false;
+}
+//Analysis of the request and response prepare
+if(request.charCodeAt(0) == "#") answer = ">+05.123+04.153+07.234-02.356+10.000-05.133+02.345+08.234";
+else if(request.charCodeAt(0) == "@") answer = ">AB3C";
+else answer = "?";
+//Finish response
+if(enCRC) {
+	CRC = 0;
+	for(i=0; i < answer.length; i++) CRC += answer.charCodeAt(i);
+	answer += (CRC&0xFF).toString(16)+"\r";
+}
+//SYS.messDebug("TEST ANSV: "+answer.charCodeAt(0),answer);
+return 0;','','JavaLikeCalc.JavaScript
+//Request form:
+//<ReqSymb addr="1" err="1:Error">{req}</ReqSymb> - message tag
+//  ReqSymb - request type symbol into the tag name, like: ''#'', ''@'', etc
+//  req - request/respond data;
+//  addr - remote host address [1...240];
+//  err - sets for the request result.
+
+//Result request prepare
+request = io.name().slice(0,1) + io.attr("addr").toInt().toString(16,2) + io.text();
+if(io.attr("CRC").toInt()) {
+	CRC = 0;
+	for(i = 0; i < request.length; i++) CRC += request.charCodeAt(i);
+	request += (CRC&0xFF).toString(16) + "\r";
+}
+else request += "\r";
+//Send request
+resp = tr.messIO(request);
+while(resp[resp.length-1] != "\r") {
+  tresp = tr.messIO("");
+  if(!tresp.length) break;
+  resp += tresp;
+}
+if(io.attr("CRC").toInt()) {
+	//Analysis response
+	if(resp.length < 4 || resp[resp.length-1] != "\r") { io.setAttr("err","10:"+tr("Error or no response.")); return; }
+	//Check response to the integrity (CRC)
+	CRC = 0;
+	for(i = 0; i < (resp.length-3); i++) CRC += resp.charCodeAt(i);
+	if(CRC != resp.slice(resp.length-3,resp.length-1).toInt(16)) { io.setAttr("err","11:"+tr("CRC error.")); return; }
+}
+//Analysis response
+else if(resp.length < 2 || resp[resp.length-1] != "\r") { io.setAttr("err","10:"+tr("Error or no response.")); return; }
+if(resp[0] != ">") { io.setAttr("err","12:"+resp[0]+":"+tr("DCON error.")); return; }
+//The result return
+io.setAttr("err","");
+io.setText(resp.slice(1,resp.length-3));','',1424879498);
+INSERT INTO "UserProtocol_uPrt" VALUES('TM510x','Elemer TM510x','','','Protocol level of multichannels thermometer Elemer TM5102 and TM5103 of firm Elemer (http://www.elemer.ru).
+Author: Roman Savochenko <rom_as@oscada.org>','','',1,0,'','','JavaLikeCalc.JavaScript
+//Request form:
+//<mess addr="1" err="1:Error">{req}</mess> - message tag
+//  req - request/respond data;
+//  addr - remote station address (1...254);
+//  err - sets for the request result.
+io.setAttr("err", "");
+addr = io.attr("addr").toInt();
+if(addr < 1 || addr > 254) { io.setAttr("err","1:"+tr("Device address out of range 1...254")); return; }
+request = ":"+addr.toString(10)+";"+io.text()+";";
+//Calc KS
+KS = 0xFFFF;
+for(i = 1; i < request.length; i++) {
+	KS = KS ^ request.charCodeAt(i);
+	for(j = 0; j < 8; j++)
+		KS = (KS&0x01) ? (KS >> 1)^0xA001 : (KS >> 1);
+}
+request += KS.toString(10)+"\r";
+//SYS.messDebug("PRT","Request: "+request);
+
+//Send request
+resp = tr.messIO(request);
+while(resp.length && resp[resp.length-1] != "\r") {
+	tresp = tr.messIO("");
+	if(!tresp.length) break;
+  	resp += tresp;
+}
+if(resp.length && resp.charCodeAt(0) == 0xFF) resp = resp.slice(1);
+if(resp.length < 7 || resp[resp.length-1] != "\r" ||
+	resp[0] != "!" || resp.slice(1).toInt() != addr || (KSpos=resp.lastIndexOf(";")) < 0)
+{ io.setAttr("err","2:"+tr("No or error respond")); return; }
+//SYS.messDebug("PRT","Respond: "+resp);
+
+//Calc KS
+KS = 0xFFFF;
+for(i = 1; i < min(KSpos+1,resp.length); i++) {
+	KS = KS ^ resp.charCodeAt(i);
+	for(j = 0; j < 8; j++)
+		KS = (KS&0x01) ? (KS >> 1)^0xA001 : (KS >> 1);
+}
+if(KS != resp.slice(KSpos+1).toInt(10)) { io.setAttr("err","6:"+tr("KS error.")); return; }
+io.setText(resp.slice(resp.indexOf(";")+1,KSpos));','',1424879686);
+INSERT INTO "UserProtocol_uPrt" VALUES('SMDP','Sycon Multi Drop Protocol','','','Protocol level of STM devices for resonant frequency measurement for mass of deposited films attached to its surface by Sycon Instruments, Inc. (http://www.sycon.com)
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vacuum technologies laboratory (http://e-beam.ru).','','',1,0,'','','JavaLikeCalc.JavaScript
+//Request form:
+//<mess addr="16" try="1" err="1:Error">{req}</mess> - message tag
+//req - request/respond data;
+//addr - remote device address [16...254];
+//try - tries for the request;
+//err - sets for the request result.
+
+if(!io.text().length) { io.setAttr("err","1:"+tr("Message empty")); return; }
+addr = io.attr("addr").toInt();
+try = min(5,max(1,io.attr("try").toInt()));
+request = "\x02"+SYS.strFromCharCode(addr) + io.text();
+//Calc CHKSUM
+CRC = 0;
+for(i = 1; i < request.length; i++) CRC += request.charCodeAt(i);
+request += SYS.strFromCharCode((CRC>>4&0xF)+0x30,(CRC&0xF)+0x30,0x0D);
+
+SYS.messDebug("/UserProt/SMDP",tr("Request:")+" "+Special.FLibSYS.strDec4Bin(request));
+
+for( ; try > 0; try--) {
+	//Send the request
+	resp = tr.messIO(request);
+	while(resp.length && resp.charCodeAt(resp.length-1) != 0x0D)
+		if((tresp=tr.messIO("")).length) resp += tresp;
+		else break;
+
+	if(!resp.length)	{ io.setAttr("err","2:"+tr("No respond")); continue; }
+	if(resp.length < 6 || resp.charCodeAt(resp.length-1) != 0x0D)	{ io.setAttr("err","3:"+tr("Not full respond")); continue; }
+	if(resp.charCodeAt(0) != 0x02 || resp.charCodeAt(1) != addr)	{ io.setAttr("err","4:"+tr("Wrong respond")); continue; }
+
+	SYS.messDebug("/UserProt/SMDP",tr("Respond:")+" "+Special.FLibSYS.strDec4Bin(resp));
+
+	CRC = 0;
+	for(i = 1; i < (resp.length-3); i++) CRC += resp.charCodeAt(i);
+	if((CRC&0xFF) != (((resp.charCodeAt(resp.length-3)-0x30)<<4)|(resp.charCodeAt(resp.length-2)-0x30)))
+	{ io.setAttr("err","6:"+tr("CRC error.")); continue; }
+	break;
+}
+if(try <= 0)	return;
+
+errCd = resp.charCodeAt(2)&0x7;
+if(errCd == 1) io.setAttr("err","").setText(resp.slice(2,-2));
+else if(errCd == 2) io.setAttr("err",""+(10+errCd)+":Err_inv_cmd: "+tr("Illegal command (CMD code not valid)."));
+else if(errCd == 3) io.setAttr("err",""+(10+errCd)+":Err_syntax: "+tr("Syntax error. (Too many bytes in data field, not enough bytes, etc)."));
+else if(errCd == 4) io.setAttr("err",""+(10+errCd)+":Err_range: "+tr("Data range error."));
+else if(errCd == 5) io.setAttr("err",""+(10+errCd)+":Err_inhibited: "+tr("Inhibited."));
+else if(errCd == 6) io.setAttr("err",""+(10+errCd)+":Err_obso: "+tr("Obsolete command. No action taken, but not really an error."));
+else io.setAttr("err",""+(10+errCd)+":"+tr("Unknown error."));','',1425141878);
 COMMIT;
