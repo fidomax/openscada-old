@@ -45,7 +45,6 @@ extern "C"
 	if(nMod == 0)
 	    return TModule::SAt(PRT_ID, PRT_TYPE, PRT_SUBVER);
 	else if(nMod == 1) return TModule::SAt(MOD_ID, MOD_TYPE, VER_TYPE);
-//	if( n_mod==0 )	return TModule::SAt(MOD_ID,MOD_TYPE,VER_TYPE);
 	return TModule::SAt("");
     }
 
@@ -54,9 +53,6 @@ extern "C"
 	if(AtMod == TModule::SAt(MOD_ID, MOD_TYPE, VER_TYPE))
 	    return new FT3::TTpContr(source);
 	else if(AtMod == TModule::SAt(PRT_ID, PRT_TYPE, PRT_SUBVER)) return new FT3::TProt(source);
-
-	/*	if( AtMod == TModule::SAt(MOD_ID,MOD_TYPE,VER_TYPE) )
-	 return new FT3::TTpContr( source );*/
 	return NULL;
     }
 }
@@ -113,14 +109,14 @@ void TMdContr::Time_tToDateTime(uint8_t * D, time_t time)
     D[4] = ms >> 8;
 }
 
-uint8_t TMdContr::GetData(uint16_t prmID, uint8_t * out)
+uint8_t TMdContr::cmdGet(uint16_t prmID, uint8_t * out)
 {
     uint8_t rc = 0;
     vector<string> lst;
     list(lst);
     for(int i_l = 0; i_l < lst.size(); i_l++) {
 	AutoHD<TMdPrm> t = at(lst[i_l]);
-	rc = t.at().GetData(prmID, out);
+	rc = t.at().cmdGet(prmID, out);
 	if(rc) {
 	    break;
 	}
@@ -129,16 +125,33 @@ uint8_t TMdContr::GetData(uint16_t prmID, uint8_t * out)
     return rc;
 }
 
+uint8_t TMdContr::cmdSet(uint8_t * req, uint8_t addr)
+{
+    uint8_t rc = 0;
+    vector<string> lst;
+    list(lst);
+    for(int i_l = 0; i_l < lst.size(); i_l++) {
+	AutoHD<TMdPrm> t = at(lst[i_l]);
+	rc = t.at().cmdSet(req, addr);
+	if(rc) {
+	    break;
+	}
+
+    }
+    return rc;
+}
 bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 {
     mess_info(nodePath().c_str(), _("Process message___"));
     uint8_t l;
     uint8_t n;
     uint16_t tm;
-    switch(msg->C) {
+    uint8_t rc;
+    msgOut->L = 0;
+    switch(msg->C & 0x0F) {
     case ResetChan:
 	mess_info(nodePath().c_str(), _("ResetChan"));
-	FCB2 = 0;
+	FCB2 = FCB3 = 0xFF;
 	msgOut->L = 3;
 	msgOut->C = FCB3;
 	break;
@@ -150,6 +163,34 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	msgOut->L = 3;
 	msgOut->C = 9;
 //				GetBE(&msg->C);
+	break;
+    case SetData:
+	mess_info(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"),FCB2,msg->C);
+	if(FCB2 != msg->C) {
+	    FCB2 = msg->C;
+	    l = msg->L - 3;
+	    if(l < 3) l = -1;
+	    n = 0;
+	    while(l > 1) {
+		rc = cmdSet(msg->D + n, msg->B);
+		if(rc) {
+		    l -= rc;
+		    n += rc;
+		} else {
+		    l = 1;
+		}
+	    }
+	    if(l) {
+		msgOut->L = 3;
+		msgOut->C = 1;
+	    } else {
+		msgOut->L = 3;
+		msgOut->C = 0;
+	    }
+	    //if (HasEvent)    msgOut->C |= 0x20;
+	} else {
+	    mess_info(nodePath().c_str(), _("SetData BAD FCB!!!"));
+	}
 	break;
     case AddrReq:
 	mess_info(nodePath().c_str(), _("AddrReq"));
@@ -166,25 +207,26 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	while(l < (msg->L - 3)) {
 	    uint16_t id = TSYS::getUnalign16(msg->D + l);
 	    l += 2;
-	    msgOut->D[n++] = tm & 0xFF;
-	    msgOut->D[n++] = (tm >> 8) & 0xFF;
+	    msgOut->D[n++] = tm;
+	    msgOut->D[n++] = tm >> 8;
 	    mess_info(nodePath().c_str(), _("time n %d"), n);
-	    msgOut->D[n++] = id & 0xFF;
-	    msgOut->D[n++] = (id >> 8) & 0xFF;
+	    msgOut->D[n++] = id;
+	    msgOut->D[n++] = id >> 8;
 	    mess_info(nodePath().c_str(), _("addr n %d"), n);
 	    vector<string> lst;
 	    list(lst);
-	    uint8_t rc = 0;
-	    for(int i_l = 0; i_l < lst.size(); i_l++) {
-		//AutoHD<TMdPrm> t = at(lst[i_l]);
-		rc = GetData(id, msgOut->D + n);
-		if(rc != 0) {
-		    n += rc;
-		    mess_info(nodePath().c_str(), _("found! %d"), n);
-		    break;
-		}
-
+	    rc = 0;
+	    /*	    for(int i_l = 0; i_l < lst.size(); i_l++) {
+	     //AutoHD<TMdPrm> t = at(lst[i_l]);*/
+	    rc = cmdGet(id, msgOut->D + n);
+	    if(rc != 0) {
+		n += rc;
+		l += rc;
+		mess_info(nodePath().c_str(), _("found! %d"), n);
+//		    break;
 	    }
+
+//	    }
 	    if(rc == 0) {
 		l = msg->L - 3;
 		mess_info(nodePath().c_str(), _("ID not found! %04X"), id);
@@ -216,7 +258,8 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
     }
     msgOut->A = msg->B;
     msgOut->B = devAddr;
-    return true;
+
+    return msgOut->L;
 }
 
 //*************************************************
@@ -866,12 +909,12 @@ void *TMdContr::LogicTask(void *icntr)
 	MtxAlloc prmRes(cntr.enRes, true);
 
 	//TODO FT3 logic handler
-	    vector<string> lst;
-	    cntr.list(lst);
-	    for(int i_l = 0; i_l < lst.size(); i_l++) {
-		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		t.at().tmHandler();
-	    }
+	vector<string> lst;
+	cntr.list(lst);
+	for(int i_l = 0; i_l < lst.size(); i_l++) {
+	    AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
+	    t.at().tmHandler();
+	}
 
 	prmRes.unlock();
 
@@ -1055,10 +1098,19 @@ void TMdPrm::tmHandler()
 
 }
 
-uint8_t TMdPrm::GetData(uint16_t prmID, uint8_t * out)
+uint8_t TMdPrm::cmdGet(uint16_t prmID, uint8_t * out)
 {
     if(mDA) {
-	return mDA->GetData(prmID, out);
+	return mDA->cmdGet(prmID, out);
+    } else {
+	return 0;
+    }
+}
+
+uint8_t TMdPrm::cmdSet(uint8_t * req, uint8_t addr)
+{
+    if(mDA) {
+	return mDA->cmdSet(req, addr);
     } else {
 	return 0;
     }
@@ -1142,21 +1194,22 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
 
 	return;
     }
-    if(a_path.substr(0,12) == "/cfg/prm/pr_") {
-    	if(ctrChkNode(opt,"get",RWRWR_,"root",SDAQ_ID,SEC_RD)) {
-    	    string lnk_val = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
-    	    if(!SYS->daq().at().attrAt(lnk_val,'.',true).freeStat()) {
-    		opt->setText(lnk_val + " (+)");
-    	    }
-    	    else opt->setText(lnk_val);
-    	}
-	if(ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR)) {
+    if(a_path.substr(0, 12) == "/cfg/prm/pr_") {
+	if(ctrChkNode(opt, "get", RWRWR_, "root", SDAQ_ID, SEC_RD)) {
+	    string lnk_val = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
+	    if(!SYS->daq().at().attrAt(lnk_val, '.', true).freeStat()) {
+		opt->setText(lnk_val + " (+)");
+	    } else
+		opt->setText(lnk_val);
+	}
+	if(ctrChkNode(opt, "set", RWRWR_, "root", SDAQ_ID, SEC_WR)) {
 	    string no_set;
 	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr = opt->text();
 	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).aprm = SYS->daq().at().attrAt(mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr, '.', true);
 	}
-    } else if( (a_path.compare(0,12, "/cfg/prm/pl_") == 0 ) && ctrChkNode(opt)) {
-	string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;;
+    } else if((a_path.compare(0, 12, "/cfg/prm/pl_") == 0) && ctrChkNode(opt)) {
+	string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
+	;
 	if(!SYS->daq().at().attrAt(m_prm, '.', true).freeStat()) m_prm = m_prm.substr(0, m_prm.rfind("."));
 	SYS->daq().at().ctrListPrmAttr(opt, m_prm, false, '.');
     }

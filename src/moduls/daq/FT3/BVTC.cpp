@@ -91,6 +91,7 @@ void B_BVTC::tmHandler(void)
 		tmpval = data[i].MaskLink.aprm.at().getB();
 		if(tmpval != data[i].Mask) {
 		    data[i].Mask = tmpval;
+		    data[i].sMask = 0;
 		    mPrm->vlAt(data[i].MaskLink.prmName.c_str()).at().setB(tmpval, 0, true);
 		    //TODO putinBE;
 		}
@@ -199,9 +200,9 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
     return l;
 }
 
-uint8_t B_BVTC::GetData(uint16_t prmID, uint8_t * out)
+uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 {
-    if((prmID & 0xF000) != ID) return false;
+    if((prmID & 0xF000) != ID) return 0;
     uint16_t k = (prmID >> 6) & 0x3F; // номер объекта
     uint16_t n = prmID & 0x3F;  // номер параметра
     uint l = 0;
@@ -237,21 +238,61 @@ uint8_t B_BVTC::GetData(uint16_t prmID, uint8_t * out)
 
     case 1:
 	//value
+	out[0] = 0;
+	mess_info("getData", _("out[0] before %02X "),out[0]);
 	if(n < nTC) {
-	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++)
+	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++) {
 		out[0] |= (data[j].Value & 0x01) << (j % 8);
+		mess_info("getData", _("out[0] %d %02X "),j, out[0]);
+	    }
 	    l = 1;
 	}
 	break;
     case 2:
 	//mask
+	out[0] = 0;
+	out[1] = 0;
 	if(n < nTC) {
-	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++)
+	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++){
+		out[0] = data[j].sMask;
 		out[1] |= (data[j].Mask & 0x01) << (j % 8);
+	    }
 	    l = 2;
 	}
 	break;
     }
+    return l;
+}
+
+uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
+{
+    mess_info("BVTC ", _("cmdSet"));
+    uint16_t prmID = TSYS::getUnalign16(req);
+    if((prmID & 0xF000) != ID) return 0;
+    mess_info("BVTC ", _("prmID %04X"),prmID);
+    uint16_t k = (prmID >> 6) & 0x3F; // номер объекта
+    uint16_t n = prmID & 0x3F;  // номер параметра
+    uint l = 0;
+    mess_info("BVTC ", _("k %d"),k);
+    mess_info("BVTC ", _("n %d"),n);
+    uint16_t nTC = (count_n / 8 + (count_n % 8 ? 1 : 0));
+    switch (k){
+    case 2:
+	if(n < nTC) {
+	    uint8_t newMask=req[2];
+	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++){
+		    mess_info("BVTC ", _("found! %d"),j);
+
+/*		data[j].sMask = addr;
+		data[j].Mask = newMask & 0x01;
+		if(data[j].MaskLink.aprm.freeStat()) data[j].MaskLink.aprm.at().setB(data[j].Mask,0,true);
+		mPrm->vlAt(data[j].MaskLink.prmName.c_str()).at().setB(data[j].Mask, 0, true);
+		newMask=newMask>>1;*/
+	    }
+	    l = 3;
+	}
+    }
+    mess_info("BVTC ", _("l %d"),l);
     return l;
 }
 

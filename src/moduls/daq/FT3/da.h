@@ -42,7 +42,8 @@ class DA: public TElem
 	virtual uint16_t Task(uint16_t) { }
 	virtual uint16_t HandleEvent(uint8_t *) { }
 	virtual uint16_t setVal(TVal &) { }
-	virtual uint8_t GetData(uint16_t, uint8_t *) {}
+	virtual uint8_t cmdGet(uint16_t, uint8_t *) {}
+	virtual uint8_t cmdSet(uint8_t *, uint8_t) {}
 	virtual bool cntrCmdProc( XMLNode *opt )	{ return false; }
 	virtual string getStatus( )	{ }
 	virtual void tmHandler(void) { }
