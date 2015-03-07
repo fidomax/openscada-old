@@ -38,6 +38,8 @@ namespace FT3
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
+	void saveIO(void);
+	void loadIO(bool force = false );
 	void tmHandler(void);
 	class STCchannel
 	{

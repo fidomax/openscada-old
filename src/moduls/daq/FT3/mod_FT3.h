@@ -49,6 +49,7 @@ using namespace OSCADA;
 #define LICENSE		"GPL2"
 //*************************************************
 
+
 #include "da.h"
 
 namespace FT3
@@ -114,6 +115,7 @@ namespace FT3
 	{
 	    return p_el;
 	}
+	TElem	&prmIOE();
 	TMdContr &owner();
 
 	//!!! Get data from Logic FT3 parameter

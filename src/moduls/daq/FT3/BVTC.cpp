@@ -66,6 +66,46 @@ string B_BVTC::getStatus(void)
 
 }
 
+void B_BVTC::loadIO( bool force )
+{
+    //Load links
+    if(mPrm->owner().startStat() && !force) {
+	mPrm->modif(true);
+	return;
+    }	//Load/reload IO context only allow for stopped controllers for prevent throws
+
+    TConfig cfg(&mPrm->prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm->ownerPath(true));
+    string io_bd = mPrm->owner().DB() + "." + "_io";
+
+    for(int i = 0; i < count_n; i++) {
+	cfg.cfg("ID").setS(data[i].ValueLink.prmName);
+	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath() + "_io", cfg, false, true)) continue;
+	data[i].ValueLink.prmAttr = cfg.cfg("VALUE").getS();
+	cfg.cfg("ID").setS(data[i].MaskLink.prmName);
+	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath() + "_io", cfg, false, true)) continue;
+	data[i].MaskLink.prmAttr = cfg.cfg("VALUE").getS();
+    }
+
+}
+
+void B_BVTC::saveIO()
+{
+    //Save links
+    TConfig cfg(&mPrm->prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm->ownerPath(true));
+    string io_bd = mPrm->owner().DB() + "." + "_io";
+
+    for(int i = 0; i < count_n; i++) {
+	cfg.cfg("ID").setS(data[i].ValueLink.prmName);
+	cfg.cfg("VALUE").setS(data[i].ValueLink.prmAttr);
+	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath() + "_io", cfg);
+	cfg.cfg("ID").setS(data[i].MaskLink.prmName);
+	cfg.cfg("VALUE").setS(data[i].MaskLink.prmAttr);
+	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath() + "_io", cfg);
+    }
+}
+
 void B_BVTC::tmHandler(void)
 {
     for(int i = 0; i < count_n; i++) {

@@ -37,7 +37,7 @@
 #include "mod_FT3.h"
 #include "FT3_prt.h"
 
-FT3::TTpContr *FT3::mod;
+FT3::TTpContr *FT3::mod; //Pointer for direct access to the module
 extern "C"
 {
     TModule::SAt module(int nMod)
@@ -381,7 +381,7 @@ void TTpContr::postEnable(int flag)
 
     elPrmIO.fldAdd(new TFld("PRM_ID", _("Parameter ID"), TFld::String, TCfg::Key, i2s(atoi(OBJ_ID_SZ) * 6).c_str()));
     elPrmIO.fldAdd(new TFld("ID", _("ID"), TFld::String, TCfg::Key, OBJ_ID_SZ));
-    elPrmIO.fldAdd(new TFld("VALUE", _("Value"), TFld::String, TCfg::TransltText, "200"));
+    elPrmIO.fldAdd(new TFld("VALUE", _("Value"), TFld::String,TFld::NoFlag, "200"));
 }
 
 //!!! Processing virtual functions for self object-controller creation.
@@ -978,6 +978,10 @@ TMdPrm::~TMdPrm()
     nodeDelAll();
 }
 
+TElem&	TMdPrm::prmIOE()
+{
+    mod->prmIOE();
+}
 //!!! Post-enable processing virtual function
 void TMdPrm::postEnable(int flag)
 {
@@ -1038,6 +1042,7 @@ void TMdPrm::enable()
 	throw TError(nodePath().c_str(), _("No one device selected."));
 
     owner().prmEn(this, true);	//Put to process
+//    if (mDA) mDA->loadIO(true);
 
     needApply = false;
 }
@@ -1156,8 +1161,8 @@ void TMdPrm::vlGet(TVal &val)
 //!!! Processing virtual functions for load parameter from DB
 void TMdPrm::load_()
 {
-//	mess_info(nodePath().c_str(),_("TMdPrm::load"));
     TParamContr::load_();
+    if(enableStat() && mDA) mDA->loadIO();
 }
 
 //!!! Processing virtual functions for save parameter to DB
@@ -1165,6 +1170,7 @@ void TMdPrm::save_()
 {
 //	mess_info(nodePath().c_str(),_("TMdPrm::save_"));
     TParamContr::save_();
+    if(enableStat() && mDA) mDA->saveIO();
 }
 
 //!!! Processing virtual function for OpenSCADA control interface comands
