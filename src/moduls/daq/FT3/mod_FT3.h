@@ -125,6 +125,8 @@ namespace FT3
 	uint16_t HandleEvent(uint8_t *);
 	void tmHandler(void);
 	TElem p_el;			//Work atribute elements
+//	string typeName();
+	string typeDBName();
 
     protected:
 	//Methods

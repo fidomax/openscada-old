@@ -297,7 +297,7 @@ void TTpContr::load_()
 //!!! Processing virtual function for save Root module to DB
 void TTpContr::save_()
 {
-//mess_info(nodePath().c_str(),_("TTpContr::save_"));
+mess_info(nodePath().c_str(),_("TTpContr::save_"));
 
 }
 
@@ -980,7 +980,7 @@ TMdPrm::~TMdPrm()
 
 TElem&	TMdPrm::prmIOE()
 {
-    mod->prmIOE();
+    return mod->prmIOE();
 }
 //!!! Post-enable processing virtual function
 void TMdPrm::postEnable(int flag)
@@ -1161,6 +1161,7 @@ void TMdPrm::vlGet(TVal &val)
 //!!! Processing virtual functions for load parameter from DB
 void TMdPrm::load_()
 {
+	mess_info(nodePath().c_str(),_("TMdPrm::load_"));
     TParamContr::load_();
     if(enableStat() && mDA) mDA->loadIO();
 }
@@ -1168,9 +1169,15 @@ void TMdPrm::load_()
 //!!! Processing virtual functions for save parameter to DB
 void TMdPrm::save_()
 {
-//	mess_info(nodePath().c_str(),_("TMdPrm::save_"));
+	mess_info(nodePath().c_str(),_("TMdPrm::save_"));
+//	string io_bd = type().name;//type().DB(&owner());
     TParamContr::save_();
+ //   TConfig cfg(&prmIOE());
     if(enableStat() && mDA) mDA->saveIO();
+}
+
+string TMdPrm::typeDBName(){
+    return type().DB(&owner());
 }
 
 //!!! Processing virtual function for OpenSCADA control interface comands
@@ -1212,6 +1219,7 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
 	    string no_set;
 	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr = opt->text();
 	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).aprm = SYS->daq().at().attrAt(mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr, '.', true);
+	    modif();
 	}
     } else if((a_path.compare(0, 12, "/cfg/prm/pl_") == 0) && ctrChkNode(opt)) {
 	string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;

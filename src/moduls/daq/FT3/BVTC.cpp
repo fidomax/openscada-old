@@ -46,6 +46,7 @@ B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
 	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
 	}
     }
+    loadIO();
 
 }
 
@@ -69,6 +70,7 @@ string B_BVTC::getStatus(void)
 void B_BVTC::loadIO( bool force )
 {
     //Load links
+    mess_info("B_BVTC::loadIO", "");
     if(mPrm->owner().startStat() && !force) {
 	mPrm->modif(true);
 	return;
@@ -76,14 +78,14 @@ void B_BVTC::loadIO( bool force )
 
     TConfig cfg(&mPrm->prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm->ownerPath(true));
-    string io_bd = mPrm->owner().DB() + "." + "_io";
-
+    string io_bd = mPrm->owner().DB() + "." +mPrm->typeDBName()+  "_io";
+    mess_info("B_BVTC::loadIO", "io_bd %s ",io_bd.c_str());
     for(int i = 0; i < count_n; i++) {
 	cfg.cfg("ID").setS(data[i].ValueLink.prmName);
-	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath() + "_io", cfg, false, true)) continue;
+	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg, false, true)) continue;
 	data[i].ValueLink.prmAttr = cfg.cfg("VALUE").getS();
 	cfg.cfg("ID").setS(data[i].MaskLink.prmName);
-	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath() + "_io", cfg, false, true)) continue;
+	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg, false, true)) continue;
 	data[i].MaskLink.prmAttr = cfg.cfg("VALUE").getS();
     }
 
@@ -94,15 +96,16 @@ void B_BVTC::saveIO()
     //Save links
     TConfig cfg(&mPrm->prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm->ownerPath(true));
-    string io_bd = mPrm->owner().DB() + "." + "_io";
-
+    string io_bd = mPrm->owner().DB() + "." +mPrm->typeDBName()+  "_io";
+    mess_info("B_BVTC::saveIO", "io_bd %s ",io_bd.c_str());
     for(int i = 0; i < count_n; i++) {
 	cfg.cfg("ID").setS(data[i].ValueLink.prmName);
 	cfg.cfg("VALUE").setS(data[i].ValueLink.prmAttr);
-	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath() + "_io", cfg);
+	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg);
+	mess_info("B_BVTC::saveIO", "path %s ",(mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io").c_str());
 	cfg.cfg("ID").setS(data[i].MaskLink.prmName);
 	cfg.cfg("VALUE").setS(data[i].MaskLink.prmAttr);
-	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath() + "_io", cfg);
+	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg);
     }
 }
 
