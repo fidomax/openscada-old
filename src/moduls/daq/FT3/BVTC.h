@@ -34,7 +34,8 @@ namespace FT3
 	bool with_params;
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
-	uint8_t GetData(uint16_t prmID, uint8_t * out);
+	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
+	uint8_t cmdSet(uint8_t * req, uint8_t addr);
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
 	void tmHandler(void);
@@ -42,7 +43,7 @@ namespace FT3
 	{
 	public:
 	    STCchannel(uint8_t iid) :
-		    id(iid), Mask(0), Value(EVAL_BOOL),
+		    id(iid), Mask(0), Value(EVAL_BOOL),sMask(0),
 		    ValueLink(SLnk(TSYS::strMess("TC_%d", id+1).c_str(), TSYS::strMess(_("TC %d"), id+1).c_str())),
 		    MaskLink(SLnk(TSYS::strMess("Mask_%d", id+1).c_str(), TSYS::strMess(_("Mask %d"), id+1).c_str()))
 	    {
@@ -51,6 +52,7 @@ namespace FT3
 	    uint8_t Value;
 	    SLnk ValueLink;
 	    uint8_t Mask;
+	    uint8_t sMask;
 	    SLnk MaskLink;
 	};
 	vector<STCchannel> data;

@@ -336,7 +336,7 @@ uint16_t TProt::ParsePacket(string &pdu, tagMsg * msg)
 	y = 0;
 	x = 8;  // заполнение pmsg
 	msg->L = pdu[2];
-	msg->C = pdu[3] & 0xF;
+	msg->C = pdu[3];
 	msg->A = pdu[4];
 	msg->B = pdu[5];
 	while(x < pdu.size()) {
@@ -703,8 +703,9 @@ bool TProtIn::mess(const string &ireqst, string &answer/*, const string &sender*
 	    for(i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdContr> t = SYS->daq().at().at("FT3").at().at(lst[i_l]);
 		if((t.at().cfg("CTRTYPE").getS() == "Logic") && (t.at().devAddr == msg.A)) {
+		    answer = "";
 		    if(t.at().ProcessMessage(&msg, &msgOut)) {
-			answer = "";
+
 			modPrt->MakePacket(answer, &msgOut);
 		    }
 		}
