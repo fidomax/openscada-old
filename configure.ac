@@ -233,6 +233,7 @@ AX_MOD_DAQ_EN(Siemens,[disable build module DAQ.Siemens],disable,[],
 ])
 AX_MOD_DAQ_EN(ModBus,[disable or enable[=incl] build module DAQ.ModBus],disable,incl)
 AX_MOD_DAQ_EN(FT3,[disable or enable[=incl] build module DAQ.FT3],disable,incl)
+AX_MOD_DAQ_EN(SET4TM,[disable or enable[=incl] build module DAQ.SET4TM],disable,incl)
 AX_MOD_DAQ_EN(DCON,[disable or enable[=incl] build module DAQ.DCON],disable,incl)
 AX_MOD_DAQ_EN(DAQGate,[disable or enable[=incl] build module DAQ.DAQGate],disable,incl)
 AX_MOD_DAQ_EN(SoundCard,[disable build module DAQ.SoundCard],disable,[],[

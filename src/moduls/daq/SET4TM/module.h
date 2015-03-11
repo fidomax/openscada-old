@@ -1,9 +1,8 @@
 
-//!!! Module name, file name and module's license. Change for your need.
-//OpenSCADA system module DAQ.Tmpl file: module.h
+//OpenSCADA system module DAQ.SET4TM file: module.h
 /***************************************************************************
- *   Copyright (C) 2012 by MyName MyFamily                                 *
- *   my@email.org                                                          *
+ *   Copyright (C) 2015 by Alex Danilov, Slava Surkov                      *
+ *                                                            			   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,20 +19,16 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-//!!! Multi-including this header file prevent. Change for your include file name
 #ifndef MODULE_H
 #define MODULE_H
 
-//!!! System's includings. Add need for your module includings.
 #include <string>
 #include <vector>
 
-//!!! OpenSCADA module's API includings. Add need for your module includings.
 #include <tcontroller.h>
 #include <ttypedaq.h>
 #include <tparamcontr.h>
 
-//!!! Individual module's translation function define. Don't change it!
 #undef _
 #define _(mess) mod->I18N(mess)
 
@@ -47,17 +42,16 @@ using namespace OSCADA;
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
 #define MOD_VER		"0.1.1"
-#define AUTHORS		_("Alex Danilov")
+#define AUTHORS		_("Alex Danilov, Slava Surkov")
 #define DESCRIPTION	_("SET4TM THERE")
 #define LICENSE		"GPL2"
 //*************************************************
-//!!! All module's objects you must include into self (individual) namespace. Change namespace for your module.
+
 namespace SET4TM
 {
 
-//!!! DAQ-subsystem parameter object realisation define. Add methods and attributes for your need.
 //*************************************************
-//* ModTmpl::TMdPrm                               *
+//* ModSET4TM::TMdPrm                             *
 //*************************************************
 class TMdContr;
 
@@ -76,9 +70,10 @@ class TMdPrm : public TParamContr
 	//!!! Processing virtual functions for enable and disable parameter
 	void enable( );
 	void disable( );
-
+	int getVals();
 	//!!! Direct link to parameter's owner controller
 	TMdContr &owner( );
+	TElem	p_el;			//Work atribute elements
 
     protected:
 	//Methods
@@ -97,12 +92,10 @@ class TMdPrm : public TParamContr
 
 	//Attributes
 	//!!! Parameter's structure element
-	TElem	p_el;			//Work atribute elements
 };
 
-//!!! DAQ-subsystem controller object realisation define. Add methods and attributes for your need.
 //*************************************************
-//* ModTmpl::TMdContr                             *
+//* ModSET4TM::TMdContr                           *
 //*************************************************
 class TMdContr: public TController
 {
@@ -116,11 +109,14 @@ class TMdContr: public TController
 
 	//!!! Status processing function for DAQ-controllers
 	string getStatus( );
-
+	uint16_t CRC16(uint8_t *d, uint16_t l);
+	bool VerCRC16(uint8_t *p, uint16_t len);
 	//!!! The controller's background task properties
 	int64_t	period( )	{ return mPer; }
 	string  cron( )         { return mSched; }
+	string  addr( )         { return mAddr; }
 	int	prior( )	{ return mPrior; }
+	int	node( )	{ return mNode; }
 
 	//!!! Request for connection to parameter-object of this controller
 	AutoHD<TMdPrm> at( const string &nm )	{ return TController::at(nm); }
@@ -147,10 +143,11 @@ class TMdContr: public TController
 	//!!! The resource for Enable parameters.
 	Res	en_res;		// Resource for enable params
 	//!!! The links to the controller's background task properties into config.
-	TCfg	&mSched,	// Schedule
-		&mPrior;	// Process task priority
-	int64_t	mPer;
-
+	int64_t	&mPrior,			//Process task priority
+	    &mNode;             // Addres
+	TCfg	&mSched,			// Calc schedule
+		&mAddr;				//Transport device address
+	long long mPer;
 	//!!! Background task's sync properties
 	bool	prcSt,		// Process task active
  		callSt,		// Calc now stat
@@ -164,7 +161,7 @@ class TMdContr: public TController
 
 //!!! Root module object define. Add methods and attributes for your need.
 //*************************************************
-//* ModTmpl::TTpContr                             *
+//* ModSET4TM::TTpContr                           *
 //*************************************************
 class TTpContr: public TTypeDAQ
 {

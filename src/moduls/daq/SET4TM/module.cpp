@@ -1,9 +1,8 @@
 
-//!!! Module name, file name and module's license. Change for your need.
-//OpenSCADA system module DAQ.Tmpl file: module.cpp
+//OpenSCADA system module DAQ.SET4TM file: module.h
 /***************************************************************************
- *   Copyright (C) 2012 by MyName MyFamily                                 *
- *   my@email.org                                                          *
+ *   Copyright (C) 2015 by Alex Danilov, Slava Surkov                      *
+ *                                                            			   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -126,13 +125,17 @@ void TTpContr::postEnable( int flag )
     TTypeDAQ::postEnable(flag);
 
     //> Controler's bd structure
-    fldAdd(new TFld("PRM_BD",_("Parameteres table"),TFld::String,TFld::NoFlag,"30",""));
-    fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
+    fldAdd(new TFld("PRM_BD_ENERGY", _("ENERGY Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_POWER", _("POWER Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("SCHEDULE", _("Acquisition schedule"), TFld::String, TFld::NoFlag, "100", "1"));
+    fldAdd(new TFld("PERIOD", _("Gather data period (s)"), TFld::Integer, TFld::NoFlag, "3", "1", "0;100"));
     fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;99"));
-
+    fldAdd(new TFld("NODE", _("Address"), TFld::Integer, TFld::NoFlag, "2", "1", "0;63"));
+    fldAdd(new TFld("ADDR", _("Transport address"), TFld::String, TFld::NoFlag, "30", ""));
     //> Parameter type bd structure
-    int t_prm = tpParmAdd("std", "PRM_BD", _("Standard"));
-    tpPrmAt(t_prm).fldAdd(new TFld("OID_LS",_("OID list (next line separated)"),TFld::String,TFld::FullText|TCfg::NoVal,"100",""));
+    int t_prm = tpParmAdd("tp_ENERGY", "PRM_BD_ENERGY", _("ENERGY"));
+    t_prm = tpParmAdd("tp_POWER", "PRM_BD_POWER", _("POWER"));
+
 }
 
 //!!! Processing virtual functions for self object-controller creation.
@@ -147,9 +150,10 @@ TController *TTpContr::ContrAttach( const string &name, const string &daq_db )
 //!!! Constructor for DAQ-subsystem controller object.
 TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem ) :
     ::TController(name_c,daq_db,cfgelem), prcSt(false), callSt(false), endrunReq(false), tmGath(0),
-    mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR"))
+    mPer(cfg("PERIOD").getI()),mPrior(cfg("PRIOR").getId()), mSched(cfg("SCHEDULE")), mAddr(cfg("ADDR")), mNode(cfg("NODE").getId())
 {
-    cfg("PRM_BD").setS("TmplPrm_"+name_c);
+	cfg("PRM_BD_ENERGY").setS("SET4TMPrm_ENERGY_" + name_c);
+	cfg("PRM_BD_POWER").setS("SET4TMPrm_POWER_" + name_c);
 }
 
 //!!! Destructor for DAQ-subsystem controller object.
@@ -181,7 +185,13 @@ TParamContr *TMdContr::ParamAttach( const string &name, int type )
 //!!! Processing virtual functions for start DAQ-controller
 void TMdContr::start_( )
 {
-    //> Schedule process
+	AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(mAddr, 0, '.')).at().outAt(TSYS::strSepParse(mAddr, 1, '.'));
+	try {
+		tr.at().start();
+	} catch (TError err) {
+		mess_err(err.cat.c_str(), "%s", err.mess.c_str());
+	}
+	//> Schedule process
     mPer = TSYS::strSepParse(cron(),1,' ').empty() ? vmax(0,(int64_t)(1e9*atof(cron().c_str()))) : 0;
 
     //> Start the gathering data task
@@ -208,14 +218,29 @@ void TMdContr::prmEn( const string &id, bool val )
     if(!val && i_prm < p_hd.size())	p_hd.erase(p_hd.begin()+i_prm);
 }
 
+uint16_t TMdContr::CRC16(uint8_t *d, uint16_t l)
+{
+	uint16_t i, j, lsb;
+	uint16_t CRC=0xFFFF;
+	for (i = 0; i < l; i++){
+		CRC ^= (uint16_t)(*d++);
+		for (j = 0; j < 8; j++) { lsb = CRC & 0x0001;  CRC >>= 1;  if (lsb) CRC ^=0xA001; }
+    }
+	return CRC;
+}
+
+bool TMdContr::VerCRC16(uint8_t *p, uint16_t len){
+  len -=2;
+  if(*(uint16_t*)(p+len) != CRC16(p,len)) return 0;
+  return 1;
+}
+
 //!!! Background task's function for periodic data acquisition.
 void *TMdContr::Task( void *icntr )
 {
     TMdContr &cntr = *(TMdContr *)icntr;
-
     cntr.endrunReq = false;
     cntr.prcSt = true;
-
     while(!cntr.endrunReq)
     {
 	int64_t t_cnt = TSYS::curTime();
@@ -228,6 +253,7 @@ void *TMdContr::Task( void *icntr )
 	    try
 	    {
 		//!!! Process parameter code
+	    	cntr.p_hd[i_p].at().getVals();
 	    }
 	    catch(TError err)
 	    { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
@@ -243,7 +269,6 @@ void *TMdContr::Task( void *icntr )
 
     return NULL;
 }
-
 //!!! Processing virtual function for OpenSCADA control interface comands
 void TMdContr::cntrCmdProc( XMLNode *opt )
 {
@@ -251,13 +276,22 @@ void TMdContr::cntrCmdProc( XMLNode *opt )
     if(opt->name() == "info")
     {
 	TController::cntrCmdProc(opt);
+	ctrMkNode("fld", opt, -1, "/cntr/cfg/ADDR", cfg("ADDR").fld().descr(), RWRWR_, "root", SDAQ_ID, 3, "tp", "str", "dest", "select", "select",
+			"/cntr/cfg/trLst");
 	ctrMkNode("fld",opt,-1,"/cntr/cfg/SCHEDULE",cfg("SCHEDULE").fld().descr(),startStat()?R_R_R_:RWRWR_,"root",SDAQ_ID,3,
 	    "dest","sel_ed","sel_list",TMess::labSecCRONsel(),"help",TMess::labSecCRON());
 	ctrMkNode("fld",opt,-1,"/cntr/cfg/PRIOR",cfg("PRIOR").fld().descr(),startStat()?R_R_R_:RWRWR_,"root",SDAQ_ID,1,"help",TMess::labTaskPrior());
 	return;
     }
     //> Process command to page
-    TController::cntrCmdProc(opt);
+	string a_path = opt->attr("path");
+	if (a_path == "/cntr/cfg/trLst" && ctrChkNode(opt)) {
+		vector<string> sls;
+		SYS->transport().at().outTrList(sls);
+		for (int i_s = 0; i_s < sls.size(); i_s++)
+			opt->childAdd("el")->setText(sls[i_s]);
+	} else
+		TController::cntrCmdProc(opt);
 }
 
 //*************************************************
@@ -291,10 +325,26 @@ TMdContr &TMdPrm::owner( )	{ return (TMdContr&)TParamContr::owner(); }
 void TMdPrm::enable( )
 {
     if(enableStat())	return;
-
     TParamContr::enable();
 
     owner().prmEn(id(), true);
+	try {
+		if(type().name == "tp_ENERGY") {
+			p_el.fldAdd(new TFld("A0", _("Active straight energy"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("A1", _("Active feedback energy"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("R0", _("Reactive straight energy"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("R1", _("Reactive feedback energy"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+		}
+		if(type().name == "tp_POWER") {
+			p_el.fldAdd(new TFld("P", _("Active power"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("Q", _("Reactive power"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("S", _("Full power"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+		}
+	}
+    catch(TError err) {
+    	mess_err(err.cat.c_str(), "%s", err.mess.c_str());
+    	disable();
+    }
 }
 
 //!!! Processing virtual functions for disable parameter
@@ -324,29 +374,100 @@ void TMdPrm::save_( )
 {
     TParamContr::save_();
 }
-
-//!!! Processing virtual function for OpenSCADA control interface comands
-void TMdPrm::cntrCmdProc( XMLNode *opt )
+int TMdPrm::getVals()
 {
-    //> Service commands process
-    string a_path = opt->attr("path");
-    if(a_path.substr(0,6) == "/serv/")	{ TParamContr::cntrCmdProc(opt); return; }
+	string pdu;
+	uint8_t bufIn[64];
+	uint8_t bufOut[64];
+	uint32_t A0,A1,R0,R1,P,Q,S;
+	AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(owner().addr(), 0, '.')).at().outAt(TSYS::strSepParse(owner().addr(), 1, '.'));
+	try {
+		if (!tr.at().startStat())
+			tr.at().start();
+		if (type().name == "tp_ENERGY") {
+			bufOut[0]=owner().node();
+			bufOut[1]=0x5;
+			bufOut[2]=0;
+			bufOut[3]=0;
+			*(uint16_t *) (bufOut + 4) = owner().CRC16(bufOut, 4);
+			int resp_len =tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 19, 0, true);
+			if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
+				if((resp_len==4)&&(bufIn[1]==5)){
+					bufOut[0]=owner().node();
+					bufOut[1]=1;
+					bufOut[2]=bufOut[3]=bufOut[4]=bufOut[5]=bufOut[6]=bufOut[7]=0x30;
+					*(uint16_t *) (bufOut + 8) = owner().CRC16(bufOut, 8);
+					tr.at().messIO((char *) &bufOut, 10, (char *) &bufIn, 4, 0, true);
+				} else {
+					A0=A1=R0=R1=0;
+					for(int i=0;i<4;i++){
+						A0=A0|(bufIn[i+1]<<8*(~i));
+						A1=A1|(bufIn[i+5]<<8*(~i));
+						R0=R0|(bufIn[i+9]<<8*(~i));
+						R1=R1|(bufIn[i+13]<<8*(~i));
+					}
+					vlAt("A0").at().setR(A0, 0, true);
+					vlAt("A1").at().setR(A1, 0, true);
+					vlAt("R0").at().setR(R0, 0, true);
+					vlAt("R1").at().setR(R1, 0, true);
+				}
+			}
+		}
+		if (type().name == "tp_POWER") {
+			bufOut[0]=owner().node();
+			bufOut[1]=0x8;
+			bufOut[2]=0x11;
+			bufOut[3]=0;
+			*(uint16_t *) (bufOut + 4) = owner().CRC16(bufOut, 4);
+			int resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
+			if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
+				if((resp_len==4)&&(bufIn[1]==5)){
+					bufOut[0]=owner().node();
+					bufOut[1]=1;
+					bufOut[2]=bufOut[3]=bufOut[4]=bufOut[5]=bufOut[6]=bufOut[7]=0x30;
+					*(uint16_t *) (bufOut + 8) = owner().CRC16(bufOut, 8);
+					tr.at().messIO((char *) &bufOut, 10, (char *) &bufIn, 4, 0, true);
+				} else {
+					P=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
+					vlAt("P").at().setR(P, 0, true);
+					bufOut[0]=owner().node();
+					bufOut[1]=0x8;
+					bufOut[2]=0x11;
+					bufOut[3]=4;
+					*(uint16_t *) (bufOut + 4) = owner().CRC16(bufOut, 4);
+					resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
+					if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
+						Q=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
+						vlAt("Q").at().setR(Q, 0, true);
+					}
+					bufOut[0]=owner().node();
+					bufOut[1]=0x8;
+					bufOut[2]=0x11;
+					bufOut[3]=8;
+					*(uint16_t *) (bufOut + 4) = owner().CRC16(bufOut, 4);
+					resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
+					if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
+						S=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
+						vlAt("S").at().setR(S, 0, true);
+					}
+				}
+			}
+		}
+	} catch (TError err) {
+		return false;
+	}
 
-    //> Get page info
-    if(opt->name() == "info")
-    {
+}
+//!!! Processing virtual function for OpenSCADA control interface comands
+void TMdPrm::cntrCmdProc(XMLNode *opt)
+{
+//> Get page info
+	if (opt->name() == "info") {
+		TParamContr::cntrCmdProc(opt);
+		return;
+	}
+//> Process command to page
 	TParamContr::cntrCmdProc(opt);
-	ctrMkNode("fld",opt,-1,"/prm/cfg/OID_LS",cfg("OID_LS").fld().descr(),enableStat()?R_R_R_:RWRWR_,"root",SDAQ_ID);
-	return;
-    }
-
-    //> Process command to page
-    if(a_path == "/prm/cfg/OID_LS" && ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR))
-    {
-	if(enableStat()) throw TError(nodePath().c_str(),"Parameter is enabled.");
-//	parseOIDList(opt->text());
-    }
-    else TParamContr::cntrCmdProc(opt);
 }
 
 //!!! Processing virtual function for setup archive's parameters which associated with the parameter on time archive creation
