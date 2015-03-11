@@ -84,9 +84,11 @@ void B_BVTC::loadIO( bool force )
 	cfg.cfg("ID").setS(data[i].ValueLink.prmName);
 	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg, false, true)) continue;
 	data[i].ValueLink.prmAttr = cfg.cfg("VALUE").getS();
+	data[i].ValueLink.aprm = SYS->daq().at().attrAt(data[i].ValueLink.prmAttr, '.', true);
 	cfg.cfg("ID").setS(data[i].MaskLink.prmName);
 	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg, false, true)) continue;
 	data[i].MaskLink.prmAttr = cfg.cfg("VALUE").getS();
+	data[i].MaskLink.aprm = SYS->daq().at().attrAt(data[i].MaskLink.prmAttr, '.', true);
     }
 
 }
@@ -111,17 +113,20 @@ void B_BVTC::saveIO()
 
 void B_BVTC::tmHandler(void)
 {
+    NeedInit = false;
     for(int i = 0; i < count_n; i++) {
 	uint8_t tmpval;
 	if(data[i].Mask == 0) {
 	    if(data[i].ValueLink.aprm.freeStat()) {
 		//no connection
 		data[i].Value = EVAL_BOOL;
+		mess_info("B_BVTC::tmHandler", "Value no connection %s %s",data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmAttr.c_str());
 	    } else {
 		tmpval = data[i].ValueLink.aprm.at().getB();
 		if(tmpval != data[i].Value) {
 		    data[i].Value = tmpval;
 		    mPrm->vlAt(data[i].ValueLink.prmName.c_str()).at().setB(tmpval, 0, true);
+		    mess_info("B_BVTC::tmHandler", "Value new value %s %s %d",data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmAttr.c_str(), tmpval);
 		    //TODO putinBE;
 		}
 	    }
@@ -130,12 +135,14 @@ void B_BVTC::tmHandler(void)
 	    if(data[i].MaskLink.aprm.freeStat()) {
 		//no connection
 		data[i].Mask = EVAL_BOOL;
+		mess_info("B_BVTC::tmHandler", "Mask no connection %s %s",data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmAttr.c_str());
 	    } else {
 		tmpval = data[i].MaskLink.aprm.at().getB();
 		if(tmpval != data[i].Mask) {
 		    data[i].Mask = tmpval;
 		    data[i].sMask = 0;
 		    mPrm->vlAt(data[i].MaskLink.prmName.c_str()).at().setB(tmpval, 0, true);
+		    mess_info("B_BVTC::tmHandler", "Mask new mask %s %s %d",data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmAttr.c_str(), tmpval);
 		    //TODO putinBE;
 		}
 	    }
@@ -323,14 +330,20 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
     case 2:
 	if(n < nTC) {
 	    uint8_t newMask=req[2];
-	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++){
-		    mess_info("BVTC ", _("found! %d"),j);
+	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++) {
+		mess_info("BVTC ", _("found! %d"), j);
 
-/*		data[j].sMask = addr;
+		data[j].sMask = addr;
 		data[j].Mask = newMask & 0x01;
-		if(data[j].MaskLink.aprm.freeStat()) data[j].MaskLink.aprm.at().setB(data[j].Mask,0,true);
+		if(!data[j].MaskLink.aprm.freeStat()) {
+		    data[j].MaskLink.aprm.at().setB(data[j].Mask);
+		    mess_info("B_BVTC::cmdSet", "Set new mask %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
+		} else {
+		    mess_info("B_BVTC::cmdSet", "Set new mask EROOR!!! %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
+		}
 		mPrm->vlAt(data[j].MaskLink.prmName.c_str()).at().setB(data[j].Mask, 0, true);
-		newMask=newMask>>1;*/
+
+		newMask = newMask >> 1;
 	    }
 	    l = 3;
 	}
