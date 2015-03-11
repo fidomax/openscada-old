@@ -92,6 +92,59 @@ time_t TMdContr::DateTimeToTime_t(uint8_t * D)
     return rawtime;
 }
 
+void TMdContr::PushInBE(uint8_t *E, uint8_t* DHM)
+{
+    uint8_t *pE = E;
+    chain_BE *pCi;
+    el_chBE *pBE;
+    int lE, i;
+    bool fNewBE;
+    uint16_t day = TSYS::getUnalign16(DHM);
+    uint16_t hour = DHM[2];
+    uint16_t ms100 = TSYS::getUnalign16(DHM+3);
+    if(*pE == 1) {
+	pCi = &C1;
+    } else {
+	pCi = &C2;
+    }
+    lE = *(pE + 1);
+    pE += 2;
+    if(!(pCi->tail)) {
+	fNewBE = true;
+    } else {
+	pBE = pCi->tail;
+	if((pBE->BE.d != day) || (pBE->BE.h != hour)) {
+	    fNewBE = true;
+	} else if((sizeof(pBE->BE.mD) - pBE->BE.l) < (lE + 2)) {
+	    fNewBE = true;
+	} else {
+	    fNewBE = false;
+	}
+    }
+
+    if(fNewBE) {
+	if(empt.head) {pBE = empt.getdel();}
+	else
+	if(C2.head) {pBE = C2.getdel();}
+	else {pBE = C1.getdel();}
+	pBE->BE.d = day;
+	pBE->BE.h = hour;
+	pBE->BE.l = 0;
+	pCi->insert(pBE);
+    }
+    if(pBE) {
+	//*(uint16_t *) (pBE->BE.mD + pBE->BE.l) = P_DHM.ms100;
+	pBE->BE.mD[pBE->BE.l++] = ms100;
+	pBE->BE.mD[pBE->BE.l++] = ms100>>8;
+	for(i = 0; i < lE; i++) {
+	    pBE->BE.mD[pBE->BE.l++] = *(pE++);
+	}
+
+    }
+}
+
+
+
 void TMdContr::Time_tToDateTime(uint8_t * D, time_t time)
 {
     struct tm * timeinfo;
@@ -414,6 +467,10 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
     pthread_mutexattr_init(&attrM);
     pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&enRes, &attrM);
+    BE = new el_chBE[nBE];
+    if(BE){
+      for(int i=0; i<nBE; i++) empt.insert(&BE[i]);
+    }
 }
 
 uint16_t TMdContr::CRC(char *data, uint16_t length)
@@ -754,6 +811,7 @@ TMdContr::~TMdContr()
 {
 //mess_info(nodePath().c_str(),_("TMdContr::~TMdContr"));
     if(startStat()) stop();
+    delete [] BE;
 }
 
 //!!! Status processing function for DAQ-controllers

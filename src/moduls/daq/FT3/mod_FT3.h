@@ -54,13 +54,18 @@ using namespace OSCADA;
 
 namespace FT3
 {
-    typedef struct sMsg  // структура сообщения
+/*    struct dhm{
+      uint16_t d;
+      uint8_t h;
+      uint16_t ms100;
+    };*/
+    typedef struct sMsg  // FT3 message
     {
-	uint8_t D[252]; // данные
-	uint8_t L; // длина
-	uint8_t C; // управление
-	uint8_t A; // адрес получателя
-	uint8_t B; // адрес отправителя
+	uint8_t D[252]; // data
+	uint8_t L; // length
+	uint8_t C; // command
+	uint8_t A; // destination address
+	uint8_t B; // source address
 //		uint8_t N;
     } tagMsg;
 
@@ -87,6 +92,50 @@ namespace FT3
     {
 	TaskNone = 0, TaskIdle = 1, TaskRefresh = 2, TaskSet = 3
     } ModeTask;
+
+#define mlD 252
+#define nBE 200
+
+    struct blockEvents
+    {
+	uint16_t d; 		//date (15-9 - year, 8-0 day)
+	uint8_t h; 		//hour
+	uint8_t l; 		//length
+	uint8_t mD[mlD - 3]; 	//data
+    };
+
+    // Event block chain element
+    struct el_chBE
+    {
+	blockEvents BE; //Event block
+	el_chBE *next;  //Next event block pointer
+    };
+
+    class chain_BE{
+      public:
+        el_chBE *head;  //First event block
+        el_chBE *tail;	//Last event block
+        el_chBE *temp;	//Temp pointer
+
+        chain_BE(){head = NULL; tail = NULL; temp = NULL;};
+
+        el_chBE* getdel(){
+          temp = head;
+          if(head) head = head->next;
+          if(!head) tail = NULL;
+          return temp;
+        };
+
+
+        void insert(el_chBE *p){
+          if(p){
+            if(head){tail->next = p;}
+            else{ head = p;}
+            tail = p; p->next = NULL;
+          }
+        };
+    };
+
 #define task_None 0
 #define task_Idle 1
 #define task_Refresh 2
@@ -186,6 +235,7 @@ namespace FT3
 	void Time_tToDateTime(uint8_t *, time_t);
 
 	bool ProcessMessage(tagMsg *, tagMsg *);
+	void PushInBE(uint8_t *E, uint8_t* DHM);
 
 	uint8_t devAddr;
 
@@ -241,6 +291,9 @@ namespace FT3
 
 	double tm_gath;	// Gathering time
 	uint8_t FCB2, FCB3;
+
+	el_chBE *BE;
+	chain_BE empt, C1, C2;
 
     };
 
