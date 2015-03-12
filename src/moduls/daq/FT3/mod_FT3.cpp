@@ -121,7 +121,6 @@ void TMdContr::PushInBE(uint8_t *E, uint8_t* DHM)
 	    fNewBE = false;
 	}
     }
-
     if(fNewBE) {
 	if(empt.head) {pBE = empt.getdel();}
 	else
@@ -139,21 +138,19 @@ void TMdContr::PushInBE(uint8_t *E, uint8_t* DHM)
 	for(i = 0; i < lE; i++) {
 	    pBE->BE.mD[pBE->BE.l++] = *(pE++);
 	}
-
     }
 }
-
 
 
 void TMdContr::Time_tToDateTime(uint8_t * D, time_t time)
 {
     struct tm * timeinfo;
     timeinfo = localtime(&time);
-    mess_info(nodePath().c_str(), _("tm_year: %d"), timeinfo->tm_year);
+/*    mess_info(nodePath().c_str(), _("tm_year: %d"), timeinfo->tm_year);
     mess_info(nodePath().c_str(), _("tm_yday: %d"), timeinfo->tm_yday);
     mess_info(nodePath().c_str(), _("tm_hour: %d"), timeinfo->tm_hour);
     mess_info(nodePath().c_str(), _("tm_min: %d"), timeinfo->tm_min);
-    mess_info(nodePath().c_str(), _("tm_sec: %d"), timeinfo->tm_sec);
+    mess_info(nodePath().c_str(), _("tm_sec: %d"), timeinfo->tm_sec);*/
     uint16_t ms = timeinfo->tm_min * 600 + timeinfo->tm_sec * 10;
     D[0] = (timeinfo->tm_yday + 1) & 0xFF;
     D[1] = ((timeinfo->tm_year - 100) << 1) | ((timeinfo->tm_yday + 1) >> 8);
@@ -211,10 +208,54 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
     case ReqData1:
     case ReqData2:
     case ReqData:
+	mess_info(nodePath().c_str(), _("ReqData"));
+	  //byte c = cmd & 0xF;
+	  chain_BE *pC; el_chBE *pBE;
+
+//	  if((FCB3 != (msg->C&0x20))){
+//	    FCB3 = msg->C & 0x20;
+
+	switch(msg->C & 0x0F) {
+	case ReqData1:
+
+	    pC = &C1;
+	    break;
+	case ReqData2:
+	    pC = &C2;
+	    break;
+	default:
+	    if(C1.head)
+		pC = &C1;
+	    else
+		pC = &C2;
+	}
+	if(!pC || !pC->head) {
+	    msgOut->L = 3;
+	    msgOut->C = 9;
+		mess_info(nodePath().c_str(), _("No data"));
+	} else {
+
+	    pBE = pC->getdel();
+	    msgOut->D[0] = pBE->BE.d;
+	    msgOut->D[1] = pBE->BE.d >> 8;
+	    msgOut->D[2] = pBE->BE.h;
+	    for(int i = 0; i < pBE->BE.l; i++)
+		msgOut->D[i + 3] = pBE->BE.mD[i];
+	    msgOut->L = pBE->BE.l + 6;
+
+	    msgOut->C = 8;
+	    empt.insert(pBE);
+		mess_info(nodePath().c_str(), _("Data L %d "),msgOut->L);
+	}
+	if(C1.head) {
+	    msgOut->C |= 0x20;
+	}
+//}
+
 	//int tt = nAtBUC(0).at().getI(0);
 	//mess_info(nodePath().c_str(),_("----------------------------------%d"),tt);
-	msgOut->L = 3;
-	msgOut->C = 9;
+//	msgOut->L = 3;
+//	msgOut->C = 9;
 //				GetBE(&msg->C);
 	break;
     case SetData:
@@ -254,7 +295,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	//msgOut->L += 3;
 	l = 0;
 	n = 3;
-	mess_info(nodePath().c_str(), _("n %d"), n);
+//	mess_info(nodePath().c_str(), _("n %d"), n);
 	tm = TSYS::getUnalign16(msgOut->D + 3);
 
 	while(l < (msg->L - 3)) {
@@ -262,10 +303,10 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	    l += 2;
 	    msgOut->D[n++] = tm;
 	    msgOut->D[n++] = tm >> 8;
-	    mess_info(nodePath().c_str(), _("time n %d"), n);
+//	    mess_info(nodePath().c_str(), _("time n %d"), n);
 	    msgOut->D[n++] = id;
 	    msgOut->D[n++] = id >> 8;
-	    mess_info(nodePath().c_str(), _("addr n %d"), n);
+//	    mess_info(nodePath().c_str(), _("addr n %d"), n);
 	    vector<string> lst;
 	    list(lst);
 	    rc = 0;
@@ -274,8 +315,8 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	    rc = cmdGet(id, msgOut->D + n);
 	    if(rc != 0) {
 		n += rc;
-		l += rc;
-		mess_info(nodePath().c_str(), _("found! %d"), n);
+		//l += rc;
+//		mess_info(nodePath().c_str(), _("found! %d"), n);
 //		    break;
 	    }
 
@@ -523,25 +564,16 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	pMsg->L = 0;
 
 	int resp_len = tr.at().messIO(io_buf, l, io_buf, 8, 0, true);
-//		mess_info(nodePath().c_str(),_("first io resp      %d"), resp_len);
 	l = resp_len;
-//		mess_info(nodePath().c_str(),_("first io l         %d"), l);
 	while(resp_len) {
 	    try {
 		resp_len = tr.at().messIO(NULL, 0, io_buf + l, 8 - l, 0, true);
-//				mess_info(nodePath().c_str(),_("resp      %d"), resp_len);
-//				mess_info(nodePath().c_str(),_("l         %d"), l);
 	    } catch (TError er) {
 		resp_len = 0;
 	    }
 	    l += resp_len;
-//			mess_info(nodePath().c_str(),_("----resp      %d"), resp_len);
-//			mess_info(nodePath().c_str(),_("----l         %d"), l);
 	}
-//		l = resp_len;
-//		mess_info(nodePath().c_str(),_("%d"),resp_len);
 	if((l == 8) && (3 <= (unsigned char) io_buf[2]) && (TSYS::getUnalign16(io_buf + 6) == CRC(io_buf + 2, 4))) {
-	    //            	mess_info(nodePath().c_str(),_("header with data found!"));
 	    uint16_t x = (unsigned char) io_buf[2] - 3;
 	    uint16_t y = x >> 4;
 	    if(x & 0x000F) y++;
@@ -553,13 +585,11 @@ bool TMdContr::Transact(tagMsg * pMsg)
 		do {
 		    try {
 			resp_len = tr.at().messIO(NULL, 0, io_buf + l, y, 0, true);
-			//		    mess_info(nodePath().c_str(),_("resp      -%d"), resp_len);
 		    } catch (TError er) {
 			resp_len = 0;
 		    }
 		    l += resp_len;
 		    y -= resp_len;
-		    //	    mess_info(nodePath().c_str(),_("l       -%d"), l);
 		} while(resp_len);
 	    }
 	} else {
@@ -569,17 +599,14 @@ bool TMdContr::Transact(tagMsg * pMsg)
 		data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
 	    }
 	    mess_info(nodePath().c_str(), _("io_buf: %s"), data_s.c_str());
-//			mess_info(nodePath().c_str(),_("io_buf[2] %d"),(unsigned char)io_buf[2]);
 	    mess_info(nodePath().c_str(), _("CRC %04X"), CRC(io_buf + 2, 4));
 
 	}
 	errPresent = false;
 	if(l) {
 	    rc = VerifyPacket(io_buf, &l);
-	    //				mess_info(nodePath().c_str(),_("VerifyPacket-%d"), rc);
 	    if(!rc) {
 		rc = ParsePacket(io_buf, l, pMsg);
-		//				mess_info(nodePath().c_str(),_("ParsePacket-%d"), rc);
 
 		if(rc == 1) {
 		    mess_info(nodePath().c_str(), _("Parse error %d"), rc);
@@ -690,20 +717,13 @@ bool TMdContr::VerCRC(char *p, uint16_t l)
 uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 {
     uint16_t raslen;
-//  mess_info(nodePath().c_str(),_("ver l-%d"), *l);
-//  mess_info(nodePath().c_str(),_("ver t[0]-%d"), t[0]);
-//mess_info(nodePath().c_str(),_("---------------l -%d"), *l);
-//	mess_info(nodePath().c_str(),_("t[0] -%02X"), t[0]);
-//	mess_info(nodePath().c_str(),_("t[1] -%02X"), t[1]);
-//	mess_info(nodePath().c_str(),_("t[2] -%02X"), t[2]);
-//mess_info(nodePath().c_str(),_("t[3] -%02X"), t[3]);
-    mess_info(nodePath().c_str(), _("in VerifyPacket l %d"), *l);
+//    mess_info(nodePath().c_str(), _("in VerifyPacket l %d"), *l);
     string data_s = "";
     for(int i = 0; i < *l; i++) {
 	data_s += TSYS::int2str((uint8_t) t[i], TSYS::Hex) + " ";
     }
-    mess_info(nodePath().c_str(), _("in VerifyPacket io_buf: %s"), data_s.c_str());
-    mess_info(nodePath().c_str(), _("l %d"), *l);
+ //   mess_info(nodePath().c_str(), _("in VerifyPacket io_buf: %s"), data_s.c_str());
+ //   mess_info(nodePath().c_str(), _("l %d"), *l);
     if((*l == 1)) {
 	//байтовый опрос
 	return 0;
@@ -712,8 +732,8 @@ uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 	if(*l > 7) {
 
 	    if((t[0] == 0x05) && (t[0] != 0x64)) {
-		mess_info(nodePath().c_str(), _("Len -%d"), Len((uint8_t )t[2]));
-		mess_info(nodePath().c_str(), _("VerCRC -%d"), VerCRC(t, *l));
+//		mess_info(nodePath().c_str(), _("Len -%d"), Len((uint8_t )t[2]));
+//		mess_info(nodePath().c_str(), _("VerCRC -%d"), VerCRC(t, *l));
 		if(!((raslen = Len((uint8_t) t[2])) == *l && VerCRC(t, *l))) {
 		    mess_info(nodePath().c_str(), _("good header"));
 		    if(!(*l > raslen && VerCRC(t, raslen))) {
@@ -736,7 +756,7 @@ uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 	    return 3; //не пакет
 	}
     }
-    mess_info(nodePath().c_str(), _("OK!!!"));
+//    mess_info(nodePath().c_str(), _("OK!!!"));
     return 0;
 }
 //---------------------------------------------------------------------------
@@ -912,6 +932,7 @@ void *TMdContr::DAQTask(void *icntr)
 	    Msg.L = 3;
 	    Msg.C = ReqData;
 	    cntr.Transact(&Msg);
+	    mess_info(cntr.nodePath().c_str(), _("ReqData L %d C %d"), Msg.L, Msg.C);
 	    if((Msg.C & 0x0F) == GOOD3) {
 		//FILETIME ftTimeStamp;
 		uint16_t l = Msg.L - 6, m = 0, n = 3;
@@ -1144,6 +1165,7 @@ uint16_t TMdPrm::Task(uint16_t cod)
 uint16_t TMdPrm::HandleEvent(uint8_t * D)
 {
     if(mDA) {
+	mess_info(nodePath().c_str(),_("TMdContr::HandleEvent"));
 	return mDA->HandleEvent(D);
     } else {
 	return 0;

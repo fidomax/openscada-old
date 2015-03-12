@@ -175,73 +175,51 @@ uint8_t TProt::CRCLo[] = { 0x00, 0xC0, 0xC1, 0x01, 0xC3, 0x03, 0x02, 0xC2, 0xC6,
 
 uint16_t TProt::CRC(const char *data, uint16_t length)
 {
-    /*unsigned char *p = data; */uint16_t CRC = 0, buf;
+    uint16_t CRC = 0, buf;
     uint16_t i, j;
     for(i = 0; i < length; i++) {
-	//CRC ^= ((unsigned short)*p++ << 8);
 	CRC ^= ((uint8_t) data[i] << 8);
-
-	for(j = 0; j < 8; j++)   // полином: X16+X13+X12+X11+X10+X8+X6+X5+X2+1
-		{
+	//  X16+X13+X12+X11+X10+X8+X6+X5+X2+1
+	for(j = 0; j < 8; j++) {
 	    buf = CRC;
 	    CRC <<= 1;
 	    if(buf & 0x8000) CRC ^= 0x3D65;
 	}
     }
-    //   mess_info(nodePath().c_str(),_("CRC %04X"),~CRC);
+
     return ~CRC;
 }
 
 void TProt::MakePacket(string &pdu, tagMsg * msg)
 {
     mess_info(nodePath().c_str(), _("%d"), pdu.size());
-    //формирование FT3-пакета
-    //tagMsg msg= *(tagMsg *)t;
     uint16_t x, y, l, z;
     uint16_t w;
     if((msg->L == 1) && ((msg->C & 0x0F) == ReqData)) {
-	//байтовый опрос
+	// one byte req
 	pdu += (char) (~msg->A & 0x3F) | 0x80;
-	//*len=1;
     } else {
-	//полный пакет
+	// full packet
 	pdu += (char) 0x05;
-	//mess_info(nodePath().c_str(),_("%d"),pdu.size());
 	pdu += (char) 0x64;
-	//mess_info(nodePath().c_str(),_("%d"),pdu.size());
 	pdu += (char) msg->L;
-	//mess_info(nodePath().c_str(),_("%d"),pdu.size());
 	pdu += (char) msg->C;
-	//mess_info(nodePath().c_str(),_("%d"),pdu.size());
 	pdu += (char) msg->A;
-	//mess_info(nodePath().c_str(),_("%d"),pdu.size());
 	pdu += (char) msg->B;
-	//mess_info(nodePath().c_str(),_("%d"),pdu.size());
 	uint16_t crc = CRC(pdu.data() + 2, 4);
-	//mess_info(nodePath().c_str(),_("CRC %d"),crc);
 	pdu += crc;
 	pdu += crc >> 8;
-	//mess_info(nodePath().c_str(),_("%d"),pdu.size());
-	/*        *(uint16_t *)io_buf = 0x6405; io_buf[2] = msg->L;
-	 io_buf[3] = msg->C | 0x40; io_buf[4] = msg->A; io_buf[5] = msg->B;
-	 *(uint16_t *)(io_buf + 6) = CRC(io_buf + 2, 4);*/
-	//Подсчет CRC
-	x = 0; /*y = 8;*/
+	x = 0;
 	l = (int) msg->L - 3;
 	while(x < l) {
 	    z = l - x;
 	    if(z > 16) z = 16;
 	    w = CRC((char *) (msg->D + x), z);
-	    for(z; z > 0; z--) /*io_buf[y++]*/
-		pdu += msg->D[x++];
-	    //*(uint16_t *)(io_buf + y) = w;
+	    for(z; z > 0; z--) pdu += msg->D[x++];
 	    pdu += w;
 	    pdu += w >> 8;
-//            y += 2;
 	}
-	//       *len=y;
     }
-    //mess_info(nodePath().c_str(),_("%d"),pdu.size());
 
 }
 
@@ -249,20 +227,16 @@ bool TProt::VerCRC(string &pdu, int l)
 {
     l -= 2;
     uint16_t leng = pdu[2], lD;
-
     if((uint16_t) TSYS::getUnalign16(pdu.data() + 6) != CRC(pdu.data() + 2, 4)) return 0;
-//    mess_info(nodePath().c_str(),_("header"));
     if(leng > 3) {
 	leng -= 3;
 	lD = leng / 16;
 	leng %= 16;
 	for(uint8_t i = 0; i < lD; i++) {
 	    if((uint16_t) TSYS::getUnalign16(pdu.data() + 8 + ((i + 1) * 16) + (i * 2)) != CRC((pdu.data() + 8 + (i * 16) + (i * 2)), 16)) return 0;
-	    //           mess_info(nodePath().c_str(),_("%d"),i);
 	}
 	if(leng) if((uint16_t) TSYS::getUnalign16(pdu.data() + l) != CRC(pdu.data() + (l - leng), leng)) return 0;
     }
-
     return 1;
 }
 
@@ -270,25 +244,19 @@ bool TProt::VerCRC(string &pdu, int l)
 uint16_t TProt::VerifyPacket(string &pdu)
 {
     uint16_t raslen;
-//  mess_info(nodePath().c_str(),_("ver l-%d"), *l);
-//  mess_info(nodePath().c_str(),_("ver t[0]-%d"), t[0]);
     if(pdu.size() == 1) {
 	//байтовый опрос
 	return 0;
     } else {
 	//нормальный пакет
 	if(pdu.size() > 7) {
-
 	    if((pdu[0] == 0x05) && (pdu[0] != 0x64)) {
-		//       	  mess_info(nodePath().c_str(),_("Len -%d"), Len((uint8_t)t[2]));
-		//       	  mess_info(nodePath().c_str(),_("VerCRC -%d"), VerCRC(t, *l));
 		if(!((raslen = Len(pdu[2])) == pdu.size() && VerCRC(pdu, pdu.size()))) if(!(pdu.size() > raslen && VerCRC(pdu, raslen)))
 		    return 2; //неправильный пакет
 		else
 		    pdu.erase(raslen); //пакет с мусором в конце
 
 	    } else {
-//        	  mess_info(nodePath().c_str(),_("ept"));
 		return 1; //нет начала пакета
 	    }
 	} else
@@ -299,42 +267,10 @@ uint16_t TProt::VerifyPacket(string &pdu)
 //---------------------------------------------------------------------------
 uint16_t TProt::ParsePacket(string &pdu, tagMsg * msg)
 {
-    /*    if (pdu.size()==1){
-     if ((pdu[0]&0x3F)==msg->A) {
-     msg->L = 1; uint8_t tt=msg->A; msg->A = msg->B; msg->B = tt;
-     if (pdu[0] & 0xC0)
-     msg->C = ((pdu[0] >> 1) & 0x20) | GOOD3;
-     else msg->C = BAD3;
-     return 0;
-     }else {
-     if (pdu[0] == ((uint8_t)(~msg->A & 0x3F)| 0x80)){
-     return 2;
-     }
-     return 1;
-     }
-     }else {
-     if ((msg->A==pdu[5])&&(msg->B==pdu[4])){
-     uint16_t x, y, z;
-     y = 0; x = 8;  // заполнение pmsg
-     msg->L = pdu[2]; msg->C = pdu[3] & 0xF;
-     msg->A = pdu[4]; msg->B = pdu[5];
-     while (x < pdu.size()) {
-     z = pdu.size() - x; if (z < 18) z -= 2; else z = 16;
-     for (z; z > 0; z--) msg->D[y++] = pdu[x++];  x += 2;
-     }
-     return 0;
-     } else {
-     if ((msg->A==pdu[4])&&(msg->B==pdu[5])) return 2;
-     else return 1;
-     }
-
-
-     }
-     return 1;*/
     if(pdu.size() >= 8) {
 	uint16_t x, y, z;
 	y = 0;
-	x = 8;  // заполнение pmsg
+	x = 8;
 	msg->L = pdu[2];
 	msg->C = pdu[3];
 	msg->A = pdu[4];
@@ -689,14 +625,14 @@ bool TProtIn::mess(const string &ireqst, string &answer/*, const string &sender*
     for(int i = 0; i < reqst.size(); i++) {
 	data_s += TSYS::int2str((uint8_t) reqst[i], TSYS::Hex) + " ";
     }
-    mess_info(nodePath().c_str(), _("request: %s"), data_s.c_str());
+//    mess_info(nodePath().c_str(), _("request: %s"), data_s.c_str());
     if(modPrt->VerifyPacket(reqst) == 0) {
-	mess_info(nodePath().c_str(), _("Correct packet found!"));
+//	mess_info(nodePath().c_str(), _("Correct packet found!"));
 	tagMsg msg, msgOut;
 	if(modPrt->ParsePacket(reqst, &msg) == 0) {
 	    unsigned i_l;
-	    mess_info(nodePath().c_str(), _("Packet parsed!"), data_s.c_str());
-	    mess_info(nodePath().c_str(), _("L:%02d C:%02X A:%02d B:%02d "), msg.L, msg.C, msg.A, msg.B);
+//	    mess_info(nodePath().c_str(), _("Packet parsed!"), data_s.c_str());
+//	    mess_info(nodePath().c_str(), _("L:%02d C:%02X A:%02d B:%02d "), msg.L, msg.C, msg.A, msg.B);
 	    //finding DAQ
 	    vector<string> lst;
 	    SYS->daq().at().at("FT3").at().list(lst);
@@ -709,123 +645,12 @@ bool TProtIn::mess(const string &ireqst, string &answer/*, const string &sender*
 			modPrt->MakePacket(answer, &msgOut);
 		    }
 		}
-		// if (t.at().HandleData(mso, channel, type, param, flag, ireqst)) break;
+
 	    }
-	    //selfprocessing
-	    /*		    vector<string> nls;
-	     modPrt->nList(nls);
-	     unsigned i_n;
-	     for(i_n = 0; i_n < nls.size(); i_n++)
-	     if(modPrt->nAt(nls[i_n]).at().req(srcTr().at().workId(),&msg)) {
-	     mess_info(nodePath().c_str(),_("Packet processed!"), data_s.c_str());
-	     answer = "";
-	     //answer.reserve(modPrt->Len(msg.L));
-	     modPrt->MakePacket(answer,&msg);
-	     data_s = "";
-	     for (int i = 0;i<answer.length();i++){
-	     data_s += TSYS::int2str((uint8_t) answer[i], TSYS::Hex)	+ " ";
-	     }
-	     mess_info(nodePath().c_str(),_("response: %s"), data_s.c_str());
-	     break;
-	     }*/
+
 	    if(i_l >= lst.size()) return false;
 	}
     }
-
-    /*    //> Check for protocol type
-     unsigned char node = 0;
-     string prt, pdu;
-     string reqst = ireqst;
-     bool isBuf = false;
-
-     retry:
-     //>> ASCII check
-     if(reqst.size() > 3 && reqst[0] == ':' && reqst.substr(reqst.size()-2,2) == "\x0D\x0A")
-     {
-     prt = "ASCII";
-     string req = modPrt->ASCIIToData(reqst.substr(1,reqst.size()-3));
-     if(modPrt->LRC(req.substr(0,req.size()-1)) != (uint8_t)req[req.size()-1]) return false;
-     node = req[0];
-     pdu = req.substr(1, req.size()-2);
-     }
-     //>> RTU check
-     else if(reqst.size() > 3 && reqst.size() <= 256 &&
-     modPrt->CRC16(reqst.substr(0,reqst.size()-2)) == (uint16_t)((reqst[reqst.size()-2]<<8)+(uint8_t)reqst[reqst.size()-1]))
-     {
-     prt = "RTU";
-     node = reqst[0];
-     pdu = reqst.substr(1, reqst.size()-3);
-     }
-     //>> TCP check
-     else if(reqst.size() > 7 && reqst.size() <= 260 &&
-     reqst.size() == (unsigned)((unsigned short)(reqst[4]<<8)|(unsigned char)reqst[5])+6)
-     {
-     prt = "TCP";
-     node = reqst[6];
-     pdu = reqst.substr(7);
-     }
-     else
-     {
-     if(!isBuf && req_buf.size())
-     {
-     reqst = req_buf+reqst;
-     isBuf = true;
-     goto retry;
-     }
-     req_buf = reqst;
-     if(req_buf.size() > 2048) req_buf = "";
-     return true;
-     }
-     req_buf = "";
-
-     vector<string> nls;
-     modPrt->nList(nls);
-     unsigned i_n;
-     for(i_n = 0; i_n < nls.size(); i_n++)
-     if(modPrt->nAt(nls[i_n]).at().req(srcTr(),prt,node,pdu)) break;
-     if(i_n >= nls.size()) return false;
-
-     answer = "";
-     if(prt == "TCP")
-     {
-     //> Encode MBAP (FT3 Application Protocol)
-     answer.reserve(pdu.size()+7);
-     answer += reqst[0];			//Transaction ID MSB
-     answer += reqst[1];			//Transaction ID LSB
-     answer += reqst[2];			//Protocol ID MSB
-     answer += reqst[3];			//Protocol ID LSB
-     answer += (char)((pdu.size()+1)>>8);	//PDU size MSB
-     answer += (char)(pdu.size()+1);		//PDU size LSB
-     answer += (char)node;			//Unit identifier
-     answer += pdu;
-     }
-     else if(prt == "RTU")
-     {
-     answer.reserve(pdu.size()+3);
-     answer += (uint8_t)node;		//Unit identifier
-     answer += pdu;
-     uint16_t crc = modPrt->CRC16( answer );
-     answer += crc>>8;
-     answer += crc;
-     }
-     else if(prt == "ASCII")
-     {
-     answer.reserve(pdu.size()+2);
-     answer += (uint8_t)node;		//Unit identifier
-     answer += pdu;
-     answer += modPrt->LRC(answer);
-     answer = ":"+modPrt->DataToASCII(answer)+"\x0D\x0A";
-     }
-
-     if(owner().prtLen( ) && prt.size() && answer.size())
-     {
-     time_t tm_t = time(NULL);
-     string mess = TSYS::strSepParse(ctime(&tm_t),0,'\n')+" "+prt+": "+srcTr()+"("+sender+") --> "+TSYS::int2str(node)+"\n"+
-     _("REQ -> ")+((prt!="ASCII")?TSYS::strDecode(reqst,TSYS::Bin):reqst.substr(0,reqst.size()-2))+"\n"+
-     _("RESP -> ")+((prt!="ASCII")?TSYS::strDecode(answer,TSYS::Bin):answer.substr(0,answer.size()-2));
-     owner().pushPrtMess(mess+"\n");
-     }
-     */
     return false;
 }
 

@@ -127,6 +127,24 @@ void B_BVTC::tmHandler(void)
 		    data[i].Value = tmpval;
 		    mPrm->vlAt(data[i].ValueLink.prmName.c_str()).at().setB(tmpval, 0, true);
 		    mess_info("B_BVTC::tmHandler", "Value new value %s %s %d",data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmAttr.c_str(), tmpval);
+		    uint8_t E[6];
+		    uint8_t g = i/8;
+		    E[0] = 1;
+		    E[1] = 3;
+		    E[2] = ID|(1<<6)|(g);
+		    E[3] = (ID|(1<<6)|(g))>>8;
+//		    mess_info("B_BVTC::tmHandler", "new value event ID %04X",ID|(1<<6)|(g));
+//		    mess_info("B_BVTC::tmHandler", "new value event %02X%02X",E[2],E[3]);
+
+		    E[4] = 0; //TC
+		    for(int j = 0; j < 8; j++) {
+			E[4]|=(data[g*8+j].Value)<<j;
+		    }
+		    uint8_t DHM[5];
+		    time_t rawtime;
+		    time(&rawtime);
+		    mPrm->owner().Time_tToDateTime(DHM,rawtime);
+		    mPrm->owner().PushInBE(E,DHM);
 		    //TODO putinBE;
 		}
 	    }
@@ -208,6 +226,7 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
     uint16_t l = 0;
     uint16_t k = (TSYS::getUnalign16(D) >> 6) & 0x3F; // номер объекта
     uint16_t n = TSYS::getUnalign16(D) & 0x3F;  // номер параметра
+    mess_info("B_BVTC::HandleEvent", "g k n %d %d %d",ID>>12,k,n);
     switch(k) {
     case 0:
 	switch(n) {
@@ -289,11 +308,11 @@ uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
     case 1:
 	//value
 	out[0] = 0;
-	mess_info("getData", _("out[0] before %02X "),out[0]);
+//	mess_info("getData", _("out[0] before %02X "),out[0]);
 	if(n < nTC) {
 	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++) {
 		out[0] |= (data[j].Value & 0x01) << (j % 8);
-		mess_info("getData", _("out[0] %d %02X "),j, out[0]);
+//		mess_info("getData", _("out[0] %d %02X "),j, out[0]);
 	    }
 	    l = 1;
 	}
