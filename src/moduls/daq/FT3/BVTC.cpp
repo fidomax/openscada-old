@@ -46,7 +46,7 @@ B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
 	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
 	}
     }
-    loadIO();
+    loadIO(true);
 
 }
 
@@ -373,6 +373,7 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 
 uint16_t B_BVTC::setVal(TVal &val)
 {
+    mess_info("BVTC ", _("setVal"));
     int off = 0;
     uint16_t k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
     uint16_t n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра

@@ -211,7 +211,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	mess_info(nodePath().c_str(), _("ReqData"));
 	  //byte c = cmd & 0xF;
 	  chain_BE *pC; el_chBE *pBE;
-
+// TODO FCB check
 //	  if((FCB3 != (msg->C&0x20))){
 //	    FCB3 = msg->C & 0x20;
 
@@ -252,11 +252,6 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	}
 //}
 
-	//int tt = nAtBUC(0).at().getI(0);
-	//mess_info(nodePath().c_str(),_("----------------------------------%d"),tt);
-//	msgOut->L = 3;
-//	msgOut->C = 9;
-//				GetBE(&msg->C);
 	break;
     case SetData:
 	mess_info(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"),FCB2,msg->C);
@@ -1201,25 +1196,26 @@ uint8_t TMdPrm::cmdSet(uint8_t * req, uint8_t addr)
     }
 }
 
-void TMdPrm::vlSet(TVal &valo, const TVariant &pvl)
+//void TMdPrm::vlSet(TVal &valo, const TVariant &pvl)
+void TMdPrm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
 {
-//	mess_info(nodePath().c_str(),_("TMdPrm::vlSet name %s "),valo.name().c_str());
+	mess_info(nodePath().c_str(),_("TMdPrm::vlSet name %s "),vo.name().c_str());
 //	mess_info(nodePath().c_str(),_("TMdPrm::vlSet reserve %s "),valo.fld().reserve().c_str());
 //	mess_info(nodePath().c_str(),_("TMdPrm::vlSet reserve %s "),valo.fld().
 //	.fldId
-    if(!enableStat() || !owner().startStat()) valo.setI( EVAL_INT, 0, true);
-    string rez;
+    if(!enableStat() || !owner().startStat()) vo.setS(EVAL_STR, 0, true);
 
-    //> Send to active reserve station
+    if(vl.isEVal() || vl == pvl) return;
+
+    //Send to active reserve station
     if(owner().redntUse()) {
-	if(valo.getS(0, true) == pvl.getS()) return;
 	XMLNode req("set");
-	req.setAttr("path", nodePath(0, true) + "/%2fserv%2fattr")->childAdd("el")->setAttr("id", valo.name())->setText(valo.getS(0, true));
-	SYS->daq().at().rdStRequest(owner().workId(), req);
+	req.setAttr("path",nodePath(0,true)+"/%2fserv%2fattr")->childAdd("el")->setAttr("id",vo.name())->setText(vl.getS());
+	SYS->daq().at().rdStRequest(owner().workId(),req);
 	return;
     }
     if(mDA) {
-	mDA->setVal(valo);
+	mDA->setVal(vo);
     } else {
 	return;
     }

@@ -188,7 +188,7 @@ namespace FT3
 	void postEnable(int flag);
 //	void postDisable( int flag );
 	void vlGet(TVal &val);
-	void vlSet(TVal &val, const TVariant &pvl);
+	void vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl );
 	void vlArchMake(TVal &val);
 	//Attributes
 	//!!! Parameter's structure element
