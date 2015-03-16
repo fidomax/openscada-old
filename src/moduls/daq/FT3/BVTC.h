@@ -1,3 +1,4 @@
+//OpenSCADA system module DAQ.FT3 file: BVTC.h
 /***************************************************************************
  *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *

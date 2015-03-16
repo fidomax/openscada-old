@@ -1,4 +1,4 @@
-//OpenSCADA system module DAQ.AMRDevs file: da_Ergomera.cpp
+//OpenSCADA system module DAQ.FT3 file: BVTC.cpp
 /***************************************************************************
  *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
@@ -24,10 +24,9 @@
 #include "BVTC.h"
 
 using namespace FT3;
-//*************************************************
-//* BVI                                           *
-//*************************************************
-
+//******************************************************
+//* B_BVTC                                             *
+//******************************************************
 B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), count_n(n), ID(id << 12), with_params(has_params)
 {
@@ -37,22 +36,19 @@ B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
     for(int i = 0; i < count_n; i++) {
 	data.push_back(STCchannel(i));
 	mPrm->p_el.fldAdd(fld = new TFld(data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmDesc.c_str(), TFld::Boolean, TFld::NoWrite));
-//	mlnk.push_back(data[i].ValueLink);
 	fld->setReserve("1:" + TSYS::int2str((i) / 8));
 	if(with_params) {
 	    data[i].Mask = EVAL_BOOL;
-//	    mlnk.push_back(data[i].MaskLink);
 	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
 	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
 	}
     }
     loadIO(true);
-
 }
 
 B_BVTC::~B_BVTC()
 {
-
+    data.clear();
 }
 
 string B_BVTC::getStatus(void)
@@ -70,7 +66,7 @@ string B_BVTC::getStatus(void)
 void B_BVTC::loadIO( bool force )
 {
     //Load links
-    mess_info("B_BVTC::loadIO", "");
+//    mess_info("B_BVTC::loadIO", "");
     if(mPrm->owner().startStat() && !force) {
 	mPrm->modif(true);
 	return;
@@ -99,7 +95,7 @@ void B_BVTC::saveIO()
     TConfig cfg(&mPrm->prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm->ownerPath(true));
     string io_bd = mPrm->owner().DB() + "." +mPrm->typeDBName()+  "_io";
-    mess_info("B_BVTC::saveIO", "io_bd %s ",io_bd.c_str());
+//    mess_info("B_BVTC::saveIO", "io_bd %s ",io_bd.c_str());
     for(int i = 0; i < count_n; i++) {
 	cfg.cfg("ID").setS(data[i].ValueLink.prmName);
 	cfg.cfg("VALUE").setS(data[i].ValueLink.prmAttr);
@@ -120,21 +116,19 @@ void B_BVTC::tmHandler(void)
 	    if(data[i].ValueLink.aprm.freeStat()) {
 		//no connection
 		data[i].Value = EVAL_BOOL;
-		mess_info("B_BVTC::tmHandler", "Value no connection %s %s",data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmAttr.c_str());
+//		mess_info("B_BVTC::tmHandler", "Value no connection %s %s",data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmAttr.c_str());
 	    } else {
 		tmpval = data[i].ValueLink.aprm.at().getB();
 		if(tmpval != data[i].Value) {
 		    data[i].Value = tmpval;
 		    mPrm->vlAt(data[i].ValueLink.prmName.c_str()).at().setB(tmpval, 0, true);
-		    mess_info("B_BVTC::tmHandler", "Value new value %s %s %d",data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmAttr.c_str(), tmpval);
+//		    mess_info("B_BVTC::tmHandler", "Value new value %s %s %d",data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmAttr.c_str(), tmpval);
 		    uint8_t E[6];
 		    uint8_t g = i/8;
 		    E[0] = 1;
 		    E[1] = 3;
 		    E[2] = ID|(1<<6)|(g);
 		    E[3] = (ID|(1<<6)|(g))>>8;
-//		    mess_info("B_BVTC::tmHandler", "new value event ID %04X",ID|(1<<6)|(g));
-//		    mess_info("B_BVTC::tmHandler", "new value event %02X%02X",E[2],E[3]);
 
 		    E[4] = 0; //TC
 		    for(int j = 0; j < 8; j++) {
@@ -145,7 +139,6 @@ void B_BVTC::tmHandler(void)
 		    time(&rawtime);
 		    mPrm->owner().Time_tToDateTime(DHM,rawtime);
 		    mPrm->owner().PushInBE(E,DHM);
-		    //TODO putinBE;
 		}
 	    }
 	}
@@ -153,15 +146,14 @@ void B_BVTC::tmHandler(void)
 	    if(data[i].MaskLink.aprm.freeStat()) {
 		//no connection
 		data[i].Mask = EVAL_BOOL;
-		mess_info("B_BVTC::tmHandler", "Mask no connection %s %s",data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmAttr.c_str());
+//		mess_info("B_BVTC::tmHandler", "Mask no connection %s %s",data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmAttr.c_str());
 	    } else {
 		tmpval = data[i].MaskLink.aprm.at().getB();
 		if(tmpval != data[i].Mask) {
 		    data[i].Mask = tmpval;
 		    data[i].sMask = 0;
 		    mPrm->vlAt(data[i].MaskLink.prmName.c_str()).at().setB(tmpval, 0, true);
-		    mess_info("B_BVTC::tmHandler", "Mask new mask %s %s %d",data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmAttr.c_str(), tmpval);
-		    //TODO putinBE;
+//		    mess_info("B_BVTC::tmHandler", "Mask new mask %s %s %d",data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmAttr.c_str(), tmpval);
 		}
 	    }
 	}
@@ -177,7 +169,7 @@ uint16_t B_BVTC::Task(uint16_t uc)
     case TaskRefresh:
 	Msg.L = 5;
 	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = ID | (0 << 6) | (0); //состояние
+	*((uint16_t *) Msg.D) = ID | (0 << 6) | (0); //state
 	if(mPrm->owner().Transact(&Msg)) {
 	    if(Msg.C == GOOD3) {
 		mPrm->vlAt("state").at().setI(Msg.D[7], 0, true);
@@ -185,7 +177,7 @@ uint16_t B_BVTC::Task(uint16_t uc)
 		Msg.L = 3 + nTC * 2;
 		Msg.C = AddrReq;
 		for(int i = 0; i < nTC; i++) {
-		    *((uint16_t *) (Msg.D + i * 2)) = ID | (1 << 6) | (i); //Значение ТC
+		    *((uint16_t *) (Msg.D + i * 2)) = ID | (1 << 6) | (i); //TC Value
 		}
 		if(mPrm->owner().Transact(&Msg)) {
 		    if(Msg.C == GOOD3) {
@@ -224,9 +216,9 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
 {
     if((TSYS::getUnalign16(D) & 0xF000) != ID) return 0;
     uint16_t l = 0;
-    uint16_t k = (TSYS::getUnalign16(D) >> 6) & 0x3F; // номер объекта
-    uint16_t n = TSYS::getUnalign16(D) & 0x3F;  // номер параметра
-    mess_info("B_BVTC::HandleEvent", "g k n %d %d %d",ID>>12,k,n);
+    uint16_t k = (TSYS::getUnalign16(D) >> 6) & 0x3F; // object
+    uint16_t n = TSYS::getUnalign16(D) & 0x3F;  // param
+//    mess_info("B_BVTC::HandleEvent", "g k n %d %d %d",ID>>12,k,n);
     switch(k) {
     case 0:
 	switch(n) {
@@ -272,8 +264,8 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
 uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 {
     if((prmID & 0xF000) != ID) return 0;
-    uint16_t k = (prmID >> 6) & 0x3F; // номер объекта
-    uint16_t n = prmID & 0x3F;  // номер параметра
+    uint16_t k = (prmID >> 6) & 0x3F; // object
+    uint16_t n = prmID & 0x3F;  // param
     uint l = 0;
     uint16_t nTC = (count_n / 8 + (count_n % 8 ? 1 : 0));
     switch(k) {
@@ -308,11 +300,9 @@ uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
     case 1:
 	//value
 	out[0] = 0;
-//	mess_info("getData", _("out[0] before %02X "),out[0]);
 	if(n < nTC) {
 	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++) {
 		out[0] |= (data[j].Value & 0x01) << (j % 8);
-//		mess_info("getData", _("out[0] %d %02X "),j, out[0]);
 	    }
 	    l = 1;
 	}
@@ -335,15 +325,15 @@ uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 
 uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 {
-    mess_info("BVTC ", _("cmdSet"));
+//    mess_info("BVTC ", _("cmdSet"));
     uint16_t prmID = TSYS::getUnalign16(req);
     if((prmID & 0xF000) != ID) return 0;
-    mess_info("BVTC ", _("prmID %04X"),prmID);
-    uint16_t k = (prmID >> 6) & 0x3F; // номер объекта
-    uint16_t n = prmID & 0x3F;  // номер параметра
+//    mess_info("BVTC ", _("prmID %04X"),prmID);
+    uint16_t k = (prmID >> 6) & 0x3F; // object
+    uint16_t n = prmID & 0x3F;  // param
     uint l = 0;
-    mess_info("BVTC ", _("k %d"),k);
-    mess_info("BVTC ", _("n %d"),n);
+//    mess_info("BVTC ", _("k %d"),k);
+//    mess_info("BVTC ", _("n %d"),n);
     uint16_t nTC = (count_n / 8 + (count_n % 8 ? 1 : 0));
     switch (k){
     case 2:
@@ -356,9 +346,9 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 		data[j].Mask = newMask & 0x01;
 		if(!data[j].MaskLink.aprm.freeStat()) {
 		    data[j].MaskLink.aprm.at().setB(data[j].Mask);
-		    mess_info("B_BVTC::cmdSet", "Set new mask %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
+//		    mess_info("B_BVTC::cmdSet", "Set new mask %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		} else {
-		    mess_info("B_BVTC::cmdSet", "Set new mask EROOR!!! %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
+//		    mess_info("B_BVTC::cmdSet", "Set new mask EROOR!!! %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		}
 		mPrm->vlAt(data[j].MaskLink.prmName.c_str()).at().setB(data[j].Mask, 0, true);
 
@@ -375,8 +365,8 @@ uint16_t B_BVTC::setVal(TVal &val)
 {
     mess_info("BVTC ", _("setVal"));
     int off = 0;
-    uint16_t k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    uint16_t n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    uint16_t k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // object
+    uint16_t n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // param
     uint16_t addr = ID | (k << 6) | n;
 
     tagMsg Msg;
