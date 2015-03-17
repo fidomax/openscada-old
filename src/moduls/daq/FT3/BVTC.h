@@ -46,17 +46,18 @@ namespace FT3
 	{
 	public:
 	    STCchannel(uint8_t iid) :
-		    id(iid), Mask(0), Value(EVAL_BOOL),sMask(0),
-		    ValueLink(SLnk(TSYS::strMess("TC_%d", id+1).c_str(), TSYS::strMess(_("TC %d"), id+1).c_str())),
-		    MaskLink(SLnk(TSYS::strMess("Mask_%d", id+1).c_str(), TSYS::strMess(_("Mask %d"), id+1).c_str()))
+		    id(iid),
+		    Value(TSYS::strMess("TC_%d", id+1).c_str(), TSYS::strMess(_("TC %d"), id+1).c_str()),
+		    Mask(TSYS::strMess("Mask_%d", id+1).c_str(), TSYS::strMess(_("Mask %d"), id+1).c_str())
 	    {
 	    }
 	    uint8_t id;
-	    uint8_t Value;
+	    ui8Data Value, Mask;
+/*	    uint8_t Value;
 	    SLnk ValueLink;
 	    uint8_t Mask;
 	    uint8_t sMask;
-	    SLnk MaskLink;
+	    SLnk MaskLink;*/
 	};
 	vector<STCchannel> data;
 	int lnkSize( ){
@@ -69,16 +70,16 @@ namespace FT3
 	int lnkId( const string &id ){
 	    if(with_params) {
 		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].ValueLink.prmName == id) {
+		    if(data[i_l].Value.lnk.prmName == id) {
 			return i_l * 2;
 		    }
-		    if(data[i_l].MaskLink.prmName == id) {
+		    if(data[i_l].Mask.lnk.prmName == id) {
 			return i_l * 2 + 1;
 		    }
 		}
 	    } else {
 		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].ValueLink.prmName == id) {
+		    if(data[i_l].Value.lnk.prmName == id) {
 			return i_l;
 		    }
 		}
@@ -90,12 +91,12 @@ namespace FT3
 	    if(with_params) {
 		switch(num % 2) {
 		case 0:
-		    return data[num / 2].ValueLink;
+		    return data[num / 2].Value.lnk;
 		case 1:
-		    return data[num / 2].MaskLink;
+		    return data[num / 2].Mask.lnk;
 		}
 	    } else
-		return data[num].ValueLink;
+		return data[num].Value.lnk;
 	}
     };
 

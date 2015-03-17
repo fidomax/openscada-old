@@ -35,11 +35,12 @@ B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
     fld->setReserve("0:0");
     for(int i = 0; i < count_n; i++) {
 	data.push_back(STCchannel(i));
-	mPrm->p_el.fldAdd(fld = new TFld(data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmDesc.c_str(), TFld::Boolean, TFld::NoWrite));
+	mPrm->p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Boolean, TFld::NoWrite));
+	data[i].Value.vl = EVAL_BOOL;
 	fld->setReserve("1:" + TSYS::int2str((i) / 8));
 	if(with_params) {
-	    data[i].Mask = EVAL_BOOL;
-	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
+	    data[i].Mask.vl = EVAL_BOOL;
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
 	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
 	}
     }
@@ -77,14 +78,14 @@ void B_BVTC::loadIO( bool force )
     string io_bd = mPrm->owner().DB() + "." +mPrm->typeDBName()+  "_io";
     mess_info("B_BVTC::loadIO", "io_bd %s ",io_bd.c_str());
     for(int i = 0; i < count_n; i++) {
-	cfg.cfg("ID").setS(data[i].ValueLink.prmName);
+	cfg.cfg("ID").setS(data[i].Value.lnk.prmName);
 	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg, false, true)) continue;
-	data[i].ValueLink.prmAttr = cfg.cfg("VALUE").getS();
-	data[i].ValueLink.aprm = SYS->daq().at().attrAt(data[i].ValueLink.prmAttr, '.', true);
-	cfg.cfg("ID").setS(data[i].MaskLink.prmName);
+	data[i].Value.lnk.prmAttr = cfg.cfg("VALUE").getS();
+	data[i].Value.lnk.aprm = SYS->daq().at().attrAt(data[i].Value.lnk.prmAttr, '.', true);
+	cfg.cfg("ID").setS(data[i].Mask.lnk.prmName);
 	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg, false, true)) continue;
-	data[i].MaskLink.prmAttr = cfg.cfg("VALUE").getS();
-	data[i].MaskLink.aprm = SYS->daq().at().attrAt(data[i].MaskLink.prmAttr, '.', true);
+	data[i].Mask.lnk.prmAttr = cfg.cfg("VALUE").getS();
+	data[i].Mask.lnk.aprm = SYS->daq().at().attrAt(data[i].Mask.lnk.prmAttr, '.', true);
     }
 
 }
@@ -97,12 +98,12 @@ void B_BVTC::saveIO()
     string io_bd = mPrm->owner().DB() + "." +mPrm->typeDBName()+  "_io";
 //    mess_info("B_BVTC::saveIO", "io_bd %s ",io_bd.c_str());
     for(int i = 0; i < count_n; i++) {
-	cfg.cfg("ID").setS(data[i].ValueLink.prmName);
-	cfg.cfg("VALUE").setS(data[i].ValueLink.prmAttr);
+	cfg.cfg("ID").setS(data[i].Value.lnk.prmName);
+	cfg.cfg("VALUE").setS(data[i].Value.lnk.prmAttr);
 	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg);
 	mess_info("B_BVTC::saveIO", "path %s ",(mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io").c_str());
-	cfg.cfg("ID").setS(data[i].MaskLink.prmName);
-	cfg.cfg("VALUE").setS(data[i].MaskLink.prmAttr);
+	cfg.cfg("ID").setS(data[i].Mask.lnk.prmName);
+	cfg.cfg("VALUE").setS(data[i].Mask.lnk.prmAttr);
 	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg);
     }
 }
@@ -112,17 +113,17 @@ void B_BVTC::tmHandler(void)
     NeedInit = false;
     for(int i = 0; i < count_n; i++) {
 	uint8_t tmpval;
-	if(data[i].Mask == 0) {
-	    if(data[i].ValueLink.aprm.freeStat()) {
+	if(data[i].Mask.vl == 0) {
+	    if(data[i].Value.lnk.aprm.freeStat()) {
 		//no connection
-		data[i].Value = EVAL_BOOL;
-//		mess_info("B_BVTC::tmHandler", "Value no connection %s %s",data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmAttr.c_str());
+		data[i].Value.vl = EVAL_BOOL;
+//		mess_info("B_BVTC::tmHandler", "Value no connection %s %s",data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmAttr.c_str());
 	    } else {
-		tmpval = data[i].ValueLink.aprm.at().getB();
-		if(tmpval != data[i].Value) {
-		    data[i].Value = tmpval;
-		    mPrm->vlAt(data[i].ValueLink.prmName.c_str()).at().setB(tmpval, 0, true);
-//		    mess_info("B_BVTC::tmHandler", "Value new value %s %s %d",data[i].ValueLink.prmName.c_str(), data[i].ValueLink.prmAttr.c_str(), tmpval);
+		tmpval = data[i].Value.lnk.aprm.at().getB();
+		if(tmpval != data[i].Value.vl) {
+		    data[i].Value.vl = tmpval;
+		    mPrm->vlAt(data[i].Value.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
+//		    mess_info("B_BVTC::tmHandler", "Value new value %s %s %d",data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmAttr.c_str(), tmpval);
 		    uint8_t E[6];
 		    uint8_t g = i/8;
 		    E[0] = 1;
@@ -132,7 +133,7 @@ void B_BVTC::tmHandler(void)
 
 		    E[4] = 0; //TC
 		    for(int j = 0; j < 8; j++) {
-			E[4]|=(data[g*8+j].Value)<<j;
+			E[4]|=(data[g*8+j].Value.vl)<<j;
 		    }
 		    uint8_t DHM[5];
 		    time_t rawtime;
@@ -143,17 +144,17 @@ void B_BVTC::tmHandler(void)
 	    }
 	}
 	if(with_params) {
-	    if(data[i].MaskLink.aprm.freeStat()) {
+	    if(data[i].Mask.lnk.aprm.freeStat()) {
 		//no connection
-		data[i].Mask = EVAL_BOOL;
-//		mess_info("B_BVTC::tmHandler", "Mask no connection %s %s",data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmAttr.c_str());
+		data[i].Mask.vl = EVAL_BOOL;
+//		mess_info("B_BVTC::tmHandler", "Mask no connection %s %s",data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmAttr.c_str());
 	    } else {
-		tmpval = data[i].MaskLink.aprm.at().getB();
-		if(tmpval != data[i].Mask) {
-		    data[i].Mask = tmpval;
-		    data[i].sMask = 0;
-		    mPrm->vlAt(data[i].MaskLink.prmName.c_str()).at().setB(tmpval, 0, true);
-//		    mess_info("B_BVTC::tmHandler", "Mask new mask %s %s %d",data[i].MaskLink.prmName.c_str(), data[i].MaskLink.prmAttr.c_str(), tmpval);
+		tmpval = data[i].Mask.lnk.aprm.at().getB();
+		if(tmpval != data[i].Mask.vl) {
+		    data[i].Mask.vl = tmpval;
+		    data[i].Mask.s = 0;
+		    mPrm->vlAt(data[i].Mask.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
+//		    mess_info("B_BVTC::tmHandler", "Mask new mask %s %s %d",data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmAttr.c_str(), tmpval);
 		}
 	    }
 	}
@@ -283,14 +284,14 @@ uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 	    for(uint8_t i = 0; i < nTC; i++) {
 		out[i + 1] = 0;
 		for(uint8_t j = i * 8; j < (i + 1) * 8; j++)
-		    out[i + 1] |= (data[j].Value & 0x01) << (j % 8);
+		    out[i + 1] |= (data[j].Value.vl & 0x01) << (j % 8);
 		l++;
 	    }
 	    //mask;
 	    for(uint8_t i = 0; i < nTC; i++) {
 		out[i+nTC+1] = 0;
 		for(uint8_t j = i * 8; j < (i + 1) * 8; j++)
-		    out[i * 2 + 2] |= (data[j].Mask & 0x01) << (j % 8);
+		    out[i * 2 + 2] |= (data[j].Mask.vl & 0x01) << (j % 8);
 		l++;
 	    }
 	    break;
@@ -302,7 +303,7 @@ uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 	out[0] = 0;
 	if(n < nTC) {
 	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++) {
-		out[0] |= (data[j].Value & 0x01) << (j % 8);
+		out[0] |= (data[j].Value.vl & 0x01) << (j % 8);
 	    }
 	    l = 1;
 	}
@@ -313,8 +314,8 @@ uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 	out[1] = 0;
 	if(n < nTC) {
 	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++){
-		out[0] = data[j].sMask;
-		out[1] |= (data[j].Mask & 0x01) << (j % 8);
+		out[0] = data[j].Mask.s;
+		out[1] |= (data[j].Mask.vl & 0x01) << (j % 8);
 	    }
 	    l = 2;
 	}
@@ -342,28 +343,27 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++) {
 		mess_info("BVTC ", _("found! %d"), j);
 
-		data[j].sMask = addr;
-		data[j].Mask = newMask & 0x01;
-		if(!data[j].MaskLink.aprm.freeStat()) {
-		    data[j].MaskLink.aprm.at().setB(data[j].Mask);
+		data[j].Mask.s = addr;
+		data[j].Mask.vl = newMask & 0x01;
+		if(!data[j].Mask.lnk.aprm.freeStat()) {
+		    data[j].Mask.lnk.aprm.at().setB(data[j].Mask.vl);
 //		    mess_info("B_BVTC::cmdSet", "Set new mask %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		} else {
 //		    mess_info("B_BVTC::cmdSet", "Set new mask EROOR!!! %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		}
-		mPrm->vlAt(data[j].MaskLink.prmName.c_str()).at().setB(data[j].Mask, 0, true);
+		mPrm->vlAt(data[j].Mask.lnk.prmName.c_str()).at().setB(data[j].Mask.vl, 0, true);
 
 		newMask = newMask >> 1;
 	    }
 	    l = 3;
 	}
     }
-    mess_info("BVTC ", _("l %d"),l);
     return l;
 }
 
 uint16_t B_BVTC::setVal(TVal &val)
 {
-    mess_info("BVTC ", _("setVal"));
+//    mess_info("BVTC ", _("setVal"));
     int off = 0;
     uint16_t k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // object
     uint16_t n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // param

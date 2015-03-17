@@ -31,6 +31,7 @@ namespace FT3
 class TMdPrm;
 class TMdContr;
 
+
 class DA: public TElem
 {
     public:
@@ -69,6 +70,21 @@ class DA: public TElem
 		string	prmName;
 		string	prmDesc;
 		AutoHD<TVal> aprm;
+	};
+	class ui8Data{
+	public:
+	    ui8Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    uint8_t vl;
+	    uint8_t s;
+	    SLnk lnk;
+	};
+
+	class flData{
+	public:
+	    flData(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    float vl;
+	    uint8_t s;
+	    SLnk lnk;
 	};
 
 	//vector<SLnk> mlnk;
