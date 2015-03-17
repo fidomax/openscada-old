@@ -132,6 +132,8 @@ void TTpContr::postEnable( int flag )
     fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;99"));
     fldAdd(new TFld("NODE", _("Address"), TFld::Integer, TFld::NoFlag, "2", "1", "0;63"));
     fldAdd(new TFld("ADDR", _("Transport address"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("CONST", _("Const"), TFld::Integer, TFld::NoFlag, "2", "500", ""));
+    fldAdd(new TFld("KC", _("Kc"), TFld::Integer, TFld::NoFlag, "2", "1", ""));
     //> Parameter type bd structure
     int t_prm = tpParmAdd("tp_ENERGY", "PRM_BD_ENERGY", _("ENERGY"));
     t_prm = tpParmAdd("tp_POWER", "PRM_BD_POWER", _("POWER"));
@@ -150,7 +152,8 @@ TController *TTpContr::ContrAttach( const string &name, const string &daq_db )
 //!!! Constructor for DAQ-subsystem controller object.
 TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem ) :
     ::TController(name_c,daq_db,cfgelem), prcSt(false), callSt(false), endrunReq(false), tmGath(0),
-    mPer(cfg("PERIOD").getI()),mPrior(cfg("PRIOR").getId()), mSched(cfg("SCHEDULE")), mAddr(cfg("ADDR")), mNode(cfg("NODE").getId())
+    mPer(cfg("PERIOD").getI()),mPrior(cfg("PRIOR").getId()), mSched(cfg("SCHEDULE")), mAddr(cfg("ADDR")),
+    mNode(cfg("NODE").getId()),mConst(cfg("CONST").getId()),mKc(cfg("KC").getId())
 {
 	cfg("PRM_BD_ENERGY").setS("SET4TMPrm_ENERGY_" + name_c);
 	cfg("PRM_BD_POWER").setS("SET4TMPrm_POWER_" + name_c);
@@ -330,15 +333,19 @@ void TMdPrm::enable( )
     owner().prmEn(id(), true);
 	try {
 		if(type().name == "tp_ENERGY") {
-			p_el.fldAdd(new TFld("A0", _("Active straight energy"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
-			p_el.fldAdd(new TFld("A1", _("Active feedback energy"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
-			p_el.fldAdd(new TFld("R0", _("Reactive straight energy"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
-			p_el.fldAdd(new TFld("R1", _("Reactive feedback energy"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("Ki", _("Coeff I"), TFld::Integer, TVal::DirRead | TVal::DirWrite, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("Ku", _("Coeff U"), TFld::Integer, TVal::DirRead | TVal::DirWrite, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("A0", _("Active straight energy"), TFld::Real, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("A1", _("Active feedback energy"), TFld::Real, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("R0", _("Reactive straight energy"), TFld::Real, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("R1", _("Reactive feedback energy"), TFld::Real, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
 		}
 		if(type().name == "tp_POWER") {
-			p_el.fldAdd(new TFld("P", _("Active power"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
-			p_el.fldAdd(new TFld("Q", _("Reactive power"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
-			p_el.fldAdd(new TFld("S", _("Full power"), TFld::Integer, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("Ki", _("Coeff I"), TFld::Integer, TVal::DirRead | TVal::DirWrite, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("Ku", _("Coeff U"), TFld::Integer, TVal::DirRead | TVal::DirWrite, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("P", _("Active power"), TFld::Real, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("Q", _("Reactive power"), TFld::Real, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
+			p_el.fldAdd(new TFld("S", _("Full power"), TFld::Real, TFld::NoWrite | TVal::DirRead, "", "", "", "", ""));
 		}
 	}
     catch(TError err) {
@@ -379,18 +386,19 @@ int TMdPrm::getVals()
 	string pdu;
 	uint8_t bufIn[64];
 	uint8_t bufOut[64];
-	uint32_t A0,A1,R0,R1,P,Q,S;
+	float flA0,flA1,flR0,flR1,flP,flQ,flS;
+	uint16_t Ki,Ku;
+	uint32_t A0,A1,R0,R1, P,Q,S;
 	AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(owner().addr(), 0, '.')).at().outAt(TSYS::strSepParse(owner().addr(), 1, '.'));
 	try {
 		if (!tr.at().startStat())
 			tr.at().start();
 		if (type().name == "tp_ENERGY") {
 			bufOut[0]=owner().node();
-			bufOut[1]=0x5;
-			bufOut[2]=0;
-			bufOut[3]=0;
-			*(uint16_t *) (bufOut + 4) = owner().CRC16(bufOut, 4);
-			int resp_len =tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 19, 0, true);
+			bufOut[1]=0x8;
+			bufOut[2]=0x2;
+			*(uint16_t *) (bufOut + 3) = owner().CRC16(bufOut, 3);
+			int resp_len = tr.at().messIO((char *) &bufOut, 5, (char *) &bufIn, 13, 0, true);
 			if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
 				if((resp_len==4)&&(bufIn[1]==5)){
 					bufOut[0]=owner().node();
@@ -399,27 +407,43 @@ int TMdPrm::getVals()
 					*(uint16_t *) (bufOut + 8) = owner().CRC16(bufOut, 8);
 					tr.at().messIO((char *) &bufOut, 10, (char *) &bufIn, 4, 0, true);
 				} else {
-					A0=A1=R0=R1=0;
-					for(int i=0;i<4;i++){
-						A0=A0|(bufIn[i+1]<<8*(~i));
-						A1=A1|(bufIn[i+5]<<8*(~i));
-						R0=R0|(bufIn[i+9]<<8*(~i));
-						R1=R1|(bufIn[i+13]<<8*(~i));
+					Ku=(bufIn[1]<<8)|bufIn[2];
+					Ki=(bufIn[3]<<8)|bufIn[4];
+					vlAt("Ku").at().setI(Ku, 0, true);
+					vlAt("Ki").at().setI(Ki, 0, true);
+					///
+					bufOut[0]=owner().node();
+					bufOut[1]=0x5;
+					bufOut[2]=0;
+					bufOut[3]=0;
+					*(uint16_t *) (bufOut + 4) = owner().CRC16(bufOut, 4);
+					resp_len =tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 19, 0, true);
+					if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
+						A0=A1=R0=R1=0;
+						for(int i=0;i<4;i++){
+							A0=A0|(bufIn[i+1]<<8*(~i));
+							A1=A1|(bufIn[i+5]<<8*(~i));
+							R0=R0|(bufIn[i+9]<<8*(~i));
+							R1=R1|(bufIn[i+13]<<8*(~i));
+						}
+						flA0=1.0*Ku*Ki*A0/(2*owner().constA());
+						flA1=1.0*Ku*Ki*A1/(2*owner().constA());
+						flR0=1.0*Ku*Ki*R0/(2*owner().constA());
+						flR1=1.0*Ku*Ki*R1/(2*owner().constA());
+						vlAt("A0").at().setR(flA0, 0, true);
+						vlAt("A1").at().setR(flA1, 0, true);
+						vlAt("R0").at().setR(flR0, 0, true);
+						vlAt("R1").at().setR(flR1, 0, true);
 					}
-					vlAt("A0").at().setR(A0, 0, true);
-					vlAt("A1").at().setR(A1, 0, true);
-					vlAt("R0").at().setR(R0, 0, true);
-					vlAt("R1").at().setR(R1, 0, true);
 				}
 			}
 		}
 		if (type().name == "tp_POWER") {
 			bufOut[0]=owner().node();
 			bufOut[1]=0x8;
-			bufOut[2]=0x11;
-			bufOut[3]=0;
-			*(uint16_t *) (bufOut + 4) = owner().CRC16(bufOut, 4);
-			int resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
+			bufOut[2]=0x2;
+			*(uint16_t *) (bufOut + 3) = owner().CRC16(bufOut, 3);
+			int resp_len = tr.at().messIO((char *) &bufOut, 5, (char *) &bufIn, 13, 0, true);
 			if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
 				if((resp_len==4)&&(bufIn[1]==5)){
 					bufOut[0]=owner().node();
@@ -428,8 +452,22 @@ int TMdPrm::getVals()
 					*(uint16_t *) (bufOut + 8) = owner().CRC16(bufOut, 8);
 					tr.at().messIO((char *) &bufOut, 10, (char *) &bufIn, 4, 0, true);
 				} else {
-					P=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
-					vlAt("P").at().setR(P, 0, true);
+					Ku=(bufIn[1]<<8)|bufIn[2];
+					Ki=(bufIn[3]<<8)|bufIn[4];
+					vlAt("Ku").at().setI(Ku, 0, true);
+					vlAt("Ki").at().setI(Ki, 0, true);
+					///
+					bufOut[0]=owner().node();
+					bufOut[1]=0x8;
+					bufOut[2]=0x11;
+					bufOut[3]=0;
+					*(uint16_t *) (bufOut + 4) = owner().CRC16(bufOut, 4);
+					resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
+					if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
+						P=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
+						flP=1.0*Ku*Ki*owner().Kc()*P/1000;
+						vlAt("P").at().setR(flP, 0, true);
+					}
 					bufOut[0]=owner().node();
 					bufOut[1]=0x8;
 					bufOut[2]=0x11;
@@ -438,7 +476,8 @@ int TMdPrm::getVals()
 					resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
 					if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
 						Q=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
-						vlAt("Q").at().setR(Q, 0, true);
+						flQ=1.0*Ku*Ki*owner().Kc()*Q/1000;
+						vlAt("Q").at().setR(flQ, 0, true);
 					}
 					bufOut[0]=owner().node();
 					bufOut[1]=0x8;
@@ -448,7 +487,8 @@ int TMdPrm::getVals()
 					resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
 					if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
 						S=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
-						vlAt("S").at().setR(S, 0, true);
+						flS=1.0*Ku*Ki*owner().Kc()*S/1000;
+						vlAt("S").at().setR(flS, 0, true);
 					}
 				}
 			}

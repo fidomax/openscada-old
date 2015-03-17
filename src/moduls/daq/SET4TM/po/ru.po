@@ -85,3 +85,15 @@ msgstr "Реактивная мощность"
 
 msgid "Full power"
 msgstr "Полная мощность"
+
+msgid "Const"
+msgstr "Постоянная счетчика"
+
+msgid "Kc"
+msgstr "Постоянная Kc"
+
+msgid "Coeff I"
+msgstr "Коэффициент трансформации по току"
+
+msgid "Coeff U"
+msgstr "Коэффициент трансформации по напряжению"

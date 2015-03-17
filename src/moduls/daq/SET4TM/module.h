@@ -117,6 +117,8 @@ class TMdContr: public TController
 	string  addr( )         { return mAddr; }
 	int	prior( )	{ return mPrior; }
 	int	node( )	{ return mNode; }
+	int	constA( )	{ return mConst; }
+	int	Kc( )	{ return mKc; }
 
 	//!!! Request for connection to parameter-object of this controller
 	AutoHD<TMdPrm> at( const string &nm )	{ return TController::at(nm); }
@@ -144,7 +146,9 @@ class TMdContr: public TController
 	Res	en_res;		// Resource for enable params
 	//!!! The links to the controller's background task properties into config.
 	int64_t	&mPrior,			//Process task priority
-	    &mNode;             // Addres
+	    &mNode,            // Addres
+		&mConst,
+		&mKc;
 	TCfg	&mSched,			// Calc schedule
 		&mAddr;				//Transport device address
 	long long mPer;
