@@ -85,6 +85,7 @@ class TMdPrm : public TParamContr
 	//Methods
 	//!!! Post-enable processing virtual function
 	void postEnable( int flag );
+	void vlSet(TVal & vo, const TVariant & vl, const TVariant & pvl);
 	//!!! Processing virtual function for OpenSCADA control interface comands
 	void cntrCmdProc( XMLNode *opt );
 	//!!! Processing virtual function for setup archive's parameters which associated with the parameter on time archive creation

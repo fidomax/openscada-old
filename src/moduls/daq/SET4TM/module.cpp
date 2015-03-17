@@ -498,6 +498,50 @@ int TMdPrm::getVals()
 	}
 
 }
+
+void TMdPrm::vlSet(TVal & vo, const TVariant & vl, const TVariant & pvl)
+{
+	uint8_t bufOut[64];
+	uint8_t bufIn[64];
+	uint16_t temp;
+	mess_info(nodePath().c_str(),_("TMdPrm::vlSet"));
+    if(!enableStat() || !owner().startStat())
+	vo.setS(EVAL_STR, 0, true);
+
+    if(vl.isEVal() || vl == pvl)
+	return;
+
+    //Send to active reserve station
+    if(owner().redntUse()) {
+    	XMLNode req("set");
+    	req.setAttr("path",nodePath(0,true)+"/%2fserv%2fattr")->childAdd("el")->setAttr("id",vo.name())->setText(vl.getS());
+    	SYS->daq().at().rdStRequest(owner().workId(),req);
+    	return;
+    }
+    AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(owner().addr(), 0, '.')).at().outAt(TSYS::strSepParse(owner().addr(), 1, '.'));
+    	try {
+    		if (!tr.at().startStat())
+    			tr.at().start();
+			bufOut[0]=owner().node();
+			bufOut[1]=0x3;
+			bufOut[2]=0x1B;
+			bufOut[3] = vlAt("Ku").at().getI()>>8;
+			bufOut[4] = vlAt("Ku").at().getI();
+			*(uint16_t *) (bufOut + 5) = owner().CRC16(bufOut, 5);
+			tr.at().messIO((char *) &bufOut, 7, (char *) &bufIn, 4, 0, true);
+			///
+			bufOut[0]=owner().node();
+			bufOut[1]=0x3;
+			bufOut[2]=0x1C;
+			bufOut[3] = vlAt("Ki").at().getI()>>8;
+			bufOut[4] = vlAt("Ki").at().getI();
+			*(uint16_t *) (bufOut + 5) = owner().CRC16(bufOut, 5);
+			tr.at().messIO((char *) &bufOut, 7, (char *) &bufIn, 4, 0, true);
+
+    	} catch (TError err) {
+    		return ;
+    	}
+}
 //!!! Processing virtual function for OpenSCADA control interface comands
 void TMdPrm::cntrCmdProc(XMLNode *opt)
 {
