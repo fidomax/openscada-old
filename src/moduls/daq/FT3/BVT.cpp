@@ -37,60 +37,47 @@ B_BVT::B_BVT(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params, bool has_k, 
 
     for(int i = 1; i <= count_n; i++) {
 	chan_err.insert(chan_err.end(), SDataRec());
-	mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("state_%d", i).c_str(), TSYS::strMess(_("State %d"), i).c_str(), TFld::Integer, TFld::NoWrite));
+	data.push_back(STTchannel(i));
+	mPrm->p_el.fldAdd(fld = new TFld(data[i].State.lnk.prmName.c_str(), data[i].State.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
 	fld->setReserve(TSYS::strMess("%d:0", i));
-	mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("value_%d", i).c_str(), TSYS::strMess(_("Value %d"), i).c_str(), TFld::Real, TFld::NoWrite));
+	mPrm->p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
 	fld->setReserve(TSYS::strMess("%d:1", i));
 	if(with_params) {
-	    mPrm->p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("period_%d", i).c_str(), TSYS::strMess(_("Measure period %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].Period.lnk.prmName.c_str(), data[i].Period.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:2", i));
-	    mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("sens_%d", i).c_str(), TSYS::strMess(_("Sensitivity %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].Sens.lnk.prmName.c_str(), data[i].Sens.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:3", i));
-	    mPrm->p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("minS_%d", i).c_str(), TSYS::strMess(_("Sensor minimum %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MinS.lnk.prmName.c_str(), data[i].MaxS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:4", i));
-	    mPrm->p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("maxS_%d", i).c_str(), TSYS::strMess(_("Sensor maximum %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaxS.lnk.prmName.c_str(), data[i].MaxS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:4", i));
-	    mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("minPV_%d", i).c_str(), TSYS::strMess(_("PV minimum %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MinPV.lnk.prmName.c_str(), data[i].MinPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:5", i));
-	    mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("maxPV_%d", i).c_str(), TSYS::strMess(_("PV maximum %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaxPV.lnk.prmName.c_str(), data[i].MaxPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:5", i));
-	    mPrm->p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("minW_%d", i).c_str(), TSYS::strMess(_("Warning minimum %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MinW.lnk.prmName.c_str(), data[i].MinW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:6", i));
-	    mPrm->p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("maxW_%d", i).c_str(), TSYS::strMess(_("Warning maximum %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaxW.lnk.prmName.c_str(), data[i].MaxW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:6", i));
-	    mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("minA_%d", i).c_str(), TSYS::strMess(_("Alarm minimum %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MinA.lnk.prmName.c_str(), data[i].MinA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:7", i));
-	    mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("maxA_%d", i).c_str(), TSYS::strMess(_("Alarm maximum %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].MaxA.lnk.prmName.c_str(), data[i].MaxA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:7", i));
-	    mPrm->p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("factor_%d", i).c_str(), TSYS::strMess(_("Range factor %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].Factor.lnk.prmName.c_str(), data[i].Factor.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:8", i));
-	    mPrm->p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("dimens_%d", i).c_str(), TSYS::strMess(_("Dimension %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
+	    mPrm->p_el.fldAdd(fld = new TFld(data[i].Dimension.lnk.prmName.c_str(), data[i].Dimension.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:9", i));
 	    if(with_k) {
-		mPrm->p_el.fldAdd(
-			fld = new TFld(TSYS::strMess("corfactor_%d", i).c_str(), TSYS::strMess(_("Correcting factor %d"), i).c_str(), TFld::Real,
-				TVal::DirWrite));
+		mPrm->p_el.fldAdd(fld = new TFld(data[i].CorFactor.lnk.prmName.c_str(), data[i].CorFactor.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 		fld->setReserve(TSYS::strMess("%d:10", i));
 		if(with_rate) {
-		    mPrm->p_el.fldAdd(
-			    fld = new TFld(TSYS::strMess("rate_%d", i).c_str(), TSYS::strMess(_("Rate of change %d"), i).c_str(), TFld::Real, TFld::NoWrite));
+		    mPrm->p_el.fldAdd(fld = new TFld(data[i].Rate.lnk.prmName.c_str(), data[i].Rate.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
 		    fld->setReserve(TSYS::strMess("%d:11", i));
-		    mPrm->p_el.fldAdd(
-			    fld = new TFld(TSYS::strMess("calcs_%d", i).c_str(), TSYS::strMess(_("Calcs count %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
+		    mPrm->p_el.fldAdd(fld = new TFld(data[i].Calcs.lnk.prmName.c_str(), data[i].Calcs.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
 		    fld->setReserve(TSYS::strMess("%d:12", i));
-		    mPrm->p_el.fldAdd(
-			    fld = new TFld(TSYS::strMess("ratesens_%d", i).c_str(), TSYS::strMess(_("Rate sensitivity %d"), i).c_str(), TFld::Real,
-				    TVal::DirWrite));
+		    mPrm->p_el.fldAdd(fld = new TFld(data[i].RateSens.lnk.prmName.c_str(), data[i].RateSens.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 		    fld->setReserve(TSYS::strMess("%d:13", i));
-		    mPrm->p_el.fldAdd(
-			    fld = new TFld(TSYS::strMess("ratelimit_%d", i).c_str(), TSYS::strMess(_("Rate limit %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+		    mPrm->p_el.fldAdd(fld = new TFld(data[i].RateLimit.lnk.prmName.c_str(), data[i].RateLimit.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 		    fld->setReserve(TSYS::strMess("%d:14", i));
 		}
 	    }
