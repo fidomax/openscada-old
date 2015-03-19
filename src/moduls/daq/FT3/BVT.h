@@ -36,14 +36,15 @@ namespace FT3
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
+	void tmHandler(void);
 	class STTchannel
 	{
 	public:
 	    STTchannel(uint8_t iid) :
 		    id(iid),
 		    State(TSYS::strMess("state_%d", id+1).c_str(), TSYS::strMess(_("State %d"), id+1).c_str()),
-		    Value(TSYS::strMess("value_%d", id+1).c_str(), TSYS::strMess(_("Value %d"), id+1).c_str()),
-		    Period(TSYS::strMess("period_%d", id+1).c_str(), TSYS::strMess(_("Measure period %d"), id+1).c_str()),
+		    Value(TSYS::strMess("value_%d", id+1).c_str(), TSYS::strMess(_("Value %d"), id+1).c_str())
+/*		    Period(TSYS::strMess("period_%d", id+1).c_str(), TSYS::strMess(_("Measure period %d"), id+1).c_str()),
 		    Sens(TSYS::strMess("sens_%d", id+1).c_str(), TSYS::strMess(_("Sensitivity %d"), id+1).c_str()),
 		    MinS(TSYS::strMess("minS_%d", id+1).c_str(), TSYS::strMess(_("Sensor minimum %d"), id+1).c_str()),
 		    MaxS(TSYS::strMess("maxS_%d", id+1).c_str(), TSYS::strMess(_("Senso  r maximum %d"), id+1).c_str()),
@@ -59,14 +60,14 @@ namespace FT3
 		    Rate(TSYS::strMess("rate_%d", id+1).c_str(), TSYS::strMess(_("Rate of change %d"), id+1).c_str()),
 		    Calcs(TSYS::strMess("calcs_%d", id+1).c_str(), TSYS::strMess(_("Calcs count %d"), id+1).c_str()),
 		    RateSens(TSYS::strMess("ratesens_%d", id+1).c_str(), TSYS::strMess(_("Rate sensitivity %d"), id+1).c_str()),
-		    RateLimit(TSYS::strMess("ratelimit_%d", id+1).c_str(), TSYS::strMess(_("Rate limit %d"), id+1).c_str())
+		    RateLimit(TSYS::strMess("ratelimit_%d", id+1).c_str(), TSYS::strMess(_("Rate limit %d"), id+1).c_str())*/
 	    {
 	    }
 	    uint8_t id;
 
-	    ui8Data State, Period, Dimension, Calcs;
+	    ui8Data State;//, Period, Dimension, Calcs;
 
-	    flData Value,Sens,MinS,MaxS,MinPV,MaxPV,MinW,MaxW,MinA,MaxA,Factor,CorFactor,Rate,RateSens,RateLimit;
+	    flData Value;//,Sens,MinS,MaxS,MinPV,MaxPV,MinW,MaxW,MinA,MaxA,Factor,CorFactor,Rate,RateSens,RateLimit;
 
 //	    SLnk MaskLink;
 	};
@@ -85,6 +86,142 @@ namespace FT3
 		}
 	    } else {
 		return data.size() * 2;
+	    }
+	}
+	int lnkId(const string &id)
+	{
+
+	    if(with_rate) {
+		for(int i_l = 0; i_l < data.size(); i_l++) {
+		    if(data[i_l].State.lnk.prmName == id) return i_l * 19;
+		    if(data[i_l].Value.lnk.prmName == id) return i_l * 19 + 1;
+/*		    if(data[i_l].Period.lnk.prmName == id) return i_l * 19 + 2;
+		    if(data[i_l].Sens.lnk.prmName == id) return i_l * 19 + 3;
+		    if(data[i_l].MinS.lnk.prmName == id) return i_l * 19 + 4;
+		    if(data[i_l].MaxS.lnk.prmName == id) return i_l * 19 + 5;
+		    if(data[i_l].MinPV.lnk.prmName == id) return i_l * 19 + 6;
+		    if(data[i_l].MaxPV.lnk.prmName == id) return i_l * 19 + 7;
+		    if(data[i_l].MinW.lnk.prmName == id) return i_l * 19 + 8;
+		    if(data[i_l].MaxW.lnk.prmName == id) return i_l * 19 + 9;
+		    if(data[i_l].MinA.lnk.prmName == id) return i_l * 19 + 10;
+		    if(data[i_l].MaxA.lnk.prmName == id) return i_l * 19 + 11;
+		    if(data[i_l].Factor.lnk.prmName == id) return i_l * 19 + 12;
+		    if(data[i_l].Dimension.lnk.prmName == id) return i_l * 19 + 13;
+		    if(data[i_l].CorFactor.lnk.prmName == id) return i_l * 19 + 14;
+		    if(data[i_l].Rate.lnk.prmName == id) return i_l * 19 + 15;
+		    if(data[i_l].Calcs.lnk.prmName == id) return i_l * 19 + 16;
+		    if(data[i_l].RateSens.lnk.prmName == id) return i_l * 19 + 17;
+		    if(data[i_l].RateLimit.lnk.prmName == id) return i_l * 19 + 18;*/
+		}
+	    } else {
+		if(with_k) {
+		    for(int i_l = 0; i_l < data.size(); i_l++) {
+			if(data[i_l].State.lnk.prmName == id) return i_l * 15;
+			if(data[i_l].Value.lnk.prmName == id) return i_l * 15 + 1;
+/*			if(data[i_l].Period.lnk.prmName == id) return i_l * 15 + 2;
+			if(data[i_l].Sens.lnk.prmName == id) return i_l * 15 + 3;
+			if(data[i_l].MinS.lnk.prmName == id) return i_l * 15 + 4;
+			if(data[i_l].MaxS.lnk.prmName == id) return i_l * 15 + 5;
+			if(data[i_l].MinPV.lnk.prmName == id) return i_l * 15 + 6;
+			if(data[i_l].MaxPV.lnk.prmName == id) return i_l * 15 + 7;
+			if(data[i_l].MinW.lnk.prmName == id) return i_l * 15 + 8;
+			if(data[i_l].MaxW.lnk.prmName == id) return i_l * 15 + 9;
+			if(data[i_l].MinA.lnk.prmName == id) return i_l * 15 + 10;
+			if(data[i_l].MaxA.lnk.prmName == id) return i_l * 15 + 11;
+			if(data[i_l].Factor.lnk.prmName == id) return i_l * 15 + 12;
+			if(data[i_l].Dimension.lnk.prmName == id) return i_l * 15 + 13;
+			if(data[i_l].CorFactor.lnk.prmName == id) return i_l * 15 + 14;*/
+		    }
+		} else {
+		    if(with_params) {
+			for(int i_l = 0; i_l < data.size(); i_l++) {
+			    if(data[i_l].State.lnk.prmName == id) return i_l * 14;
+			    if(data[i_l].Value.lnk.prmName == id) return i_l * 14 + 1;
+/*			    if(data[i_l].Period.lnk.prmName == id) return i_l * 14 + 2;
+			    if(data[i_l].Sens.lnk.prmName == id) return i_l * 14 + 3;
+			    if(data[i_l].MinS.lnk.prmName == id) return i_l * 14 + 4;
+			    if(data[i_l].MaxS.lnk.prmName == id) return i_l * 14 + 5;
+			    if(data[i_l].MinPV.lnk.prmName == id) return i_l * 14 + 6;
+			    if(data[i_l].MaxPV.lnk.prmName == id) return i_l * 14 + 7;
+			    if(data[i_l].MinW.lnk.prmName == id) return i_l * 14 + 8;
+			    if(data[i_l].MaxW.lnk.prmName == id) return i_l * 14 + 9;
+			    if(data[i_l].MinA.lnk.prmName == id) return i_l * 14 + 10;
+			    if(data[i_l].MaxA.lnk.prmName == id) return i_l * 14 + 11;
+			    if(data[i_l].Factor.lnk.prmName == id) return i_l * 14 + 12;
+			    if(data[i_l].Dimension.lnk.prmName == id) return i_l * 14 + 13;*/
+			}
+		    } else {
+			for(int i_l = 0; i_l < data.size(); i_l++) {
+			    if(data[i_l].State.lnk.prmName == id) {
+				return i_l * 2;
+			    }
+			    if(data[i_l].Value.lnk.prmName == id) {
+				return i_l * 2 + 1;
+			    }
+			}
+		    }
+		}
+	    }
+	    return -1;
+	}
+	SLnk &lnk(int num)
+	{
+	    int k;
+	    if(with_rate) {
+		k = 19;
+	    } else {
+		if(with_k) {
+		    k = 15;
+		} else {
+		    if(with_params) {
+			k = 14;
+		    } else {
+			k = 2;
+		    }
+		}
+	    }
+
+	    switch(num % k) {
+	    case 0:
+		return data[num / k].State.lnk;
+	    case 1:
+		return data[num / k].Value.lnk;
+/*	    case 2:
+		return data[num / k].Period.lnk;
+	    case 3:
+		return data[num / k].Sens.lnk;
+	    case 4:
+		return data[num / k].MinS.lnk;
+	    case 5:
+		return data[num / k].MaxS.lnk;
+	    case 6:
+		return data[num / k].MinPV.lnk;
+	    case 7:
+		return data[num / k].MaxPV.lnk;
+	    case 8:
+		return data[num / k].MinW.lnk;
+	    case 9:
+		return data[num / k].MaxW.lnk;
+	    case 10:
+		return data[num / k].MinA.lnk;
+	    case 11:
+		return data[num / k].MaxA.lnk;
+	    case 12:
+		return data[num / k].MinS.lnk;
+	    case 13:
+		return data[num / k].MaxS.lnk;
+	    case 14:
+		return data[num / k].MinPV.lnk;
+	    case 15:
+		return data[num / k].MaxPV.lnk;
+	    case 16:
+		return data[num / k].MinW.lnk;
+	    case 17:
+		return data[num / k].MaxW.lnk;
+	    case 18:
+		return data[num / k].MinA.lnk;
+	    case 19:
+		return data[num / k].MaxA.lnk;*/
 	    }
 	}
 

@@ -35,14 +35,14 @@ B_BVT::B_BVT(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params, bool has_k, 
     mPrm->p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
 
-    for(int i = 1; i <= count_n; i++) {
+    for(int i = 0; i < count_n; i++) {
 	chan_err.insert(chan_err.end(), SDataRec());
 	data.push_back(STTchannel(i));
 	mPrm->p_el.fldAdd(fld = new TFld(data[i].State.lnk.prmName.c_str(), data[i].State.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
 	fld->setReserve(TSYS::strMess("%d:0", i));
 	mPrm->p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
 	fld->setReserve(TSYS::strMess("%d:1", i));
-	if(with_params) {
+	/*if(with_params) {
 	    mPrm->p_el.fldAdd(fld = new TFld(data[i].Period.lnk.prmName.c_str(), data[i].Period.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:2", i));
 	    mPrm->p_el.fldAdd(fld = new TFld(data[i].Sens.lnk.prmName.c_str(), data[i].Sens.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
@@ -82,7 +82,7 @@ B_BVT::B_BVT(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params, bool has_k, 
 		}
 	    }
 
-	}
+	}*/
     }
 
 }
@@ -111,6 +111,12 @@ string B_BVT::getStatus(void)
 	rez = "0: Норма";
     }
     return rez;
+}
+
+
+void B_BVT::tmHandler(void)
+{
+
 }
 
 uint16_t B_BVT::Task(uint16_t uc)
