@@ -1,3 +1,40 @@
+2015-03-18 Roman
+- SYS: The main start script openscada_start improved for using config file "oscada.xml" into the project work directory.
+    Init script for ALTLinux expanded by argument "--retry TERM/30/KILL/5" for stop and wait to correct finish.
+    Init script for Gentoo mostly cleaned.
+    User API function SYS.strDecode() fixed for argument 2 using by default.
+- FIX:UI.Vision: Allowed coordinates value limited to [-1000000:1000000] by figures updating freeze by Qt for too big the values.
+
+
+2015-03-15 Roman
+- LibsDB.OscadaLibs.db: Tests for Archive.FSArch packing mechanism is added as servProc.archPackFStests.
+- !!:FIX:Archive: iend > arch_el[i_a]->begin() set to iend >= arch_el[i_a]->begin() for allow strong and single end value get.
+    mLastGet processing fixed for inactive (without buffer) archives for only direct writing here.
+- !!:FIX.Archive.FSArch: repairFile() mostly fixed for the cache clean up after and no EVAL last value for actual archives checking appended.
+    copyErrValFiles replaced by directory "errors" present for copy the errors here.
+    Last real value getting from active archives some expanded for unmerged EVAL values pass.
+    Full tests chain passed for the packing mechanism.
+- FIX:Special.SystemTests: Tests "Archive" mostly fixed and some expanded.
+- UI.QTCfg: Fixed for LineEdit view "Integer" to allowed values limit [147483647:2147483647]
+
+
+2015-03-13 Roman
+- FIX:DAQ.MMS: Wrong value's special acquisition flags clear at write EVAL here prevented.
+- FIX:DB: LibsDB.vcaBase.db: Text label's "Y:%1%(%2%)" for Main.grph_panel fixed.
+- LibsDB.vcaBase.db: Main.TextLab expanded context menu periodic 10s update.
+- TRegExp: expanded by option 'u' for UTF-8 symbols allow and sets the force for UTF-8 locale.
+
+
+2015-03-10 Roman
+- DB: LibsDB.vcaBase.db, Model.AGLKS.vca.db, Model.Boiler.St.db: "com_text" of Main.ElCadr and TextLab link changed to "Full link".
+- DB: LibsDB.vcaBase.db: To elements mnEls.{Compressor,El_Kran_Sh} attribute "DESCR" is added for forming more informative messages at the actions.
+- UI.VCAEngine: Checking for accessibility output links removed as inconsistent at all.
+
+
+2015-03-07 Roman
+- DB: LibsDB.OscadaLibs.db: User protocols were appended by protocol OWEN, from IrmIngeneer and refactoring by me.
+
+
 2015-03-06 Roman
 - DB: LibsDB.OscadaLibs.db, FIX:Protocol.UserProtocol: Translation for user protocols fixed and appended.
 - DB: LibsDB.vcaBase.db, Model.AGLKS.vca.db, Model.Boiler.St.db:
