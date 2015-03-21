@@ -27,7 +27,7 @@ namespace FT3
     {
     public:
 	//Methods
-	B_BTE(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params);
+	B_BTE(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
 	~B_BTE();
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);

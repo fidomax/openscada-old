@@ -23,6 +23,7 @@
 #define DA_H
 
 #include <tsys.h>
+
 using namespace OSCADA;
 
 namespace FT3
@@ -34,9 +35,10 @@ class TMdContr;
 
 class DA: public TElem
 {
+    friend class TMdPrm;
     public:
 	//Methods
-	DA( TMdPrm *prm ) : mPrm(prm), NeedInit(true)	{ }
+	DA( TMdPrm& prm ) : mPrm(prm), NeedInit(true)	{ }
 	virtual ~DA( )			{ }
 
 	virtual void getVals( )		{ }
@@ -87,10 +89,13 @@ class DA: public TElem
 	    SLnk lnk;
 	};
 
+
 	//vector<SLnk> mlnk;
 	//Attributes
-	TMdPrm *mPrm;
+	TMdPrm &mPrm;
 	bool NeedInit;
+
+
     public:
 	virtual int lnkSize( ){}
 

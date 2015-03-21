@@ -28,11 +28,13 @@ namespace FT3
     {
     public:
 	//Methods
-	B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params);
+	B_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
 	~B_BVTC();
 	uint16_t ID;
 	uint16_t count_n;
 	bool with_params;
+	void loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
+	void saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
@@ -53,11 +55,6 @@ namespace FT3
 	    }
 	    uint8_t id;
 	    ui8Data Value, Mask;
-/*	    uint8_t Value;
-	    SLnk ValueLink;
-	    uint8_t Mask;
-	    uint8_t sMask;
-	    SLnk MaskLink;*/
 	};
 	vector<STCchannel> data;
 	int lnkSize( ){

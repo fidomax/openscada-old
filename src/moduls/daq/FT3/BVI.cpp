@@ -27,31 +27,31 @@
 
 using namespace FT3;
 
-B_BVI::B_BVI(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
+B_BVI::B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), ID(id << 12), count_n(n), with_params(has_params)
 
 {
     TFld * fld;
-    mPrm->p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
 
     for(int i = 1; i <= count_n; i++) {
-	mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("state_%d", i).c_str(), TSYS::strMess(_("State %d"), i).c_str(), TFld::Integer, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(TSYS::strMess("state_%d", i).c_str(), TSYS::strMess(_("State %d"), i).c_str(), TFld::Integer, TFld::NoWrite));
 	fld->setReserve(TSYS::strMess("%d:0", i));
-	mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("TI_%d", i).c_str(), TSYS::strMess(_("Value %d"), i).c_str(), TFld::Real, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(TSYS::strMess("TI_%d", i).c_str(), TSYS::strMess(_("Value %d"), i).c_str(), TFld::Real, TFld::NoWrite));
 	fld->setReserve(TSYS::strMess("%d:1", i));
 	if(with_params) {
-	    mPrm->p_el.fldAdd(
+	    mPrm.p_el.fldAdd(
 		    fld = new TFld(TSYS::strMess("period_%d", i).c_str(), TSYS::strMess(_("Measure period %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:2", i));
-	    mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("sens_%d", i).c_str(), TSYS::strMess(_("Sensitivity %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm.p_el.fldAdd(fld = new TFld(TSYS::strMess("sens_%d", i).c_str(), TSYS::strMess(_("Sensitivity %d"), i).c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:3", i));
-	    mPrm->p_el.fldAdd(
+	    mPrm.p_el.fldAdd(
 		    fld = new TFld(TSYS::strMess("countP_%d", i).c_str(), TSYS::strMess(_("Pulse counter %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:4", i).c_str());
-	    mPrm->p_el.fldAdd(fld = new TFld(TSYS::strMess("factor_%d", i).c_str(), TSYS::strMess(_("Factor %d"), i).c_str(), TFld::Real, TVal::DirWrite));
+	    mPrm.p_el.fldAdd(fld = new TFld(TSYS::strMess("factor_%d", i).c_str(), TSYS::strMess(_("Factor %d"), i).c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:5", i).c_str());
-	    mPrm->p_el.fldAdd(
+	    mPrm.p_el.fldAdd(
 		    fld = new TFld(TSYS::strMess("dimens_%d", i).c_str(), TSYS::strMess(_("Dimension %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:6", i).c_str());
 	}
@@ -85,9 +85,9 @@ uint16_t B_BVI::Task(uint16_t uc)
 	Msg.L = 5;
 	Msg.C = AddrReq;
 	*((uint16_t *) Msg.D) = ID | (0 << 6) | (0); //состояние
-	if(mPrm->owner().Transact(&Msg)) {
+	if(mPrm.owner().Transact(&Msg)) {
 	    if(Msg.C == GOOD3) {
-		mPrm->vlAt("state").at().setI(Msg.D[7], 0, true);
+		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
 		if(with_params) {
 		    for(int i = 1; i <= count_n; i++) {
 			Msg.L = 15;
@@ -98,15 +98,15 @@ uint16_t B_BVI::Task(uint16_t uc)
 			*((uint16_t *) (Msg.D + 6)) = ID | (i << 6) | (4); //Счетчик импульсов
 			*((uint16_t *) (Msg.D + 8)) = ID | (i << 6) | (5); //Коэффициент
 			*((uint16_t *) (Msg.D + 10)) = ID | (i << 6) | (6); //Размерность
-			if(mPrm->owner().Transact(&Msg)) {
+			if(mPrm.owner().Transact(&Msg)) {
 			    if(Msg.C == GOOD3) {
-				mPrm->vlAt(TSYS::strMess("state_%d", i).c_str()).at().setI(Msg.D[7], 0, true);
-				mPrm->vlAt(TSYS::strMess("TI_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 8), 0, true);
-				mPrm->vlAt(TSYS::strMess("period_%d", i).c_str()).at().setI(Msg.D[17], 0, true);
-				mPrm->vlAt(TSYS::strMess("sens_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 23), 0, true);
-				mPrm->vlAt(TSYS::strMess("countP_%d", i).c_str()).at().setI(TSYS::getUnalign32(Msg.D + 32), 0, true);
-				mPrm->vlAt(TSYS::strMess("factor_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 41), 0, true);
-				mPrm->vlAt(TSYS::strMess("dimens_%d", i).c_str()).at().setI(Msg.D[50], 0, true);
+				mPrm.vlAt(TSYS::strMess("state_%d", i).c_str()).at().setI(Msg.D[7], 0, true);
+				mPrm.vlAt(TSYS::strMess("TI_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 8), 0, true);
+				mPrm.vlAt(TSYS::strMess("period_%d", i).c_str()).at().setI(Msg.D[17], 0, true);
+				mPrm.vlAt(TSYS::strMess("sens_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 23), 0, true);
+				mPrm.vlAt(TSYS::strMess("countP_%d", i).c_str()).at().setI(TSYS::getUnalign32(Msg.D + 32), 0, true);
+				mPrm.vlAt(TSYS::strMess("factor_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 41), 0, true);
+				mPrm.vlAt(TSYS::strMess("dimens_%d", i).c_str()).at().setI(Msg.D[50], 0, true);
 				rc = 1;
 			    } else {
 				rc = 0;
@@ -138,15 +138,15 @@ uint16_t B_BVI::HandleEvent(uint8_t * D)
     case 0:
 	switch(n) {
 	case 0:
-	    mPrm->vlAt("state").at().setI(D[2], 0, true);
+	    mPrm.vlAt("state").at().setI(D[2], 0, true);
 	    l = 3;
 	    break;
 	case 1:
-	    mPrm->vlAt("state").at().setI(D[2], 0, true);
+	    mPrm.vlAt("state").at().setI(D[2], 0, true);
 	    l = 3 + count_n * 5;
 	    for(int j = 1; j <= count_n; j++) {
-		mPrm->vlAt(TSYS::strMess("state_%d", j).c_str()).at().setI(D[(j - 1) * 5 + 3], 0, true);
-		mPrm->vlAt(TSYS::strMess("TI_%d", j).c_str()).at().setR(TSYS::getUnalignFloat(D + (j - 1) * 5 + 4), 0, true);
+		mPrm.vlAt(TSYS::strMess("state_%d", j).c_str()).at().setI(D[(j - 1) * 5 + 3], 0, true);
+		mPrm.vlAt(TSYS::strMess("TI_%d", j).c_str()).at().setR(TSYS::getUnalignFloat(D + (j - 1) * 5 + 4), 0, true);
 	    }
 	    break;
 
@@ -156,42 +156,42 @@ uint16_t B_BVI::HandleEvent(uint8_t * D)
 	if(k && (k <= count_n)) {
 	    switch(n) {
 	    case 0:
-		mPrm->vlAt(TSYS::strMess("state_%d", k).c_str()).at().setI(D[2], 0, true);
+		mPrm.vlAt(TSYS::strMess("state_%d", k).c_str()).at().setI(D[2], 0, true);
 		l = 3;
 		break;
 	    case 1:
-		mPrm->vlAt(TSYS::strMess("state_%d", k).c_str()).at().setI(D[2], 0, true);
-		mPrm->vlAt(TSYS::strMess("TI_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
+		mPrm.vlAt(TSYS::strMess("state_%d", k).c_str()).at().setI(D[2], 0, true);
+		mPrm.vlAt(TSYS::strMess("TI_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
 
 		l = 7;
 		break;
 	    case 2:
 		if(with_params) {
-		    mPrm->vlAt(TSYS::strMess("period_%d", k).c_str()).at().setI(D[3], 0, true);
+		    mPrm.vlAt(TSYS::strMess("period_%d", k).c_str()).at().setI(D[3], 0, true);
 		}
 		l = 4;
 		break;
 	    case 3:
 		if(with_params) {
-		    mPrm->vlAt(TSYS::strMess("sens_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
+		    mPrm.vlAt(TSYS::strMess("sens_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
 		}
 		l = 7;
 		break;
 	    case 4:
 		if(with_params) {
-		    mPrm->vlAt(TSYS::strMess("countP_%d", k).c_str()).at().setI(TSYS::getUnalign32(D + 3), 0, true);
+		    mPrm.vlAt(TSYS::strMess("countP_%d", k).c_str()).at().setI(TSYS::getUnalign32(D + 3), 0, true);
 		}
 		l = 7;
 		break;
 	    case 5:
 		if(with_params) {
-		    mPrm->vlAt(TSYS::strMess("factor_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
+		    mPrm.vlAt(TSYS::strMess("factor_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
 		}
 		l = 7;
 		break;
 	    case 6:
 		if(with_params) {
-		    mPrm->vlAt(TSYS::strMess("dimens_%d", k).c_str()).at().setI(D[3], 0, true);
+		    mPrm.vlAt(TSYS::strMess("dimens_%d", k).c_str()).at().setI(D[3], 0, true);
 		}
 		l = 4;
 		break;
@@ -218,7 +218,7 @@ uint16_t B_BVI::setVal(TVal &val)
 	Msg.D[0] = addr & 0xFF;
 	Msg.D[1] = (addr >> 8) & 0xFF;
 	Msg.D[2] = val.get(NULL, true).getI();
-	mPrm->owner().Transact(&Msg);
+	mPrm.owner().Transact(&Msg);
 	break;
     case 3:
     case 5:
@@ -227,7 +227,7 @@ uint16_t B_BVI::setVal(TVal &val)
 	Msg.D[0] = addr & 0xFF;
 	Msg.D[1] = (addr >> 8) & 0xFF;
 	*(float *) (Msg.D + 2) = (float) val.get(NULL, true).getR();
-	mPrm->owner().Transact(&Msg);
+	mPrm.owner().Transact(&Msg);
 	break;
     case 4:
 	Msg.L = 9;
@@ -235,7 +235,7 @@ uint16_t B_BVI::setVal(TVal &val)
 	Msg.D[0] = addr & 0xFF;
 	Msg.D[1] = (addr >> 8) & 0xFF;
 	*(uint32_t *) (Msg.D + 2) = val.get(NULL, true).getI();
-	mPrm->owner().Transact(&Msg);
+	mPrm.owner().Transact(&Msg);
 	break;
     }
     return 0;

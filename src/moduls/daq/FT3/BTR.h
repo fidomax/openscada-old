@@ -27,7 +27,7 @@ namespace FT3
     {
     public:
 	//Methods
-	B_BTR(TMdPrm *prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params);
+	B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params);
 	~B_BTR();
 	uint16_t ID;
 	uint16_t count_nu;

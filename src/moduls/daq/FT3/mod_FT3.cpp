@@ -1091,26 +1091,26 @@ void TMdPrm::enable()
     //> Connect device's code
     if(type().name == "tp_BUC") {
 	//fldAdd( new TFld("STOP_TIME",_("Last stop time"),TFld::String,TCfg::Hide,"2","0","0;15") );
-	mDA = new B_BUC(this, cfg("DEV_ID").getI());
+	mDA = new B_BUC(*this, cfg("DEV_ID").getI());
     } else if(type().name == "tp_BVI")
-	mDA = new B_BVI(this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	mDA = new B_BVI(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     else if(type().name == "tp_BVTS")
-	mDA = new B_BVTC(this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	mDA = new B_BVTC(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     else if(type().name == "tp_BVT")
-	mDA = new B_BVT(this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("WITH_KPARAMS").getB(),
+	mDA = new B_BVT(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("WITH_KPARAMS").getB(),
 		cfg("WITH_RATEPARAMS").getB());
     else if(type().name == "tp_BIP")
-	mDA = new B_BIP(this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	mDA = new B_BIP(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     else if(type().name == "tp_PAUK")
-	mDA = new B_PAUK(this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	mDA = new B_PAUK(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     else if(type().name == "tp_BTU")
-	mDA = new B_BTU(this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	mDA = new B_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     else if(type().name == "tp_ACCOUNT")
-	mDA = new B_UTHET(this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	mDA = new B_UTHET(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     else if(type().name == "tp_BTR")
-	mDA = new B_BTR(this, cfg("DEV_ID").getI(), cfg("CHAN_COUNTU").getI(), cfg("CHAN_COUNTR").getI(), cfg("WITH_PARAMS").getB());
+	mDA = new B_BTR(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNTU").getI(), cfg("CHAN_COUNTR").getI(), cfg("WITH_PARAMS").getB());
     else if(type().name == "tp_BTE")
-	mDA = new B_BTE(this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	mDA = new B_BTE(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 //    else if(devTp.getVal() == "Ergomera")	mDA = new Ergomera(this);
     else
 	throw TError(nodePath().c_str(), _("No one device selected."));
@@ -1142,6 +1142,8 @@ void TMdPrm::disable()
      */
     needApply = false;
 }
+
+
 
 uint16_t TMdPrm::Task(uint16_t cod)
 

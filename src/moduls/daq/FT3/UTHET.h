@@ -27,7 +27,7 @@ namespace FT3
     {
     public:
 	//Methods
-	B_UTHET(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params);
+	B_UTHET(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
 	~B_UTHET();
 	uint16_t ID;
 	uint16_t count_n;

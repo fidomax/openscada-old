@@ -27,24 +27,24 @@
 
 using namespace FT3;
 
-B_BUC::B_BUC(TMdPrm *prm, uint16_t id) :
+B_BUC::B_BUC(TMdPrm& prm, uint16_t id) :
 	DA(prm), ID(id << 12), mod_KP(0), state(0), stateWatch(0), s_tm(0), wt1(0), wt2(0), s_wt1(0), s_wt2(0)
 {
     TFld * fld;
-    mPrm->p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
 
     fld->setReserve("0:0");
-    mPrm->p_el.fldAdd(fld = new TFld("mod", _("Modification"), TFld::Integer, TFld::NoWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("mod", _("Modification"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:1");
-    mPrm->p_el.fldAdd(fld = new TFld("sttimer", _("Timer state"), TFld::Integer, TFld::NoWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("sttimer", _("Timer state"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("1:0");
-    mPrm->p_el.fldAdd(fld = new TFld("curdt", _("Current datetime"), TFld::String, TVal::DirWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("curdt", _("Current datetime"), TFld::String, TVal::DirWrite));
     fld->setReserve("1:1");
-    mPrm->p_el.fldAdd(fld = new TFld("stopdt", _("Stop datetime"), TFld::String, TFld::NoWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("stopdt", _("Stop datetime"), TFld::String, TFld::NoWrite));
     fld->setReserve("1:2");
-    mPrm->p_el.fldAdd(fld = new TFld("dl1", _("Delay 1"), TFld::Integer, TVal::DirWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("dl1", _("Delay 1"), TFld::Integer, TVal::DirWrite));
     fld->setReserve("2:1");
-    mPrm->p_el.fldAdd(fld = new TFld("dl2", _("Delay 2"), TFld::Integer, TVal::DirWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("dl2", _("Delay 2"), TFld::Integer, TVal::DirWrite));
     fld->setReserve("2:2");
 
 }
@@ -81,18 +81,18 @@ uint16_t B_BUC::Task(uint16_t uc)
 	*((uint16_t *) (Msg.D + 8)) = ID | (1 << 6) | (2); //время останова
 	*((uint16_t *) (Msg.D + 10)) = ID | (2 << 6) | (1); //задержка 1
 	*((uint16_t *) (Msg.D + 12)) = ID | (2 << 6) | (2); //задержка 2
-	if(mPrm->owner().Transact(&Msg)) {
+	if(mPrm.owner().Transact(&Msg)) {
 	    if(Msg.C == GOOD3) {
-		mPrm->vlAt("state").at().setI(Msg.D[7], 0, true);
-		mPrm->vlAt("mod").at().setI(TSYS::getUnalign16(Msg.D + 12), 0, true);
-		mPrm->vlAt("sttimer").at().setI(Msg.D[18], 0, true);
-		time_t t = mPrm->owner().DateTimeToTime_t(Msg.D + 24);
-		mPrm->vlAt("curdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
-		t = mPrm->owner().DateTimeToTime_t(Msg.D + 33);
-		mPrm->vlAt("stopdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
-		mPrm->vlAt("dl1").at().setI(Msg.D[43], 0, true);
-		mPrm->vlAt("dl2").at().setI(Msg.D[49], 0, true);
-		if(mPrm->vlAt("state").at().getI(0, true) != 0) {
+		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
+		mPrm.vlAt("mod").at().setI(TSYS::getUnalign16(Msg.D + 12), 0, true);
+		mPrm.vlAt("sttimer").at().setI(Msg.D[18], 0, true);
+		time_t t = mPrm.owner().DateTimeToTime_t(Msg.D + 24);
+		mPrm.vlAt("curdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
+		t = mPrm.owner().DateTimeToTime_t(Msg.D + 33);
+		mPrm.vlAt("stopdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
+		mPrm.vlAt("dl1").at().setI(Msg.D[43], 0, true);
+		mPrm.vlAt("dl2").at().setI(Msg.D[49], 0, true);
+		if(mPrm.vlAt("state").at().getI(0, true) != 0) {
 		    if(Task(TaskSet) == 1) {
 			rc = 1;
 		    }
@@ -110,14 +110,14 @@ uint16_t B_BUC::Task(uint16_t uc)
 	Msg.L = 10;
 	Msg.C = SetData;
 	*((uint16_t *) Msg.D) = ID | (1 << 6) | (1); //текущее время
-	mPrm->owner().Time_tToDateTime(Msg.D + 2, rawtime);
-	mPrm->owner().Transact(&Msg);
+	mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
+	mPrm.owner().Transact(&Msg);
 	if(Msg.C == GOOD2) {
 	    rc = 1;
 	}
 	break;
     case TaskIdle:
-	if(mPrm->vlAt("state").at().getI(0, true) != 0) {
+	if(mPrm.vlAt("state").at().getI(0, true) != 0) {
 	    rc = 2;
 	}
 	break;
@@ -135,11 +135,11 @@ uint16_t B_BUC::HandleEvent(uint8_t * D)
     case 0:
 	switch(n) {
 	case 0:
-	    mPrm->vlAt("state").at().setI(D[2], 0, true);
+	    mPrm.vlAt("state").at().setI(D[2], 0, true);
 	    l = 3;
 	    break;
 	case 1:
-	    mPrm->vlAt("mod").at().setI(TSYS::getUnalign16(D + 2), 0, true);
+	    mPrm.vlAt("mod").at().setI(TSYS::getUnalign16(D + 2), 0, true);
 	    l = 4;
 	    break;
 	}
@@ -148,17 +148,17 @@ uint16_t B_BUC::HandleEvent(uint8_t * D)
 	switch(n) {
 	time_t t;
     case 0:
-	mPrm->vlAt("sttimer").at().setI(D[2], 0, true);
+	mPrm.vlAt("sttimer").at().setI(D[2], 0, true);
 	l = 3;
 	break;
     case 1:
-	t = mPrm->owner().DateTimeToTime_t(D + 3);
-	mPrm->vlAt("curdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
+	t = mPrm.owner().DateTimeToTime_t(D + 3);
+	mPrm.vlAt("curdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
 	l = 8;
 	break;
     case 2:
-	t = mPrm->owner().DateTimeToTime_t(D + 2);
-	mPrm->vlAt("stopdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
+	t = mPrm.owner().DateTimeToTime_t(D + 2);
+	mPrm.vlAt("stopdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
 	l = 7;
 	break;
 	}
@@ -166,11 +166,11 @@ uint16_t B_BUC::HandleEvent(uint8_t * D)
     case 2:
 	switch(n) {
 	case 1:
-	    mPrm->vlAt("dl1").at().setI(D[3], 0, true);
+	    mPrm.vlAt("dl1").at().setI(D[3], 0, true);
 	    l = 4;
 	    break;
 	case 2:
-	    mPrm->vlAt("dl2").at().setI(D[3], 0, true);
+	    mPrm.vlAt("dl2").at().setI(D[3], 0, true);
 	    l = 4;
 	    break;
 	}
@@ -199,8 +199,8 @@ uint16_t B_BUC::setVal(TVal &val)
 	    Msg.C = SetData;
 	    Msg.D[0] = addr & 0xFF;
 	    Msg.D[1] = (addr >> 8) & 0xFF;
-	    mPrm->owner().Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
-	    mPrm->owner().Transact(&Msg);
+	    mPrm.owner().Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
+	    mPrm.owner().Transact(&Msg);
 	    break;
 	}
 	break;
@@ -214,7 +214,7 @@ uint16_t B_BUC::setVal(TVal &val)
 	    Msg.D[0] = addr & 0xFF;
 	    Msg.D[1] = (addr >> 8) & 0xFF;
 	    Msg.D[2] = val.get(NULL, true).getI();
-	    mPrm->owner().Transact(&Msg);
+	    mPrm.owner().Transact(&Msg);
 	    break;
 
 	}
@@ -255,12 +255,12 @@ uint8_t B_BUC::GetData(uint16_t prmID, uint8_t * out)
 	case 1:
 	    out[0] = s_tm;
 	    time(&rawtime);
-	    mPrm->owner().Time_tToDateTime(out + 1, rawtime);
+	    mPrm.owner().Time_tToDateTime(out + 1, rawtime);
 	    l = 6;
 	    break;
 	case 2:
 	    time(&rawtime);
-	    mPrm->owner().Time_tToDateTime(out, rawtime);
+	    mPrm.owner().Time_tToDateTime(out, rawtime);
 	    l = 5;
 	    break;
 	}

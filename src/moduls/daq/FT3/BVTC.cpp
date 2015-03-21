@@ -27,20 +27,20 @@ using namespace FT3;
 //******************************************************
 //* B_BVTC                                             *
 //******************************************************
-B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
+B_BVTC::B_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), count_n(n), ID(id << 12), with_params(has_params)
 {
     TFld * fld;
-    mPrm->p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
     for(int i = 0; i < count_n; i++) {
 	data.push_back(STCchannel(i));
-	mPrm->p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Boolean, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Boolean, TFld::NoWrite));
 	data[i].Value.vl = EVAL_BOOL;
 	fld->setReserve("1:" + TSYS::int2str((i) / 8));
 	if(with_params) {
 	    data[i].Mask.vl = EVAL_BOOL;
-	    mPrm->p_el.fldAdd(fld = new TFld(data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
+	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
 	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
 	}
     }
@@ -50,6 +50,22 @@ B_BVTC::B_BVTC(TMdPrm *prm, uint16_t id, uint16_t n, bool has_params) :
 B_BVTC::~B_BVTC()
 {
     data.clear();
+}
+
+void B_BVTC::loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
+{
+    cfg.cfg("ID").setS(lnk.prmName);
+    if(SYS->db().at().dataGet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg, false, true)) {
+	lnk.prmAttr = cfg.cfg("VALUE").getS();
+	lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
+    }
+}
+
+void B_BVTC::saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
+{
+    cfg.cfg("ID").setS(lnk.prmName);
+    cfg.cfg("VALUE").setS(lnk.prmAttr);
+    SYS->db().at().dataSet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg);
 }
 
 string B_BVTC::getStatus(void)
@@ -68,43 +84,29 @@ void B_BVTC::loadIO( bool force )
 {
     //Load links
 //    mess_info("B_BVTC::loadIO", "");
-    if(mPrm->owner().startStat() && !force) {
-	mPrm->modif(true);
+    if(mPrm.owner().startStat() && !force) {
+	mPrm.modif(true);
 	return;
     }	//Load/reload IO context only allow for stopped controllers for prevent throws
-
-    TConfig cfg(&mPrm->prmIOE());
-    cfg.cfg("PRM_ID").setS(mPrm->ownerPath(true));
-    string io_bd = mPrm->owner().DB() + "." +mPrm->typeDBName()+  "_io";
-    mess_info("B_BVTC::loadIO", "io_bd %s ",io_bd.c_str());
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." +mPrm.typeDBName()+  "_io";
     for(int i = 0; i < count_n; i++) {
-	cfg.cfg("ID").setS(data[i].Value.lnk.prmName);
-	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg, false, true)) continue;
-	data[i].Value.lnk.prmAttr = cfg.cfg("VALUE").getS();
-	data[i].Value.lnk.aprm = SYS->daq().at().attrAt(data[i].Value.lnk.prmAttr, '.', true);
-	cfg.cfg("ID").setS(data[i].Mask.lnk.prmName);
-	if(!SYS->db().at().dataGet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg, false, true)) continue;
-	data[i].Mask.lnk.prmAttr = cfg.cfg("VALUE").getS();
-	data[i].Mask.lnk.aprm = SYS->daq().at().attrAt(data[i].Mask.lnk.prmAttr, '.', true);
+	loadLnk(data[i].Value.lnk, io_bd, cfg);
+	loadLnk(data[i].Mask.lnk, io_bd, cfg);
     }
-
 }
 
 void B_BVTC::saveIO()
 {
     //Save links
-    TConfig cfg(&mPrm->prmIOE());
-    cfg.cfg("PRM_ID").setS(mPrm->ownerPath(true));
-    string io_bd = mPrm->owner().DB() + "." +mPrm->typeDBName()+  "_io";
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." +mPrm.typeDBName()+  "_io";
 //    mess_info("B_BVTC::saveIO", "io_bd %s ",io_bd.c_str());
     for(int i = 0; i < count_n; i++) {
-	cfg.cfg("ID").setS(data[i].Value.lnk.prmName);
-	cfg.cfg("VALUE").setS(data[i].Value.lnk.prmAttr);
-	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg);
-	mess_info("B_BVTC::saveIO", "path %s ",(mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io").c_str());
-	cfg.cfg("ID").setS(data[i].Mask.lnk.prmName);
-	cfg.cfg("VALUE").setS(data[i].Mask.lnk.prmAttr);
-	SYS->db().at().dataSet(io_bd, mPrm->owner().owner().nodePath()+mPrm->typeDBName()+"_io", cfg);
+	saveLnk(data[i].Value.lnk, io_bd, cfg);
+	saveLnk(data[i].Mask.lnk, io_bd, cfg);
     }
 }
 
@@ -122,7 +124,7 @@ void B_BVTC::tmHandler(void)
 		tmpval = data[i].Value.lnk.aprm.at().getB();
 		if(tmpval != data[i].Value.vl) {
 		    data[i].Value.vl = tmpval;
-		    mPrm->vlAt(data[i].Value.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
+		    mPrm.vlAt(data[i].Value.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
 //		    mess_info("B_BVTC::tmHandler", "Value new value %s %s %d",data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmAttr.c_str(), tmpval);
 		    uint8_t E[6];
 		    uint8_t g = i/8;
@@ -138,8 +140,8 @@ void B_BVTC::tmHandler(void)
 		    uint8_t DHM[5];
 		    time_t rawtime;
 		    time(&rawtime);
-		    mPrm->owner().Time_tToDateTime(DHM,rawtime);
-		    mPrm->owner().PushInBE(E,DHM);
+		    mPrm.owner().Time_tToDateTime(DHM,rawtime);
+		    mPrm.owner().PushInBE(E,DHM);
 		}
 	    }
 	}
@@ -153,7 +155,7 @@ void B_BVTC::tmHandler(void)
 		if(tmpval != data[i].Mask.vl) {
 		    data[i].Mask.vl = tmpval;
 		    data[i].Mask.s = 0;
-		    mPrm->vlAt(data[i].Mask.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
+		    mPrm.vlAt(data[i].Mask.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
 //		    mess_info("B_BVTC::tmHandler", "Mask new mask %s %s %d",data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmAttr.c_str(), tmpval);
 		}
 	    }
@@ -171,19 +173,19 @@ uint16_t B_BVTC::Task(uint16_t uc)
 	Msg.L = 5;
 	Msg.C = AddrReq;
 	*((uint16_t *) Msg.D) = ID | (0 << 6) | (0); //state
-	if(mPrm->owner().Transact(&Msg)) {
+	if(mPrm.owner().Transact(&Msg)) {
 	    if(Msg.C == GOOD3) {
-		mPrm->vlAt("state").at().setI(Msg.D[7], 0, true);
+		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
 		uint16_t nTC = (count_n / 8 + (count_n % 8 ? 1 : 0));
 		Msg.L = 3 + nTC * 2;
 		Msg.C = AddrReq;
 		for(int i = 0; i < nTC; i++) {
 		    *((uint16_t *) (Msg.D + i * 2)) = ID | (1 << 6) | (i); //TC Value
 		}
-		if(mPrm->owner().Transact(&Msg)) {
+		if(mPrm.owner().Transact(&Msg)) {
 		    if(Msg.C == GOOD3) {
 			for(int i = 1; i <= count_n; i++) {
-			    mPrm->vlAt(TSYS::strMess("TC_%d", i).c_str()).at().setB(((Msg.D[7 + ((i - 1) / 8 * 5)]) >> ((i - 1) % 8)) & 0x01, 0, true);
+			    mPrm.vlAt(TSYS::strMess("TC_%d", i).c_str()).at().setB(((Msg.D[7 + ((i - 1) / 8 * 5)]) >> ((i - 1) % 8)) & 0x01, 0, true);
 			}
 			if(with_params) {
 			    Msg.L = 3 + nTC * 2;
@@ -191,10 +193,10 @@ uint16_t B_BVTC::Task(uint16_t uc)
 			    for(int i = 0; i < nTC; i++) {
 				*((uint16_t *) (Msg.D + i * 2)) = ID | (2 << 6) | (i); //маски ТC
 			    }
-			    if(mPrm->owner().Transact(&Msg)) {
+			    if(mPrm.owner().Transact(&Msg)) {
 				if(Msg.C == GOOD3) {
 				    for(int i = 1; i <= count_n; i++) {
-					mPrm->vlAt(TSYS::strMess("Mask_%d", i).c_str()).at().setB(((Msg.D[8 + ((i - 1) / 8 * 6)]) >> ((i - 1) % 8)) & 0x01, 0,
+					mPrm.vlAt(TSYS::strMess("Mask_%d", i).c_str()).at().setB(((Msg.D[8 + ((i - 1) / 8 * 6)]) >> ((i - 1) % 8)) & 0x01, 0,
 						true);
 				    }
 				    rc = 1;
@@ -224,17 +226,17 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
     case 0:
 	switch(n) {
 	case 0:
-	    mPrm->vlAt("state").at().setI(D[2], 0, true);
+	    mPrm.vlAt("state").at().setI(D[2], 0, true);
 	    l = 3;
 	    break;
 	case 1:
-	    mPrm->vlAt("state").at().setI(D[2], 0, true);
+	    mPrm.vlAt("state").at().setI(D[2], 0, true);
 	    l = 3 + count_n / 4;
 	    for(int j = 1; j <= count_n; j++) {
 
-		mPrm->vlAt(TSYS::strMess("TC_%d", j).c_str()).at().setB((D[((j - 1) >> 3) + 3] >> (j % 8)) & 1, 0, true);
+		mPrm.vlAt(TSYS::strMess("TC_%d", j).c_str()).at().setB((D[((j - 1) >> 3) + 3] >> (j % 8)) & 1, 0, true);
 		if(with_params) {
-		    mPrm->vlAt(TSYS::strMess("Mask_%d", j).c_str()).at().setB((D[((j - 1) >> 3) + 3 + count_n / 8] >> (j % 8)) & 1, 0, true);
+		    mPrm.vlAt(TSYS::strMess("Mask_%d", j).c_str()).at().setB((D[((j - 1) >> 3) + 3 + count_n / 8] >> (j % 8)) & 1, 0, true);
 		}
 
 	    }
@@ -246,7 +248,7 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
 	l = 3;
 	for(int i = 0; i < 8; i++) {
 	    if((1 + (n << 3) + i) > count_n) break;
-	    mPrm->vlAt(TSYS::strMess("TC_%d", 1 + (n << 3) + i).c_str()).at().setB((D[2] >> i) & 1, 0, true);
+	    mPrm.vlAt(TSYS::strMess("TC_%d", 1 + (n << 3) + i).c_str()).at().setB((D[2] >> i) & 1, 0, true);
 	}
 	break;
     case 2:
@@ -254,7 +256,7 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
 	if(with_params) {
 	    for(int i = 0; i < 8; i++) {
 		if((1 + (n << 3) + i) > count_n) break;
-		mPrm->vlAt(TSYS::strMess("Mask_%d", 1 + (n << 3) + i).c_str()).at().setB((D[3] >> i) & 1, 0, true);
+		mPrm.vlAt(TSYS::strMess("Mask_%d", 1 + (n << 3) + i).c_str()).at().setB((D[3] >> i) & 1, 0, true);
 	    }
 	}
 	break;
@@ -351,7 +353,7 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 		} else {
 //		    mess_info("B_BVTC::cmdSet", "Set new mask EROOR!!! %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		}
-		mPrm->vlAt(data[j].Mask.lnk.prmName.c_str()).at().setB(data[j].Mask.vl, 0, true);
+		mPrm.vlAt(data[j].Mask.lnk.prmName.c_str()).at().setB(data[j].Mask.vl, 0, true);
 
 		newMask = newMask >> 1;
 	    }
@@ -379,9 +381,9 @@ uint16_t B_BVTC::setVal(TVal &val)
     uint16_t en = (n + 1) * 8;
     if(en > count_n) en = count_n;
     for(int i = st; i <= en; i++) {
-	Msg.D[2] |= ((mPrm->vlAt(TSYS::strMess("Mask_%d", i).c_str()).at().getB(0, true)) << ((i - 1) % 8));
+	Msg.D[2] |= ((mPrm.vlAt(TSYS::strMess("Mask_%d", i).c_str()).at().getB(0, true)) << ((i - 1) % 8));
     }
-    mPrm->owner().Transact(&Msg);
+    mPrm.owner().Transact(&Msg);
 
     return 0;
 }

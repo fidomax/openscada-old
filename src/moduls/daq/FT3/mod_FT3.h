@@ -148,7 +148,7 @@ namespace FT3
 
     class TMdPrm: public TParamContr, public TValFunc
     {
-	//friend class DA;
+//	friend class DA;
     public:
 	//Methods
 
@@ -159,6 +159,7 @@ namespace FT3
 
 	void enable();
 	void disable();
+
 
 	TElem &elem()
 	{
