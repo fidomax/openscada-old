@@ -135,7 +135,7 @@ void B_BVTC::tmHandler(void)
 
 		    E[4] = 0; //TC
 		    for(int j = 0; j < 8; j++) {
-			E[4]|=(data[g*8+j].Value.vl)<<j;
+			E[4]|=(data[g*8+j].Value.vl & 0x01)<<j;
 		    }
 		    uint8_t DHM[5];
 		    time_t rawtime;
@@ -168,7 +168,7 @@ void B_BVTC::tmHandler(void)
 
 		    E[5] = 0; //Mask
 		    for(int j = 0; j < 8; j++) {
-			E[5]|=(data[g*8+j].Mask.vl)<<j;
+			E[5]|=(data[g*8+j].Mask.vl & 0x01)<<j;
 		    }
 		    uint8_t DHM[5];
 		    time_t rawtime;
@@ -368,6 +368,7 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 		data[i].Mask.vl = newMask & 0x01;
 		if(!data[i].Mask.lnk.aprm.freeStat()) {
 		    data[i].Mask.lnk.aprm.at().setB(data[i].Mask.vl);
+		    mPrm.vlAt(data[i].Mask.lnk.prmName.c_str()).at().setB(data[i].Mask.vl, 0, true);
 		    newMask = newMask >> 1;
 		    l = 3;
 //		    mess_info("B_BVTC::cmdSet", "Set new mask %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
@@ -376,26 +377,24 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 		    break;
 //		    mess_info("B_BVTC::cmdSet", "Set new mask EROOR!!! %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		}
-		//mPrm.vlAt(data[j].Mask.lnk.prmName.c_str()).at().setB(data[j].Mask.vl, 0, true);
-		if (newMask != req[2]) {
-		    mess_info("B_BVTC::cmdSet", "new mask event");
-		    uint8_t E[6];
-		    uint8_t g = i/8;
-		    E[0] = 1;
-		    E[1] = 4;
-		    E[2] = ID|(2<<6)|(g);
-		    E[3] = (ID|(2<<6)|(g))>>8;
-		    E[4] = 0;
+//		mPrm.vlAt(data[j].Mask.lnk.prmName.c_str()).at().setB(data[j].Mask.vl, 0, true);
 
-		    E[5] = newMask; //Mask
-		    uint8_t DHM[5];
-		    time_t rawtime;
-		    time(&rawtime);
-		    mPrm.owner().Time_tToDateTime(DHM,rawtime);
-		    mPrm.owner().PushInBE(E,DHM);
-		}
 
 	    }
+	    mess_info("B_BVTC::cmdSet", "new mask event");
+	    uint8_t E[6];
+	    E[0] = 1;
+	    E[1] = 4;
+	    E[2] = ID | (2 << 6) | (n);
+	    E[3] = (ID | (2 << 6) | (n)) >> 8;
+	    E[4] = 0;
+
+	    E[5] = req[2]; //Mask
+	    uint8_t DHM[5];
+	    time_t rawtime;
+	    time(&rawtime);
+	    mPrm.owner().Time_tToDateTime(DHM, rawtime);
+	    mPrm.owner().PushInBE(E, DHM);
 //	    l = 3;
 	}
     }
