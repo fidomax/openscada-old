@@ -157,6 +157,24 @@ void B_BVTC::tmHandler(void)
 		    data[i].Mask.s = 0;
 		    mPrm.vlAt(data[i].Mask.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
 //		    mess_info("B_BVTC::tmHandler", "Mask new mask %s %s %d",data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmAttr.c_str(), tmpval);
+		    mess_info("B_BVTC::tmHandler", "new mask event");
+		    uint8_t E[6];
+		    uint8_t g = i/8;
+		    E[0] = 1;
+		    E[1] = 4;
+		    E[2] = ID|(2<<6)|(g);
+		    E[3] = (ID|(2<<6)|(g))>>8;
+		    E[4] = 0;
+
+		    E[5] = 0; //Mask
+		    for(int j = 0; j < 8; j++) {
+			E[5]|=(data[g*8+j].Mask.vl)<<j;
+		    }
+		    uint8_t DHM[5];
+		    time_t rawtime;
+		    time(&rawtime);
+		    mPrm.owner().Time_tToDateTime(DHM,rawtime);
+		    mPrm.owner().PushInBE(E,DHM);
 		}
 	    }
 	}
@@ -257,6 +275,7 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
 	    for(int i = 0; i < 8; i++) {
 		if((1 + (n << 3) + i) > count_n) break;
 		mPrm.vlAt(TSYS::strMess("Mask_%d", 1 + (n << 3) + i).c_str()).at().setB((D[3] >> i) & 1, 0, true);
+		    mess_info("B_BVTC", "new mask event!!!!");
 	    }
 	}
 	break;
@@ -342,22 +361,42 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
     case 2:
 	if(n < nTC) {
 	    uint8_t newMask=req[2];
-	    for(uint8_t j = n * 8; j < (n + 1) * 8; j++) {
-		mess_info("BVTC ", _("found! %d"), j);
+	    for(uint8_t i = n * 8; i < (n + 1) * 8; i++) {
+		mess_info("BVTC ", _("found! %d"), i);
 
-		data[j].Mask.s = addr;
-		data[j].Mask.vl = newMask & 0x01;
-		if(!data[j].Mask.lnk.aprm.freeStat()) {
-		    data[j].Mask.lnk.aprm.at().setB(data[j].Mask.vl);
+		data[i].Mask.s = addr;
+		data[i].Mask.vl = newMask & 0x01;
+		if(!data[i].Mask.lnk.aprm.freeStat()) {
+		    data[i].Mask.lnk.aprm.at().setB(data[i].Mask.vl);
+		    newMask = newMask >> 1;
+		    l = 3;
 //		    mess_info("B_BVTC::cmdSet", "Set new mask %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		} else {
+		    l = 0;
+		    break;
 //		    mess_info("B_BVTC::cmdSet", "Set new mask EROOR!!! %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		}
-		mPrm.vlAt(data[j].Mask.lnk.prmName.c_str()).at().setB(data[j].Mask.vl, 0, true);
+		//mPrm.vlAt(data[j].Mask.lnk.prmName.c_str()).at().setB(data[j].Mask.vl, 0, true);
+		if (newMask != req[2]) {
+		    mess_info("B_BVTC::cmdSet", "new mask event");
+		    uint8_t E[6];
+		    uint8_t g = i/8;
+		    E[0] = 1;
+		    E[1] = 4;
+		    E[2] = ID|(2<<6)|(g);
+		    E[3] = (ID|(2<<6)|(g))>>8;
+		    E[4] = 0;
 
-		newMask = newMask >> 1;
+		    E[5] = newMask; //Mask
+		    uint8_t DHM[5];
+		    time_t rawtime;
+		    time(&rawtime);
+		    mPrm.owner().Time_tToDateTime(DHM,rawtime);
+		    mPrm.owner().PushInBE(E,DHM);
+		}
+
 	    }
-	    l = 3;
+//	    l = 3;
 	}
     }
     return l;
