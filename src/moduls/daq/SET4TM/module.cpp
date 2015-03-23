@@ -383,11 +383,9 @@ void TMdPrm::save_( )
 }
 int TMdPrm::getVals()
 {
-	string pdu;
 	uint8_t bufIn[64];
 	uint8_t bufOut[64];
-	float flA0,flA1,flR0,flR1,flP,flQ,flS;
-	uint16_t Ki,Ku;
+	uint16_t Ku, Ki;
 	uint32_t A0,A1,R0,R1, P,Q,S;
 	AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(owner().addr(), 0, '.')).at().outAt(TSYS::strSepParse(owner().addr(), 1, '.'));
 	try {
@@ -411,7 +409,6 @@ int TMdPrm::getVals()
 					Ki=(bufIn[3]<<8)|bufIn[4];
 					vlAt("Ku").at().setI(Ku, 0, true);
 					vlAt("Ki").at().setI(Ki, 0, true);
-					///
 					bufOut[0]=owner().node();
 					bufOut[1]=0x5;
 					bufOut[2]=0;
@@ -426,14 +423,10 @@ int TMdPrm::getVals()
 							R0=R0|(bufIn[i+9]<<8*(~i));
 							R1=R1|(bufIn[i+13]<<8*(~i));
 						}
-						flA0=1.0*Ku*Ki*A0/(2*owner().constA());
-						flA1=1.0*Ku*Ki*A1/(2*owner().constA());
-						flR0=1.0*Ku*Ki*R0/(2*owner().constA());
-						flR1=1.0*Ku*Ki*R1/(2*owner().constA());
-						vlAt("A0").at().setR(flA0, 0, true);
-						vlAt("A1").at().setR(flA1, 0, true);
-						vlAt("R0").at().setR(flR0, 0, true);
-						vlAt("R1").at().setR(flR1, 0, true);
+						vlAt("A0").at().setR(1.0*Ku*Ki*A0/(2*owner().constA()), 0, true);
+						vlAt("A1").at().setR(1.0*Ku*Ki*A1/(2*owner().constA()), 0, true);
+						vlAt("R0").at().setR(1.0*Ku*Ki*R0/(2*owner().constA()), 0, true);
+						vlAt("R1").at().setR(1.0*Ku*Ki*R1/(2*owner().constA()), 0, true);
 					}
 				}
 			}
@@ -456,7 +449,6 @@ int TMdPrm::getVals()
 					Ki=(bufIn[3]<<8)|bufIn[4];
 					vlAt("Ku").at().setI(Ku, 0, true);
 					vlAt("Ki").at().setI(Ki, 0, true);
-					///
 					bufOut[0]=owner().node();
 					bufOut[1]=0x8;
 					bufOut[2]=0x11;
@@ -465,8 +457,7 @@ int TMdPrm::getVals()
 					resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
 					if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
 						P=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
-						flP=1.0*Ku*Ki*owner().Kc()*P/1000;
-						vlAt("P").at().setR(flP, 0, true);
+						vlAt("P").at().setR(1.0*Ku*Ki*owner().Kc()*P/1000, 0, true);
 					}
 					bufOut[0]=owner().node();
 					bufOut[1]=0x8;
@@ -476,8 +467,7 @@ int TMdPrm::getVals()
 					resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
 					if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
 						Q=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
-						flQ=1.0*Ku*Ki*owner().Kc()*Q/1000;
-						vlAt("Q").at().setR(flQ, 0, true);
+						vlAt("Q").at().setR(1.0*Ku*Ki*owner().Kc()*Q/1000, 0, true);
 					}
 					bufOut[0]=owner().node();
 					bufOut[1]=0x8;
@@ -487,8 +477,7 @@ int TMdPrm::getVals()
 					resp_len = tr.at().messIO((char *) &bufOut, 6, (char *) &bufIn, 6, 0, true);
 					if(resp_len > 1 && (bufIn[0] == bufOut[0]) && owner().VerCRC16(bufIn, resp_len)){
 						S=((bufIn[1]&0x3F)<<16)|(bufIn[2]<<8)|bufIn[3];
-						flS=1.0*Ku*Ki*owner().Kc()*S/1000;
-						vlAt("S").at().setR(flS, 0, true);
+						vlAt("S").at().setR(1.0*Ku*Ki*owner().Kc()*S/1000, 0, true);
 					}
 				}
 			}
@@ -503,8 +492,6 @@ void TMdPrm::vlSet(TVal & vo, const TVariant & vl, const TVariant & pvl)
 {
 	uint8_t bufOut[64];
 	uint8_t bufIn[64];
-	uint16_t temp;
-	mess_info(nodePath().c_str(),_("TMdPrm::vlSet"));
     if(!enableStat() || !owner().startStat())
 	vo.setS(EVAL_STR, 0, true);
 
@@ -529,7 +516,6 @@ void TMdPrm::vlSet(TVal & vo, const TVariant & vl, const TVariant & pvl)
 			bufOut[4] = vlAt("Ku").at().getI();
 			*(uint16_t *) (bufOut + 5) = owner().CRC16(bufOut, 5);
 			tr.at().messIO((char *) &bufOut, 7, (char *) &bufIn, 4, 0, true);
-			///
 			bufOut[0]=owner().node();
 			bufOut[1]=0x3;
 			bufOut[2]=0x1C;
