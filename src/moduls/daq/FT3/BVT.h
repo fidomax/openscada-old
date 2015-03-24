@@ -233,8 +233,6 @@ namespace FT3
 	bool with_k;
 	bool with_rate;
 	vector<SDataRec> chan_err;
-//	void loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
-//	void saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
 
 
     };

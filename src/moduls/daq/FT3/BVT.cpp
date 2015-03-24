@@ -196,6 +196,39 @@ void B_BVT::saveIO()
 
 void B_BVT::tmHandler(void)
 {
+/*    NeedInit = false;
+    for(int i = 0; i < count_n; i++) {
+	uint8_t tmpui8;
+	union {uint8_t b[4];  float f;	} tmpfl;
+	if(with_rate) {
+	    tmpfl.f = data[i].Rate.lnk.aprm.at().getR();
+	    if (tmpfl.f != data[i].Rate.vl){
+		data[i].Rate.vl = tmpfl.f;
+
+	    }
+	}
+	tmpui8 = data[i].State.lnk.aprm.at().getI();
+	tmpfl.f = data[i].Value.lnk.aprm.at().getR();
+	if((tmpui8 != data[i].State.vl) || (tmpfl.f != data[i].Value.vl)) {
+	    data[i].State.vl = tmpui8;
+	    mPrm.vlAt(data[i].State.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
+	    data[i].Value.vl = tmpfl.f;
+	    mPrm.vlAt(data[i].Value.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+	    uint8_t E[9];
+	    E[0] = tmpui8 != data[i].State.vl ? 1 : 2;
+	    E[1] = 7;
+	    E[2] = ID | (i << 6) | (1);
+	    E[3] = (ID | (i << 6) | (1)) >> 8;
+	    E[4] = data[i].State.vl; //TC
+	    for(int j = 0; j < 4; j++) E[5 + j] = tmpfl.f[j];
+	    uint8_t DHM[5];
+	    time_t rawtime;
+	    time(&rawtime);
+	    mPrm.owner().Time_tToDateTime(DHM, rawtime);
+	    mPrm.owner().PushInBE(E, DHM);
+	}
+
+    }*/
 
 }
 

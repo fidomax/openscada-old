@@ -92,30 +92,34 @@ time_t TMdContr::DateTimeToTime_t(uint8_t * D)
     return rawtime;
 }
 
-void TMdContr::PushInBE(uint8_t *E, uint8_t* DHM)
+void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 {
+    uint8_t DHM[5];
+    time_t rawtime;
+    time(&rawtime);
+    Time_tToDateTime(DHM, rawtime);
+
+
     uint8_t *pE = E;
     chain_BE *pCi;
     el_chBE *pBE;
-    int lE, i;
+    int  i;
     bool fNewBE;
     uint16_t day = TSYS::getUnalign16(DHM);
     uint16_t hour = DHM[2];
     uint16_t ms100 = TSYS::getUnalign16(DHM+3);
-    if(*pE == 1) {
+    if(type == 1) {
 	pCi = &C1;
     } else {
 	pCi = &C2;
     }
-    lE = *(pE + 1);
-    pE += 2;
     if(!(pCi->tail)) {
 	fNewBE = true;
     } else {
 	pBE = pCi->tail;
 	if((pBE->BE.d != day) || (pBE->BE.h != hour)) {
 	    fNewBE = true;
-	} else if((sizeof(pBE->BE.mD) - pBE->BE.l) < (lE + 2)) {
+	} else if((sizeof(pBE->BE.mD) - pBE->BE.l) < (length + 2)) {
 	    fNewBE = true;
 	} else {
 	    fNewBE = false;
@@ -132,10 +136,11 @@ void TMdContr::PushInBE(uint8_t *E, uint8_t* DHM)
 	pCi->insert(pBE);
     }
     if(pBE) {
-	//*(uint16_t *) (pBE->BE.mD + pBE->BE.l) = P_DHM.ms100;
 	pBE->BE.mD[pBE->BE.l++] = ms100;
 	pBE->BE.mD[pBE->BE.l++] = ms100>>8;
-	for(i = 0; i < lE; i++) {
+	pBE->BE.mD[pBE->BE.l++] = id;
+	pBE->BE.mD[pBE->BE.l++] = id >> 8;
+	for(i = 0; i < length; i++) {
 	    pBE->BE.mD[pBE->BE.l++] = *(pE++);
 	}
     }
@@ -146,11 +151,6 @@ void TMdContr::Time_tToDateTime(uint8_t * D, time_t time)
 {
     struct tm * timeinfo;
     timeinfo = localtime(&time);
-/*    mess_info(nodePath().c_str(), _("tm_year: %d"), timeinfo->tm_year);
-    mess_info(nodePath().c_str(), _("tm_yday: %d"), timeinfo->tm_yday);
-    mess_info(nodePath().c_str(), _("tm_hour: %d"), timeinfo->tm_hour);
-    mess_info(nodePath().c_str(), _("tm_min: %d"), timeinfo->tm_min);
-    mess_info(nodePath().c_str(), _("tm_sec: %d"), timeinfo->tm_sec);*/
     uint16_t ms = timeinfo->tm_min * 600 + timeinfo->tm_sec * 10;
     D[0] = (timeinfo->tm_yday + 1) & 0xFF;
     D[1] = ((timeinfo->tm_year - 100) << 1) | ((timeinfo->tm_yday + 1) >> 8);

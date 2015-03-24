@@ -83,7 +83,6 @@ string B_BVTC::getStatus(void)
 void B_BVTC::loadIO( bool force )
 {
     //Load links
-//    mess_info("B_BVTC::loadIO", "");
     if(mPrm.owner().startStat() && !force) {
 	mPrm.modif(true);
 	return;
@@ -103,7 +102,6 @@ void B_BVTC::saveIO()
     TConfig cfg(&mPrm.prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." +mPrm.typeDBName()+  "_io";
-//    mess_info("B_BVTC::saveIO", "io_bd %s ",io_bd.c_str());
     for(int i = 0; i < count_n; i++) {
 	saveLnk(data[i].Value.lnk, io_bd, cfg);
 	saveLnk(data[i].Mask.lnk, io_bd, cfg);
@@ -115,33 +113,22 @@ void B_BVTC::tmHandler(void)
     NeedInit = false;
     for(int i = 0; i < count_n; i++) {
 	uint8_t tmpval;
+	uint8_t g = i/8;
 	if(data[i].Mask.vl == 0) {
 	    if(data[i].Value.lnk.aprm.freeStat()) {
 		//no connection
 		data[i].Value.vl = EVAL_BOOL;
-//		mess_info("B_BVTC::tmHandler", "Value no connection %s %s",data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmAttr.c_str());
 	    } else {
 		tmpval = data[i].Value.lnk.aprm.at().getB();
 		if(tmpval != data[i].Value.vl) {
 		    data[i].Value.vl = tmpval;
 		    mPrm.vlAt(data[i].Value.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
-//		    mess_info("B_BVTC::tmHandler", "Value new value %s %s %d",data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmAttr.c_str(), tmpval);
-		    uint8_t E[6];
-		    uint8_t g = i/8;
-		    E[0] = 1;
-		    E[1] = 3;
-		    E[2] = ID|(1<<6)|(g);
-		    E[3] = (ID|(1<<6)|(g))>>8;
-
-		    E[4] = 0; //TC
+		    uint8_t E[1]={0};
 		    for(int j = 0; j < 8; j++) {
-			E[4]|=(data[g*8+j].Value.vl & 0x01)<<j;
+			E[0]|=(data[g*8+j].Value.vl & 0x01)<<j;
 		    }
-		    uint8_t DHM[5];
-		    time_t rawtime;
-		    time(&rawtime);
-		    mPrm.owner().Time_tToDateTime(DHM,rawtime);
-		    mPrm.owner().PushInBE(E,DHM);
+		    mPrm.owner().PushInBE(1,1,ID|(1<<6)|(i/8),E);
+
 		}
 	    }
 	}
@@ -149,32 +136,18 @@ void B_BVTC::tmHandler(void)
 	    if(data[i].Mask.lnk.aprm.freeStat()) {
 		//no connection
 		data[i].Mask.vl = EVAL_BOOL;
-//		mess_info("B_BVTC::tmHandler", "Mask no connection %s %s",data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmAttr.c_str());
 	    } else {
 		tmpval = data[i].Mask.lnk.aprm.at().getB();
 		if(tmpval != data[i].Mask.vl) {
 		    data[i].Mask.vl = tmpval;
 		    data[i].Mask.s = 0;
 		    mPrm.vlAt(data[i].Mask.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
-//		    mess_info("B_BVTC::tmHandler", "Mask new mask %s %s %d",data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmAttr.c_str(), tmpval);
-		    mess_info("B_BVTC::tmHandler", "new mask event");
-		    uint8_t E[6];
-		    uint8_t g = i/8;
-		    E[0] = 1;
-		    E[1] = 4;
-		    E[2] = ID|(2<<6)|(g);
-		    E[3] = (ID|(2<<6)|(g))>>8;
-		    E[4] = 0;
-
-		    E[5] = 0; //Mask
+		    uint8_t E[2]= {0,0};
 		    for(int j = 0; j < 8; j++) {
-			E[5]|=(data[g*8+j].Mask.vl & 0x01)<<j;
+			E[1]|=(data[g*8+j].Mask.vl & 0x01)<<j;
 		    }
-		    uint8_t DHM[5];
-		    time_t rawtime;
-		    time(&rawtime);
-		    mPrm.owner().Time_tToDateTime(DHM,rawtime);
-		    mPrm.owner().PushInBE(E,DHM);
+		    mPrm.owner().PushInBE(1,2,ID|(2<<6)|(i/8),E);
+
 		}
 	    }
 	}
@@ -239,7 +212,6 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
     uint16_t l = 0;
     uint16_t k = (TSYS::getUnalign16(D) >> 6) & 0x3F; // object
     uint16_t n = TSYS::getUnalign16(D) & 0x3F;  // param
-//    mess_info("B_BVTC::HandleEvent", "g k n %d %d %d",ID>>12,k,n);
     switch(k) {
     case 0:
 	switch(n) {
@@ -347,15 +319,12 @@ uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 
 uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 {
-//    mess_info("BVTC ", _("cmdSet"));
     uint16_t prmID = TSYS::getUnalign16(req);
     if((prmID & 0xF000) != ID) return 0;
-//    mess_info("BVTC ", _("prmID %04X"),prmID);
     uint16_t k = (prmID >> 6) & 0x3F; // object
     uint16_t n = prmID & 0x3F;  // param
     uint l = 0;
-//    mess_info("BVTC ", _("k %d"),k);
-//    mess_info("BVTC ", _("n %d"),n);
+
     uint16_t nTC = (count_n / 8 + (count_n % 8 ? 1 : 0));
     switch (k){
     case 2:
@@ -371,31 +340,15 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 		    mPrm.vlAt(data[i].Mask.lnk.prmName.c_str()).at().setB(data[i].Mask.vl, 0, true);
 		    newMask = newMask >> 1;
 		    l = 3;
-//		    mess_info("B_BVTC::cmdSet", "Set new mask %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		} else {
 		    l = 0;
 		    break;
-//		    mess_info("B_BVTC::cmdSet", "Set new mask EROOR!!! %s %s %d",data[j].MaskLink.prmName.c_str(), data[j].MaskLink.prmAttr.c_str(),data[j].Mask);
 		}
-//		mPrm.vlAt(data[j].Mask.lnk.prmName.c_str()).at().setB(data[j].Mask.vl, 0, true);
 
 
 	    }
-	    mess_info("B_BVTC::cmdSet", "new mask event");
-	    uint8_t E[6];
-	    E[0] = 1;
-	    E[1] = 4;
-	    E[2] = ID | (2 << 6) | (n);
-	    E[3] = (ID | (2 << 6) | (n)) >> 8;
-	    E[4] = 0;
-
-	    E[5] = req[2]; //Mask
-	    uint8_t DHM[5];
-	    time_t rawtime;
-	    time(&rawtime);
-	    mPrm.owner().Time_tToDateTime(DHM, rawtime);
-	    mPrm.owner().PushInBE(E, DHM);
-//	    l = 3;
+	    uint8_t E[2]= {addr,req[2]};
+	    mPrm.owner().PushInBE(1,2,prmID,E);
 	}
     }
     return l;
@@ -403,7 +356,6 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 
 uint16_t B_BVTC::setVal(TVal &val)
 {
-//    mess_info("BVTC ", _("setVal"));
     int off = 0;
     uint16_t k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // object
     uint16_t n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // param

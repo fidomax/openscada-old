@@ -236,7 +236,7 @@ namespace FT3
 	void Time_tToDateTime(uint8_t *, time_t);
 
 	bool ProcessMessage(tagMsg *, tagMsg *);
-	void PushInBE(uint8_t *E, uint8_t* DHM);
+	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E/*, uint8_t* DHM*/);
 
 	uint8_t devAddr;
 
