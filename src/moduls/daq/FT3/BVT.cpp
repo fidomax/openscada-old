@@ -196,40 +196,211 @@ void B_BVT::saveIO()
 
 void B_BVT::tmHandler(void)
 {
-/*    NeedInit = false;
+    NeedInit = false;
     for(int i = 0; i < count_n; i++) {
 	uint8_t tmpui8;
-	union {uint8_t b[4];  float f;	} tmpfl;
-	if(with_rate) {
-	    tmpfl.f = data[i].Rate.lnk.aprm.at().getR();
-	    if (tmpfl.f != data[i].Rate.vl){
-		data[i].Rate.vl = tmpfl.f;
+	union
+	{
+	    uint8_t b[4];
+	    float f;
+	} tmpfl, tmpfl1;
+	if(with_params) {
+	    if(data[i].Period.lnk.aprm.freeStat()) {
+		//no connection
+		data[i].Period.vl = 0;
+	    } else {
+		tmpfl.f = data[i].Period.lnk.aprm.at().getR();
+		if(tmpfl.f != data[i].Period.vl) {
+		    data[i].Period.vl = tmpfl.f;
+		    mPrm.vlAt(data[i].Period.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		    uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (2), E);
+		}
+	    }
+	    if(data[i].Sens.lnk.aprm.freeStat()) {
+		//no connection
+		data[i].Sens.vl = EVAL_RFlt;
+	    } else {
+		tmpfl.f = data[i].Sens.lnk.aprm.at().getR();
+		if(tmpfl.f != data[i].Sens.vl) {
+		    data[i].Sens.vl = tmpfl.f;
+		    mPrm.vlAt(data[i].Sens.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		    uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (3), E);
+		}
+	    }
+	    if(data[i].MinS.lnk.aprm.freeStat() || data[i].MaxS.lnk.aprm.freeStat()) {
+		//no connection
+		data[i].MinS.vl = EVAL_RFlt;
+		data[i].MaxS.vl = EVAL_RFlt;
+	    } else {
+		tmpfl.f = data[i].MinS.lnk.aprm.at().getR();
+		tmpfl1.f = data[i].MaxS.lnk.aprm.at().getR();
+		if(tmpfl.f != data[i].MinS.vl || tmpfl1.f != data[i].MaxS.vl) {
+		    data[i].MinS.vl = tmpfl.f;
+		    data[i].MaxS.vl = tmpfl1.f;
+		    mPrm.vlAt(data[i].MinS.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		    mPrm.vlAt(data[i].MaxS.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
+		    uint8_t E[9] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3], tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3] };
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (4), E);
+		}
+	    }
+	    if(data[i].MinPV.lnk.aprm.freeStat() || data[i].MaxPV.lnk.aprm.freeStat()) {
+		//no connection
+		data[i].MinPV.vl = EVAL_RFlt;
+		data[i].MaxPV.vl = EVAL_RFlt;
+	    } else {
+		tmpfl.f = data[i].MinPV.lnk.aprm.at().getR();
+		tmpfl1.f = data[i].MaxPV.lnk.aprm.at().getR();
+		if(tmpfl.f != data[i].MinPV.vl || tmpfl1.f != data[i].MaxPV.vl) {
+		    data[i].MinPV.vl = tmpfl.f;
+		    data[i].MaxPV.vl = tmpfl1.f;
+		    mPrm.vlAt(data[i].MinPV.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		    mPrm.vlAt(data[i].MaxPV.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
+		    uint8_t E[9] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3], tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3] };
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (5), E);
+		}
+	    }
+	    if(data[i].MinW.lnk.aprm.freeStat() || data[i].MaxW.lnk.aprm.freeStat()) {
+		//no connection
+		data[i].MinW.vl = EVAL_RFlt;
+		data[i].MaxW.vl = EVAL_RFlt;
+	    } else {
+		tmpfl.f = data[i].MinW.lnk.aprm.at().getR();
+		tmpfl1.f = data[i].MaxW.lnk.aprm.at().getR();
+		if(tmpfl.f != data[i].MinW.vl || tmpfl1.f != data[i].MaxW.vl) {
+		    data[i].MinW.vl = tmpfl.f;
+		    data[i].MaxW.vl = tmpfl1.f;
+		    mPrm.vlAt(data[i].MinW.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		    mPrm.vlAt(data[i].MaxW.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
+		    uint8_t E[9] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3], tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3] };
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (6), E);
+		}
+	    }
+	    if(data[i].MinA.lnk.aprm.freeStat() || data[i].MaxA.lnk.aprm.freeStat()) {
+		//no connection
+		data[i].MinA.vl = EVAL_RFlt;
+		data[i].MaxA.vl = EVAL_RFlt;
+	    } else {
+		tmpfl.f = data[i].MinA.lnk.aprm.at().getR();
+		tmpfl1.f = data[i].MaxA.lnk.aprm.at().getR();
+		if(tmpfl.f != data[i].MinA.vl || tmpfl1.f != data[i].MaxA.vl) {
+		    data[i].MinA.vl = tmpfl.f;
+		    data[i].MaxA.vl = tmpfl1.f;
+		    mPrm.vlAt(data[i].MinA.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		    mPrm.vlAt(data[i].MaxA.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
+		    uint8_t E[9] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3], tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3] };
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (7), E);
+		}
+	    }
+	    if(data[i].Factor.lnk.aprm.freeStat()) {
+		//no connection
+		data[i].Factor.vl = EVAL_RFlt;
+	    } else {
+		tmpfl.f = data[i].Factor.lnk.aprm.at().getR();
+		if(tmpfl.f != data[i].Factor.vl) {
+		    data[i].Factor.vl = tmpfl.f;
+		    mPrm.vlAt(data[i].Factor.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		    uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (8), E);
+		}
+	    }
+	    if(data[i].Factor.lnk.aprm.freeStat()) {
+		//no connection
+		data[i].Factor.vl = EVAL_RFlt;
+	    } else {
+		tmpui8 = data[i].Dimension.lnk.aprm.at().getR();
+		if(tmpfl.f != data[i].Dimension.vl) {
+		    data[i].Dimension.vl = tmpui8;
+		    mPrm.vlAt(data[i].Dimension.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
+		    uint8_t E[2] = { 0, tmpui8 };
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (9), E);
 
+		}
+	    }
+	    if(with_k) {
+		if(data[i].CorFactor.lnk.aprm.freeStat()) {
+		    //no connection
+		    data[i].CorFactor.vl = EVAL_RFlt;
+		} else {
+		    tmpfl.f = data[i].CorFactor.lnk.aprm.at().getR();
+		    if(tmpfl.f != data[i].CorFactor.vl) {
+			data[i].CorFactor.vl = tmpfl.f;
+			mPrm.vlAt(data[i].CorFactor.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+			uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+			mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (10), E);
+		    }
+		}
+		if(with_rate) {
+		    if(data[i].Rate.lnk.aprm.freeStat()) {
+			//no connection
+			data[i].Rate.vl = EVAL_RFlt;
+		    } else {
+			tmpfl.f = data[i].Rate.lnk.aprm.at().getR();
+			if(tmpfl.f != data[i].Rate.vl) {
+			    data[i].Rate.vl = tmpfl.f;
+			    mPrm.vlAt(data[i].Rate.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+			    uint8_t E[5] = { data[i].State.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+			    mPrm.owner().PushInBE(2, sizeof(E), ID | (i << 6) | (11), E);
+			}
+		    }
+		    if(data[i].Calcs.lnk.aprm.freeStat()) {
+			//no connection
+			data[i].Calcs.vl = 0;
+		    } else {
+			tmpui8 = data[i].Calcs.lnk.aprm.at().getR();
+			if(tmpfl.f != data[i].Calcs.vl) {
+			    data[i].Calcs.vl = tmpui8;
+			    mPrm.vlAt(data[i].Calcs.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
+			    uint8_t E[2] = { 0, tmpui8 };
+			    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (12), E);
+			}
+		    }
+		    if(data[i].RateSens.lnk.aprm.freeStat()) {
+			//no connection
+			data[i].RateSens.vl = EVAL_RFlt;
+		    } else {
+			tmpfl.f = data[i].RateSens.lnk.aprm.at().getR();
+			if(tmpfl.f != data[i].RateSens.vl) {
+			    data[i].RateSens.vl = tmpfl.f;
+			    mPrm.vlAt(data[i].RateSens.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+			    uint8_t E[5] = { data[i].State.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+			    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (13), E);
+			}
+		    }
+		    if(data[i].RateLimit.lnk.aprm.freeStat()) {
+			//no connection
+			data[i].RateLimit.vl = EVAL_RFlt;
+		    } else {
+			tmpfl.f = data[i].RateLimit.lnk.aprm.at().getR();
+			if(tmpfl.f != data[i].RateLimit.vl) {
+			    data[i].RateLimit.vl = tmpfl.f;
+			    mPrm.vlAt(data[i].RateLimit.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+			    uint8_t E[5] = { data[i].State.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+			    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (14), E);
+			}
+		    }
+
+		}
 	    }
 	}
-	tmpui8 = data[i].State.lnk.aprm.at().getI();
-	tmpfl.f = data[i].Value.lnk.aprm.at().getR();
-	if((tmpui8 != data[i].State.vl) || (tmpfl.f != data[i].Value.vl)) {
-	    data[i].State.vl = tmpui8;
-	    mPrm.vlAt(data[i].State.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
-	    data[i].Value.vl = tmpfl.f;
-	    mPrm.vlAt(data[i].Value.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
-	    uint8_t E[9];
-	    E[0] = tmpui8 != data[i].State.vl ? 1 : 2;
-	    E[1] = 7;
-	    E[2] = ID | (i << 6) | (1);
-	    E[3] = (ID | (i << 6) | (1)) >> 8;
-	    E[4] = data[i].State.vl; //TC
-	    for(int j = 0; j < 4; j++) E[5 + j] = tmpfl.f[j];
-	    uint8_t DHM[5];
-	    time_t rawtime;
-	    time(&rawtime);
-	    mPrm.owner().Time_tToDateTime(DHM, rawtime);
-	    mPrm.owner().PushInBE(E, DHM);
+	if(data[i].State.lnk.aprm.freeStat() || data[i].Value.lnk.aprm.freeStat()) {
+	    //no connection
+	    data[i].Value.vl = EVAL_RFlt;
+	    data[i].State.vl = 0;
+	} else {
+	    tmpui8 = data[i].State.lnk.aprm.at().getI();
+	    tmpfl.f = data[i].Value.lnk.aprm.at().getR();
+	    if((tmpui8 != data[i].State.vl) || (tmpfl.f != data[i].Value.vl)) {
+		data[i].State.vl = tmpui8;
+		mPrm.vlAt(data[i].State.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
+		data[i].Value.vl = tmpfl.f;
+		mPrm.vlAt(data[i].Value.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		uint8_t E[5] = { data[i].State.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+		mPrm.owner().PushInBE(2, sizeof(E), ID | (i << 6) | (1), E);
+	    }
 	}
-
-    }*/
-
+    }
 }
 
 uint16_t B_BVT::Task(uint16_t uc)
