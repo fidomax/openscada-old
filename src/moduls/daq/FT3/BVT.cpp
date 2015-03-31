@@ -627,6 +627,149 @@ uint16_t B_BVT::HandleEvent(uint8_t * D)
     return l;
 }
 
+uint8_t B_BVT::cmdGet(uint16_t prmID, uint8_t * out)
+{
+    if((prmID & 0xF000) != ID) return 0;
+    uint16_t k = (prmID >> 6) & 0x3F; // object
+    uint16_t n = prmID & 0x3F;  // param
+    uint l = 0;
+    if(k == 0) {
+	switch(n) {
+	case 0:
+	    //state
+	    out[0] = 0;
+	    l = 1;
+	    break;
+	case 1:
+
+	    out[0] = 0;
+	    l = 1;
+	    //value
+	    for(uint8_t i = 0; i < count_n; i++) {
+		out[i * 5 + 1] = data[i].State.vl;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[i * 5 + 2 + j] = data[i].Value.b_vl[j];
+		l += 5;
+	    }
+	    break;
+	case 2:
+	    out[0] = 0;
+	    l = 1;
+	    //rate
+	    for(uint8_t i = 0; i < count_n; i++) {
+		out[i * 5 + 1] = data[i].State.vl;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[i * 5 + 2 + j] = data[i].Rate.b_vl[j];
+		l += 5;
+	    }
+	    break;
+	}
+    } else {
+	if(k <= count_n) {
+	    switch(n) {
+	    case 0:
+		out[0] = data[n].State.vl;
+		l = 1;
+		break;
+	    case 1:
+		out[0] = data[k].State.vl;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[n].Value.b_vl[j];
+		l = 5;
+		break;
+	    case 2:
+		out[0] = data[n].Period.s;
+		out[1] = data[n].Period.vl;
+		l = 2;
+		break;
+	    case 3:
+		out[0] = data[n].Sens.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[n].Sens.b_vl[j];
+		l = 5;
+		break;
+	    case 4:
+		out[0] = data[n].MinS.s;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[n].MinS.b_vl[j];
+		    out[5 + j] = data[n].MaxS.b_vl[j];
+		}
+		l = 9;
+		break;
+	    case 5:
+		out[0] = data[n].MinPV.s;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[n].MinPV.b_vl[j];
+		    out[5 + j] = data[n].MaxPV.b_vl[j];
+		}
+		l = 9;
+		break;
+	    case 6:
+		out[0] = data[n].MinW.s;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[n].MinW.b_vl[j];
+		    out[5 + j] = data[n].MaxW.b_vl[j];
+		}
+		l = 9;
+		break;
+	    case 7:
+		out[0] = data[n].MinA.s;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[n].MinA.b_vl[j];
+		    out[5 + j] = data[n].MaxA.b_vl[j];
+		}
+		l = 9;
+		break;
+	    case 8:
+		out[0] = data[n].Factor.s;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[n].Factor.b_vl[j];
+		}
+		l = 5;
+		break;
+	    case 9:
+		out[0] = data[n].Dimension.s;
+		out[1] = data[n].Dimension.vl;
+		l = 2;
+		break;
+	    case 10:
+		out[0] = data[n].CorFactor.s;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[n].CorFactor.b_vl[j];
+		}
+		l = 5;
+		break;
+	    case 11:
+		out[0] = data[k].State.vl;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[n].Rate.b_vl[j];
+		l = 5;
+		break;
+	    case 12:
+		out[0] = data[n].Calcs.s;
+		out[1] = data[n].Calcs.vl;
+		l = 2;
+		break;
+	    case 13:
+		out[0] = data[k].RateSens.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[n].RateSens.b_vl[j];
+		l = 5;
+		break;
+	    case 14:
+		out[0] = data[k].RateLimit.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[n].RateLimit.b_vl[j];
+		l = 5;
+		break;
+	    }
+
+	}
+    }
+
+    return l;
+}
+
 uint16_t B_BVT::setVal(TVal &val)
 {
     int off = 0;

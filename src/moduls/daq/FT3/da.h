@@ -84,7 +84,11 @@ class DA: public TElem
 	class flData{
 	public:
 	    flData(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
-	    float vl;
+	    union
+	    {
+		uint8_t b_vl[4];
+		float vl;
+	    };
 	    uint8_t s;
 	    SLnk lnk;
 	};
