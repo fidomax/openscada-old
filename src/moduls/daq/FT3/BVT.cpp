@@ -770,6 +770,11 @@ uint8_t B_BVT::cmdGet(uint16_t prmID, uint8_t * out)
     return l;
 }
 
+uint8_t B_BVT::cmdSet(uint8_t * req, uint8_t  addr)
+{
+return 0;
+}
+
 uint16_t B_BVT::setVal(TVal &val)
 {
     int off = 0;
