@@ -75,7 +75,7 @@ class DA: public TElem
 	};
 	class ui8Data{
 	public:
-	    ui8Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    ui8Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(254), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
 	    uint8_t vl;
 	    uint8_t s;
 	    SLnk lnk;
@@ -83,7 +83,7 @@ class DA: public TElem
 
 	class flData{
 	public:
-	    flData(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    flData(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(EVAL_RFlt), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
 	    union
 	    {
 		uint8_t b_vl[4];
