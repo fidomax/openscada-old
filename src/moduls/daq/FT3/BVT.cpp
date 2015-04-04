@@ -209,11 +209,11 @@ void B_BVT::tmHandler(void)
 		//no connection
 		data[i].Period.vl = 0;
 	    } else {
-		tmpfl.f = data[i].Period.lnk.aprm.at().getR();
-		if(tmpfl.f != data[i].Period.vl) {
-		    data[i].Period.vl = tmpfl.f;
-		    mPrm.vlAt(data[i].Period.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
-		    uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+		tmpui8 = data[i].Period.lnk.aprm.at().getR();
+		if(tmpui8 != data[i].Period.vl) {
+		    data[i].Period.vl = tmpui8;
+		    mPrm.vlAt(data[i].Period.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
+		    uint8_t E[2] = { 0, tmpui8 };
 		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (2), E);
 		}
 	    }
@@ -766,13 +766,97 @@ uint8_t B_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 
 	}
     }
-
     return l;
 }
 
-uint8_t B_BVT::cmdSet(uint8_t * req, uint8_t  addr)
+uint8_t B_BVT::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 {
-return 0;
+    if(!d.lnk.aprm.freeStat()) {
+	d.s = addr;
+	d.vl = val;
+	d.lnk.aprm.at().setI(d.vl);
+	mPrm.vlAt(d.lnk.prmName.c_str()).at().setI(d.vl, 0, true);
+	uint8_t E[2] = { addr, d.vl };
+	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+	return 2 + 1;
+    } else {
+	return 0;
+    }
+}
+
+uint8_t B_BVT::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
+{
+    if(!d.lnk.aprm.freeStat()) {
+	d.s = addr;
+	d.vl = val;
+	d.lnk.aprm.at().setI(d.vl);
+	mPrm.vlAt(d.lnk.prmName.c_str()).at().setR(d.vl, 0, true);
+	uint8_t E[5] = { addr, d.b_vl[0], d.b_vl[1], d.b_vl[2], d.b_vl[3] };
+	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+	return 2 + 4;
+    } else {
+	return 0;
+    }
+}
+
+uint8_t B_BVT::SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2)
+{
+    if((!d1.lnk.aprm.freeStat()) && (!d2.lnk.aprm.freeStat())) {
+	d1.s = addr;
+	d1.vl = val1;
+	d1.lnk.aprm.at().setR(d1.vl);
+	mPrm.vlAt(d1.lnk.prmName.c_str()).at().setR(d1.vl, 0, true);
+	d2.s = addr;
+	d2.vl = val2;
+	d2.lnk.aprm.at().setR(d2.vl);
+	mPrm.vlAt(d2.lnk.prmName.c_str()).at().setR(d2.vl, 0, true);
+	uint8_t E[9] = { addr, d1.b_vl[0], d1.b_vl[1], d1.b_vl[2], d1.b_vl[3], d2.b_vl[0], d2.b_vl[1], d2.b_vl[2], d2.b_vl[3] };
+	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+	return 2 + 4 + 4;
+    } else {
+	return 0;
+    }
+}
+
+uint8_t B_BVT::cmdSet(uint8_t * req, uint8_t addr)
+{
+    uint16_t prmID = TSYS::getUnalign16(req);
+    if((prmID & 0xF000) != ID) return 0;
+    uint16_t k = (prmID >> 6) & 0x3F; // object
+    uint16_t n = prmID & 0x3F;  // param
+    uint l = 0;
+    if((k > 0) && (k <= count_n)) {
+	switch(n) {
+	case 2:
+	    l = SetNew8Val(data[k].Period, addr, prmID, req[2]);
+	    break;
+	case 3:
+	    l = SetNewflVal(data[k].Sens, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 4:
+	    l = SetNew2flVal(data[k].MinS, data[k].MaxS, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    break;
+	case 5:
+	    l = SetNew2flVal(data[k].MinPV, data[k].MaxPV, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    break;
+	case 6:
+	    l = SetNew2flVal(data[k].MinW, data[k].MaxW, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    break;
+	case 7:
+	    l = SetNew2flVal(data[k].MinA, data[k].MaxA, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    break;
+	case 8:
+	    l = SetNewflVal(data[k].Factor, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 9:
+	    l = SetNew8Val(data[k].Dimension, addr, prmID, req[2]);
+	    break;
+	case 10:
+	    l = SetNewflVal(data[k].CorFactor, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	}
+    }
+    return l;
 }
 
 uint16_t B_BVT::setVal(TVal &val)

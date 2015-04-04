@@ -350,6 +350,7 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t  addr)
 	    uint8_t E[2]= {addr,req[2]};
 	    mPrm.owner().PushInBE(1,2,prmID,E);
 	}
+	break;
     }
     return l;
 }

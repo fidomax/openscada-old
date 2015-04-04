@@ -228,7 +228,9 @@ namespace FT3
 	    }
 	}
 
-
+	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
+	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
+	uint8_t SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2);
 
     private:
 	bool with_params;
