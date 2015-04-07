@@ -192,7 +192,7 @@ uint16_t TProt::CRC(const char *data, uint16_t length)
 
 void TProt::MakePacket(string &pdu, tagMsg * msg)
 {
-    mess_info(nodePath().c_str(), _("%d"), pdu.size());
+//    mess_info(nodePath().c_str(), _("%d"), pdu.size());
     uint16_t x, y, l, z;
     uint16_t w;
     if((msg->L == 1) && ((msg->C & 0x0F) == ReqData)) {
@@ -605,7 +605,7 @@ void TProt::cntrCmdProc(XMLNode *opt)
 TProtIn::TProtIn(string name) :
 	TProtocolIn(name)
 {
-    mess_info(nodePath().c_str(), _("Creation of TProtIn!"));
+//    mess_info(nodePath().c_str(), _("Creation of TProtIn!"));
 }
 
 TProtIn::~TProtIn()

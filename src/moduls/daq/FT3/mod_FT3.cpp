@@ -192,7 +192,7 @@ uint8_t TMdContr::cmdSet(uint8_t * req, uint8_t addr)
 }
 bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 {
-    mess_info(nodePath().c_str(), _("Process message___"));
+//    mess_info(nodePath().c_str(), _("Process message___"));
     uint8_t l;
     uint8_t n;
     uint16_t tm;
@@ -208,7 +208,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
     case ReqData1:
     case ReqData2:
     case ReqData:
-	mess_info(nodePath().c_str(), _("ReqData"));
+//	mess_info(nodePath().c_str(), _("ReqData"));
 	  //byte c = cmd & 0xF;
 	  chain_BE *pC; el_chBE *pBE;
 // TODO FCB check
@@ -232,7 +232,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	if(!pC || !pC->head) {
 	    msgOut->L = 3;
 	    msgOut->C = 9;
-		mess_info(nodePath().c_str(), _("No data"));
+//		mess_info(nodePath().c_str(), _("No data"));
 	} else {
 
 	    pBE = pC->getdel();
@@ -927,7 +927,7 @@ void *TMdContr::DAQTask(void *icntr)
 	    Msg.L = 3;
 	    Msg.C = ReqData;
 	    cntr.Transact(&Msg);
-	    mess_info(cntr.nodePath().c_str(), _("ReqData L %d C %d"), Msg.L, Msg.C);
+//	    mess_info(cntr.nodePath().c_str(), _("ReqData L %d C %d"), Msg.L, Msg.C);
 	    if((Msg.C & 0x0F) == GOOD3) {
 		//FILETIME ftTimeStamp;
 		uint16_t l = Msg.L - 6, m = 0, n = 3;
@@ -1162,7 +1162,7 @@ uint16_t TMdPrm::Task(uint16_t cod)
 uint16_t TMdPrm::HandleEvent(uint8_t * D)
 {
     if(mDA) {
-	mess_info(nodePath().c_str(),_("TMdContr::HandleEvent"));
+	mess_info(nodePath().c_str(),_("TMdContr::HandleEvent %04X"),TSYS::getUnalign16(D));
 	return mDA->HandleEvent(D);
     } else {
 	return 0;

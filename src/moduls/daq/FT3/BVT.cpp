@@ -39,46 +39,46 @@ B_BVT::B_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_k, 
 	chan_err.insert(chan_err.end(), SDataRec());
 	data.push_back(STTchannel(i));
 	mPrm.p_el.fldAdd(fld = new TFld(data[i].State.lnk.prmName.c_str(), data[i].State.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
-	fld->setReserve(TSYS::strMess("%d:0", i));
+	fld->setReserve(TSYS::strMess("%d:0", i+1));
 	mPrm.p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-	fld->setReserve(TSYS::strMess("%d:1", i));
+	fld->setReserve(TSYS::strMess("%d:1", i+1));
 	if(with_params) {
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Period.lnk.prmName.c_str(), data[i].Period.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:2", i));
+	    fld->setReserve(TSYS::strMess("%d:2", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Sens.lnk.prmName.c_str(), data[i].Sens.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:3", i));
+	    fld->setReserve(TSYS::strMess("%d:3", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinS.lnk.prmName.c_str(), data[i].MaxS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:4", i));
+	    fld->setReserve(TSYS::strMess("%d:4", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxS.lnk.prmName.c_str(), data[i].MaxS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:4", i));
+	    fld->setReserve(TSYS::strMess("%d:4", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinPV.lnk.prmName.c_str(), data[i].MinPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:5", i));
+	    fld->setReserve(TSYS::strMess("%d:5", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxPV.lnk.prmName.c_str(), data[i].MaxPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:5", i));
+	    fld->setReserve(TSYS::strMess("%d:5", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinW.lnk.prmName.c_str(), data[i].MinW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:6", i));
+	    fld->setReserve(TSYS::strMess("%d:6", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxW.lnk.prmName.c_str(), data[i].MaxW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:6", i));
+	    fld->setReserve(TSYS::strMess("%d:6", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinA.lnk.prmName.c_str(), data[i].MinA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:7", i));
+	    fld->setReserve(TSYS::strMess("%d:7", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxA.lnk.prmName.c_str(), data[i].MaxA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:7", i));
+	    fld->setReserve(TSYS::strMess("%d:7", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Factor.lnk.prmName.c_str(), data[i].Factor.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:8", i));
+	    fld->setReserve(TSYS::strMess("%d:8", i+1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Dimension.lnk.prmName.c_str(), data[i].Dimension.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:9", i));
+	    fld->setReserve(TSYS::strMess("%d:9", i+1));
 	    if(with_k) {
 		mPrm.p_el.fldAdd(fld = new TFld(data[i].CorFactor.lnk.prmName.c_str(), data[i].CorFactor.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-		fld->setReserve(TSYS::strMess("%d:10", i));
+		fld->setReserve(TSYS::strMess("%d:10", i+1));
 		if(with_rate) {
 		    mPrm.p_el.fldAdd(fld = new TFld(data[i].Rate.lnk.prmName.c_str(), data[i].Rate.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-		    fld->setReserve(TSYS::strMess("%d:11", i));
+		    fld->setReserve(TSYS::strMess("%d:11", i+1));
 		    mPrm.p_el.fldAdd(fld = new TFld(data[i].Calcs.lnk.prmName.c_str(), data[i].Calcs.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-		    fld->setReserve(TSYS::strMess("%d:12", i));
+		    fld->setReserve(TSYS::strMess("%d:12", i+1));
 		    mPrm.p_el.fldAdd(fld = new TFld(data[i].RateSens.lnk.prmName.c_str(), data[i].RateSens.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-		    fld->setReserve(TSYS::strMess("%d:13", i));
+		    fld->setReserve(TSYS::strMess("%d:13", i+1));
 		    mPrm.p_el.fldAdd(fld = new TFld(data[i].RateLimit.lnk.prmName.c_str(), data[i].RateLimit.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-		    fld->setReserve(TSYS::strMess("%d:14", i));
+		    fld->setReserve(TSYS::strMess("%d:14", i+1));
 		}
 	    }
 
@@ -209,12 +209,12 @@ void B_BVT::tmHandler(void)
 		//no connection
 		data[i].Period.vl = 0;
 	    } else {
-		tmpui8 = data[i].Period.lnk.aprm.at().getR();
+		tmpui8 = data[i].Period.lnk.aprm.at().getI();
 		if(tmpui8 != data[i].Period.vl) {
 		    data[i].Period.vl = tmpui8;
 		    mPrm.vlAt(data[i].Period.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
 		    uint8_t E[2] = { 0, tmpui8 };
-		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (2), E);
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (2), E);
 		}
 	    }
 	    if(data[i].Sens.lnk.aprm.freeStat()) {
@@ -226,7 +226,7 @@ void B_BVT::tmHandler(void)
 		    data[i].Sens.vl = tmpfl.f;
 		    mPrm.vlAt(data[i].Sens.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 		    uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (3), E);
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (3), E);
 		}
 	    }
 	    if(data[i].MinS.lnk.aprm.freeStat() || data[i].MaxS.lnk.aprm.freeStat()) {
@@ -242,7 +242,7 @@ void B_BVT::tmHandler(void)
 		    mPrm.vlAt(data[i].MinS.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 		    mPrm.vlAt(data[i].MaxS.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
 		    uint8_t E[9] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3], tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3] };
-		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (4), E);
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (4), E);
 		}
 	    }
 	    if(data[i].MinPV.lnk.aprm.freeStat() || data[i].MaxPV.lnk.aprm.freeStat()) {
@@ -258,7 +258,7 @@ void B_BVT::tmHandler(void)
 		    mPrm.vlAt(data[i].MinPV.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 		    mPrm.vlAt(data[i].MaxPV.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
 		    uint8_t E[9] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3], tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3] };
-		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (5), E);
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (5), E);
 		}
 	    }
 	    if(data[i].MinW.lnk.aprm.freeStat() || data[i].MaxW.lnk.aprm.freeStat()) {
@@ -274,7 +274,7 @@ void B_BVT::tmHandler(void)
 		    mPrm.vlAt(data[i].MinW.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 		    mPrm.vlAt(data[i].MaxW.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
 		    uint8_t E[9] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3], tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3] };
-		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (6), E);
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (6), E);
 		}
 	    }
 	    if(data[i].MinA.lnk.aprm.freeStat() || data[i].MaxA.lnk.aprm.freeStat()) {
@@ -290,7 +290,7 @@ void B_BVT::tmHandler(void)
 		    mPrm.vlAt(data[i].MinA.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 		    mPrm.vlAt(data[i].MaxA.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
 		    uint8_t E[9] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3], tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3] };
-		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (7), E);
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (7), E);
 		}
 	    }
 	    if(data[i].Factor.lnk.aprm.freeStat()) {
@@ -302,19 +302,19 @@ void B_BVT::tmHandler(void)
 		    data[i].Factor.vl = tmpfl.f;
 		    mPrm.vlAt(data[i].Factor.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 		    uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (8), E);
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (8), E);
 		}
 	    }
-	    if(data[i].Factor.lnk.aprm.freeStat()) {
+	    if(data[i].Dimension.lnk.aprm.freeStat()) {
 		//no connection
-		data[i].Factor.vl = EVAL_RFlt;
+		data[i].Dimension.vl = EVAL_RFlt;
 	    } else {
-		tmpui8 = data[i].Dimension.lnk.aprm.at().getR();
-		if(tmpfl.f != data[i].Dimension.vl) {
+		tmpui8 = data[i].Dimension.lnk.aprm.at().getI();
+		if(tmpui8 != data[i].Dimension.vl) {
 		    data[i].Dimension.vl = tmpui8;
 		    mPrm.vlAt(data[i].Dimension.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
 		    uint8_t E[2] = { 0, tmpui8 };
-		    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (9), E);
+		    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (9), E);
 
 		}
 	    }
@@ -328,7 +328,7 @@ void B_BVT::tmHandler(void)
 			data[i].CorFactor.vl = tmpfl.f;
 			mPrm.vlAt(data[i].CorFactor.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 			uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-			mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (10), E);
+			mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (10), E);
 		    }
 		}
 		if(with_rate) {
@@ -341,7 +341,7 @@ void B_BVT::tmHandler(void)
 			    data[i].Rate.vl = tmpfl.f;
 			    mPrm.vlAt(data[i].Rate.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 			    uint8_t E[5] = { data[i].State.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-			    mPrm.owner().PushInBE(2, sizeof(E), ID | (i << 6) | (11), E);
+			    mPrm.owner().PushInBE(2, sizeof(E), ID | ((i+1) << 6) | (11), E);
 			}
 		    }
 		    if(data[i].Calcs.lnk.aprm.freeStat()) {
@@ -353,7 +353,7 @@ void B_BVT::tmHandler(void)
 			    data[i].Calcs.vl = tmpui8;
 			    mPrm.vlAt(data[i].Calcs.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
 			    uint8_t E[2] = { 0, tmpui8 };
-			    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (12), E);
+			    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (12), E);
 			}
 		    }
 		    if(data[i].RateSens.lnk.aprm.freeStat()) {
@@ -365,7 +365,7 @@ void B_BVT::tmHandler(void)
 			    data[i].RateSens.vl = tmpfl.f;
 			    mPrm.vlAt(data[i].RateSens.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 			    uint8_t E[5] = { data[i].State.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-			    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (13), E);
+			    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (13), E);
 			}
 		    }
 		    if(data[i].RateLimit.lnk.aprm.freeStat()) {
@@ -377,7 +377,7 @@ void B_BVT::tmHandler(void)
 			    data[i].RateLimit.vl = tmpfl.f;
 			    mPrm.vlAt(data[i].RateLimit.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 			    uint8_t E[5] = { data[i].State.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-			    mPrm.owner().PushInBE(1, sizeof(E), ID | (i << 6) | (14), E);
+			    mPrm.owner().PushInBE(1, sizeof(E), ID | ((i+1) << 6) | (14), E);
 			}
 		    }
 
@@ -397,7 +397,7 @@ void B_BVT::tmHandler(void)
 		data[i].Value.vl = tmpfl.f;
 		mPrm.vlAt(data[i].Value.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 		uint8_t E[5] = { data[i].State.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-		mPrm.owner().PushInBE(2, sizeof(E), ID | (i << 6) | (1), E);
+		mPrm.owner().PushInBE(2, sizeof(E), ID | ((i+1) << 6) | (1), E);
 	    }
 	}
     }
@@ -668,98 +668,98 @@ uint8_t B_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 	if(k <= count_n) {
 	    switch(n) {
 	    case 0:
-		out[0] = data[n].State.vl;
+		out[0] = data[k-1].State.vl;
 		l = 1;
 		break;
 	    case 1:
-		out[0] = data[k].State.vl;
+		out[0] = data[k-1].State.vl;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[n].Value.b_vl[j];
+		    out[1 + j] = data[k-1].Value.b_vl[j];
 		l = 5;
 		break;
 	    case 2:
-		out[0] = data[n].Period.s;
-		out[1] = data[n].Period.vl;
+		out[0] = data[k-1].Period.s;
+		out[1] = data[k-1].Period.vl;
 		l = 2;
 		break;
 	    case 3:
-		out[0] = data[n].Sens.s;
+		out[0] = data[k-1].Sens.s;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[n].Sens.b_vl[j];
+		    out[1 + j] = data[k-1].Sens.b_vl[j];
 		l = 5;
 		break;
 	    case 4:
-		out[0] = data[n].MinS.s;
+		out[0] = data[k-1].MinS.s;
 		for(uint8_t j = 0; j < 4; j++) {
-		    out[1 + j] = data[n].MinS.b_vl[j];
-		    out[5 + j] = data[n].MaxS.b_vl[j];
+		    out[1 + j] = data[k-1].MinS.b_vl[j];
+		    out[5 + j] = data[k-1].MaxS.b_vl[j];
 		}
 		l = 9;
 		break;
 	    case 5:
-		out[0] = data[n].MinPV.s;
+		out[0] = data[k-1].MinPV.s;
 		for(uint8_t j = 0; j < 4; j++) {
-		    out[1 + j] = data[n].MinPV.b_vl[j];
-		    out[5 + j] = data[n].MaxPV.b_vl[j];
+		    out[1 + j] = data[k-1].MinPV.b_vl[j];
+		    out[5 + j] = data[k-1].MaxPV.b_vl[j];
 		}
 		l = 9;
 		break;
 	    case 6:
-		out[0] = data[n].MinW.s;
+		out[0] = data[k-1].MinW.s;
 		for(uint8_t j = 0; j < 4; j++) {
-		    out[1 + j] = data[n].MinW.b_vl[j];
-		    out[5 + j] = data[n].MaxW.b_vl[j];
+		    out[1 + j] = data[k-1].MinW.b_vl[j];
+		    out[5 + j] = data[k-1].MaxW.b_vl[j];
 		}
 		l = 9;
 		break;
 	    case 7:
-		out[0] = data[n].MinA.s;
+		out[0] = data[k-1].MinA.s;
 		for(uint8_t j = 0; j < 4; j++) {
-		    out[1 + j] = data[n].MinA.b_vl[j];
-		    out[5 + j] = data[n].MaxA.b_vl[j];
+		    out[1 + j] = data[k-1].MinA.b_vl[j];
+		    out[5 + j] = data[k-1].MaxA.b_vl[j];
 		}
 		l = 9;
 		break;
 	    case 8:
-		out[0] = data[n].Factor.s;
+		out[0] = data[k-1].Factor.s;
 		for(uint8_t j = 0; j < 4; j++) {
-		    out[1 + j] = data[n].Factor.b_vl[j];
+		    out[1 + j] = data[k-1].Factor.b_vl[j];
 		}
 		l = 5;
 		break;
 	    case 9:
-		out[0] = data[n].Dimension.s;
-		out[1] = data[n].Dimension.vl;
+		out[0] = data[k-1].Dimension.s;
+		out[1] = data[k-1].Dimension.vl;
 		l = 2;
 		break;
 	    case 10:
-		out[0] = data[n].CorFactor.s;
+		out[0] = data[k-1].CorFactor.s;
 		for(uint8_t j = 0; j < 4; j++) {
-		    out[1 + j] = data[n].CorFactor.b_vl[j];
+		    out[1 + j] = data[k-1].CorFactor.b_vl[j];
 		}
 		l = 5;
 		break;
 	    case 11:
-		out[0] = data[k].State.vl;
+		out[0] = data[k-1].State.vl;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[n].Rate.b_vl[j];
+		    out[1 + j] = data[k-1].Rate.b_vl[j];
 		l = 5;
 		break;
 	    case 12:
-		out[0] = data[n].Calcs.s;
-		out[1] = data[n].Calcs.vl;
+		out[0] = data[k-1].Calcs.s;
+		out[1] = data[k-1].Calcs.vl;
 		l = 2;
 		break;
 	    case 13:
-		out[0] = data[k].RateSens.s;
+		out[0] = data[k-1].RateSens.s;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[n].RateSens.b_vl[j];
+		    out[1 + j] = data[k-1].RateSens.b_vl[j];
 		l = 5;
 		break;
 	    case 14:
-		out[0] = data[k].RateLimit.s;
+		out[0] = data[k-1].RateLimit.s;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[n].RateLimit.b_vl[j];
+		    out[1 + j] = data[k-1].RateLimit.b_vl[j];
 		l = 5;
 		break;
 	    }
@@ -769,9 +769,10 @@ uint8_t B_BVT::cmdGet(uint16_t prmID, uint8_t * out)
     return l;
 }
 
-uint8_t B_BVT::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
+uint8_t B_BVT::SetNew8Val(ui8Data &d, uint8_t addr, uint16_t prmID, uint8_t val)
 {
     if(!d.lnk.aprm.freeStat()) {
+	mess_info(mPrm.nodePath().c_str(), "new ui8val %d", val);
 	d.s = addr;
 	d.vl = val;
 	d.lnk.aprm.at().setI(d.vl);
@@ -784,9 +785,11 @@ uint8_t B_BVT::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
     }
 }
 
-uint8_t B_BVT::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
+uint8_t B_BVT::SetNewflVal(flData &d, uint8_t addr, uint16_t prmID, float val)
 {
+    mess_info(mPrm.nodePath().c_str(), "new fl");
     if(!d.lnk.aprm.freeStat()) {
+	mess_info(mPrm.nodePath().c_str(), "new fl %f", val);
 	d.s = addr;
 	d.vl = val;
 	d.lnk.aprm.at().setI(d.vl);
@@ -799,9 +802,11 @@ uint8_t B_BVT::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
     }
 }
 
-uint8_t B_BVT::SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2)
+uint8_t B_BVT::SetNew2flVal(flData &d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2)
 {
+    mess_info(mPrm.nodePath().c_str(), "new 2fl");
     if((!d1.lnk.aprm.freeStat()) && (!d2.lnk.aprm.freeStat())) {
+	mess_info(mPrm.nodePath().c_str(), "new 2fl %f %f", val1, val2);
 	d1.s = addr;
 	d1.vl = val1;
 	d1.lnk.aprm.at().setR(d1.vl);
@@ -825,34 +830,56 @@ uint8_t B_BVT::cmdSet(uint8_t * req, uint8_t addr)
     uint16_t k = (prmID >> 6) & 0x3F; // object
     uint16_t n = prmID & 0x3F;  // param
     uint l = 0;
+    mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d",k,n);
     if((k > 0) && (k <= count_n)) {
 	switch(n) {
 	case 2:
-	    l = SetNew8Val(data[k].Period, addr, prmID, req[2]);
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet Period");
+	    l = SetNew8Val(data[k-1].Period, addr, prmID, req[2]);
 	    break;
 	case 3:
-	    l = SetNewflVal(data[k].Sens, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet Sens");
+	    l = SetNewflVal(data[k-1].Sens, addr, prmID, TSYS::getUnalignFloat(req + 2));
 	    break;
 	case 4:
-	    l = SetNew2flVal(data[k].MinS, data[k].MaxS, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet MinS, MaxS");
+	    l = SetNew2flVal(data[k-1].MinS, data[k-1].MaxS, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
 	    break;
 	case 5:
-	    l = SetNew2flVal(data[k].MinPV, data[k].MaxPV, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet MaxPV, MaxPV");
+	    l = SetNew2flVal(data[k-1].MinPV, data[k-1].MaxPV, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
 	    break;
 	case 6:
-	    l = SetNew2flVal(data[k].MinW, data[k].MaxW, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet MaxW, MaxW");
+	    l = SetNew2flVal(data[k-1].MinW, data[k-1].MaxW, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
 	    break;
 	case 7:
-	    l = SetNew2flVal(data[k].MinA, data[k].MaxA, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet MaxA, MaxA");
+	    l = SetNew2flVal(data[k-1].MinA, data[k-1].MaxA, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
 	    break;
 	case 8:
-	    l = SetNewflVal(data[k].Factor, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet Factor");
+	    l = SetNewflVal(data[k-1].Factor, addr, prmID, TSYS::getUnalignFloat(req + 2));
 	    break;
 	case 9:
-	    l = SetNew8Val(data[k].Dimension, addr, prmID, req[2]);
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet Dimension");
+	    l = SetNew8Val(data[k-1].Dimension, addr, prmID, req[2]);
 	    break;
 	case 10:
-	    l = SetNewflVal(data[k].CorFactor, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet CorFactor");
+	    l = SetNewflVal(data[k-1].CorFactor, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 12:
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet Calcs");
+	    l = SetNew8Val(data[k-1].Calcs, addr, prmID, req[2]);
+	    break;
+	case 13:
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet RateSens");
+	    l = SetNewflVal(data[k-1].RateSens, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 14:
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet RateLimit");
+	    l = SetNewflVal(data[k-1].RateLimit, addr, prmID, TSYS::getUnalignFloat(req + 2));
 	    break;
 	}
     }
