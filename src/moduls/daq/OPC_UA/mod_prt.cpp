@@ -570,19 +570,19 @@ uint32_t OPCEndPoint::reqData( int reqTp, XML_N &req )
 					if(arr.freeStat()) { dtOK = false; break; }
 					switch(arr.at().arGet(0).type()) {
 					    case TVariant::Boolean:
-						for(size_t iA = 0; iA < arr.at().arSize(); iA++, tm = 0) rVl += arr.at().arGet(iA).getS() + "\n";
+						for(size_t iA = 0; iA < arr.at().arSize(); iA++) rVl += arr.at().arGet(iA).getS() + "\n";
 						req.setAttr("type", i2s(OpcUa_Array|OpcUa_Boolean))->setText(rVl);
 						break;
 					    case TVariant::Integer:
-						for(size_t iA = 0; iA < arr.at().arSize(); iA++, tm = 0) rVl += arr.at().arGet(iA).getS() + "\n";
+						for(size_t iA = 0; iA < arr.at().arSize(); iA++) rVl += arr.at().arGet(iA).getS() + "\n";
 						req.setAttr("type", i2s(OpcUa_Array|OpcUa_Int64))->setText(rVl);
 						break;
 					    case TVariant::Real:
-						for(size_t iA = 0; iA < arr.at().arSize(); iA++, tm = 0) rVl += arr.at().arGet(iA).getS() + "\n";
+						for(size_t iA = 0; iA < arr.at().arSize(); iA++) rVl += arr.at().arGet(iA).getS() + "\n";
 						req.setAttr("type", i2s(OpcUa_Array|OpcUa_Double))->setText(rVl);
 						break;
 					    case TVariant::String:
-						for(size_t iA = 0; iA < arr.at().arSize(); iA++, tm = 0) rVl += arr.at().arGet(iA).getS() + "\n";
+						for(size_t iA = 0; iA < arr.at().arSize(); iA++) rVl += arr.at().arGet(iA).getS() + "\n";
 						req.setAttr("type", i2s(OpcUa_Array|OpcUa_String))->setText(rVl);
 						break;
 					    default: dtOK = false;
@@ -591,7 +591,10 @@ uint32_t OPCEndPoint::reqData( int reqTp, XML_N &req )
 				    }
 				    default: dtOK = false;
 				}
-				if(dtOK) { if(s2i(req.attr("dtTmGet"))) req.setAttr("dtTm",ll2s(tm)); return 0; }
+				if(dtOK) {
+				    if(s2i(req.attr("dtTmGet"))) req.setAttr("dtTm",ll2s(tm));
+				    return 0;
+				}
 				break;
 			    }
 			    case AId_DataType:
@@ -600,6 +603,23 @@ uint32_t OPCEndPoint::reqData( int reqTp, XML_N &req )
 				    case TFld::Integer: req.setAttr("type", i2s(OpcUa_NodeId))->setText(i2s(OpcUa_Int32));	return 0;
 				    case TFld::Real:    req.setAttr("type", i2s(OpcUa_NodeId))->setText(i2s(OpcUa_Double));	return 0;
 				    case TFld::String:  req.setAttr("type", i2s(OpcUa_NodeId))->setText(i2s(OpcUa_String));	return 0;
+				    case TFld::Object: {	//!!!! With structures support append detect ones
+					int64_t tm = 0;
+					AutoHD<TArrayObj> arr = nVal->getO(&tm);
+					if(arr.freeStat()) break;
+					switch(arr.at().arGet(0).type()) {
+					    case TVariant::Boolean:
+						req.setAttr("type", i2s(OpcUa_NodeId))->setText(i2s(OpcUa_Array|OpcUa_Boolean));return 0;
+					    case TVariant::Integer:
+						req.setAttr("type", i2s(OpcUa_NodeId))->setText(i2s(OpcUa_Array|OpcUa_Int64));	return 0;
+					    case TVariant::Real:
+						req.setAttr("type", i2s(OpcUa_NodeId))->setText(i2s(OpcUa_Array|OpcUa_Double));	return 0;
+					    case TVariant::String:
+						req.setAttr("type", i2s(OpcUa_NodeId))->setText(i2s(OpcUa_Array|OpcUa_String));	return 0;
+					    default: break;
+					}
+					break;
+				    }
 				    default: break;
 				}
 				break;

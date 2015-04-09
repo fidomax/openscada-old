@@ -34,7 +34,7 @@
 #define VER_TYPE	SPRT_VER
 #define MOD_VER		"0.9.5"
 #define AUTHORS		_("Roman Savochenko")
-#define DESCRIPTION	_("Self OpenSCADA protocol, support generic functions.")
+#define DESCRIPTION	_("Provides own OpenSCADA protocol based at XML and one's control interface.")
 #define LICENSE		"GPL2"
 //*************************************************
 
@@ -43,7 +43,7 @@ SelfPr::TProt *SelfPr::mod;
 extern "C"
 {
 #ifdef MOD_INCL
-    TModule::SAt prt_SelfSystem_module( int n_mod )
+    TModule::SAt prot_SelfSystem_module( int n_mod )
 #else
     TModule::SAt module( int n_mod )
 #endif
@@ -53,7 +53,7 @@ extern "C"
     }
 
 #ifdef MOD_INCL
-    TModule *prt_SelfSystem_attach( const TModule::SAt &AtMod, const string &source )
+    TModule *prot_SelfSystem_attach( const TModule::SAt &AtMod, const string &source )
 #else
     TModule *attach( const TModule::SAt &AtMod, const string &source )
 #endif
