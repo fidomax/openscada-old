@@ -1,3 +1,44 @@
+2015-04-06 Roman
+- FIX:DAQ.ICP_DAS: aiTypes translation for I-87017ZW and I-87026PW fixed.
+- FIX:UI.WebCfgD: Function basicFields() of WebCfgDVCA.js cleaned.
+    Static selected lists into "ind_ls" and "val_ls" processing some improved for empty items pass and other.
+- FIX:SYS: {debian|debian_mod}/* are appended by links to LibsDB and ARCHIVES/{VAL,MESS} for Model.{AGLKS,Boiler} for the models call into demon mode.
+    FIX:{debian|debian_mod}/control: Fixed for depends and openscada-core appended by the included modules to list.
+- Transport: User API objects are appended by functions: In::{status,addr}, Out::{status,addr,timings}.
+- UI.WebVision: ElFigure images scaling prevented by possible diferent child's size for send and process real "geomW" and "geomH".
+
+
+2015-04-04 Roman
+- SYS: debian/control: Build depends added libcomedi-dev.
+    {debian|debian_mod}/control: ${shlibs:Depends} removed from *-dbg.
+    {debian|debian_mod}/rules, debian_mod/control: Set the modules for build-in (include) to OpenSCADA core library:
+	    DBF, SQLite, JavaLikeCalc, LogicLev, Sockets, Serial, SelfSystem, UserProtocol, FLibComplex1, FLibSYS.
+	Configure stage moved to different with the stamp touch.
+	clean-install (for dh_clean) target is added as first for the target "binary".
+    debian_mod/*.init: Adapted for simultaneously the starting.
+- !!:FIX: Protocol.*: Including the modules call-external functions like "prt_HTTP_module" renamed to "prot_HTTP_module".
+
+
+2015-04-03 Roman
+- SYS: debian/rules made simplify and unified.
+    signal() replaced by sigaction() and restore original handlers at the TSYS destroy is added.
+
+
+2015-04-02 Roman
+- FIX:DAQ.OPC_UA: Array type publish fixed.
+
+
+2015-04-01 Roman
+- SYS: "Summary" of data/*.spec mostly cleaned.
+    data/openscada_mod_ALT.spec: The requires some reordered and packages descriptions some fixed and appended.
+    data/openscada_mod_RH.spec: Significant cleaned, updated to Work (0.9) version and descriptions some appended. Cleaning is not finished yet.
+    !!:data/debian_mod added for allow build separated modules packages.
+- TArchives, TCntrNode, DAQ.SMH2Gi, UI.VCAEngine: All remains operations with TArrayObj moved to arGet() and arSet().
+- Transports: To input transport object added User API function assTrsList() for assigned output transports to the input.
+- !!:SYS.*: For almost all modules the description updated.
+- DAQ.OPC_UA: AId_DataType processing for Array into the server part is added.
+
+
 2015-03-30 Roman
 - SYS: *.spec files and directory "debian" moved to directory "data".
     File data/openscada_mod_RH.spec is added for modules separated packages build for RH-based, from Aleksey Popkov.

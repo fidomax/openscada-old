@@ -37,7 +37,7 @@
 #define VER_TYPE	SPRT_VER
 #define MOD_VER		"1.6.0"
 #define AUTHORS		_("Roman Savochenko")
-#define DESCRIPTION	_("Allow support HTTP for WWW based UIs.")
+#define DESCRIPTION	_("Provides support for the HTTP protocol for WWW-based user interfaces.")
 #define LICENSE		"GPL2"
 //*************************************************
 
@@ -46,7 +46,7 @@ PrHTTP::TProt *PrHTTP::mod;
 extern "C"
 {
 #ifdef MOD_INCL
-    TModule::SAt prt_HTTP_module( int n_mod )
+    TModule::SAt prot_HTTP_module( int n_mod )
 #else
     TModule::SAt module( int n_mod )
 #endif
@@ -56,7 +56,7 @@ extern "C"
     }
 
 #ifdef MOD_INCL
-    TModule *prt_HTTP_attach( const TModule::SAt &AtMod, const string &source )
+    TModule *prot_HTTP_attach( const TModule::SAt &AtMod, const string &source )
 #else
     TModule *attach( const TModule::SAt &AtMod, const string &source )
 #endif
