@@ -247,7 +247,7 @@ uint16_t B_BVTC::HandleEvent(uint8_t * D)
 	    for(int i = 0; i < 8; i++) {
 		if((1 + (n << 3) + i) > count_n) break;
 		mPrm.vlAt(TSYS::strMess("Mask_%d", 1 + (n << 3) + i).c_str()).at().setB((D[3] >> i) & 1, 0, true);
-		    mess_info("B_BVTC", "new mask event!!!!");
+//		    mess_info("B_BVTC", "new mask event!!!!");
 	    }
 	}
 	break;

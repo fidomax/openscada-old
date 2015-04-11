@@ -307,7 +307,7 @@ void B_BVT::tmHandler(void)
 	    }
 	    if(data[i].Dimension.lnk.aprm.freeStat()) {
 		//no connection
-		data[i].Dimension.vl = EVAL_RFlt;
+		data[i].Dimension.vl = 0;
 	    } else {
 		tmpui8 = data[i].Dimension.lnk.aprm.at().getI();
 		if(tmpui8 != data[i].Dimension.vl) {
@@ -349,7 +349,7 @@ void B_BVT::tmHandler(void)
 			data[i].Calcs.vl = 0;
 		    } else {
 			tmpui8 = data[i].Calcs.lnk.aprm.at().getR();
-			if(tmpfl.f != data[i].Calcs.vl) {
+			if(tmpui8 != data[i].Calcs.vl) {
 			    data[i].Calcs.vl = tmpui8;
 			    mPrm.vlAt(data[i].Calcs.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
 			    uint8_t E[2] = { 0, tmpui8 };

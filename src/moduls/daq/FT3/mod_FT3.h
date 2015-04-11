@@ -94,7 +94,7 @@ namespace FT3
     } ModeTask;
 
 #define mlD 252
-#define nBE 200
+#define nBE 400
 
     struct blockEvents
     {
@@ -116,10 +116,24 @@ namespace FT3
         el_chBE *head;  //First event block
         el_chBE *tail;	//Last event block
         el_chBE *temp;	//Temp pointer
+//	pthread_mutex_t eventRes;
 
-        chain_BE(){head = NULL; tail = NULL; temp = NULL;};
+        chain_BE(){
+            head = NULL;
+            tail = NULL;
+            temp = NULL;
+/*            pthread_mutexattr_t attrM;
+            pthread_mutexattr_init(&attrM);
+            pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
+            pthread_mutex_init(&eventRes, &attrM);
+            pthread_mutexattr_destroy(&attrM);*/
+        };
+/*        ~chain_BE(){
+            pthread_mutex_destroy(&eventRes);
+        };*/
 
         el_chBE* getdel(){
+          //MtxAlloc res(eventRes, true);
           temp = head;
           if(head) head = head->next;
           if(!head) tail = NULL;
@@ -128,6 +142,7 @@ namespace FT3
 
 
         void insert(el_chBE *p){
+          //MtxAlloc res(eventRes, true);
           if(p){
             if(head){tail->next = p;}
             else{ head = p;}
@@ -271,10 +286,8 @@ namespace FT3
 	void cntrCmdProc(XMLNode *opt);
 
 	//Attributes
-//	ResString &mAddr;	//Transport device address
 	//!!! The resource for Enable parameters.
-	//Res	en_res;		//Resource for enable params
-	pthread_mutex_t enRes;
+	pthread_mutex_t enRes, eventRes;
 	//!!! The links to the controller's background task properties into config.
 	int64_t mPer;
 	int64_t &mPrior;			//Process task priority

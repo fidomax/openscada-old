@@ -94,6 +94,8 @@ time_t TMdContr::DateTimeToTime_t(uint8_t * D)
 
 void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 {
+
+    MtxAlloc res(eventRes, true);
     uint8_t DHM[5];
     time_t rawtime;
     time(&rawtime);
@@ -119,11 +121,12 @@ void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 	pBE = pCi->tail;
 	if((pBE->BE.d != day) || (pBE->BE.h != hour)) {
 	    fNewBE = true;
-	} else if((sizeof(pBE->BE.mD) - pBE->BE.l) < (length + 2)) {
+	} else if((sizeof(pBE->BE.mD) - pBE->BE.l) < (length + 4)) {
 	    fNewBE = true;
 	} else {
 	    fNewBE = false;
 	}
+
     }
     if(fNewBE) {
 	if(empt.head) {pBE = empt.getdel();}
@@ -197,6 +200,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
     uint8_t n;
     uint16_t tm;
     uint8_t rc;
+    MtxAlloc res(eventRes, true);
     msgOut->L = 0;
     switch(msg->C & 0x0F) {
     case ResetChan:
@@ -208,16 +212,11 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
     case ReqData1:
     case ReqData2:
     case ReqData:
-//	mess_info(nodePath().c_str(), _("ReqData"));
-	  //byte c = cmd & 0xF;
-	  chain_BE *pC; el_chBE *pBE;
+	chain_BE *pC;
+	el_chBE *pBE;
 // TODO FCB check
-//	  if((FCB3 != (msg->C&0x20))){
-//	    FCB3 = msg->C & 0x20;
-
 	switch(msg->C & 0x0F) {
 	case ReqData1:
-
 	    pC = &C1;
 	    break;
 	case ReqData2:
@@ -232,7 +231,6 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	if(!pC || !pC->head) {
 	    msgOut->L = 3;
 	    msgOut->C = 9;
-//		mess_info(nodePath().c_str(), _("No data"));
 	} else {
 
 	    pBE = pC->getdel();
@@ -245,13 +243,10 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 
 	    msgOut->C = 8;
 	    empt.insert(pBE);
-		mess_info(nodePath().c_str(), _("Data L %d "),msgOut->L);
 	}
 	if(C1.head) {
 	    msgOut->C |= 0x20;
 	}
-//}
-
 	break;
     case SetData:
 	mess_info(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"),FCB2,msg->C);
@@ -276,49 +271,36 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 		msgOut->L = 3;
 		msgOut->C = 0;
 	    }
-	    //if (HasEvent)    msgOut->C |= 0x20;
 	} else {
 	    mess_info(nodePath().c_str(), _("SetData BAD FCB!!!"));
 	}
 	break;
     case AddrReq:
-	mess_info(nodePath().c_str(), _("AddrReq"));
+//	mess_info(nodePath().c_str(), _("AddrReq"));
 	msgOut->C = 8;
 	time_t rawtime;
 	time(&rawtime);
 	Time_tToDateTime(msgOut->D, rawtime);
-	//msgOut->L += 3;
 	l = 0;
 	n = 3;
-//	mess_info(nodePath().c_str(), _("n %d"), n);
 	tm = TSYS::getUnalign16(msgOut->D + 3);
-
 	while(l < (msg->L - 3)) {
 	    uint16_t id = TSYS::getUnalign16(msg->D + l);
 	    l += 2;
 	    msgOut->D[n++] = tm;
 	    msgOut->D[n++] = tm >> 8;
-//	    mess_info(nodePath().c_str(), _("time n %d"), n);
 	    msgOut->D[n++] = id;
 	    msgOut->D[n++] = id >> 8;
-//	    mess_info(nodePath().c_str(), _("addr n %d"), n);
 	    vector<string> lst;
 	    list(lst);
 	    rc = 0;
-	    /*	    for(int i_l = 0; i_l < lst.size(); i_l++) {
-	     //AutoHD<TMdPrm> t = at(lst[i_l]);*/
 	    rc = cmdGet(id, msgOut->D + n);
 	    if(rc != 0) {
 		n += rc;
-		//l += rc;
-//		mess_info(nodePath().c_str(), _("found! %d"), n);
-//		    break;
 	    }
-
-//	    }
 	    if(rc == 0) {
 		l = msg->L - 3;
-		mess_info(nodePath().c_str(), _("ID not found! %04X"), id);
+		mess_info(nodePath().c_str(), _("AddrReq ID not found! %04X"), id);
 		msgOut->C = 9;
 		break;
 	    }
@@ -336,18 +318,9 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	msgOut->L = 3;
 	msgOut->C = FCB3;
 	break;
-
-	/*		case SetData   :
-	 case TimSync   :
-	 case Reset     :
-	 case Winter    :
-	 case Summer    :
-
-	 case AddrReq   :*/
     }
     msgOut->A = msg->B;
     msgOut->B = devAddr;
-
     return msgOut->L;
 }
 
@@ -503,6 +476,10 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
     pthread_mutexattr_init(&attrM);
     pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&enRes, &attrM);
+    pthread_mutex_init(&eventRes, &attrM);
+    pthread_mutexattr_destroy(&attrM);
+
+    MtxAlloc res(eventRes, true);
     BE = new el_chBE[nBE];
     if(BE){
       for(int i=0; i<nBE; i++) empt.insert(&BE[i]);
@@ -826,7 +803,9 @@ TMdContr::~TMdContr()
 {
 //mess_info(nodePath().c_str(),_("TMdContr::~TMdContr"));
     if(startStat()) stop();
+
     delete [] BE;
+    pthread_mutex_destroy(&enRes);
 }
 
 //!!! Status processing function for DAQ-controllers
@@ -929,6 +908,12 @@ void *TMdContr::DAQTask(void *icntr)
 	    cntr.Transact(&Msg);
 //	    mess_info(cntr.nodePath().c_str(), _("ReqData L %d C %d"), Msg.L, Msg.C);
 	    if((Msg.C & 0x0F) == GOOD3) {
+		mess_info(cntr.nodePath().c_str(), _("new event %d"), Msg.L);
+		string dump;
+		for (int i = 0; i< Msg.L; i++) {
+		    dump+=TSYS::strMess("%02X ",Msg.D[i]);
+		}
+		mess_info(cntr.nodePath().c_str(), _("%d, %s"), Msg.L, dump.c_str());
 		//FILETIME ftTimeStamp;
 		uint16_t l = Msg.L - 6, m = 0, n = 3;
 		while(l) {
@@ -948,7 +933,12 @@ void *TMdContr::DAQTask(void *icntr)
 			n += m;
 			m = 0;
 		    } else {
-			mess_info(cntr.nodePath().c_str(), _("Unhandled event  %04X"), TSYS::getUnalign16(Msg.D + n));
+			mess_info(cntr.nodePath().c_str(), _("Unhandled event  %04X at %d"), TSYS::getUnalign16(Msg.D + n),n);
+			string dump;
+			for (int i = 0; i< Msg.L; i++) {
+			    dump+=TSYS::strMess("%02X ",Msg.D[i]);
+			}
+			mess_info(cntr.nodePath().c_str(), _("%d, %s"), Msg.L, dump.c_str());
 			break;
 		    }
 		}
@@ -1162,7 +1152,7 @@ uint16_t TMdPrm::Task(uint16_t cod)
 uint16_t TMdPrm::HandleEvent(uint8_t * D)
 {
     if(mDA) {
-	mess_info(nodePath().c_str(),_("TMdContr::HandleEvent %04X"),TSYS::getUnalign16(D));
+	//mess_info(nodePath().c_str(),_("TMdContr::HandleEvent %04X"),TSYS::getUnalign16(D));
 	return mDA->HandleEvent(D);
     } else {
 	return 0;
