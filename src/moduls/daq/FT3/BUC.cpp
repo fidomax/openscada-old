@@ -66,6 +66,11 @@ string B_BUC::getStatus(void)
 
 }
 
+void B_BUC::tmHandler(void)
+{
+
+}
+
 uint16_t B_BUC::Task(uint16_t uc)
 {
     tagMsg Msg;
@@ -224,7 +229,7 @@ uint16_t B_BUC::setVal(TVal &val)
     return 0;
 }
 
-uint8_t B_BUC::GetData(uint16_t prmID, uint8_t * out)
+uint8_t B_BUC::cmdGet(uint16_t prmID, uint8_t * out)
 {
     if((prmID & 0xF000) != ID) return false;
     uint16_t k = (prmID >> 6) & 0x3F; // номер объекта
@@ -288,4 +293,8 @@ uint8_t B_BUC::GetData(uint16_t prmID, uint8_t * out)
 	break;
     }
     return l;
+}
+uint8_t B_BUC::cmdSet(uint8_t * req, uint8_t addr)
+{
+    return 0;
 }
