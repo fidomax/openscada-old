@@ -908,12 +908,12 @@ void *TMdContr::DAQTask(void *icntr)
 	    cntr.Transact(&Msg);
 //	    mess_info(cntr.nodePath().c_str(), _("ReqData L %d C %d"), Msg.L, Msg.C);
 	    if((Msg.C & 0x0F) == GOOD3) {
-		mess_info(cntr.nodePath().c_str(), _("new event %d"), Msg.L);
+		mess_info(cntr.nodePath().c_str(), _("new event %d"), Msg.L -3);
 		string dump;
-		for (int i = 0; i< Msg.L; i++) {
+		for (int i = 0; i< (Msg.L - 3) ; i++) {
 		    dump+=TSYS::strMess("%02X ",Msg.D[i]);
 		}
-		mess_info(cntr.nodePath().c_str(), _("%d, %s"), Msg.L, dump.c_str());
+		mess_info(cntr.nodePath().c_str(), _("%d, %s"), (Msg.L - 3), dump.c_str());
 		//FILETIME ftTimeStamp;
 		uint16_t l = Msg.L - 6, m = 0, n = 3;
 		while(l) {
@@ -935,10 +935,10 @@ void *TMdContr::DAQTask(void *icntr)
 		    } else {
 			mess_info(cntr.nodePath().c_str(), _("Unhandled event  %04X at %d"), TSYS::getUnalign16(Msg.D + n),n);
 			string dump;
-			for (int i = 0; i< Msg.L; i++) {
+			for (int i = 0; i< (Msg.L - 3); i++) {
 			    dump+=TSYS::strMess("%02X ",Msg.D[i]);
 			}
-			mess_info(cntr.nodePath().c_str(), _("%d, %s"), Msg.L, dump.c_str());
+			mess_info(cntr.nodePath().c_str(), _("%d, %s"), (Msg.L - 3), dump.c_str());
 			break;
 		    }
 		}
