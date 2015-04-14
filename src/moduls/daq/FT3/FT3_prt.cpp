@@ -92,9 +92,10 @@ void TProt::MakePacket(string &pdu, tagMsg * msg)
 {
     uint16_t x, y, l, z;
     uint16_t w;
-    if((msg->L == 1) && ((msg->C & 0x0F) == ReqData)) {
+    if((msg->L == 1)) {
+	mess_info(nodePath().c_str(), _("MakePacket one byte req %02X"),msg->C);
 	// one byte req
-	pdu += (char) (~msg->A & 0x3F) | 0x80;
+	pdu += (char) msg->C;
     } else {
 	// full packet
 	pdu += (char) 0x05;
@@ -143,6 +144,7 @@ uint16_t TProt::VerifyPacket(string &pdu)
     uint16_t raslen;
     if(pdu.size() == 1) {
 	//байтовый опрос
+	mess_info(nodePath().c_str(), _("VerifyPacket one byte req"));
 	return 0;
     } else {
 	//нормальный пакет
@@ -182,6 +184,13 @@ uint16_t TProt::ParsePacket(string &pdu, tagMsg * msg)
 		msg->D[y++] = pdu[x++];
 	    x += 2;
 	}
+    }
+    if ((pdu.size() == 1) && ((pdu[0] & 0xC0)==0x80)) {
+	msg->L = 1;
+	msg->C = pdu[0];
+	msg->A = (~pdu[0]) & 0x3F;
+	msg->B = 0;
+	mess_info(nodePath().c_str(), _("ParsePacket one byte req C %02X A %02X"),msg->C,msg->A);
     }
     return 0;
 }
