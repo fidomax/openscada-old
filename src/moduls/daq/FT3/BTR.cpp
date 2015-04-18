@@ -32,6 +32,7 @@ B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params
 
 {
     TFld * fld;
+
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
     if(count_nu) {
@@ -53,16 +54,33 @@ B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params
 	    fld->setReserve(TSYS::strMess("%d:2", i));
 	}
     }
-    for(int i = 1; i <= count_nr; i++) {
-	mPrm.p_el.fldAdd(fld = new TFld(TSYS::strMess("sett_%d", i).c_str(), TSYS::strMess(_("Setting %d"), i).c_str(), TFld::Real, TVal::DirWrite));
-	fld->setReserve(TSYS::strMess("%d:0", i + count_nu));
+    for(int i = 0; i < count_nr; i++) {
+	data.push_back(STRchannel(i));
+	mPrm.p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
+	fld->setReserve(TSYS::strMess("%d:1", i + 1 + count_nu));
     }
-
+    loadIO(true);
 }
 
 B_BTR::~B_BTR()
 {
 
+}
+
+void B_BTR::loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
+{
+    cfg.cfg("ID").setS(lnk.prmName);
+    if(SYS->db().at().dataGet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg, false, true)) {
+	lnk.prmAttr = cfg.cfg("VALUE").getS();
+	lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
+    }
+}
+
+void B_BVT::saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
+{
+    cfg.cfg("ID").setS(lnk.prmName);
+    cfg.cfg("VALUE").setS(lnk.prmAttr);
+    SYS->db().at().dataSet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg);
 }
 
 string B_BTR::getStatus(void)
@@ -75,6 +93,62 @@ string B_BTR::getStatus(void)
     }
     return rez;
 
+}
+
+void B_BTR::loadIO(bool force)
+{
+    //Load links
+//    mess_info("B_BVT::loadIO", "");
+    if(mPrm.owner().startStat() && !force) {
+	mPrm.modif(true);
+	return;
+    }	//Load/reload IO context only allow for stopped controllers for prevent throws
+
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    for(int i = 0; i < count_nr; i++) {
+	loadLnk(data[i].Value.lnk, io_bd, cfg);
+    }
+
+}
+
+void B_BTR::saveIO()
+{
+    //Save links
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    for(int i = 0; i < count_nr; i++) {
+	saveLnk(data[i].Value.lnk, io_bd, cfg);
+    }
+}
+
+
+void B_BTR::tmHandler(void)
+{
+    NeedInit = false;
+    for(int i = 0; i < count_nr; i++) {
+	uint8_t tmpui8;
+	union
+	{
+	    uint8_t b[4];
+	    float f;
+	} tmpfl, tmpfl1;
+
+	if( data[i].Value.lnk.aprm.freeStat()) {
+	    //no connection
+	    data[i].Value.vl = EVAL_RFlt;
+	} else {
+	    tmpfl.f = data[i].Value.lnk.aprm.at().getR();
+	    if(tmpfl.f != data[i].Value.vl) {
+		data[i].Value.vl = tmpfl.f;
+		mPrm.vlAt(data[i].Value.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+		mPrm.owner().PushInBE(2, sizeof(E), ID | ((i + 1) << 6) | (0), E);
+	    }
+	}
+    }
 }
 
 uint16_t B_BTR::Task(uint16_t uc)
@@ -123,7 +197,7 @@ uint16_t B_BTR::Task(uint16_t uc)
 			*((uint16_t *) Msg.D) = ID | ((i + count_nu) << 6) | (0); //уставка
 			if(mPrm.owner().Transact(&Msg)) {
 			    if(Msg.C == GOOD3) {
-				mPrm.vlAt(TSYS::strMess("sett_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 8), 0, true);
+				mPrm.vlAt(TSYS::strMess("value_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 8), 0, true);
 				rc = 1;
 			    } else {
 				rc = 0;
@@ -196,7 +270,7 @@ uint16_t B_BTR::HandleEvent(uint8_t * D)
 	if(k && (k <= count_nr)) {
 	    switch(n) {
 	    case 0:
-		mPrm.vlAt(TSYS::strMess("sett_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
+		mPrm.vlAt(TSYS::strMess("value_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
 		l = 7;
 		break;
 

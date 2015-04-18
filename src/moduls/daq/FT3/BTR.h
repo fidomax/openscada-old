@@ -33,10 +33,42 @@ namespace FT3
 	uint16_t count_nu;
 	uint16_t count_nr;
 	bool with_params;
+	void loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
+	void saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
+	void saveIO(void);
+	void loadIO(bool force = false );
+	void tmHandler(void);
+	class STRchannel
+	{
+	public:
+	    STRchannel(uint8_t iid) :
+		    id(iid), Value(TSYS::strMess("value_%d", id + 1).c_str(), TSYS::strMess(_("Value %d"), id + 1).c_str())
+	    {
+	    }
+	    uint8_t id;
+
+	    flData Value;
+	};
+	vector<STRchannel> data;
+	int lnkSize()
+	{
+	    return data.size();
+	}
+	int lnkId(const string &id)
+	{
+	    for(int i_l = 0; i_l < data.size(); i_l++) {
+		if(data[i_l].Value.lnk.prmName == id) return i_l;
+	    }
+	    return -1;
+	}
+	SLnk &lnk(int num)
+	{
+	    return data[num].Value.lnk;
+	}
     };
 
 } //End namespace
