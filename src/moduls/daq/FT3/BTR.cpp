@@ -76,7 +76,7 @@ void B_BTR::loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
     }
 }
 
-void B_BVT::saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
+void B_BTR::saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
 {
     cfg.cfg("ID").setS(lnk.prmName);
     cfg.cfg("VALUE").setS(lnk.prmAttr);
