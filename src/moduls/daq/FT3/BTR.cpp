@@ -259,7 +259,6 @@ uint16_t B_BTR::HandleEvent(uint8_t * D)
 	    case 2:
 		if(with_params) {
 		    mPrm.vlAt(TSYS::strMess("astime_%d", k).c_str()).at().setI(D[3], 0, true);
-		    ;
 		}
 		l = 4;
 		break;
