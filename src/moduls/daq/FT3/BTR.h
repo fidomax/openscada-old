@@ -33,10 +33,11 @@ namespace FT3
 	uint16_t count_nu;
 	uint16_t count_nr;
 	bool with_params;
-	void loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
-	void saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
+	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
+	uint8_t cmdSet(uint8_t * req, uint8_t addr);
+	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
 	void saveIO(void);

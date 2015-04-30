@@ -52,22 +52,6 @@ B_BVTC::~B_BVTC()
     data.clear();
 }
 
-void B_BVTC::loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
-{
-    cfg.cfg("ID").setS(lnk.prmName);
-    if(SYS->db().at().dataGet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg, false, true)) {
-	lnk.prmAttr = cfg.cfg("VALUE").getS();
-	lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
-    }
-}
-
-void B_BVTC::saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
-{
-    cfg.cfg("ID").setS(lnk.prmName);
-    cfg.cfg("VALUE").setS(lnk.prmAttr);
-    SYS->db().at().dataSet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg);
-}
-
 string B_BVTC::getStatus(void)
 {
     string rez;

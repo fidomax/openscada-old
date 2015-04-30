@@ -31,8 +31,6 @@ namespace FT3
 	~B_BVT();
 	uint16_t ID;
 	uint16_t count_n;
-	void loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
-	void saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
@@ -227,10 +225,6 @@ namespace FT3
 		return data[num / k].RateLimit.lnk;
 	    }
 	}
-
-	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
-	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
-	uint8_t SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2);
 
     private:
 	bool with_params;

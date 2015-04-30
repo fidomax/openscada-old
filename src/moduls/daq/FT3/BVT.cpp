@@ -92,22 +92,6 @@ B_BVT::~B_BVT()
 
 }
 
-void B_BVT::loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
-{
-    cfg.cfg("ID").setS(lnk.prmName);
-    if(SYS->db().at().dataGet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg, false, true)) {
-	lnk.prmAttr = cfg.cfg("VALUE").getS();
-	lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
-    }
-}
-
-void B_BVT::saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
-{
-    cfg.cfg("ID").setS(lnk.prmName);
-    cfg.cfg("VALUE").setS(lnk.prmAttr);
-    SYS->db().at().dataSet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg);
-}
-
 string B_BVT::getStatus(void)
 {
     string rez;
@@ -767,60 +751,6 @@ uint8_t B_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 	}
     }
     return l;
-}
-
-uint8_t B_BVT::SetNew8Val(ui8Data &d, uint8_t addr, uint16_t prmID, uint8_t val)
-{
-    if(!d.lnk.aprm.freeStat()) {
-	mess_info(mPrm.nodePath().c_str(), "new ui8val %d", val);
-	d.s = addr;
-	d.vl = val;
-	d.lnk.aprm.at().setI(d.vl);
-	mPrm.vlAt(d.lnk.prmName.c_str()).at().setI(d.vl, 0, true);
-	uint8_t E[2] = { addr, d.vl };
-	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 1;
-    } else {
-	return 0;
-    }
-}
-
-uint8_t B_BVT::SetNewflVal(flData &d, uint8_t addr, uint16_t prmID, float val)
-{
-    mess_info(mPrm.nodePath().c_str(), "new fl");
-    if(!d.lnk.aprm.freeStat()) {
-	mess_info(mPrm.nodePath().c_str(), "new fl %f", val);
-	d.s = addr;
-	d.vl = val;
-	d.lnk.aprm.at().setR(d.vl);
-	mPrm.vlAt(d.lnk.prmName.c_str()).at().setR(d.vl, 0, true);
-	uint8_t E[5] = { addr, d.b_vl[0], d.b_vl[1], d.b_vl[2], d.b_vl[3] };
-	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 4;
-    } else {
-	return 0;
-    }
-}
-
-uint8_t B_BVT::SetNew2flVal(flData &d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2)
-{
-    mess_info(mPrm.nodePath().c_str(), "new 2fl");
-    if((!d1.lnk.aprm.freeStat()) && (!d2.lnk.aprm.freeStat())) {
-	mess_info(mPrm.nodePath().c_str(), "new 2fl %f %f", val1, val2);
-	d1.s = addr;
-	d1.vl = val1;
-	d1.lnk.aprm.at().setR(d1.vl);
-	mPrm.vlAt(d1.lnk.prmName.c_str()).at().setR(d1.vl, 0, true);
-	d2.s = addr;
-	d2.vl = val2;
-	d2.lnk.aprm.at().setR(d2.vl);
-	mPrm.vlAt(d2.lnk.prmName.c_str()).at().setR(d2.vl, 0, true);
-	uint8_t E[9] = { addr, d1.b_vl[0], d1.b_vl[1], d1.b_vl[2], d1.b_vl[3], d2.b_vl[0], d2.b_vl[1], d2.b_vl[2], d2.b_vl[3] };
-	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 4 + 4;
-    } else {
-	return 0;
-    }
 }
 
 uint8_t B_BVT::cmdSet(uint8_t * req, uint8_t addr)
