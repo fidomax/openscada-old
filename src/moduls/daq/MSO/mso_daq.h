@@ -49,7 +49,7 @@ using namespace OSCADA;
 #define DAQ_SUBVER	SDAQ_VER
 #define DAQ_MVER	"0.0.1"
 #define DAQ_AUTHORS	_("Maxim Kochetkov")
-#define DAQ_DESCR	_("Allow realisation of MSO client service. Supported MSO-CAN protocols.")
+#define DAQ_DESCR	_("Allow realization of MSO client service. Supported MSO-CAN protocols.")
 #define DAQ_LICENSE	"GPL2"
 //*************************************************
 
@@ -128,7 +128,7 @@ class TMdPrm : public TParamContr
 {
     public:
 	//Methods
-	TMdPrm( string name, TTipParam *tp_prm );
+	TMdPrm( string name, TTypeParam *tp_prm );
 	~TMdPrm( );
 
 	void enable( );
@@ -261,7 +261,7 @@ class TMdContr: public TController
 //*************************************************
 //* TTpContr                                      *
 //*************************************************
-class TTpContr: public TTipDAQ
+class TTpContr: public TTypeDAQ
 {
     public:
 	//Methods

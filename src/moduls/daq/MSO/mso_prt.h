@@ -44,7 +44,7 @@ using namespace OSCADA;
 #define PRT_SUBVER	SPRT_VER
 #define PRT_MVER	"0.0.1"
 #define PRT_AUTHORS	_("Maxim Kochetkov")
-#define PRT_DESCR	_("Allow realisation of MSO protocols. Supported MSO-CAN protocols.")
+#define PRT_DESCR	_("Allow realization of MSO protocols. Supported MSO-CAN protocols.")
 #define PRT_LICENSE	"GPL2"
 //*************************************************
 
