@@ -54,21 +54,63 @@ namespace FT3
 
 	    flData Value;
 	};
-	vector<STRchannel> data;
+	class STUchannel
+	{
+	public:
+	    STUchannel(uint8_t iid) :
+		    id(iid),
+		    On(TSYS::strMess("on_%d", id + 1).c_str(), TSYS::strMess(_("On %d"), id + 1).c_str()),
+		    Off(TSYS::strMess("off_%d", id + 1).c_str(), TSYS::strMess(_("Off %d"), id + 1).c_str()),
+		    Run(TSYS::strMess("run_%d", id + 1).c_str(), TSYS::strMess(_("Run %d"), id + 1).c_str()),
+		    Reset(TSYS::strMess("reset_%d", id + 1).c_str(), TSYS::strMess(_("Reset %d"), id + 1).c_str()),
+	            Time(TSYS::strMess("time_%d", id + 1).c_str(), TSYS::strMess(_("Time %d"), id + 1).c_str()),
+	            TC(TSYS::strMess("tc_%d", id + 1).c_str(), TSYS::strMess(_("TC %d"), id + 1).c_str()),
+		    ExTime(TSYS::strMess("extime_%d", id + 1).c_str(), TSYS::strMess(_("ExTime %d"), id + 1).c_str())
+
+	    {
+	    }
+	    uint8_t id;
+
+	    ui8Data On, Off, Run, Reset, Time, TC, ExTime;
+	};
+	vector<STRchannel> TRdata;
+	vector<STUchannel> TUdata;
 	int lnkSize()
 	{
-	    return data.size();
+	    return TUdata.size() * 4 + TRdata.size();
 	}
 	int lnkId(const string &id)
 	{
-	    for(int i_l = 0; i_l < data.size(); i_l++) {
-		if(data[i_l].Value.lnk.prmName == id) return i_l;
+	    for(int i_l = 0; i_l < TUdata.size(); i_l++) {
+		if(TUdata[i_l].On.lnk.prmName == id) return i_l * 4;
+		if(TUdata[i_l].Off.lnk.prmName == id) return i_l * 4 + 1;
+		if(TUdata[i_l].Run.lnk.prmName == id) return i_l * 4 + 2;
+		if(TUdata[i_l].Reset.lnk.prmName == id) return i_l * 4 + 3;
+	    }
+
+	    for(int i_l = 0; i_l < TRdata.size(); i_l++) {
+		if(TRdata[i_l].Value.lnk.prmName == id) return i_l + TUdata.size() * 4;
 	    }
 	    return -1;
 	}
 	SLnk &lnk(int num)
 	{
-	    return data[num].Value.lnk;
+	    if((TUdata.size() > 0) && ((TUdata.size() * 4) > num)) {
+		switch(num % 4) {
+		case 0:
+		    return TUdata[num / 4].On.lnk;
+		case 1:
+		    return TUdata[num / 4].Off.lnk;
+		case 2:
+		    return TUdata[num / 4].Run.lnk;
+		case 3:
+		    return TUdata[num / 4].Reset.lnk;
+
+		}
+	    } else {
+		return TRdata[num - TUdata.size() * 4].Value.lnk;
+	    }
+
 	}
     };
 

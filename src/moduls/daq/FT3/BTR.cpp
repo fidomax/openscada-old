@@ -42,21 +42,29 @@ B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params
 	fld->setReserve("0:2");
     }
 
-    for(int i = 1; i <= count_nu; i++) {
+    for(int i = 0; i < count_nu; i++) {
+	TUdata.push_back(STUchannel(i));
+	mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].On.lnk.prmName.c_str(), TUdata[i].On.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].Off.lnk.prmName.c_str(), TUdata[i].Off.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].Run.lnk.prmName.c_str(), TUdata[i].Run.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].Reset.lnk.prmName.c_str(), TUdata[i].Reset.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
 	if(with_params) {
+	    mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].Time.lnk.prmName.c_str(), TUdata[i].Time.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
+	    fld->setReserve(TSYS::strMess("%d:0", i + 1));
+	    mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].TC.lnk.prmName.c_str(), TUdata[i].TC.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
+
 	    mPrm.p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("time_%d", i).c_str(), TSYS::strMess(_("Persistence time %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:0", i));
-	    mPrm.p_el.fldAdd(fld = new TFld(TSYS::strMess("TC_%d", i).c_str(), TSYS::strMess(_("TC bind %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:1", i));
+		    fld = new TFld(TSYS::strMess("TC_%d", i + 1).c_str(), TSYS::strMess(_("TC bind %d"), i + 1).c_str(), TFld::Integer, TVal::DirWrite));
+	    fld->setReserve(TSYS::strMess("%d:1", i + 1));
 	    mPrm.p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("astime_%d", i).c_str(), TSYS::strMess(_("Persistence astime %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:2", i));
+		    fld = new TFld(TSYS::strMess("extime_%d", i + 1).c_str(), TSYS::strMess(_("Extra time %d"), i + 1).c_str(), TFld::Integer,
+			    TVal::DirWrite));
+	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	}
     }
     for(int i = 0; i < count_nr; i++) {
-	data.push_back(STRchannel(i));
-	mPrm.p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
+	TRdata.push_back(STRchannel(i));
+	mPrm.p_el.fldAdd(fld = new TFld(TRdata[i].Value.lnk.prmName.c_str(), TRdata[i].Value.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	fld->setReserve(TSYS::strMess("%d:0", i + 1 + count_nu));
     }
     loadIO(true);
@@ -92,7 +100,7 @@ void B_BTR::loadIO(bool force)
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_nr; i++) {
-	loadLnk(data[i].Value.lnk, io_bd, cfg);
+	loadLnk(TRdata[i].Value.lnk, io_bd, cfg);
     }
 
 }
@@ -104,7 +112,7 @@ void B_BTR::saveIO()
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_nr; i++) {
-	saveLnk(data[i].Value.lnk, io_bd, cfg);
+	saveLnk(TRdata[i].Value.lnk, io_bd, cfg);
     }
 }
 
@@ -120,14 +128,14 @@ void B_BTR::tmHandler(void)
 	    float f;
 	} tmpfl, tmpfl1;
 
-	if( data[i].Value.lnk.aprm.freeStat()) {
+	if( TRdata[i].Value.lnk.aprm.freeStat()) {
 	    //no connection
-	    data[i].Value.vl = EVAL_RFlt;
+	    TRdata[i].Value.vl = EVAL_RFlt;
 	} else {
-	    tmpfl.f = data[i].Value.lnk.aprm.at().getR();
-	    if(tmpfl.f != data[i].Value.vl) {
-		data[i].Value.vl = tmpfl.f;
-		mPrm.vlAt(data[i].Value.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+	    tmpfl.f = TRdata[i].Value.lnk.aprm.at().getR();
+	    if(tmpfl.f != TRdata[i].Value.vl) {
+		TRdata[i].Value.vl = tmpfl.f;
+		mPrm.vlAt(TRdata[i].Value.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
 		uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
 		mPrm.owner().PushInBE(2, sizeof(E), ID | ((i + 1) << 6) | (0), E);
 	    }
@@ -170,7 +178,7 @@ uint16_t B_BTR::Task(uint16_t uc)
 				if(Msg.C == GOOD3) {
 				    mPrm.vlAt(TSYS::strMess("time_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 8), 0, true);
 				    mPrm.vlAt(TSYS::strMess("TC_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 15), 0, true);
-				    mPrm.vlAt(TSYS::strMess("astime_%d", i).c_str()).at().setI(Msg.D[22], 0, true);
+				    mPrm.vlAt(TSYS::strMess("extime_%d", i).c_str()).at().setI(Msg.D[22], 0, true);
 				    rc = 1;
 				} else {
 				    rc = 0;
@@ -249,7 +257,7 @@ uint16_t B_BTR::HandleEvent(uint8_t * D)
 	    break;
 	case 2:
 	    if(with_params) {
-		mPrm.vlAt(TSYS::strMess("astime_%d", k).c_str()).at().setI(D[3], 0, true);
+		mPrm.vlAt(TSYS::strMess("extime_%d", k).c_str()).at().setI(D[3], 0, true);
 		;
 	    }
 	    l = 4;
@@ -290,9 +298,9 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
 	//TODO TU
     }
     if(count_nr && ((k > count_nu) && (k <= count_nr + count_nu))) {
-	out[0] = data[k - 1 - count_nu].Value.s;
+	out[0] = TRdata[k - 1 - count_nu].Value.s;
 	for(uint8_t j = 0; j < 4; j++)
-	    out[1 + j] = data[k - 1 - count_nu].Value.b_vl[j];
+	    out[1 + j] = TRdata[k - 1 - count_nu].Value.b_vl[j];
 	l = 5;
     }
     return l;
@@ -325,7 +333,7 @@ uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
     mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", k, n);
     if(count_nr && ((k > count_nu) && (k <= count_nr + count_nu))) {
 	mess_info(mPrm.nodePath().c_str(), "cmdSet Val");
-	l = SetNewflVal(data[k - 1 - count_nu].Value, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	l = SetNewflVal(TRdata[k - 1 - count_nu].Value, addr, prmID, TSYS::getUnalignFloat(req + 2));
     }
 }
 
