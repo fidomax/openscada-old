@@ -45,8 +45,8 @@ class VFileArch
 	//Methods
 	VFileArch( ModVArchEl *owner );
 	VFileArch( const string &iname, int64_t ibeg, int64_t iend, int64_t iper, TFld::Type itp, ModVArchEl *owner);
-	~VFileArch();
-	void delFile();
+	~VFileArch( );
+	void delFile( );
 
 	void attach( const string &name );
 
@@ -60,7 +60,7 @@ class VFileArch
 	bool	err( )		{ return mErr; }
 	bool	isPack( )	{ return mPack; }
 
-	void	setVals( TValBuf &buf, int64_t beg, int64_t end );
+	bool	setVals( TValBuf &buf, int64_t beg, int64_t end );
 	void	getVals( TValBuf &buf, int64_t beg, int64_t end );
 	TVariant getVal( int pos );
 
@@ -122,6 +122,7 @@ class VFileArch
 	string	eVal;		//Eval data type value
 	int	mpos;		//Maximum value position into file
 	char	tbt;		//Temporary byte
+	bool	intoRep;	//Into repaire
 
 	// Cache parameters
 	struct CacheEl {
@@ -144,6 +145,7 @@ class ModVArch;
 class ModVArchEl: public TVArchEl
 {
     friend class VFileArch;
+    friend class ModVArch;
     public:
 	//Methods
 	ModVArchEl( TVArchive &iachive, TVArchivator &iarchivator );
@@ -170,7 +172,7 @@ class ModVArchEl: public TVArchEl
 	//Attributes
 	bool	mChecked;	//The present archive files checked, for prevent doubles create at the new data place
 	Res	mRes;		//Resource to access;
-	deque<VFileArch *>	arh_f;
+	deque<VFileArch*>	files;
 	int64_t	realEnd;
 };
 
