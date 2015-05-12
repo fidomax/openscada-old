@@ -236,6 +236,7 @@ AX_MOD_DAQ_EN(Siemens,[disable build module DAQ.Siemens],disable,[],
 	[AC_MSG_ERROR(DAQ.Siemens: Linux kernel headers not found. Install or check Linux kernel headers package!)])
 ])
 AX_MOD_DAQ_EN(ModBus,[disable or enable[=incl] build module DAQ.ModBus],disable,incl)
+AX_MOD_DAQ_EN(MSO,[disable or enable[=incl] build module DAQ.MSO],disable,incl)
 AX_MOD_DAQ_EN(DCON,[disable or enable[=incl] build module DAQ.DCON],disable,incl)
 AX_MOD_DAQ_EN(DAQGate,[disable or enable[=incl] build module DAQ.DAQGate],disable,incl)
 AX_MOD_DAQ_EN(SoundCard,[disable build module DAQ.SoundCard],disable,[],[
