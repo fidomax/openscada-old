@@ -1,3 +1,219 @@
+2015-05-11 Roman
+- Archiver.FSArch: Yet one place using delFile() set.
+- DAQ.{DAQGate,JavaLikeCalc,OPC_UA,SoundCard}: Some translations fixed.
+- FIX:UI.VCAEngine: Link to widget's attribute from the wiget by "wdg:a_XXX" prevented from crash into generic status.
+
+
+2015-05-09 Roman
+- !!:FIX:Archiver.FSArch: Removing *.info files for different pack mode is fixed.
+    Tab "Files" is added for the messages and the values with information about the archive's files.
+- FIX:UI.WebCfgD: Title's null value fix for helps.
+- SYS: *.spec: Field "Release" set to template rNNNN.
+- DB: DB object's fields "DESCR" and "ADDR" size rose to 2000 and 1000, respectively.
+- !!:FIX:Archiver.FSArch: Free storage space lack checking added for prevent hang and data lost for messages and values.
+- FIX:DB.SQLite: Adapted to the keys description as the key position number.
+- DAQ.{DCON,ICP_DAS,ModBus}: Error messages expanded to addition different errors per tries.
+- Transport.Serial: Some expanded by debug messages and the minuteness.
+- UI.QTCfg: List element expanded horizontal to all page, for wide items.
+
+
+2015-05-06 Roman
+- UI.Vision: Default exporting set for the big (not lesser twice to main page) and the single documents or the diagram.
+
+
+2015-05-05 Roman
+- Protocol.SelfSystem: Expanded by status - Active authentication sessions.
+- SYS: {debian,debian_mod}/control: Depends for build with Qt5 is added.
+- !!:BD.ODBC: The build dependencies checking is added to configure, by new macros AX_LIB_IODBC and iodbc-config.
+    Transactions generic processing and the tables list getting added.
+    Generic, ODBC internal, requests "tables", "qualifiers", "owners", "datatypes" to generic sqlReq() function is added.
+- FIX:BD.PostgreSQL: The build dependencies checking macros AX_LIB_POSTGRESQL some fixed for the results.
+- !!:DB: LibsDB.vcaBase.db: All left widgets of the widgets library "Main" moved to the dynamic translation by function tr().
+    Widget's "grpCadr", "cntrRegul", "ResultGraph", "doc_panel", "cntrPasp" code significant cleaned and refactored.
+- FIX:DAQ.JavaLikeCalc: Equal and NotEqual the virtual machine functions adjusted for undefined object's properties correct
+    processing by the processing generic as Real for not String types.
+- Protocol.UserProtocol: Restore starting a function added for stopped early by safety timeout.
+- UI.Vision: Default printing and exporting set for the big (not lesser twice to main page) and the single documents.
+    Primitive "Document" printing and exporting allowed from the context menu.
+    Apply/Cancel buttons of the text edition elements set to adaptive for the labels present or either depends from allowed
+	size of the widget container.
+
+
+2015-04-26 fido_max
+- DAQ.FastWel: Support the module DIM716 added.
+    Channels number of the module DIM718 fixed.
+    The module renamed to the correct "Fastwel".
+    The module translation to Russian is added.
+
+
+2015-04-26 Roman
+- !!!!:DB: New module "ODBC", based on iodbc, is added. At first there works only SQL statements request to the connected DB.
+- SYS.BD.=Tmpl=: Some next adapted to actual.
+- FIX:DAQ.{AMRDevs,Comedi,DAQGate,DiamondBoards,EPICS,MMS,ModBus,OPC_UA,SMH2Gi}:
+    Fix for return after the condition "!p->enableStat() || !p->owner().startStat()" into the value set function, for next and real writing prevent.
+    Thanks for the note from Maxim Kochetkov(fido_max)!
+- DAQ.{Comedi,DiamondBoards,SMH2Gi}: Significant the code cleaned.
+- !!:FIX:UI.Vision: For primitive "FormEl" fixed sometime difference between real and seen value, mostly for discrete views ComboBox and CheckBox.
+
+
+2015-04-22 Roman
+- SYS: debian/rules: "dh_installinit --no-start" set for prevent the service automatic start.
+- SYS.*.=Tmpl=: configure.in renamed to configure.ac. Mostly cleared.
+    SYS.BD.=Tmpl=: Mostly adapted to actual, for follow BD.ODBC append.
+- Protocol.HTTP: Expanded by status - Active authentication sessions.
+- Transport.Sockets: The connection timeout for an initiative input transport set to 5 seconds.
+- UI.Vision: Main oppened windows list to the module configure page status added, for remote control.
+- FIX:UI.Vision: Pages including for equal the container and the included widget size fixed to oppress the scrolls for big scale.
+- FIX:UI.{Vision,WebVision}: View "Button" of primitive FormEl adapted to the image scale for all the widget size.
+    Allow cover all the button space by the image.
+
+
+2015-04-19 Roman
+- DB: LibsDB.vcaBase.db: New widget "Calendar", from the project Krasna, to the library "Main" is added.
+    Condensed "TABLE.data" style for mostly document's tables apply, for thin to one pixel borders set.
+- !!:FIX:UI.VCAEngine: The function resource to a widgets library and a project loading and enabling by need multiple entry and perform prevent.
+    Some crashes and not full the data access prevent for the remote players.
+- !!:FIX:SYS: TCntrNode::isModify() rewrote for race-condition prevent by the chain locking from the parent to all childs, mostly by previous case.
+- FIX:UI.Vision: "Timeouted" messages at the running session restoring try, by the background project's data loading wait,
+    oppressed and the window closing ceased.
+
+
+2015-04-18 Roman
+- FIX:DB.FireBird: Prevent a table fix for key row as blr_varying.
+- !!:DB.MySQL: Address field "sets" (charset-collation-engine) appended to the storage engine set for next created tables.
+
+
+2015-04-16 Roman
+- !!:FIX:DB.MySQL: Address field "names" expanded to "charset-collation" and used as "CREATE db CHARACTER SET charset COLLATE collation"
+    into the DB creation and for connection set as "SET NAMES charset COLLATE collation".
+- !!!!:FIX:DB.PostgreSQL: Entries dublicates and other ones miss for request fieldSeek() workaround is added by "ORDER BY" to the request append
+	and the entries force sort.
+    DateTimeDec processing fix twice: for check to type change (the row recreation) and the value for flag TCfg::ExtValTwo request.
+- Archive.FSArch: The messages limits into the plain format archive expanded to 100000 symbols.
+- UI.VCAEngine: Special IOs naming to the execution session's context is added.
+- FIX:UI.Vision: The primitive "Document" text global styles "font-weight" and "font-style" forcing removed and set only for the properties allowes
+    into the font widget's attribute, for allow working tags "<B>" and "<I>".
+
+
+2015-04-12 Roman
+- FIX:SYS: The internationalisation  files for included to the core modules also placed to the package debian_mod/openscada-core.install.
+    User API object XMLNodeObj expanded by function clear() for allow fast a node clean up from childs, text and/or attributes.
+    The User API generic object's data resource Res replaced by pthread_mutex_t and the also used for connections to objects.
+- !!:TVArchive: User API functions for the object are added: status(), end(), begin(), period(), archivatorList(), getVal().
+- TVArchivator: User API function status() for the object is added.
+- !!:DAQ.JavaLikeCalc: Set for binary operations like "a = b+c+d+e;" using single temporary register and allow speed optimization
+    for strings append mostly.
+- FIX:UI.QTCfg: Edited now text element horizontal resizing fix.
+- FIX:UI.VCAEngine: User API operations mime() and mimeSet() used, tested and fixed for primitive "Diagram" source edition,
+    storing into the session table and the result display, for SVG.
+
+
+2015-04-06 Roman
+- FIX:DAQ.ICP_DAS: aiTypes translation for I-87017ZW and I-87026PW fixed.
+- FIX:UI.WebCfgD: Function basicFields() of WebCfgDVCA.js cleaned.
+    Static selected lists into "ind_ls" and "val_ls" processing some improved for empty items pass and other.
+- FIX:SYS: {debian|debian_mod}/* are appended by links to LibsDB and ARCHIVES/{VAL,MESS} for Model.{AGLKS,Boiler} for the models call into demon mode.
+    FIX:{debian|debian_mod}/control: Fixed for depends and openscada-core appended by the included modules to list.
+- Transport: User API objects are appended by functions: In::{status,addr}, Out::{status,addr,timings}.
+- UI.WebVision: ElFigure images scaling prevented by possible diferent child's size for send and process real "geomW" and "geomH".
+
+
+2015-04-04 Roman
+- SYS: debian/control: Build depends added libcomedi-dev.
+    {debian|debian_mod}/control: ${shlibs:Depends} removed from *-dbg.
+    {debian|debian_mod}/rules, debian_mod/control: Set the modules for build-in (include) to OpenSCADA core library:
+	    DBF, SQLite, JavaLikeCalc, LogicLev, Sockets, Serial, SelfSystem, UserProtocol, FLibComplex1, FLibSYS.
+	Configure stage moved to different with the stamp touch.
+	clean-install (for dh_clean) target is added as first for the target "binary".
+    debian_mod/*.init: Adapted for simultaneously the starting.
+- !!:FIX: Protocol.*: Including the modules call-external functions like "prt_HTTP_module" renamed to "prot_HTTP_module".
+
+
+2015-04-03 Roman
+- SYS: debian/rules made simplify and unified.
+    signal() replaced by sigaction() and restore original handlers at the TSYS destroy is added.
+
+
+2015-04-02 Roman
+- FIX:DAQ.OPC_UA: Array type publish fixed.
+
+
+2015-04-01 Roman
+- SYS: "Summary" of data/*.spec mostly cleaned.
+    data/openscada_mod_ALT.spec: The requires some reordered and packages descriptions some fixed and appended.
+    data/openscada_mod_RH.spec: Significant cleaned, updated to Work (0.9) version and descriptions some appended. Cleaning is not finished yet.
+    !!:data/debian_mod added for allow build separated modules packages.
+- TArchives, TCntrNode, DAQ.SMH2Gi, UI.VCAEngine: All remains operations with TArrayObj moved to arGet() and arSet().
+- Transports: To input transport object added User API function assTrsList() for assigned output transports to the input.
+- !!:SYS.*: For almost all modules the description updated.
+- DAQ.OPC_UA: AId_DataType processing for Array into the server part is added.
+
+
+2015-03-30 Roman
+- SYS: *.spec files and directory "debian" moved to directory "data".
+    File data/openscada_mod_RH.spec is added for modules separated packages build for RH-based, from Aleksey Popkov.
+    File data/openscada.ebuild is added for build to Gentoo from, Constantine (IrmIngeneer).
+
+
+2015-03-29 Roman
+- DB: LibsDB.OscadaLibs.db: DAQ template of the protocol "Temperature measurement IT-3 (IT3)" were apended by checking and init the device code.
+- !!!!:FIX:Archive:FSArch: Strings archiving final fixed after last the string archiving fix into last value.
+    Repair values file's procedure fixed for fix value types and appended at last by not fixed type (like string) repairing code.
+    For all the archiving types executed values placing tests (0...8) and the files errors immitations tests (1...3).
+    All the tests passed.
+- FIX:UI.QTCfg: Crashes at some wrong reply after the network negotiations fixed.
+
+
+2015-03-28 Roman
+- DB: LibsDB.OscadaLibs.db: Elements of protocol "Temperature measurement IT-3 (IT3)" are added to the user protocols library.
+- FIX:DB: Model.Boiler.st.db: Links to element mnEls.Compressor on all mnemos fixed.
+    Achivator's 1s and 1m storage limit set from 0.0001 to 0 for disable and the files removing prevent.
+- !!:FIX:Archive:FSArch: To the specific parameters set limits for work range.
+    FIX: Processing for remove the files by limits fixed for prevent fresh-new archive file removing for two archive files.
+    FIX: Later cache dropping at values set fixed by removing call to owner().end() to after. Detected for new created files without early allowed
+	any current files, no realEnd yet set.
+    Some debug messages by OSC_DEBUG definition is added.
+    maxCapacity() disabling set for the value < 1.
+- !!!!:DAQ.JavaLikeCalc: Expanded by VM commands AddAss, SubAss, MulAss, DivAss for make optimal operations ++, --, +=, -=, *=, /=, with assigning.
+    Mostly for the operations to type "String" and spare memory realocation prevent here for any appends, cause significant performance rise here.
+
+
+2015-03-25 Roman
+- TMess: Time mark added to messages for stdout and stderr, and the messages format mostly changed to "{tm}: {lev}[{cat}] {mess}".
+- Protocol.SelfSystem: SingleUserHostLimit property added for the limit control. Error message for SingleUserHostLimit reach is added.
+- FIX:Special.FLibSYS: codeConvOut() prevented at write raw string for empty encoding name.
+
+
+2015-03-23 Roman
+- {DAQ,Protocol}.OPC_UA: Array for simple types support added.
+    Main integer changed from OpcUa_Int32 to OpcUa_Int64.
+    FIX:OpcUa_Int64 type fixed by expand iN{u}() and oN{u}().
+    Some direct indexes replaced by the symbol definitions.
+    Some definitions unified.
+
+
+2015-03-21 Roman
+- FIX:SYS: Init scripts for RH tested and some fixed.
+- !!!!:SYS: Main start program "openscada" mostly rewrote for preferable demon mode produce:
+    - static function TSYS::getCmdOpt_() variant is added for the using allow from the main start program;
+    - check and switch to the demon mode first;
+    - CoreDumpAllow process for left for the work process;
+    - check and create pid-file for the work process;
+    - same OpenSCADA core start.
+- SYS: Init scripts for ALT, RH, Gentoo, Debian mostly improved, simplified and adapted to PID using.
+    The scripts for ALT and Debian tested and for RH will testing later.
+- !!:FIX:SYS,DAQ.JavaLikeCalc: The functions libraries early starting into load_() prevented by crashing at "openscada --help". For DAQ.JavaLikeCalc
+    priority at first starting the modules of subsystems set to ordered and to modules property "HighPriority" added to place the first.
+- DAQ.{BlockCalc,JavaLikeCalc}: Object TipContr renamed to TpContr.
+
+
+2015-03-19 Roman
+- SYS: Configure template AX_LIB_FIREBIRD some adapted for configure and build FireBird with headers into */include/firebird, like SuSE.
+    Init script for RH expanded by argument -d 30 for stop and wait to correct finish.
+    Init script for Debian some simplified, will further test.
+- FIX:QTStarter: Some original text messages fixed.
+
+
 2015-03-18 Roman
 - SYS: The main start script openscada_start improved for using config file "oscada.xml" into the project work directory.
     Init script for ALTLinux expanded by argument "--retry TERM/30/KILL/5" for stop and wait to correct finish.
@@ -7,7 +223,7 @@
 
 
 2015-03-15 Roman
-- LibsDB.OscadaLibs.db: Tests for Archive.FSArch packing mechanism is added as servProc.archPackFStests.
+- DB: LibsDB.OscadaLibs.db: Tests for Archive.FSArch packing mechanism is added as servProc.archPackFStests.
 - !!:FIX:Archive: iend > arch_el[i_a]->begin() set to iend >= arch_el[i_a]->begin() for allow strong and single end value get.
     mLastGet processing fixed for inactive (without buffer) archives for only direct writing here.
 - !!:FIX.Archive.FSArch: repairFile() mostly fixed for the cache clean up after and no EVAL last value for actual archives checking appended.
@@ -15,7 +231,7 @@
     Last real value getting from active archives some expanded for unmerged EVAL values pass.
     Full tests chain passed for the packing mechanism.
 - FIX:Special.SystemTests: Tests "Archive" mostly fixed and some expanded.
-- UI.QTCfg: Fixed for LineEdit view "Integer" to allowed values limit [147483647:2147483647]
+- UI.QTCfg: Fixed for LineEdit view "Integer" to allowed values limit [-2147483647:2147483647]
 
 
 2015-03-13 Roman
@@ -70,7 +286,7 @@
 - Transport.Sockets: Some debug messages about the input protocol interaction (create and close) is added.
 - UI.QTCfg: Strong words wrap set to TextEdit widget, mostly for long descriptions.
     Some preparings to fit widgets like to TextEdit, CfgTable and List to full page size by vertical.
-- UI.{Vision,WebVision}: True include widgets size scaling is added by scale edged point, for correct fit each to other at any scale.
+- !!!!:UI.{Vision,WebVision}: True include widgets size scaling is added by scale edged point, for correct fit each to other at any scale.
     The new size scale policy excluded and used minimal for pages, to UI.Vision, for allow fit to containers without the scroll appear.
 
 
@@ -169,7 +385,7 @@
 - !!!!:FIX:SYS: For prevent race condition the functions preEnable(), postEnable(), preDisable() and postDisable() sets to lock free.
     Disabled nodes allowed to list also as checking for present.
     Flags MkDisable, Disable, MkEnable, Enable renamed to DoDisable, Disabled, DoEnable, Enabled.
-    Flag NodeRestore removed.
+    Flag NodeShiftDel removed.
 - Transport.Sockets: Property MSS is added for control TCP-segment size for bad channels.
 - UI.Vision: ElFig: next stage for clean up; Some smarter control for control point 1 and 2 of Arc is added.
 

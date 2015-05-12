@@ -473,7 +473,7 @@ void TCntrNode::chldAdd( int8_t igr, TCntrNode *node, int pos, bool noExp )
 	for(p = (*chGrp)[igr].elem.begin(); p != (*chGrp)[igr].elem.end(); p++)
 	    if(p->second->mOi >= pos) p->second->mOi++;
     }
-    (*chGrp)[igr].elem.insert(std::pair<const char *,TCntrNode*>(node->nodeName(),node));
+    (*chGrp)[igr].elem.insert(std::pair<const char*,TCntrNode*>(node->nodeName(),node));
     res.unlock();
 
     if(node->nodeMode() == Disabled) node->nodeEn(TCntrNode::NodeConnect);
@@ -573,11 +573,23 @@ int TCntrNode::isModify( int f )
 	res1.unlock();
 
 	MtxAlloc res2(mChM, true);
-	for(unsigned i_g = 0; chGrp && i_g < chGrp->size(); i_g++) {
+	for(unsigned iG = 0, iN; chGrp && iG < chGrp->size(); iG++) {
+	    vector<string> chLs;
 	    TMap::iterator p;
-	    for(p = (*chGrp)[i_g].elem.begin(); p != (*chGrp)[i_g].elem.end(); ++p)
+	    chldList(iG, chLs, true);
+	    for(iN = 0; iG < chGrp->size() && iN < chLs.size(); iN++) {
+		if((p=(*chGrp)[iG].elem.find(chLs[iN].c_str())) == (*chGrp)[iG].elem.end()) continue;
+		AutoHD<TCntrNode> ndO(p->second);
+		res2.unlock();
+		int chRflg = p->second->isModify(Self|Child);
+		res2.lock();
+		if(chRflg) { rflg |= Child; break; }
+	    }
+	    if(iN < chLs.size()) break;
+
+	    /*for(p = (*chGrp)[i_g].elem.begin(); p != (*chGrp)[i_g].elem.end(); ++p)
 		if(p->second->isModify(Self|Child))	{ rflg |= Child; break; }
-	    if(p != (*chGrp)[i_g].elem.end())	break;
+	    if(p != (*chGrp)[i_g].elem.end())	break;*/
 	}
 	res2.unlock();
     }
@@ -740,7 +752,7 @@ TVariant TCntrNode::objFuncCall( const string &iid, vector<TVariant> &prms, cons
 	    TArrayObj *rez = new TArrayObj();
 	    vector<string> nls;
 	    nd.at().nodeList(nls, (prms.size() >= 1) ? prms[0].getS() : string(""));
-	    for(unsigned i_l = 0; i_l < nls.size(); i_l++) rez->propSet(i2s(i_l), nls[i_l]);
+	    for(unsigned iN = 0; iN < nls.size(); iN++) rez->arSet(iN, nls[iN]);
 	    return rez;
 	}
 	catch(TError)	{ }

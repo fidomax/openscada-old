@@ -36,7 +36,7 @@
 #define MOD_VER		"1.0.1"
 #define AUTHORS		_("Roman Savochenko")
 #define DEVELOPERS	_("Roman Savochenko, Lysenko Maxim, Yashina Kseniya")
-#define DESCRIPTION	_("Web operation user interface for visual control area (VCA) projects playing.")
+#define DESCRIPTION	_("Visual operation user interface, based on WEB - front-end to VCA engine.")
 #define LICENSE		"GPL2"
 //************************************************
 
@@ -273,10 +273,10 @@ TWEB::~TWEB( )
 
 string TWEB::modInfo( const string &name )
 {
-    if(name == "SubType")		return SUB_TYPE;
-    else if(name == "Auth")		return "1";
-    else if(name == _("Developers"))	return DEVELOPERS;
-    else return TModule::modInfo(name);
+    if(name == "SubType")	return SUB_TYPE;
+    if(name == "Auth")		return "1";
+    if(name == _("Developers"))	return DEVELOPERS;
+    return TModule::modInfo(name);
 }
 
 void TWEB::modInfo( vector<string> &list )

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-20 12:19+0200\n"
+"POT-Creation-Date: 2015-05-04 18:36+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgstr ""
 msgid "Roman Savochenko, Lysenko Maxim, Yashina Kseniya"
 msgstr ""
 
-msgid "Visual operation user interface."
+msgid "Visual operation user interface, based on Qt library - front-end to VCA engine."
 msgstr ""
 
 msgid "Developers"
@@ -68,6 +68,9 @@ msgid "Stop module."
 msgstr ""
 
 msgid "Display number"
+msgstr ""
+
+msgid "Main windows"
 msgstr ""
 
 msgid "Module options"
@@ -124,6 +127,20 @@ msgstr ""
 msgid ""
 "Command line for call sounds play.\n"
 "Use %f for source file name inserting. If source file is not used play sample is sent to pipe."
+msgstr ""
+
+#, c-format
+msgid "%d: Development"
+msgstr ""
+
+#, c-format
+msgid "%d: Running \"%s:%s\" - %s"
+msgstr ""
+
+msgid "Connected"
+msgstr ""
+
+msgid "Disconnected"
 msgstr ""
 
 #, c-format
@@ -1997,6 +2014,12 @@ msgstr ""
 msgid "Level"
 msgstr ""
 
+msgid "Print"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
 #, c-format
 msgid "Document parsing error: %s"
 msgstr ""
@@ -2050,6 +2073,9 @@ msgid "Find"
 msgstr ""
 
 msgid "Find next"
+msgstr ""
+
+msgid "Apply"
 msgstr ""
 
 msgid "Cursor = (%1:%2)"

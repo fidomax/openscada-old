@@ -513,8 +513,7 @@ void LineEdit::changed( )
 void LineEdit::setValue( const QString &txt )
 {
     if(ed_fld) ed_fld->blockSignals(true);
-    switch(type())
-    {
+    switch(type()) {
 	case Text:
 	    if(txt == value())	break;
 	    ((QLineEdit*)ed_fld)->setText(txt);
@@ -548,8 +547,7 @@ void LineEdit::setValue( const QString &txt )
 void LineEdit::setCfg( const QString &cfg )
 {
     if(ed_fld) ed_fld->blockSignals(true);
-    switch(type())
-    {
+    switch(type()) {
 	case Text:
 	    ((QLineEdit*)ed_fld)->setInputMask(cfg);
 	    break;
@@ -784,7 +782,7 @@ TextEdit::TextEdit( QWidget *parent, bool prev_dis ) :
     setFocusProxy(ed_fld);
     connect(ed_fld, SIGNAL(textChanged()), this, SLOT(changed()) );
     connect(ed_fld, SIGNAL(cursorPositionChanged()), this, SLOT(curPosChange()) );
-    connect(ed_fld, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ctrTreePopup()));
+    connect(ed_fld, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(custContextMenu()));
     box->addWidget(ed_fld);
 
     QImage ico_t;
@@ -856,6 +854,11 @@ void TextEdit::changed( )
     if(but_box && !but_box->isEnabled() && text() != m_text) {
 	but_box->setVisible(true);
 	but_box->setEnabled(true);
+
+	string labApply = _("Apply"), labCncl = _("Cancel");
+	bool noLab = (QFontMetrics(but_box->font()).width((labApply+labCncl).c_str())+30) > width();
+	but_box->button(QDialogButtonBox::Apply)->setText(noLab?"":labApply.c_str());
+	but_box->button(QDialogButtonBox::Cancel)->setText(noLab?"":labCncl.c_str());
     }
 
     if(!but_box) bt_tm->start(500);
@@ -911,7 +914,7 @@ bool TextEdit::event( QEvent * e )
     return QWidget::event(e);
 }
 
-void TextEdit::ctrTreePopup( )
+void TextEdit::custContextMenu( )
 {
     QMenu *menu = ed_fld->createStandardContextMenu();
     menu->addSeparator();
@@ -1060,8 +1063,16 @@ bool WdgView::attrSet( const string &attr, const string &val, int uiPrmPos )
 	    else mWPos = QPointF(posF().x(), ((WdgView*)parentWidget())->yScale(true)*s2r(val));
 	    up = true;
 	    break;
-	case A_GEOM_W: mWSize = QSizeF(xScale(true)*s2r(val), sizeF().height()); up = true;	break;
-	case A_GEOM_H: mWSize = QSizeF(sizeF().width(), yScale(true)*s2r(val)); up = true;	break;
+	case A_GEOM_W:
+	    mWSizeOrig = QSizeF(s2r(val), sizeOrigF().height());
+	    mWSize = QSizeF(xScale(true)*s2r(val), sizeF().height());
+	    up = true;
+	    break;
+	case A_GEOM_H:
+	    mWSizeOrig = QSizeF(sizeOrigF().width(), s2r(val));
+	    mWSize = QSizeF(sizeF().width(), yScale(true)*s2r(val));
+	    up = true;
+	    break;
 	case A_GEOM_Z: if(wLevel() > 0) z_coord = s2i(val);	break;
 	case A_GEOM_X_SC:
 	    mWSize = QSizeF((s2r(val)/x_scale)*sizeF().width(), sizeF().height());
@@ -1084,7 +1095,7 @@ bool WdgView::attrSet( const string &attr, const string &val, int uiPrmPos )
 		((WdgView*)children().at(i_c))->load("");
     }
 
-    if(shape)	return shape->attrSet(this,uiPrmPos,val);
+    if(shape)	return shape->attrSet(this, uiPrmPos, val);
 
     return true;
 }

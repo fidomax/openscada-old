@@ -1168,14 +1168,16 @@ void SessWdg::setProcess( bool val, bool lastFirstCalc )
 	// Prepare function io structure
 	TFunction fio(parent().at().calcId());
 	fio.setStor(calcProgStors());
+
 	//  Add generic io
-	fio.ioIns(new IO("f_frq","Function calculate frequency (Hz)",IO::Real,IO::Default,"1000",false), 0);
-	fio.ioIns(new IO("f_start","Function start flag",IO::Boolean,IO::Default,"0",false), 1);
-	fio.ioIns(new IO("f_stop","Function stop flag",IO::Boolean,IO::Default,"0",false), 2);
-	fio.ioIns(new IO("this","This widget's object for access to user's API",IO::Object,IO::Default), 3);
+	fio.ioIns(new IO("f_frq","Function calculate frequency (Hz)",IO::Real,IO::Default,"1000",false), SpIO_Frq);
+	fio.ioIns(new IO("f_start","Function start flag",IO::Boolean,IO::Default,"0",false), SpIO_Start);
+	fio.ioIns(new IO("f_stop","Function stop flag",IO::Boolean,IO::Default,"0",false), SpIO_Stop);
+	fio.ioIns(new IO("this","This widget's object for access to user's API",IO::Object,IO::Default), SpIO_This);
+
 	//  Add calc widget's attributes
 	vector<string> iwls, als;
-	//  Self attributes check
+	//   Self attributes check
 	attrList(als);
 	AutoHD<Widget> fulw = parentNoLink();
 	for(unsigned i_a = 0; i_a < als.size(); i_a++) {
@@ -1183,8 +1185,7 @@ void SessWdg::setProcess( bool val, bool lastFirstCalc )
 	    if((fulw.at().attrPresent(als[i_a])&&fulw.at().attrAt(als[i_a]).at().flgSelf()&Attr::ProcAttr) || als[i_a] == "focus")
 		fio.ioAdd(new IO(als[i_a].c_str(),cattr.at().name().c_str(),cattr.at().fld().typeIO(),IO::Output,"",false,("./"+als[i_a]).c_str()));
 	}
-
-	//  Include attributes check
+	//   Include attributes check
 	wdgList(iwls);
 	for(unsigned i_w = 0; i_w < iwls.size(); i_w++) {
 	    AutoHD<Widget> curw = wdgAt(iwls[i_w]);
@@ -1261,15 +1262,16 @@ string SessWdg::calcProgStors( const string &attr ){ return parent().freeStat() 
 
 int SessWdg::calcPer( )		{ return parent().freeStat() ? 0 : parent().at().calcPer(); }
 
-string SessWdg::resourceGet( const string &id, string *mime )
+string SessWdg::resourceGet( const string &iid, string *mime )
 {
-    string  mimeType,
-	    mimeData = sessAttr("media://"+id);		//Try load from the session attribute
+    string  id = TSYS::strParse(iid, 0, "?"),
+	    mimeType,
+	    mimeData = sessAttr("media://"+id);	//Try load from the session attribute
     if(mimeData.size()) {
 	int off = 0;
 	mimeType = TSYS::strLine(mimeData, 0, &off);
 	if(mime) *mime = mimeType;
-	return TSYS::strDecode(mimeData.substr(off), TSYS::base64);
+	return mimeData.substr(off);
     }
 
     //Load original
@@ -1281,7 +1283,7 @@ string SessWdg::resourceGet( const string &id, string *mime )
 
 void SessWdg::resourceSet( const string &id, const string &data, const string &mime )
 {
-    sessAttrSet("media://"+id, data.empty() ? "" : mime+"\n"+TSYS::strEncode(data,TSYS::base64));
+    sessAttrSet("media://"+id, data.empty() ? "" : mime+"\n"+data);
 }
 
 void SessWdg::wdgAdd( const string &iid, const string &name, const string &iparent, bool force )
@@ -1542,24 +1544,24 @@ void SessWdg::calc( bool first, bool last )
 		int evId = ioId("event");
 		if(evId >= 0)	setS(evId, wevent);
 
-		// Load data to calc area
-		setR(0, 1000.0/(ownerSess()->period()*vmax(calcPer()/ownerSess()->period(),1)));
-		setB(1, first);
-		setB(2, last);
-		for(int i_io = 4; i_io < ioSize( ); i_io++) {
+		// Load the data to the calc area
+		setR(SpIO_Frq, 1000.0/(ownerSess()->period()*vmax(calcPer()/ownerSess()->period(),1)));
+		setB(SpIO_Start, first);
+		setB(SpIO_Stop, last);
+		for(int i_io = SpIO_Sz; i_io < ioSize(); i_io++) {
 		    if(func()->io(i_io)->rez().empty()) continue;
 		    sw_attr = TSYS::pathLev(func()->io(i_io)->rez(), 0);
 		    s_attr  = TSYS::pathLev(func()->io(i_io)->rez(), 1);
 		    attr = (sw_attr==".") ? attrAt(s_attr) : wdgAt(sw_attr).at().attrAt(s_attr);
-		    set(i_io,attr.at().get());
+		    set(i_io, attr.at().get());
 		}
 
 		// Calc
 		setMdfChk(true);
 		TValFunc::calc();
 
-		// Save data from calc area
-		for(int i_io = 4; i_io < ioSize( ); i_io++) {
+		// Save the data from the calc area
+		for(int i_io = SpIO_Sz; i_io < ioSize(); i_io++) {
 		    if(func()->io(i_io)->rez().empty() || !ioMdf(i_io)) continue;
 		    sw_attr = TSYS::pathLev(func()->io(i_io)->rez(), 0);
 		    s_attr  = TSYS::pathLev(func()->io(i_io)->rez(), 1);
@@ -1774,21 +1776,21 @@ TVariant SessWdg::objFuncCall( const string &iid, vector<TVariant> &prms, const 
     // string mime(string addr, string type = "") - read mime data from the session table or primal source
     //  addr - address to mime by link attribute to mime or direct mime address
     //  type - return attribute for mime type store
-    if(iid == "mime" && prms.size() >= 1) {
+    if(iid == "mime" && prms.size()) {
 	string addr = prms[0], rez, tp;
 	//Check for likely attribute
 	if(attrPresent(addr)) {
 	    AutoHD<Attr> a = attrAt(addr);
-	    if(a.at().type() == TFld::String && a.at().flgGlob()&Attr::Image) addr = a.at().getS();
+	    if(a.at().type() == TFld::String /*&& a.at().flgGlob()&Attr::Image*/) addr = a.at().getS();
 	}
 	rez = resourceGet(addr, &tp);
 	if(prms.size() >= 2) { prms[1].setS(tp); prms[1].setModify(); }
 
-	return rez;
+	return TSYS::strDecode(rez, TSYS::base64);
     }
     // int mimeSet(string addr, string data, string type = "") - set or clear data to the session table
     //  addr - address to mime by link attribute to mime or direct mime address
-    //  data - set to the mime data, empty for clear into 
+    //  data - set to the mime data, empty for clear into
     //  type - mime type for store data
     if(iid == "mimeSet" && prms.size() >= 2) {
 	string addr = prms[0];
@@ -1796,11 +1798,11 @@ TVariant SessWdg::objFuncCall( const string &iid, vector<TVariant> &prms, const 
 	AutoHD<Attr> a;
 	if(attrPresent(addr)) {
 	    a = attrAt(addr);
-	    if(a.at().type() == TFld::String && a.at().flgGlob()&Attr::Image) addr = a.at().getS();
+	    if(a.at().type() == TFld::String /*&& a.at().flgGlob()&Attr::Image*/) addr = a.at().getS();
 	    else a.free();
 	}
-	resourceSet(addr, prms[1], (prms.size()>=3)?prms[2]:"");	//???? Store to the session's context table
-	if(!a.freeStat()) a.at().setS(a.at().getS(), false, true);	//Mark the attribute to modify state
+	resourceSet(TSYS::strParse(addr,0,"?"), TSYS::strEncode(prms[1],TSYS::base64), (prms.size()>=3)?prms[2]:"");
+	if(!a.freeStat()) a.at().setS(TSYS::strParse(addr,1,"?").size()?TSYS::strLabEnum(addr):addr+"?0");	//Mark the attribute to modify state
 
 	return (int)prms[1].getS().size();
     }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-15 17:20+0200\n"
+"POT-Creation-Date: 2015-05-09 18:10+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgstr ""
 msgid "Roman Savochenko"
 msgstr ""
 
-msgid "The Archive module. Allow functions for messages and values archiving to file system."
+msgid "The archiver module. Provides functions for messages and values archiving to file system."
 msgstr ""
 
 msgid "Compress error!"
@@ -145,12 +145,35 @@ msgid ""
 "for example, after manual changes to the directory archiver."
 msgstr ""
 
-#, c-format
-msgid "Can not create file: '%s'!"
+msgid "Files"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Begin"
+msgstr ""
+
+msgid "End"
+msgstr ""
+
+msgid "Charset"
+msgstr ""
+
+msgid "Size"
+msgstr ""
+
+msgid "XML"
+msgstr ""
+
+msgid "Pack"
+msgstr ""
+
+msgid "Error"
 msgstr ""
 
 #, c-format
-msgid "Write to file '%s' error"
+msgid "File '%s' creation error: %s(%d)."
 msgstr ""
 
 #, c-format
@@ -173,7 +196,7 @@ msgid "Archive file '%s' isn't attached!"
 msgstr ""
 
 #, c-format
-msgid "File access to '%s' error."
+msgid "Write to the archive file '%s' error: %s(%d)"
 msgstr ""
 
 msgid "Getting messages from an error Archive file!"
@@ -200,7 +223,7 @@ msgid "Archive's file time size (hours)"
 msgstr ""
 
 msgid ""
-"The parameter is set automatically when you change the frequency values by archiver\n"
+"The parameter is set automatically when you change the values period by the archiver\n"
 "and generally proportional to the frequency values of the archiver.\n"
 "Attention! Large archive files will be processed long by long unpacking gzip-files\n"
 "and the primary indexing, when accessing to parts of deep in the archives of history."
@@ -215,7 +238,7 @@ msgstr ""
 msgid ""
 "Sets a limit on the maximum amount of disk space occupied by all archive files by archiver.\n"
 "Testing is done by periodicity checking the archives, which resulted in, on exceeding the limit,\n"
-"removes the oldest files of all archives. Completely remove this restriction can be set to zero."
+"removes the oldest files of all archives. Completely remove this restriction can be set to < 1."
 msgstr ""
 
 msgid "Numeric values rounding (%)"
@@ -237,16 +260,37 @@ msgstr ""
 msgid "Archive"
 msgstr ""
 
-msgid "Begin"
-msgstr ""
-
-msgid "End"
-msgstr ""
-
 msgid "Type"
 msgstr ""
 
 msgid "To file"
+msgstr ""
+
+msgid "Period, us"
+msgstr ""
+
+msgid "Unknown"
+msgstr ""
+
+msgid "Boolean"
+msgstr ""
+
+msgid "Int16"
+msgstr ""
+
+msgid "Int32"
+msgstr ""
+
+msgid "Int64"
+msgstr ""
+
+msgid "Float"
+msgstr ""
+
+msgid "Double"
+msgstr ""
+
+msgid "String"
 msgstr ""
 
 #, c-format
@@ -265,7 +309,7 @@ msgid "Warning! Allocated buffer size %d for indexes lesser for used %d."
 msgstr ""
 
 #, c-format
-msgid "Write data block to the archive file '%s' error. Will structure break. mSize=%d, foff_end=%d, vSize=%d"
+msgid "Write to the archive '%s' file '%s' error: %s(%d)"
 msgstr ""
 
 #, c-format

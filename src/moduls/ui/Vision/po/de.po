@@ -4,13 +4,13 @@
 # Irina Popkova <IrischkaPopkova@yandex.ru>, 2009, 2011.
 # Joan Zimmermann <j.zimmermann@fetron.de>, 2009.
 # Klaus Fetscher <k.fetscher@fetron.de>, 2009.
-# Roman Savochenko <rom_as@oscada.org>, 2010-2014.
+# Roman Savochenko <rom_as@oscada.org>, 2010-2015.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.UI.Vision 1.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-20 12:19+0200\n"
+"POT-Creation-Date: 2015-05-04 18:08+0300\n"
 "PO-Revision-Date: 2011-07-19 21:48+0400\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -27,8 +27,12 @@ msgstr "Roman Savotschenko"
 msgid "Roman Savochenko, Lysenko Maxim, Yashina Kseniya"
 msgstr "Roman Savotschenko, Maxim Lysjenko, Ksenija Jaschina"
 
-msgid "Visual operation user interface."
-msgstr "Benutzerschnittstelle"
+msgid ""
+"Visual operation user interface, based on Qt library - front-end to VCA "
+"engine."
+msgstr ""
+"Visuelle Betrieb Benutzeroberfläche basierend auf Qt-Bibliothek - Front-End "
+"für VCA-Motor."
 
 msgid "Developers"
 msgstr "Entwickler"
@@ -86,6 +90,9 @@ msgstr "Modul anhalten."
 
 msgid "Display number"
 msgstr "Anzeige der Anzahl"
+
+msgid "Main windows"
+msgstr "Hauptfenster"
 
 msgid "Module options"
 msgstr "Optionen des Moduls"
@@ -154,6 +161,20 @@ msgstr ""
 "Kommandozeile für Wiedergabe des Tons.\n"
 "Verwenden Sie %f für Dateinamen. Falls Dateiname nicht verwendet wird, "
 "werden die Dateien in den Kanal gesendet."
+
+#, c-format
+msgid "%d: Development"
+msgstr "%d: Entwicklung"
+
+#, c-format
+msgid "%d: Running \"%s:%s\" - %s"
+msgstr "%d: Laufen \"%s:%s\" - %s"
+
+msgid "Connected"
+msgstr "Verbunden"
+
+msgid "Disconnected"
+msgstr "Getrennt"
 
 #, c-format
 msgid "OpenSCADA Vision developing: %s"
@@ -2116,6 +2137,12 @@ msgstr "Datum und Uhrzeit"
 msgid "Level"
 msgstr "Stufe"
 
+msgid "Print"
+msgstr "Drucken"
+
+msgid "Export"
+msgstr "Export"
+
 #, c-format
 msgid "Document parsing error: %s"
 msgstr "Fehler der Dokumentanalyse: %s"
@@ -2127,7 +2154,7 @@ msgid "ID:"
 msgstr "ID:"
 
 msgid "Ok"
-msgstr "Annehmen"
+msgstr ""
 
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -2171,6 +2198,9 @@ msgstr "Suche"
 msgid "Find next"
 msgstr "Weitersuchen"
 
+msgid "Apply"
+msgstr "Annehmen"
+
 msgid "Cursor = (%1:%2)"
 msgstr "Cursor = (%1:%2)"
 
@@ -2203,6 +2233,3 @@ msgstr "Zeit der Initialisation '%s' %f ms."
 
 msgid "Vision dialog"
 msgstr "Vision-Dialog"
-
-#~ msgid "Options help"
-#~ msgstr "Optionen Hilfe"

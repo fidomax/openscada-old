@@ -33,7 +33,7 @@
 #define VER_TYPE	SDAQ_VER
 #define MOD_VER		"0.9.5"
 #define AUTHORS		_("Roman Savochenko")
-#define DESCRIPTION	_("Allow to make gate data sources of remote OpenSCADA station to local OpenSCADA station.")
+#define DESCRIPTION	_("Allows you to perform the locking of the data sources of the remote OpenSCADA stations in the local ones.")
 #define LICENSE		"GPL2"
 //******************************************************
 
@@ -846,7 +846,7 @@ void TMdPrm::vlGet( TVal &val )
 
 void TMdPrm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
 {
-    if(!enableStat() || !owner().startStat())	vo.setI(EVAL_INT, 0, true);
+    if(!enableStat() || !owner().startStat())	{ vo.setI(EVAL_INT, 0, true); return; }
     if(vl.isEVal() || vl == pvl) return;
 
     XMLNode req("set");

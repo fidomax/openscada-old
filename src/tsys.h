@@ -40,6 +40,7 @@
 #define BUF_ARCH_NM	"<buffer>"
 #define DB_CFG		"<cfg>"
 
+#include <signal.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <math.h>
@@ -140,7 +141,7 @@ class TSYS : public TCntrNode
 
 	string	optDescr( );	//print comand line options
 
-	static void sighandler( int signal );
+	static void sighandler( int signal, siginfo_t *siginfo, void *context );
 
 	// Short time dimensions
 	bool	multCPU( )	{ return mMultCPU; }
@@ -157,8 +158,8 @@ class TSYS : public TCntrNode
 	}
 	static long HZ( );
 
-	time_t	sysTm( ) volatile	{ return mSysTm; }	//> System time fast access, from updated cell
-	static int64_t curTime( );	//> Current system time (usec)
+	time_t	sysTm( ) volatile	{ return mSysTm; }	//System time fast access, from updated cell
+	static int64_t curTime( );	//Current system time (usec)
 
 	// Tasks control
 	void taskCreate( const string &path, int priority, void *(*start_routine)(void *), void *arg, int wtm = 5, pthread_attr_t *pAttr = NULL, bool *startSt = NULL );
@@ -265,6 +266,7 @@ class TSYS : public TCntrNode
 
 	// Reentrant commandline processing
 	string getCmdOpt( int &curPos, string *argVal = NULL );
+	static string getCmdOpt_( int &curPos, string *argVal, int argc, char **argv );
 
 	//  System control interface functions
 	static void ctrListFS( XMLNode *nd, const string &fsBase, const string &fileExt = "" );	//Inline file system browsing
@@ -360,6 +362,8 @@ class TSYS : public TCntrNode
 	volatile time_t	mSysTm;
 
 	map<string, double>	mCntrs;
+
+	struct sigaction	sigActOrig;
 };
 
 //*************************************************

@@ -56,18 +56,18 @@ class VisRun : public QMainWindow
 	    const string &VCAstat, bool crSessForce = false, unsigned screen = 0 );
 	~VisRun( );
 
-	string user( );
-	string password( );
-	string VCAStation( );
-	int period( )		{ return mPeriod; }
-	string workSess( )	{ return work_sess; }
+	string	user( );
+	string	password( );
+	string	VCAStation( );
+	int	period( )	{ return mPeriod; }
+	string	workSess( )	{ return work_sess; }
 	unsigned screen( )	{ return mScreen; }
-
-	string srcProject( )	{ return src_prj; }
-	float  xScale( )	{ return x_scale; }
-	float  yScale( )	{ return y_scale; }
+	string	srcProject( )	{ return src_prj; }
+	float	xScale( )	{ return x_scale; }
+	float	yScale( )	{ return y_scale; }
 	unsigned reqTm( )	{ return reqtm; }
-	int style( );
+	int	style( );
+	bool	connOK( )	{ return !conErr; }
 
 	void setXScale( float vl )	{ x_scale = vl; }
 	void setYScale( float vl )	{ y_scale = vl; }
@@ -110,8 +110,8 @@ class VisRun : public QMainWindow
 	void closeEvent( QCloseEvent* );		//Close run-time window event
 	void resizeEvent( QResizeEvent * );		//Resize window event
 
-    private slots:
-	//Private slots
+    public slots:
+	//Public slots
 	void print( );					//Print master page
 	void printPg( const string &pg = "" );		//Print select page
 	void printDiag( const string &dg = "" );	//Print select diagram
@@ -120,6 +120,9 @@ class VisRun : public QMainWindow
 	void exportPg( const string &pg = "" );		//Export select page
 	void exportDiag( const string &dg = "" );	//Export select diagram
 	void exportDoc( const string &doc = "" );	//Export select document
+
+    private slots:
+	//Private slots
 	void quitSt( );					//Full quit OpenSCADA
 
 	void fullScreen( bool vl );			//Full screen toggle

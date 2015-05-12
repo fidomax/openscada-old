@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.WebVision file: VCA.js
 /***************************************************************************
- *   Copyright (C) 2007-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -642,6 +642,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 	    figObj.width = geomW; figObj.height = geomH;
 	    // Src update always therefore for any changes is shape update
 	    figObj.src = '/'+MOD_ID+this.addr+'?com=obj&tm='+tmCnt+'&geomX='+geomX.toFixed(3)+'&geomY='+geomY.toFixed(3)+
+						    '&geomW='+geomW.toFixed(3)+'&geomH='+geomH.toFixed(3)+
 						    '&xSc='+xSc.toFixed(3)+'&ySc='+ySc.toFixed(3);
 	    if(elWr != this.place.elWr) {
 		figObj.onclick = !elWr ? '' : function(e) {
@@ -746,7 +747,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 		    case 1: spanStyle += 'vertical-align: bottom; ';	break;
 		    case 2: spanStyle += 'vertical-align: middle; ';	break;
 		}
-		spanStyle += getFont(this.attrs['font'],Math.min(xSc,ySc));
+		spanStyle += getFont(this.attrs['font'], Math.min(xSc,ySc));
 		spanStyle += 'color: ' + (this.attrs['color']?getColor(this.attrs['color']):'black') + '; ';
 		var txtVal = this.attrs['text'];
 		for(var i = 0; i < parseInt(this.attrs['numbArg']); i++) {
@@ -1273,9 +1274,9 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			if(toInit || this.attrsMdf['img'] || this.attrsMdf['name']) {
 			    imgObj.hidden = !this.attrs['img'].length;
 			    if(!imgObj.hidden) {
-				imgObj.src = "/"+MOD_ID+this.addr+"?com=res&val="+this.attrs['img']+"&size="+Math.min(geomW-6,geomH-6)+(!elWr?"&filtr=unact":"");
-				imgObj.width = Math.min(geomW-6,geomH-6);
-				imgObj.height = Math.min(geomW-6,geomH-6);
+				imgObj.src = "/"+MOD_ID+this.addr+"?com=res&val="+this.attrs['img']+"&size="+Math.min(geomW,geomH)+(!elWr?"&filtr=unact":"");
+				imgObj.width = Math.min(geomW, geomH);
+				imgObj.height = Math.min(geomW, geomH);
 				imgObj.float = 'left';
 				imgObj.style.marginRight = this.attrs['name'].length ? "2px" : "0px";
 			    }
@@ -1326,7 +1327,11 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			}
 			formObj.appendChild(imgObj);
 			formObj.appendChild(spanObj);
-			formObj.style.width = geomW+'px'; formObj.style.height = geomH+'px';
+
+			formObj.style.position = "absolute";
+			formObj.style.top = "-2px"; formObj.style.left = "-2px";
+			formObj.style.width = (geomW+4)+'px'; formObj.style.height = (geomH+4)+'px';
+			formObj.style.overflow = "hidden";
 			this.place.appendChild(formObj);
 		    }
 		    else {

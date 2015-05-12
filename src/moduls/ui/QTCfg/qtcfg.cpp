@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.QTCfg file: qtcfg.cpp
 /***************************************************************************
- *   Copyright (C) 2004-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2004-2015 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -659,8 +659,7 @@ void ConfApp::itDel( const string &iit )
     }
 
     bool toTreeUpdate = false;
-    for(int roff = 0; (rmit=TSYS::strSepParse(rmits,0,'\n',&roff)).size(); )
-    {
+    for(int roff = 0; (rmit=TSYS::strSepParse(rmits,0,'\n',&roff)).size(); ) {
 	string t_el, sel_own, sel_el;
 	int n_obj = 0;
 	for(int off = 0; !(t_el=TSYS::pathLev(rmit,0,true,&off)).empty(); n_obj++)
@@ -721,8 +720,7 @@ void ConfApp::itPaste( )
     bool isCut = (copy_buf[0] == '1');
     bool isMult = !TSYS::strParse(copy_buf,1,"\n").empty();
 
-    for(int elOff = 1; (copyEl=TSYS::strParse(copy_buf,0,"\n",&elOff)).size(); )
-    {
+    for(int elOff = 1; (copyEl=TSYS::strParse(copy_buf,0,"\n",&elOff)).size(); ) {
 	rootW = root;
 	to_path = sel_path;
 
@@ -939,8 +937,7 @@ void ConfApp::enterManual( )
 
 void ConfApp::closeEvent( QCloseEvent* ce )
 {
-    if(!SYS->stopSignal() && !property("forceClose").toBool() && !mod->endRun() && !exitModifChk())
-    {
+    if(!SYS->stopSignal() && !property("forceClose").toBool() && !mod->endRun() && !exitModifChk()) {
 	ce->ignore();
 	return;
     }
@@ -1156,7 +1153,7 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 		    connect(lstbox, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(listBoxGo(QListWidgetItem*)));
 
 		lstbox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-		lstbox->setMaximumWidth(300);
+		//lstbox->setMaximumWidth(300);
 
 		QVBoxLayout *vbox = new QVBoxLayout;
 		vbox->setAlignment(Qt::AlignLeft);
@@ -1930,7 +1927,8 @@ void ConfApp::pageDisplay( const string &path )
 	// Request new page tree
 	XMLNode n_node("info");
 	n_node.setAttr("path",path);
-	if(cntrIfCmd(n_node)) { throw TError(s2i(n_node.attr("rez")),n_node.attr("mcat").c_str(),"%s",n_node.text().c_str()); }
+	if(cntrIfCmd(n_node) || !n_node.childGet(0,true))
+	    throw TError(s2i(n_node.attr("rez")),n_node.attr("mcat").c_str(),"%s",n_node.text().c_str());
 	sel_path = path;
 	pg_info = n_node;
 	root = pg_info.childGet(0);
@@ -1993,7 +1991,7 @@ loadGenReqDate:
     editToolUpdate();
 }
 
-bool ConfApp::upStruct(XMLNode &w_nd, const XMLNode &n_nd)
+bool ConfApp::upStruct( XMLNode &w_nd, const XMLNode &n_nd )
 {
     bool str_ch = false;
 
@@ -2325,15 +2323,15 @@ void ConfApp::initHosts( )
 		{ nit = CtrTree->topLevelItem(i_top); break; }
 	if(!nit) nit = new QTreeWidgetItem(CtrTree);
 	if(stls[i_st] == SYS->id()) {
-	    nit->setText(0,trU(SYS->name(),w_user->user().toStdString()).c_str());
-	    nit->setText(1,_("Local station"));
-	    nit->setText(2,("/"+SYS->id()).c_str());
+	    nit->setText(0, trU(SYS->name(),w_user->user().toStdString()).c_str());
+	    nit->setText(1, _("Local station"));
+	    nit->setText(2, ("/"+SYS->id()).c_str());
 	}
 	else {
 	    TTransportS::ExtHost host = SYS->transport().at().extHostGet(w_user->user().toStdString(),stls[i_st]);
-	    nit->setText(0,trU(host.name,w_user->user().toStdString()).c_str());
-	    nit->setText(1,_("Remote station"));
-	    nit->setText(2,("/"+host.id).c_str());
+	    nit->setText(0, trU(host.name,w_user->user().toStdString()).c_str());
+	    nit->setText(1, _("Remote station"));
+	    nit->setText(2, ("/"+host.id).c_str());
 	}
 	//? Used for rechange status for fix indicator hide after all childs remove on bad connection
 	nit->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);

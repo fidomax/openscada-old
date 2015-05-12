@@ -1,3 +1,4 @@
+
 //OpenSCADA system module UI.Vision file: vis_shapes.cpp
 /***************************************************************************
  *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
@@ -247,7 +248,10 @@ bool ShapeFormEl::attrSet( WdgView *w, int uiPrmPos, const string &val )
 	    setActive(w, shD->active && runW->permCntr());
 	    break;
 	case A_GEOM_W: case A_GEOM_X_SC: rel_cfg = (shD->elType==F_TABLE);	break;
-	case A_GEOM_MARGIN:	w->layout()->setMargin(s2i(val));	break;
+	case A_GEOM_MARGIN:
+	    w->layout()->setMargin(s2i(val));
+	    rel_cfg = (shD->elType==F_BUTTON);
+	    break;
 	case A_FormElType:
 	    if(shD->elType == s2i(val)) break;
 	    shD->elType = s2i(val);
@@ -255,7 +259,9 @@ bool ShapeFormEl::attrSet( WdgView *w, int uiPrmPos, const string &val )
 	    rel_cfg = true;
 	    break;
 	case A_FormElValue:
-	    if(shD->value != val) setValue(w, val);
+	    //if(shD->value != val)	//For prevent to possibility the value difference into the widget and the model.
+					//Check for equal into setValue()!
+	    setValue(w, val);
 	    break;
 	case A_FormElName:
 	    shD->name = TSYS::strEncode(val, TSYS::ShieldSimb);
@@ -373,8 +379,11 @@ bool ShapeFormEl::attrSet( WdgView *w, int uiPrmPos, const string &val )
 		QImage img;
 		string backimg = w->resGet(shD->img);
 		if(!backimg.empty() && img.loadFromData((const uchar*)backimg.c_str(),backimg.size())) {
-		    int ic_sz = vmin(w->size().width(), w->size().height()) - w->layout()->margin() - 5;
-		    wdg->setIconSize(QSize(ic_sz,ic_sz));
+		    int icSzW = w->width() - w->layout()->margin();
+		    int icSzH = w->height() - w->layout()->margin();
+		    img = img.scaled(w->width()-w->layout()->margin(), w->height()-w->layout()->margin(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+		    wdg->setIconSize(QSize(icSzW,icSzH));
 		    wdg->setIcon(QPixmap::fromImage(img));
 		} else wdg->setIcon(QPixmap());
 		//Color
@@ -507,8 +516,7 @@ bool ShapeFormEl::attrSet( WdgView *w, int uiPrmPos, const string &val )
 		if(tX.name() != "tbl") wdg->clear();
 		else {
 		    // Items
-		    for(unsigned i_r = 0, i_rR = 0, i_ch = 0; i_ch < tX.childSize() || (int)i_r < wdg->rowCount(); i_ch++)
-		    {
+		    for(unsigned i_r = 0, i_rR = 0, i_ch = 0; i_ch < tX.childSize() || (int)i_r < wdg->rowCount(); i_ch++) {
 			XMLNode *tR = (i_ch < tX.childSize()) ? tX.childGet(i_ch) : NULL;
 			bool isH = false;
 			QTableWidgetItem *hit = NULL, *tit = NULL;
@@ -593,8 +601,7 @@ bool ShapeFormEl::attrSet( WdgView *w, int uiPrmPos, const string &val )
 		    //Count width params
 		    for(int i_c = 0; i_c < wdg->columnCount(); i_c++) {
 			fullColsWdth += wdg->columnWidth(i_c);
-			if(wdg->horizontalHeaderItem(i_c) && (tVl=wdg->horizontalHeaderItem(i_c)->data(Qt::UserRole).toInt()))
-			{
+			if(wdg->horizontalHeaderItem(i_c) && (tVl=wdg->horizontalHeaderItem(i_c)->data(Qt::UserRole).toInt())) {
 			    niceForceColsWdth += tVl;
 			    wdg->setColumnWidth(i_c, tVl);
 			}
@@ -691,7 +698,7 @@ void ShapeFormEl::setValue( WdgView *w, const string &val, bool force )
 	case F_LINE_ED:
 	    if(!((LineEdit*)shD->addrWdg)->isEdited()) ((LineEdit*)shD->addrWdg)->setValue(val.c_str());
 	    break;
-	case F_TEXT_ED:	  ((TextEdit*)shD->addrWdg)->setText(val.c_str());	break;
+	case F_TEXT_ED: ((TextEdit*)shD->addrWdg)->setText(val.c_str());	break;
 	case F_CHECK_BOX: ((QCheckBox*)shD->addrWdg)->setChecked(s2i(val));	break;
 	case F_BUTTON: {
 	    QPushButton *wdg = (QPushButton*)shD->addrWdg;
@@ -755,6 +762,7 @@ void ShapeFormEl::setValue( WdgView *w, const string &val, bool force )
 	    break;
 	}
 	case F_COMBO:
+	    if(((QComboBox*)shD->addrWdg)->currentText().toStdString() == val) break;
 	    if(((QComboBox*)shD->addrWdg)->findText(val.c_str()) < 0) ((QComboBox*)shD->addrWdg)->addItem(val.c_str());
 	    ((QComboBox*)shD->addrWdg)->setCurrentIndex(((QComboBox*)shD->addrWdg)->findText(val.c_str()));
 	    break;
@@ -947,7 +955,7 @@ void ShapeFormEl::buttonReleased( )
 	    }
 	    shD->wordWrap = false;
 
-	    int off = 0;//, hd;
+	    int off = 0;
 	    string  fHead	= TSYS::strLine(shD->value, 0, &off);
 	    string  fCtx	= shD->value.substr(off);
 	    off = 0;
@@ -972,7 +980,7 @@ void ShapeFormEl::buttonReleased( )
 	    break;
 	}
 	case FBT_LOAD: {
-	    int off = 0;//, hd;
+	    int off = 0;
 	    string  fHead	= TSYS::strLine(shD->value, 0, &off);
 	    string  fCtx	= shD->value.substr(off);
 	    off = 0;
@@ -1020,7 +1028,7 @@ void ShapeFormEl::buttonMenuTrig( )
     w->attrSet("event", "ws_BtMenu="+act->data().toString().toStdString());
 }
 
-void ShapeFormEl::comboChange(const QString &val)
+void ShapeFormEl::comboChange( const QString &val )
 {
     WdgView *w = (WdgView *)((QWidget*)sender())->parentWidget();
     if(((ShpDt*)w->shpData)->evLock)	return;
@@ -1049,8 +1057,6 @@ void ShapeFormEl::treeChange( )
     WdgView	*w  = (WdgView*)el->parentWidget();
 
     if(((ShpDt*)w->shpData)->evLock || !el->selectedItems().size()) return;
-
-
 
     AttrValS attrs;
     attrs.push_back(std::make_pair("value",el->selectedItems()[0]->data(0,Qt::UserRole).toString().toStdString()));
@@ -1127,13 +1133,13 @@ void ShapeFormEl::eventFilterSet( WdgView *view, QWidget *wdg, bool en )
 	    eventFilterSet(view,(QWidget*)wdg->children().at(i_c),en);
 }
 
-void ShapeFormEl::setFocus( WdgView *view, QWidget *wdg, bool en, bool devel )
+void ShapeFormEl::setFocus( WdgView *w, QWidget *wdg, bool en, bool devel )
 {
     int isFocus = wdg->windowIconText().toInt();
 
     //Set up current widget
     if(en) {
-	if(isFocus && !devel)	wdg->setFocusPolicy((Qt::FocusPolicy)isFocus);
+	if(isFocus && !devel) wdg->setFocusPolicy((Qt::FocusPolicy)isFocus);
     }
     else {
 	if(wdg->focusPolicy() != Qt::NoFocus) {
@@ -1146,7 +1152,7 @@ void ShapeFormEl::setFocus( WdgView *view, QWidget *wdg, bool en, bool devel )
     //Process childs
     for(int i_c = 0; i_c < wdg->children().size(); i_c++)
 	if(qobject_cast<QWidget*>(wdg->children().at(i_c)))
-	    setFocus(view,(QWidget*)wdg->children().at(i_c),en,devel);
+	    setFocus(w,(QWidget*)wdg->children().at(i_c),en,devel);
 }
 
 //************************************************
@@ -1479,8 +1485,7 @@ bool ShapeMedia::attrSet( WdgView *w, int uiPrmPos, const string &val)
 	    break;
 	}
 	case A_MediaSpeedPlay:
-	    switch(shD->mediaType)
-	    {
+	    switch(shD->mediaType) {
 		case FM_IMG: case FM_ANIM: shD->mediaSpeed = s2i(val);	break;
 		case FM_FULL_VIDEO: shD->videoPlay = (bool)s2i(val);	break;
 	    }
@@ -1527,8 +1532,7 @@ bool ShapeMedia::attrSet( WdgView *w, int uiPrmPos, const string &val)
 	    if(uiPrmPos >= A_MediaArs) {
 		int areaN = (uiPrmPos-A_MediaArs)/A_MediaArsSz;
 		if(areaN >= (int)shD->maps.size()) break;
-		switch((uiPrmPos-A_MediaArs)%A_MediaArsSz)
-		{
+		switch((uiPrmPos-A_MediaArs)%A_MediaArsSz) {
 		    case A_MediaArShape: shD->maps[areaN].shp = s2i(val);	break;
 		    case A_MediaArCoord: {
 			string stmp;
@@ -4197,10 +4201,14 @@ void ShapeDocument::init( WdgView *w )
     shD->web = new QTextBrowser(w);
 #endif
 
+    if(qobject_cast<RunWdgView*>(w)) {
+	shD->web->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(shD->web, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(custContextMenu()));
+    }
+
     eventFilterSet(w, shD->web, true);
     w->setFocusProxy(shD->web);
-    if(qobject_cast<DevelWdgView*>(w))
-	setFocus(w, shD->web, false, true);
+    if(qobject_cast<DevelWdgView*>(w)) setFocus(w, shD->web, false, true);
 
     lay->addWidget(shD->web);
 }
@@ -4316,6 +4324,29 @@ void ShapeDocument::eventFilterSet( WdgView *view, QWidget *wdg, bool en )
 	    eventFilterSet(view,(QWidget*)wdg->children().at(i_c),en);
 }
 
+void ShapeDocument::custContextMenu( )
+{
+    QObject *web = sender();
+    RunWdgView *w = dynamic_cast<RunWdgView*>(web->parent());
+#ifdef HAVE_WEBKIT
+    QMenu *menu = ((QWebView*)web)->page()->createStandardContextMenu();
+#else
+    QMenu *menu = ((QTextBrowser*)web)->createStandardContextMenu();
+#endif
+    menu->addSeparator();
+    QImage ico_t;
+    if(!ico_t.load(TUIS::icoGet("print",NULL,true).c_str())) ico_t.load(":/images/print.png");
+    QAction *actPrint = new QAction(QPixmap::fromImage(ico_t),_("Print"),this);
+    menu->addAction(actPrint);
+    if(!ico_t.load(TUIS::icoGet("export",NULL,true).c_str())) ico_t.load(":/images/export.png");
+    QAction *actExp = new QAction(QPixmap::fromImage(ico_t),_("Export"),this);
+    menu->addAction(actExp);
+    QAction *rez = menu->exec(QCursor::pos());
+    if(rez == actPrint) w->mainWin()->printDoc(w->id());
+    else if(rez == actExp) w->mainWin()->exportDoc(w->id());
+    delete menu;
+}
+
 void ShapeDocument::setFocus( WdgView *view, QWidget *wdg, bool en, bool devel )
 {
     int isFocus = wdg->windowIconText().toInt();
@@ -4359,9 +4390,10 @@ string ShapeDocument::ShpDt::toHtml( )
 	"  <meta http-equiv='Content-Type' content='text/html; charset="+Mess->charset()+"'/>\n"
 	"  <style type='text/css'>\n"+
 	" * { font-family: "+web->font().family().toStdString()+"; "
-	    "font-size: "+i2s(web->font().pointSize())+"pt; "
-	    "font-weight: "+(web->font().bold()?"bold":"normal")+"; "
-	    "font-style: "+(web->font().italic()?"italic":"normal")+"; }\n"
+	    "font-size: "+i2s(web->font().pointSize())+"pt; "+
+	    (TSYS::strParse(font,2," ",NULL,true).size()?(string("font-weight: ")+(web->font().bold()?"bold":"normal")+"; "):"")+
+	    (TSYS::strParse(font,3," ",NULL,true).size()?(string("font-style: ")+(web->font().bold()?"italic":"normal")+"; "):"")+
+	    "}\n"
 	" big { font-size: 120%; }\n"+
 	" small { font-size: 90%; }\n"+
 	" h1 { font-size: 200%; }\n"+
@@ -4370,7 +4402,7 @@ string ShapeDocument::ShpDt::toHtml( )
 	" h4 { font-size: 105%; }\n"+
 	" h5 { font-size: 95%; }\n"+
 	" h6 { font-size: 70%; }\n"+
-	" u,b,i { font-size : inherit; }\n"+
+	" u,b,i { font-size: inherit; }\n"+
 	" sup,sub { font-size: 80%; }\n"+
 	" th { font-weight: bold; }\n"+style+"</style>\n"
 	"</head>\n"+
@@ -4390,6 +4422,15 @@ void ShapeDocument::ShpDt::nodeProcess( XMLNode *xcur )
 	nodeProcess(xcur->childGet(i_c));
 	i_c++;
     }
+}
+
+void ShapeDocument::ShpDt::print( QPrinter * printer )
+{
+#ifdef HAVE_WEBKIT
+    web->print(printer);
+#else
+    web->document()->print(printer);
+#endif
 }
 
 //************************************************
@@ -4421,8 +4462,7 @@ bool ShapeBox::attrSet( WdgView *w, int uiPrmPos, const string &val )
     RunWdgView	*runW = qobject_cast<RunWdgView*>(w);
     RunPageView	*runP = runW ? qobject_cast<RunPageView*>(w) : NULL;
 
-    switch(uiPrmPos)
-    {
+    switch(uiPrmPos) {
 	case A_COM_LOAD:
 	    up = true;
 	    if(runW && shD->inclWidget)	shD->inclWidget->setMinimumSize(w->size());
@@ -4549,12 +4589,12 @@ bool ShapeBox::attrSet( WdgView *w, int uiPrmPos, const string &val )
 			shD->inclWidget->setProperty("cntPg", TSYS::addr2str(w).c_str());
 			shD->inclScrl->setWidget(shD->inclWidget);
 			shD->inclWidget->setMinimumSize(w->size());
+			if(shD->inclWidget->sizeOrigF().width() <= w->sizeOrigF().width() &&
+				shD->inclWidget->sizeOrigF().height() <= w->sizeOrigF().height())
+			    shD->inclWidget->setMaximumSize(w->size());
 			//shD->inclWidget->load("");
 
 			shD->inclWidget->setAttribute(Qt::WA_WindowPropagation, true);
-			//QPalette plt = shD->inclWidget->palette();
-			//plt.setBrush(QPalette::Window, w->palette().brush(QPalette::Window)/*shD->backGrnd /*QColor(0,0,0,0)*/);
-			//shD->inclWidget->setPalette(plt);*/
 		    }
 		    w->setProperty("inclPg", TSYS::addr2str(shD->inclWidget).c_str());
 		}

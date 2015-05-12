@@ -41,8 +41,8 @@ TBDS::TBDS( ) : TSubSYS(SDB_ID,_("Data Bases"),true), mSYSStPref(true)
     el_db.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
     el_db.fldAdd(new TFld("TYPE",_("DB type (module)"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
     el_db.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
-    el_db.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"200"));
-    el_db.fldAdd(new TFld("ADDR",_("Address"),TFld::String,TFld::NoFlag,"100"));
+    el_db.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"2000"));
+    el_db.fldAdd(new TFld("ADDR",_("Address"),TFld::String,TFld::NoFlag,"1000"));
     el_db.fldAdd(new TFld("CODEPAGE",_("Code page"),TFld::String,TFld::NoFlag,"20"));
     el_db.fldAdd(new TFld("EN",_("To enable"),TFld::Boolean,TFld::NoFlag,"1","1"));
 }
@@ -746,13 +746,13 @@ TVariant TBD::objFuncCall( const string &iid, vector<TVariant> &prms, const stri
 	try {
 	    vector< vector<string> > rtbl;
 	    sqlReq(prms[0].getS(), &rtbl, ((prms.size()>=2)?prms[1].getB():EVAL_BOOL));
-	    for(unsigned i_r = 0; i_r < rtbl.size(); i_r++) {
+	    for(unsigned iR = 0; iR < rtbl.size(); iR++) {
 		TArrayObj *row = new TArrayObj();
-		for(unsigned i_c = 0; i_c < rtbl[i_r].size(); i_c++) {
-		    row->arSet(i_c, rtbl[i_r][i_c]);
-		    if(i_r) row->TVarObj::propSet(rtbl[0][i_c], rtbl[i_r][i_c]);
+		for(unsigned iC = 0; iC < rtbl[iR].size(); iC++) {
+		    row->arSet(iC, rtbl[iR][iC]);
+		    if(iR) row->TVarObj::propSet(rtbl[0][iC], rtbl[iR][iC]);
 		}
-		rez->arSet(i_r, row);
+		rez->arSet(iR, row);
 	    }
 	}
 	catch(...){ }
