@@ -52,13 +52,8 @@ B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params
 	    mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].Time.lnk.prmName.c_str(), TUdata[i].Time.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:0", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].TC.lnk.prmName.c_str(), TUdata[i].TC.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-
-	    mPrm.p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("TC_%d", i + 1).c_str(), TSYS::strMess(_("TC bind %d"), i + 1).c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:1", i + 1));
-	    mPrm.p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("extime_%d", i + 1).c_str(), TSYS::strMess(_("Extra time %d"), i + 1).c_str(), TFld::Integer,
-			    TVal::DirWrite));
+	    mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].ExTime.lnk.prmName.c_str(), TUdata[i].ExTime.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	}
     }
@@ -99,8 +94,18 @@ void B_BTR::loadIO(bool force)
     TConfig cfg(&mPrm.prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table =  mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
+    for(int i = 0; i < count_nu; i++) {
+	loadLnk(TUdata[i].On.lnk, io_bd, io_table, cfg);
+	loadLnk(TUdata[i].Off.lnk, io_bd, io_table, cfg);
+	loadLnk(TUdata[i].Run.lnk, io_bd, io_table, cfg);
+	loadLnk(TUdata[i].Reset.lnk, io_bd, io_table, cfg);
+	loadLnk(TUdata[i].Time.lnk, io_bd, io_table, cfg);
+	loadLnk(TUdata[i].TC.lnk, io_bd, io_table, cfg);
+	loadLnk(TUdata[i].ExTime.lnk, io_bd, io_table, cfg);
+    }
     for(int i = 0; i < count_nr; i++) {
-	loadLnk(TRdata[i].Value.lnk, io_bd, cfg);
+	loadLnk(TRdata[i].Value.lnk, io_bd, io_table, cfg);
     }
 
 }
@@ -111,8 +116,18 @@ void B_BTR::saveIO()
     TConfig cfg(&mPrm.prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table =  mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
+    for(int i = 0; i < count_nu; i++) {
+	saveLnk(TUdata[i].On.lnk, io_bd, io_table, cfg);
+	saveLnk(TUdata[i].Off.lnk, io_bd, io_table, cfg);
+	saveLnk(TUdata[i].Run.lnk, io_bd, io_table, cfg);
+	saveLnk(TUdata[i].Reset.lnk, io_bd, io_table, cfg);
+	saveLnk(TUdata[i].Time.lnk, io_bd, io_table, cfg);
+	saveLnk(TUdata[i].TC.lnk, io_bd, io_table, cfg);
+	saveLnk(TUdata[i].ExTime.lnk, io_bd, io_table, cfg);
+    }
     for(int i = 0; i < count_nr; i++) {
-	saveLnk(TRdata[i].Value.lnk, io_bd, cfg);
+	saveLnk(TRdata[i].Value.lnk, io_bd, io_table,cfg);
     }
 }
 
@@ -120,6 +135,45 @@ void B_BTR::saveIO()
 void B_BTR::tmHandler(void)
 {
     NeedInit = false;
+    for(int i = 0; i < count_nu; i++) {
+	uint8_t tmpui8;
+	union
+	{
+	    uint8_t b[4];
+	    float f;
+	} tmpfl, tmpfl1;
+	union
+	{
+	    uint8_t b[4];
+	    uint16_t w;
+	} tmpw;
+	if( TUdata[i].Time.lnk.aprm.freeStat()) {
+	    //no connection
+	    TUdata[i].Time.vl = EVAL_RFlt;
+	} else {
+	    tmpfl.f = TUdata[i].Time.lnk.aprm.at().getR();
+	    if(tmpfl.f != TUdata[i].Time.vl) {
+		TUdata[i].Time.vl = tmpfl.f;
+		mPrm.vlAt(TUdata[i].Time.lnk.prmName.c_str()).at().setR(tmpfl.f/10, 0, true);
+		tmpw.w = (uint16_t)(TUdata[i].Time.vl * 10);
+		uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1]};
+		mPrm.owner().PushInBE(2, sizeof(E), ID | ((i + 1) << 6) | (0), E);
+	    }
+	}
+	if( TUdata[i].TC.lnk.aprm.freeStat()) {
+	    //no connection
+	    TUdata[i].TC.vl = EVAL_RFlt;
+	} else {
+	    tmpfl.f = TUdata[i].Time.lnk.aprm.at().getR();
+	    if(tmpfl.f != TUdata[i].Time.vl) {
+		TUdata[i].Time.vl = tmpfl.f;
+		mPrm.vlAt(TUdata[i].Time.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+		tmpw.w = ((uint16_t)TUdata[i].Time.vl * 10);
+		uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1]};
+		mPrm.owner().PushInBE(2, sizeof(E), ID | ((i + 1) << 6) | (0), E);
+	    }
+	}
+    }
     for(int i = 0; i < count_nr; i++) {
 	uint8_t tmpui8;
 	union
@@ -288,14 +342,26 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
 	case 0:
 	case 1:
 	case 2:
-	    //state
 	    out[0] = 0;
 	    l = 1;
 	    break;
 	}
     }
     if(count_nu && (k <= count_nu)) {
-	//TODO TU
+	switch(n) {
+	case 0:
+	    (*(uint16_t *)out )= (uint16_t)TUdata[k].Time.vl * 10;
+	    l = 2;
+	    break;
+	case 1:
+	    (*(uint16_t *)out )= (uint16_t)TUdata[k].TC.vl;
+	    l = 2;
+	    break;
+	case 2:
+	    (*(uint16_t *)out )= (uint16_t)TUdata[k].ExTime.vl * 10;
+	    l = 1;
+	    break;
+	}
     }
     if(count_nr && ((k > count_nu) && (k <= count_nr + count_nu))) {
 	out[0] = TRdata[k - 1 - count_nu].Value.s;

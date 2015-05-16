@@ -125,26 +125,27 @@ void B_BVT::loadIO(bool force)
     TConfig cfg(&mPrm.prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table =  mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_n; i++) {
-	loadLnk(data[i].State.lnk, io_bd, cfg);
-	loadLnk(data[i].Value.lnk, io_bd, cfg);
-	loadLnk(data[i].Period.lnk, io_bd, cfg);
-	loadLnk(data[i].Sens.lnk, io_bd, cfg);
-	loadLnk(data[i].MinS.lnk, io_bd, cfg);
-	loadLnk(data[i].MaxS.lnk, io_bd, cfg);
-	loadLnk(data[i].MinPV.lnk, io_bd, cfg);
-	loadLnk(data[i].MaxPV.lnk, io_bd, cfg);
-	loadLnk(data[i].MinW.lnk, io_bd, cfg);
-	loadLnk(data[i].MaxW.lnk, io_bd, cfg);
-	loadLnk(data[i].MinA.lnk, io_bd, cfg);
-	loadLnk(data[i].MaxA.lnk, io_bd, cfg);
-	loadLnk(data[i].Factor.lnk, io_bd, cfg);
-	loadLnk(data[i].Dimension.lnk, io_bd, cfg);
-	loadLnk(data[i].CorFactor.lnk, io_bd, cfg);
-	loadLnk(data[i].Rate.lnk, io_bd, cfg);
-	loadLnk(data[i].Calcs.lnk, io_bd, cfg);
-	loadLnk(data[i].RateSens.lnk, io_bd, cfg);
-	loadLnk(data[i].RateLimit.lnk, io_bd, cfg);
+	loadLnk(data[i].State.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].Value.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].Period.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].Sens.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].MinS.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].MaxS.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].MinPV.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].MaxPV.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].MinW.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].MaxW.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].MinA.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].MaxA.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].Factor.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].Dimension.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].CorFactor.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].Rate.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].Calcs.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].RateSens.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].RateLimit.lnk, io_bd, io_table, cfg);
     }
 
 }
@@ -155,26 +156,27 @@ void B_BVT::saveIO()
     TConfig cfg(&mPrm.prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table =  mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_n; i++) {
-	saveLnk(data[i].State.lnk, io_bd, cfg);
-	saveLnk(data[i].Value.lnk, io_bd, cfg);
-	saveLnk(data[i].Period.lnk, io_bd, cfg);
-	saveLnk(data[i].Sens.lnk, io_bd, cfg);
-	saveLnk(data[i].MinS.lnk, io_bd, cfg);
-	saveLnk(data[i].MaxS.lnk, io_bd, cfg);
-	saveLnk(data[i].MinPV.lnk, io_bd, cfg);
-	saveLnk(data[i].MaxPV.lnk, io_bd, cfg);
-	saveLnk(data[i].MinW.lnk, io_bd, cfg);
-	saveLnk(data[i].MaxW.lnk, io_bd, cfg);
-	saveLnk(data[i].MinA.lnk, io_bd, cfg);
-	saveLnk(data[i].MaxA.lnk, io_bd, cfg);
-	saveLnk(data[i].Factor.lnk, io_bd, cfg);
-	saveLnk(data[i].Dimension.lnk, io_bd, cfg);
-	saveLnk(data[i].CorFactor.lnk, io_bd, cfg);
-	saveLnk(data[i].Rate.lnk, io_bd, cfg);
-	saveLnk(data[i].Calcs.lnk, io_bd, cfg);
-	saveLnk(data[i].RateSens.lnk, io_bd, cfg);
-	saveLnk(data[i].RateLimit.lnk, io_bd, cfg);
+	saveLnk(data[i].State.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].Value.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].Period.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].Sens.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].MinS.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].MaxS.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].MinPV.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].MaxPV.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].MinW.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].MaxW.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].MinA.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].MaxA.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].Factor.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].Dimension.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].CorFactor.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].Rate.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].Calcs.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].RateSens.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].RateLimit.lnk, io_bd, io_table, cfg);
     }
 }
 

@@ -74,9 +74,10 @@ void B_BVTC::loadIO( bool force )
     TConfig cfg(&mPrm.prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." +mPrm.typeDBName()+  "_io";
+    string io_table =  mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_n; i++) {
-	loadLnk(data[i].Value.lnk, io_bd, cfg);
-	loadLnk(data[i].Mask.lnk, io_bd, cfg);
+	loadLnk(data[i].Value.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].Mask.lnk, io_bd, io_table, cfg);
     }
 }
 
@@ -86,9 +87,10 @@ void B_BVTC::saveIO()
     TConfig cfg(&mPrm.prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." +mPrm.typeDBName()+  "_io";
+    string io_table =  mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_n; i++) {
-	saveLnk(data[i].Value.lnk, io_bd, cfg);
-	saveLnk(data[i].Mask.lnk, io_bd, cfg);
+	saveLnk(data[i].Value.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].Mask.lnk, io_bd, io_table, cfg);
     }
 }
 

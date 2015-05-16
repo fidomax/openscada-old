@@ -71,44 +71,88 @@ namespace FT3
 	    }
 	    uint8_t id;
 
-	    ui8Data On, Off, Run, Reset, Time, TC, ExTime;
+	    ui8Data On, Off, Run, Reset,  TC;
+	    flData  Time, ExTime;
 	};
 	vector<STRchannel> TRdata;
 	vector<STUchannel> TUdata;
 	int lnkSize()
 	{
-	    return TUdata.size() * 4 + TRdata.size();
+	    if(with_params) {
+		return TUdata.size() * 7 + TRdata.size();
+	    } else {
+		return TUdata.size() * 4 + TRdata.size();
+	    }
 	}
 	int lnkId(const string &id)
 	{
-	    for(int i_l = 0; i_l < TUdata.size(); i_l++) {
-		if(TUdata[i_l].On.lnk.prmName == id) return i_l * 4;
-		if(TUdata[i_l].Off.lnk.prmName == id) return i_l * 4 + 1;
-		if(TUdata[i_l].Run.lnk.prmName == id) return i_l * 4 + 2;
-		if(TUdata[i_l].Reset.lnk.prmName == id) return i_l * 4 + 3;
+	    if(with_params) {
+		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
+		    if(TUdata[i_l].On.lnk.prmName == id) return i_l * 7;
+		    if(TUdata[i_l].Off.lnk.prmName == id) return i_l * 7 + 1;
+		    if(TUdata[i_l].Run.lnk.prmName == id) return i_l * 7 + 2;
+		    if(TUdata[i_l].Reset.lnk.prmName == id) return i_l * 7 + 3;
+		    if(TUdata[i_l].Time.lnk.prmName == id) return i_l * 7 + 4;
+		    if(TUdata[i_l].TC.lnk.prmName == id) return i_l * 7 + 5;
+		    if(TUdata[i_l].ExTime.lnk.prmName == id) return i_l * 7 + 6;
+		}
+		for(int i_l = 0; i_l < TRdata.size(); i_l++) {
+		    if(TRdata[i_l].Value.lnk.prmName == id) return i_l + TUdata.size() * 7;
+		}
+	    } else {
+		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
+		    if(TUdata[i_l].On.lnk.prmName == id) return i_l * 4;
+		    if(TUdata[i_l].Off.lnk.prmName == id) return i_l * 4 + 1;
+		    if(TUdata[i_l].Run.lnk.prmName == id) return i_l * 4 + 2;
+		    if(TUdata[i_l].Reset.lnk.prmName == id) return i_l * 4 + 3;
+		}
+		for(int i_l = 0; i_l < TRdata.size(); i_l++) {
+		    if(TRdata[i_l].Value.lnk.prmName == id) return i_l + TUdata.size() * 4;
+		}
 	    }
 
-	    for(int i_l = 0; i_l < TRdata.size(); i_l++) {
-		if(TRdata[i_l].Value.lnk.prmName == id) return i_l + TUdata.size() * 4;
-	    }
+
 	    return -1;
 	}
 	SLnk &lnk(int num)
 	{
-	    if((TUdata.size() > 0) && ((TUdata.size() * 4) > num)) {
-		switch(num % 4) {
-		case 0:
-		    return TUdata[num / 4].On.lnk;
-		case 1:
-		    return TUdata[num / 4].Off.lnk;
-		case 2:
-		    return TUdata[num / 4].Run.lnk;
-		case 3:
-		    return TUdata[num / 4].Reset.lnk;
-
+	    if(with_params) {
+		if((TUdata.size() > 0) && ((TUdata.size() * 7) > num)) {
+		    switch(num % 7) {
+		    case 0:
+			return TUdata[num / 7].On.lnk;
+		    case 1:
+			return TUdata[num / 7].Off.lnk;
+		    case 2:
+			return TUdata[num / 7].Run.lnk;
+		    case 3:
+			return TUdata[num / 7].Reset.lnk;
+		    case 4:
+			return TUdata[num / 7].Time.lnk;
+		    case 5:
+			return TUdata[num / 7].TC.lnk;
+		    case 6:
+			return TUdata[num / 7].ExTime.lnk;
+		    }
+		} else {
+		    return TRdata[num - TUdata.size() * 7].Value.lnk;
 		}
 	    } else {
-		return TRdata[num - TUdata.size() * 4].Value.lnk;
+		if((TUdata.size() > 0) && ((TUdata.size() * 4) > num)) {
+		    switch(num % 4) {
+		    case 0:
+			return TUdata[num / 4].On.lnk;
+		    case 1:
+			return TUdata[num / 4].Off.lnk;
+		    case 2:
+			return TUdata[num / 4].Run.lnk;
+		    case 3:
+			return TUdata[num / 4].Reset.lnk;
+
+		    }
+		} else {
+		    return TRdata[num - TUdata.size() * 4].Value.lnk;
+		}
 	    }
 
 	}

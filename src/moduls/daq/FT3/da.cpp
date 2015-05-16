@@ -27,20 +27,20 @@
 
 using namespace FT3;
 
-void DA::loadLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
+void DA::loadLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg)
 {
     cfg.cfg("ID").setS(lnk.prmName);
-    if(SYS->db().at().dataGet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg, false, true)) {
+    if(SYS->db().at().dataGet(io_bd, io_table, cfg, false, true)) {
 	lnk.prmAttr = cfg.cfg("VALUE").getS();
 	lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
     }
 }
 
-void DA::saveLnk(SLnk& lnk, const string& io_bd, TConfig& cfg)
+void DA::saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg)
 {
     cfg.cfg("ID").setS(lnk.prmName);
     cfg.cfg("VALUE").setS(lnk.prmAttr);
-    SYS->db().at().dataSet(io_bd, mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io", cfg);
+    SYS->db().at().dataSet(io_bd, io_table, cfg);
 }
 
 uint8_t DA::SetNew8Val(ui8Data &d, uint8_t addr, uint16_t prmID, uint8_t val)
