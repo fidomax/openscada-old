@@ -81,6 +81,14 @@ class DA: public TElem
 	    SLnk lnk;
 	};
 
+	class ui16Data{
+	public:
+	    ui16Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(65534), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    uint16_t vl;
+	    uint8_t s;
+	    SLnk lnk;
+	};
+
 	class flData{
 	public:
 	    flData(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(EVAL_RFlt), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
@@ -103,7 +111,11 @@ class DA: public TElem
 	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
 	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
 	uint8_t SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2);
-
+	void UpdateParamFlW(flData& param, uint16_t ID, uint8_t cl = 2);
+	void UpdateParamFlB(flData& param, uint16_t ID, uint8_t cl = 2);
+	void UpdateParamW(ui16Data& param, uint16_t ID, uint8_t cl = 2);
+	void UpdateParamFl(flData& param, uint16_t ID, uint8_t cl = 2);
+//	void UpdateParamFl(flData& param, uint16_t ID, uint8_t cl = 2);
     public:
 	virtual int lnkSize( ){}
 

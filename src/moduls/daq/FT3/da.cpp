@@ -43,7 +43,7 @@ void DA::saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig
     SYS->db().at().dataSet(io_bd, io_table, cfg);
 }
 
-uint8_t DA::SetNew8Val(ui8Data &d, uint8_t addr, uint16_t prmID, uint8_t val)
+uint8_t DA::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 {
     if(!d.lnk.aprm.freeStat()) {
 	d.s = addr;
@@ -58,7 +58,7 @@ uint8_t DA::SetNew8Val(ui8Data &d, uint8_t addr, uint16_t prmID, uint8_t val)
     }
 }
 
-uint8_t DA::SetNewflVal(flData &d, uint8_t addr, uint16_t prmID, float val)
+uint8_t DA::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
 {
     if(!d.lnk.aprm.freeStat()) {
 	d.s = addr;
@@ -73,7 +73,7 @@ uint8_t DA::SetNewflVal(flData &d, uint8_t addr, uint16_t prmID, float val)
     }
 }
 
-uint8_t DA::SetNew2flVal(flData &d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2)
+uint8_t DA::SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2)
 {
     if((!d1.lnk.aprm.freeStat()) && (!d2.lnk.aprm.freeStat())) {
 	d1.s = addr;
@@ -89,5 +89,96 @@ uint8_t DA::SetNew2flVal(flData &d1, flData& d2, uint8_t addr, uint16_t prmID, f
 	return 2 + 4 + 4;
     } else {
 	return 0;
+    }
+}
+
+
+void DA::UpdateParamFlW(flData& param, uint16_t ID, uint8_t cl)
+{
+    union
+    {
+	uint8_t b[4];
+	float f;
+    } tmpfl;
+    union
+    {
+	uint8_t b[2];
+	uint16_t w;
+    } tmpw;
+    if(param.lnk.aprm.freeStat()) {
+	//no connection
+	param.vl = EVAL_RFlt;
+    } else {
+	tmpfl.f = param.lnk.aprm.at().getR();
+	if(tmpfl.f != param.vl) {
+	    param.vl = tmpfl.f;
+	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f / 10, 0, true);
+	    tmpw.w = (uint16_t) (param.vl * 10);
+	    uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1] };
+	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
+	}
+    }
+}
+
+void DA::UpdateParamFlB(flData& param, uint16_t ID, uint8_t cl)
+{
+    union
+    {
+	uint8_t b[4];
+	float f;
+    } tmpfl;
+    if(param.lnk.aprm.freeStat()) {
+	//no connection
+	param.vl = EVAL_RFlt;
+    } else {
+	tmpfl.f = param.lnk.aprm.at().getR();
+	if(tmpfl.f != param.vl) {
+	    param.vl = tmpfl.f;
+	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f / 10, 0, true);
+	    uint8_t E[2] = { 0, (uint8_t) (param.vl * 10) };
+	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
+	}
+    }
+}
+
+void DA::UpdateParamW(ui16Data& param, uint16_t ID, uint8_t cl)
+{
+    union
+    {
+	uint8_t b[2];
+	uint16_t w;
+    } tmpw;
+    if(param.lnk.aprm.freeStat()) {
+	//no connection
+	param.vl = 0;
+    } else {
+	tmpw.w = param.lnk.aprm.at().getI();
+	if(tmpw.w != param.vl) {
+	    param.vl = tmpw.w;
+	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setI(tmpw.w, 0, true);
+	    uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1] };
+	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
+	}
+    }
+}
+
+void DA::UpdateParamFl(flData& param, uint16_t ID, uint8_t cl)
+{
+    union
+    {
+	uint8_t b[4];
+	float f;
+    } tmpfl;
+    if(param.lnk.aprm.freeStat()) {
+	//no connection
+	param.vl = EVAL_RFlt;
+    } else {
+	tmpfl.f = param.lnk.aprm.at().getI();
+	if(tmpfl.f != param.vl) {
+	    param.vl = tmpfl.f;
+	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+	    uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
+	}
     }
 }
