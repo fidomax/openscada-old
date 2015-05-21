@@ -32,6 +32,17 @@ namespace FT3
 class TMdPrm;
 class TMdContr;
 
+typedef union
+{
+	uint8_t b[4];
+	float f;
+} ui8fl;
+
+typedef union
+{
+	uint8_t b[2];
+	uint16_t w;
+} ui8w;
 
 class DA: public TElem
 {
@@ -110,12 +121,15 @@ class DA: public TElem
 	void saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
 	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
+	uint8_t SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, float val);
 	uint8_t SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2);
 	void UpdateParamFlW(flData& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamFlB(flData& param, uint16_t ID, uint8_t cl = 2);
+	void UpdateParam8(ui8Data& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamW(ui16Data& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamFl(flData& param, uint16_t ID, uint8_t cl = 2);
-//	void UpdateParamFl(flData& param, uint16_t ID, uint8_t cl = 2);
+	void UpdateParamFlState(flData& param, ui8Data& state, uint16_t ID, uint8_t cl);
+	void UpdateParam2Fl(flData& param1, flData& param2, uint16_t ID, uint8_t cl);
     public:
 	virtual int lnkSize( ){}
 

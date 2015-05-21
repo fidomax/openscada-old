@@ -334,23 +334,6 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
     return l;
 }
 
-uint8_t B_BTR::SetNewflVal(flData &d, uint8_t addr, uint16_t prmID, float val)
-{
-    mess_info(mPrm.nodePath().c_str(), "new fl");
-    if(!d.lnk.aprm.freeStat()) {
-	mess_info(mPrm.nodePath().c_str(), "new fl %f", val);
-	d.s = addr;
-	d.vl = val;
-	d.lnk.aprm.at().setR(d.vl);
-	mPrm.vlAt(d.lnk.prmName.c_str()).at().setR(d.vl, 0, true);
-	uint8_t E[5] = { addr, d.b_vl[0], d.b_vl[1], d.b_vl[2], d.b_vl[3] };
-	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 4;
-    } else {
-	return 0;
-    }
-}
-
 uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
 {
     uint16_t prmID = TSYS::getUnalign16(req);
