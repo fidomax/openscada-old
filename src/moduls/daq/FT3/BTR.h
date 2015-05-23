@@ -37,7 +37,6 @@ namespace FT3
 	uint16_t HandleEvent(uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
-	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
 	void saveIO(void);
@@ -71,7 +70,8 @@ namespace FT3
 	    }
 	    uint8_t id;
 
-	    ui8Data On, Off, Run, Reset,  TC;
+	    ui8Data On, Off, Run, Reset;
+	    ui16Data TC;
 	    flData  Time, ExTime;
 	};
 	vector<STRchannel> TRdata;

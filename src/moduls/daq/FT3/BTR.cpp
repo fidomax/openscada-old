@@ -136,64 +136,12 @@ void B_BTR::tmHandler(void)
 {
     NeedInit = false;
     for(int i = 0; i < count_nu; i++) {
-	uint8_t tmpui8;
-	union
-	{
-	    uint8_t b[4];
-	    float f;
-	} tmpfl, tmpfl1;
-	union
-	{
-	    uint8_t b[4];
-	    uint16_t w;
-	} tmpw;
-	if( TUdata[i].Time.lnk.aprm.freeStat()) {
-	    //no connection
-	    TUdata[i].Time.vl = EVAL_RFlt;
-	} else {
-	    tmpfl.f = TUdata[i].Time.lnk.aprm.at().getR();
-	    if(tmpfl.f != TUdata[i].Time.vl) {
-		TUdata[i].Time.vl = tmpfl.f;
-		mPrm.vlAt(TUdata[i].Time.lnk.prmName.c_str()).at().setR(tmpfl.f/10, 0, true);
-		tmpw.w = (uint16_t)(TUdata[i].Time.vl * 10);
-		uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1]};
-		mPrm.owner().PushInBE(2, sizeof(E), ID | ((i + 1) << 6) | (0), E);
-	    }
-	}
-	if( TUdata[i].TC.lnk.aprm.freeStat()) {
-	    //no connection
-	    TUdata[i].TC.vl = EVAL_RFlt;
-	} else {
-	    tmpfl.f = TUdata[i].Time.lnk.aprm.at().getR();
-	    if(tmpfl.f != TUdata[i].Time.vl) {
-		TUdata[i].Time.vl = tmpfl.f;
-		mPrm.vlAt(TUdata[i].Time.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
-		tmpw.w = ((uint16_t)TUdata[i].Time.vl * 10);
-		uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1]};
-		mPrm.owner().PushInBE(2, sizeof(E), ID | ((i + 1) << 6) | (0), E);
-	    }
-	}
+	UpdateParamFlW(TUdata[i].Time,ID | ((i + 1) << 6) | (0),1);
+	UpdateParamW(TUdata[i].TC,ID | ((i + 1) << 6) | (1),1);
+	UpdateParamFlB(TUdata[i].ExTime,ID | ((i + 1) << 6) | (2),1);
     }
     for(int i = 0; i < count_nr; i++) {
-	uint8_t tmpui8;
-	union
-	{
-	    uint8_t b[4];
-	    float f;
-	} tmpfl, tmpfl1;
-
-	if( TRdata[i].Value.lnk.aprm.freeStat()) {
-	    //no connection
-	    TRdata[i].Value.vl = EVAL_RFlt;
-	} else {
-	    tmpfl.f = TRdata[i].Value.lnk.aprm.at().getR();
-	    if(tmpfl.f != TRdata[i].Value.vl) {
-		TRdata[i].Value.vl = tmpfl.f;
-		mPrm.vlAt(TRdata[i].Value.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
-		uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-		mPrm.owner().PushInBE(2, sizeof(E), ID | ((i + 1) << 6) | (0), E);
-	    }
-	}
+	UpdateParamFl(TRdata[i].Value,ID | ((i + 1 + count_nu) << 6) | (0),1);
     }
 }
 
@@ -230,9 +178,9 @@ uint16_t B_BTR::Task(uint16_t uc)
 
 			    if(mPrm.owner().Transact(&Msg)) {
 				if(Msg.C == GOOD3) {
-				    mPrm.vlAt(TSYS::strMess("time_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 8), 0, true);
-				    mPrm.vlAt(TSYS::strMess("TC_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 15), 0, true);
-				    mPrm.vlAt(TSYS::strMess("extime_%d", i).c_str()).at().setI(Msg.D[22], 0, true);
+				    mPrm.vlAt(TSYS::strMess("time_%d", i).c_str()).at().setR(TSYS::getUnalign16(Msg.D + 8)/10.0, 0, true);
+				    mPrm.vlAt(TSYS::strMess("tc_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 15), 0, true);
+				    mPrm.vlAt(TSYS::strMess("extime_%d", i).c_str()).at().setR(Msg.D[22]/10.0, 0, true);
 				    rc = 1;
 				} else {
 				    rc = 0;
@@ -299,19 +247,19 @@ uint16_t B_BTR::HandleEvent(uint8_t * D)
     if(count_nu && (k <= count_nu)) {
 	switch(n) {
 	case 0:
-	    mPrm.vlAt(TSYS::strMess("time_%d", k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
+	    mPrm.vlAt(TSYS::strMess("time_%d", k).c_str()).at().setR(TSYS::getUnalign16(D + 3)/10.0, 0, true);
 	    l = 5;
 	    break;
 
 	case 1:
 	    if(with_params) {
-		mPrm.vlAt(TSYS::strMess("TC_%d", k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
+		mPrm.vlAt(TSYS::strMess("tc_%d", k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
 	    }
 	    l = 5;
 	    break;
 	case 2:
 	    if(with_params) {
-		mPrm.vlAt(TSYS::strMess("extime_%d", k).c_str()).at().setI(D[3], 0, true);
+		mPrm.vlAt(TSYS::strMess("extime_%d", k).c_str()).at().setR(D[3]/10.0, 0, true);
 		;
 	    }
 	    l = 4;
@@ -340,53 +288,50 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
     if (k==0) {
 	switch(n) {
 	case 0:
-	case 1:
-	case 2:
 	    out[0] = 0;
 	    l = 1;
 	    break;
-	}
-    }
-    if(count_nu && (k <= count_nu)) {
-	switch(n) {
-	case 0:
-	    (*(uint16_t *)out )= (uint16_t)TUdata[k].Time.vl * 10;
-	    l = 2;
-	    break;
 	case 1:
-	    (*(uint16_t *)out )= (uint16_t)TUdata[k].TC.vl;
+	    out[0] = 0;
+	    out[1] = 0;
 	    l = 2;
 	    break;
 	case 2:
-	    (*(uint16_t *)out )= (uint16_t)TUdata[k].ExTime.vl * 10;
-	    l = 1;
+	    out[0] = 0;
+	    out[1] = 0;
+	    l = 2;
 	    break;
 	}
-    }
-    if(count_nr && ((k > count_nu) && (k <= count_nr + count_nu))) {
-	out[0] = TRdata[k - 1 - count_nu].Value.s;
-	for(uint8_t j = 0; j < 4; j++)
-	    out[1 + j] = TRdata[k - 1 - count_nu].Value.b_vl[j];
-	l = 5;
+    } else {
+	if(count_nu && (k <= count_nu)) {
+	    switch(n) {
+	    case 0:
+		out[0] = TUdata[k - 1].Time.s;
+		out[1] = ((uint16_t) TUdata[k - 1].Time.vl * 10);
+		out[2] = ((uint16_t) TUdata[k - 1].Time.vl * 10) >> 8;
+		l = 3;
+		break;
+	    case 1:
+		out[0] = TUdata[k - 1].TC.s;
+		out[1] = TUdata[k - 1].TC.vl;
+		out[1] = TUdata[k - 1].TC.vl >> 8;
+		l = 3;
+		break;
+	    case 2:
+		out[0] = TUdata[k - 1].ExTime.s;
+		out[1] = ((uint16_t) TUdata[k - 1].ExTime.vl * 10);
+		l = 2;
+		break;
+	    }
+	}
+	if(count_nr && ((k > count_nu) && (k <= count_nr + count_nu))) {
+	    out[0] = TRdata[k - 1 - count_nu].Value.s;
+	    for(uint8_t j = 0; j < 4; j++)
+		out[1 + j] = TRdata[k - 1 - count_nu].Value.b_vl[j];
+	    l = 5;
+	}
     }
     return l;
-}
-
-uint8_t B_BTR::SetNewflVal(flData &d, uint8_t addr, uint16_t prmID, float val)
-{
-    mess_info(mPrm.nodePath().c_str(), "new fl");
-    if(!d.lnk.aprm.freeStat()) {
-	mess_info(mPrm.nodePath().c_str(), "new fl %f", val);
-	d.s = addr;
-	d.vl = val;
-	d.lnk.aprm.at().setR(d.vl);
-	mPrm.vlAt(d.lnk.prmName.c_str()).at().setR(d.vl, 0, true);
-	uint8_t E[5] = { addr, d.b_vl[0], d.b_vl[1], d.b_vl[2], d.b_vl[3] };
-	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 4;
-    } else {
-	return 0;
-    }
 }
 
 uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
