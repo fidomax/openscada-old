@@ -73,18 +73,33 @@ uint8_t DA::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
     }
 }
 
-uint8_t DA::SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, float val)
+uint8_t DA::SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, uint16_t val)
 {
     if(!d.lnk.aprm.freeStat()) {
 	d.s = addr;
 	d.vl = val;
-	d.lnk.aprm.at().setI(d.vl*10);
-	mPrm.vlAt(d.lnk.prmName.c_str()).at().setR(d.vl, 0, true);
+	d.lnk.aprm.at().setI(d.vl);
+	mPrm.vlAt(d.lnk.prmName.c_str()).at().setR(d.vl/10, 0, true);
 	ui8w t;
-	t.w = d.vl*10;
+	t.w = d.vl;
 	uint8_t E[3] = { addr, t.b[0], t.b[1]};
 	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 2;
+    } else {
+	return 0;
+    }
+}
+
+uint8_t DA::SetNewfl8Val(flData& d, uint8_t addr, uint16_t prmID, uint8_t val)
+{
+    if(!d.lnk.aprm.freeStat()) {
+	d.s = addr;
+	d.vl = val;
+	d.lnk.aprm.at().setI(d.vl);
+	mPrm.vlAt(d.lnk.prmName.c_str()).at().setR(d.vl/10, 0, true);
+	uint8_t E[2] = { addr, val};
+	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+	return 2 + 1;
     } else {
 	return 0;
     }
@@ -120,9 +135,10 @@ void DA::UpdateParamFlW(flData& param, uint16_t ID, uint8_t cl)
     } else {
 	tmpfl.f = param.lnk.aprm.at().getR();
 	if(tmpfl.f != param.vl) {
+	    mess_info(mPrm.nodePath().c_str(), "UpdateParamFlW new value %f", tmpfl.f);
 	    param.vl = tmpfl.f;
 	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f / 10, 0, true);
-	    tmpw.w = (uint16_t) (param.vl * 10);
+	    tmpw.w = (uint16_t) (param.vl);
 	    uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1] };
 	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
 	}
@@ -140,7 +156,7 @@ void DA::UpdateParamFlB(flData& param, uint16_t ID, uint8_t cl)
 	if(tmpfl.f != param.vl) {
 	    param.vl = tmpfl.f;
 	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f / 10, 0, true);
-	    uint8_t E[2] = { 0, (uint8_t) (param.vl * 10) };
+	    uint8_t E[2] = { 0, (uint8_t) (param.vl) };
 	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
 	}
     }

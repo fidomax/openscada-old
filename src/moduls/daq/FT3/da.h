@@ -121,7 +121,8 @@ class DA: public TElem
 	void saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
 	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
-	uint8_t SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, float val);
+	uint8_t SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, uint16_t val);
+	uint8_t SetNewfl8Val(flData& d, uint8_t addr, uint16_t prmID, uint8_t val);
 	uint8_t SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2);
 	void UpdateParamFlW(flData& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamFlB(flData& param, uint16_t ID, uint8_t cl = 2);
