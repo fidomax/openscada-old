@@ -95,7 +95,7 @@ time_t TMdContr::DateTimeToTime_t(uint8_t * D)
 void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 {
 
-    MtxAlloc res(eventRes, true);
+//    MtxAlloc res(eventRes, true);
     uint8_t DHM[5];
     time_t rawtime;
     time(&rawtime);
@@ -980,11 +980,11 @@ void *TMdContr::LogicTask(void *icntr)
     while(!cntr.endrun_req) {
 	long long t_cnt = TSYS::curTime();
 	MtxAlloc prmRes(cntr.enRes, true);
-
 	//TODO FT3 logic handler
 	vector<string> lst;
 	cntr.list(lst);
 	for(int i_l = 0; i_l < lst.size(); i_l++) {
+	    MtxAlloc res(cntr.eventRes, true);
 	    AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
 	    t.at().tmHandler();
 	}
