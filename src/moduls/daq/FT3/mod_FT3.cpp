@@ -94,22 +94,19 @@ time_t TMdContr::DateTimeToTime_t(uint8_t * D)
 
 void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 {
-
-//    MtxAlloc res(eventRes, true);
     uint8_t DHM[5];
     time_t rawtime;
     time(&rawtime);
     Time_tToDateTime(DHM, rawtime);
 
-
     uint8_t *pE = E;
     chain_BE *pCi;
     el_chBE *pBE;
-    int  i;
+    int i;
     bool fNewBE;
     uint16_t day = TSYS::getUnalign16(DHM);
     uint16_t hour = DHM[2];
-    uint16_t ms100 = TSYS::getUnalign16(DHM+3);
+    uint16_t ms100 = TSYS::getUnalign16(DHM + 3);
     if(type == 1) {
 	pCi = &C1;
     } else {
@@ -129,10 +126,13 @@ void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 
     }
     if(fNewBE) {
-	if(empt.head) {pBE = empt.getdel();}
-	else
-	if(C2.head) {pBE = C2.getdel();}
-	else {pBE = C1.getdel();}
+	if(empt.head) {
+	    pBE = empt.getdel();
+	} else if(C2.head) {
+	    pBE = C2.getdel();
+	} else {
+	    pBE = C1.getdel();
+	}
 	pBE->BE.d = day;
 	pBE->BE.h = hour;
 	pBE->BE.l = 0;
@@ -140,7 +140,7 @@ void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
     }
     if(pBE) {
 	pBE->BE.mD[pBE->BE.l++] = ms100;
-	pBE->BE.mD[pBE->BE.l++] = ms100>>8;
+	pBE->BE.mD[pBE->BE.l++] = ms100 >> 8;
 	pBE->BE.mD[pBE->BE.l++] = id;
 	pBE->BE.mD[pBE->BE.l++] = id >> 8;
 	for(i = 0; i < length; i++) {
@@ -148,7 +148,6 @@ void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 	}
     }
 }
-
 
 void TMdContr::Time_tToDateTime(uint8_t * D, time_t time)
 {
@@ -193,6 +192,7 @@ uint8_t TMdContr::cmdSet(uint8_t * req, uint8_t addr)
     }
     return rc;
 }
+
 bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 {
 //    mess_info(nodePath().c_str(), _("Process message___"));
@@ -202,8 +202,8 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
     uint8_t rc;
     MtxAlloc res(eventRes, true);
     msgOut->L = 0;
-    if (msg->L == 1) {
-	mess_info(nodePath().c_str(), _("ProcessMessage one byte req L %02X C %02X"),msg->L,msg->C);
+    if(msg->L == 1) {
+	mess_info(nodePath().c_str(), _("ProcessMessage one byte req L %02X C %02X"), msg->L, msg->C);
 	// One byte req
 	msgOut->L = 1;
 	msgOut->C = msg->A & 0x3F;
@@ -258,7 +258,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	}
 	break;
     case SetData:
-	mess_info(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"),FCB2,msg->C);
+	mess_info(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"), FCB2, msg->C);
 	if(FCB2 != msg->C) {
 	    FCB2 = msg->C;
 	    l = msg->L - 3;
@@ -336,14 +336,12 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 //*************************************************
 //* TTpContr                                      *
 //*************************************************
-//!!! Constructor for Root module object.
+
 TTpContr::TTpContr(string name) :
 	TTypeDAQ(MOD_ID)
 {
-    //!!! Init shortcut to module root object. Don't change it!
-    mod = this;
 
-    //!!! Load module meta-information to root object. Don't change it!
+    mod = this;
     mName = MOD_NAME;
     mType = MOD_TYPE;
     mVers = MOD_VER;
@@ -353,29 +351,20 @@ TTpContr::TTpContr(string name) :
     mSource = name;
 }
 
-//!!! Destructor for Root module object.
 TTpContr::~TTpContr()
 {
-//mess_info(nodePath().c_str(),_("TTpContr::~TTpContr"));
 }
 
-//!!! Processing virtual function for load Root module to DB
 void TTpContr::load_()
 {
-
 }
 
-//!!! Processing virtual function for save Root module to DB
 void TTpContr::save_()
 {
-mess_info(nodePath().c_str(),_("TTpContr::save_"));
-
 }
 
-//!!! Post-enable processing virtual function
 void TTpContr::postEnable(int flag)
 {
-//	mess_info(nodePath().c_str(),_("TTpContr::postEnable"));
     TTypeDAQ::postEnable(flag);
 
     //> Controler's bd structure
@@ -452,25 +441,21 @@ void TTpContr::postEnable(int flag)
 
     elPrmIO.fldAdd(new TFld("PRM_ID", _("Parameter ID"), TFld::String, TCfg::Key, i2s(atoi(OBJ_ID_SZ) * 6).c_str()));
     elPrmIO.fldAdd(new TFld("ID", _("ID"), TFld::String, TCfg::Key, OBJ_ID_SZ));
-    elPrmIO.fldAdd(new TFld("VALUE", _("Value"), TFld::String,TFld::NoFlag, "200"));
+    elPrmIO.fldAdd(new TFld("VALUE", _("Value"), TFld::String, TFld::NoFlag, "200"));
 }
 
-//!!! Processing virtual functions for self object-controller creation.
 TController *TTpContr::ContrAttach(const string &name, const string &daq_db)
 {
-//mess_info(nodePath().c_str(),_("TTpContr::ContrAttach"));
     return new TMdContr(name, daq_db, this);
 }
 
 //*************************************************
 //* TMdContr                                      *
 //*************************************************
-//!!! Constructor for DAQ-subsystem controller object.
 TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
 	TController(name_c, daq_db, cfgelem), prc_st(false), endrun_req(false), tm_gath(0), NeedInit(true), mPer(cfg("PERIOD").getI()),
-	mPrior(cfg("PRIOR").getId())			//, mAddr(cfg("ADDR").getSd())
+	mPrior(cfg("PRIOR").getId())
 {
-//mess_info(nodePath().c_str(),_("TMdContr::TMdContr"));
     cfg("PRM_BD_BUC").setS("FT3Prm_BUC_" + name_c);
     cfg("PRM_BD_BVTS").setS("FT3Prm_BVTS_" + name_c);
     cfg("PRM_BD_BVT").setS("FT3Prm_BVT_" + name_c);
@@ -490,8 +475,9 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
 
     MtxAlloc res(eventRes, true);
     BE = new el_chBE[nBE];
-    if(BE){
-      for(int i=0; i<nBE; i++) empt.insert(&BE[i]);
+    if(BE) {
+	for(int i = 0; i < nBE; i++)
+	    empt.insert(&BE[i]);
     }
 }
 
@@ -510,7 +496,6 @@ uint16_t TMdContr::CRC(char *data, uint16_t length)
     }
     return ~CRC;
 }
-//--------------------------------------------------------------------------------------
 
 bool TMdContr::Transact(tagMsg * pMsg)
 {
@@ -631,29 +616,26 @@ bool TMdContr::Transact(tagMsg * pMsg)
     } catch (...) {
 	mess_info(nodePath().c_str(), _("messIO error"));
     }
-
     return pMsg->L;
 }
 
 void TMdContr::MakePacket(tagMsg *msg, char *io_buf, uint16_t *len)
 {
-    //формирование FT3-пакета
-    //tagMsg msg= *(tagMsg *)t;
     uint16_t x, y, l, z;
     uint16_t w;
     if((msg->L == 1) && ((msg->C & 0x0F) == ReqData)) {
-	//байтовый опрос
+	//one byte req
 	*io_buf = (char) (~msg->A & 0x3F) | 0x80;
 	*len = 1;
     } else {
-	//полный пакет
+	//full packet
 	*(uint16_t *) io_buf = 0x6405;
 	io_buf[2] = msg->L;
 	io_buf[3] = msg->C | 0x40;
 	io_buf[4] = msg->A;
 	io_buf[5] = msg->B;
 	*(uint16_t *) (io_buf + 6) = CRC(io_buf + 2, 4);
-	//Подсчет CRC
+	//CRC
 	x = 0;
 	y = 8;
 	l = (int) msg->L - 3;
@@ -663,38 +645,31 @@ void TMdContr::MakePacket(tagMsg *msg, char *io_buf, uint16_t *len)
 	    w = CRC((char *) (msg->D + x), z);
 	    for(z; z > 0; z--)
 		io_buf[y++] = msg->D[x++];
-	    //*(uint16_t *)(io_buf + y) = w;
 	    io_buf[y] = (w) & 0xFF;
 	    io_buf[y + 1] = (w >> 8) & 0xFF;
 	    y += 2;
 	}
 	*len = y;
     }
-
 }
 
 bool TMdContr::VerCRC(char *p, uint16_t l)
 {
     l -= 2;
     uint16_t leng = (uint8_t) p[2], lD;
-
     if(*(uint16_t*) (p + 6) != CRC(p + 2, 4)) return 0;
-//    mess_info(nodePath().c_str(),_("header"));
     if(leng > 3) {
 	leng -= 3;
 	lD = leng / 16;
 	leng %= 16;
 	for(uint8_t i = 0; i < lD; i++) {
 	    if(TSYS::getUnalign16(p + 8 + ((i + 1) * 16) + (i * 2)) != CRC((p + 8 + (i * 16) + (i * 2)), 16)) return 0;
-	    //           mess_info(nodePath().c_str(),_("%d"),i);
 	}
 	if(leng) if(TSYS::getUnalign16(p + l) != CRC((p + (l - leng)), leng)) return 0;
     }
-
     return 1;
 }
 
-//---------------------------------------------------------------------------
 uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 {
     uint16_t raslen;
@@ -703,13 +678,13 @@ uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
     for(int i = 0; i < *l; i++) {
 	data_s += TSYS::int2str((uint8_t) t[i], TSYS::Hex) + " ";
     }
- //   mess_info(nodePath().c_str(), _("in VerifyPacket io_buf: %s"), data_s.c_str());
- //   mess_info(nodePath().c_str(), _("l %d"), *l);
+    //   mess_info(nodePath().c_str(), _("in VerifyPacket io_buf: %s"), data_s.c_str());
+    //   mess_info(nodePath().c_str(), _("l %d"), *l);
     if((*l == 1)) {
-	//байтовый опрос
+	//one byte req
 	return 0;
     } else {
-	//нормальный пакет
+	//full packet
 	if(*l > 7) {
 
 	    if((t[0] == 0x05) && (t[0] != 0x64)) {
@@ -719,10 +694,10 @@ uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 		    mess_info(nodePath().c_str(), _("good header"));
 		    if(!(*l > raslen && VerCRC(t, raslen))) {
 			mess_info(nodePath().c_str(), _("bad packet"));
-			return 2;    //неправильный пакет
+			return 2;    //wrong packet
 		    } else {
 			mess_info(nodePath().c_str(), _("cutting packet"));
-			*l = raslen; //пакет с мусором в конце
+			*l = raslen; //corrupted end of packet
 		    }
 		}
 
@@ -730,17 +705,16 @@ uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 		mess_info(nodePath().c_str(), _("ept"));
 		mess_info(nodePath().c_str(), _("ept %d"), (t[0] == 0x05));
 		mess_info(nodePath().c_str(), _("ept %d"), (t[0] != 0x64));
-		return 1; //нет начала пакета
+		return 1; //no start bytes
 	    }
 	} else {
 	    mess_info(nodePath().c_str(), _("WTF???"));
-	    return 3; //не пакет
+	    return 3; //not a packet
 	}
     }
-//    mess_info(nodePath().c_str(), _("OK!!!"));
     return 0;
 }
-//---------------------------------------------------------------------------
+
 uint16_t TMdContr::ParsePacket(char *t, uint16_t l, tagMsg * msg)
 {
     if(l == 1) {
@@ -764,7 +738,7 @@ uint16_t TMdContr::ParsePacket(char *t, uint16_t l, tagMsg * msg)
 	if((msg->A == t[5]) && (msg->B == t[4])) {
 	    uint16_t x, y, z;
 	    y = 0;
-	    x = 8;  // заполнение pmsg
+	    x = 8;
 	    msg->L = t[2];
 	    msg->C = t[3] & 0xF;
 	    msg->A = t[4];
@@ -790,7 +764,7 @@ uint16_t TMdContr::ParsePacket(char *t, uint16_t l, tagMsg * msg)
     }
     return 1;
 }
-//-------------------------------------------------------------------------------
+
 uint16_t TMdContr::Len(uint16_t l)
 {
     int lD = 0, lP;
@@ -804,23 +778,16 @@ uint16_t TMdContr::Len(uint16_t l)
     return (l += 5 + lD);
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
-
-//!!! Destructor for DAQ-subsystem controller object.
 TMdContr::~TMdContr()
 {
-//mess_info(nodePath().c_str(),_("TMdContr::~TMdContr"));
     if(startStat()) stop();
 
-    delete [] BE;
+    delete[] BE;
     pthread_mutex_destroy(&enRes);
 }
 
-//!!! Status processing function for DAQ-controllers
 string TMdContr::getStatus()
 {
-//	mess_info(nodePath().c_str(),_("TMdContr::getStatus"));
     string rez = TController::getStatus();
     if(startStat() && !redntUse()) rez += TSYS::strMess(_("Gather data time %.6g ms. "), tm_gath);
     return rez;
@@ -834,14 +801,12 @@ bool TMdContr::isLogic()
 	return false;
     }
 }
-//!!! Processing virtual functions for self object-parameter creation.
+
 TParamContr *TMdContr::ParamAttach(const string &name, int type)
 {
-//	mess_info(nodePath().c_str(),_("TMdContr::ParamAttach"));
     return new TMdPrm(name, &owner().tpPrmAt(type));
 }
 
-//!!! Processing virtual functions for start DAQ-controller
 void TMdContr::start_()
 {
     FCB2 = 0x20;
@@ -860,10 +825,8 @@ void TMdContr::start_()
     }
 }
 
-//!!! Processing virtual functions for stop DAQ-controller
 void TMdContr::stop_()
 {
-//	mess_info(nodePath().c_str(),_("TMdContr::stop_"));
     //> Stop the request and calc data task
     if(prc_st) SYS->taskDestroy(nodePath('.', true), &endrun_req);
 }
@@ -880,15 +843,9 @@ void TMdContr::prmEn(TMdPrm *prm, bool val)
     if(!val && i_prm < pHd.size()) pHd.erase(pHd.begin() + i_prm);
 }
 
-//!!! Background task's function for periodic data acquisition.
 void *TMdContr::DAQTask(void *icntr)
 {
-    //mess_info(nodePath().c_str(),_("Task"));
-
     TMdContr &cntr = *(TMdContr *) icntr;
-
-//    mess_info(cntr.nodePath().c_str(),_("TMdContr::Task"));
-
     cntr.endrun_req = false;
     cntr.prc_st = true;
     tagMsg Msg;
@@ -917,13 +874,12 @@ void *TMdContr::DAQTask(void *icntr)
 	    cntr.Transact(&Msg);
 //	    mess_info(cntr.nodePath().c_str(), _("ReqData L %d C %d"), Msg.L, Msg.C);
 	    if((Msg.C & 0x0F) == GOOD3) {
-		mess_info(cntr.nodePath().c_str(), _("new event %d"), Msg.L -3);
+		mess_info(cntr.nodePath().c_str(), _("new event %d"), Msg.L - 3);
 		string dump;
-		for (int i = 0; i< (Msg.L - 3) ; i++) {
-		    dump+=TSYS::strMess("%02X ",Msg.D[i]);
+		for(int i = 0; i < (Msg.L - 3); i++) {
+		    dump += TSYS::strMess("%02X ", Msg.D[i]);
 		}
 		mess_info(cntr.nodePath().c_str(), _("%d, %s"), (Msg.L - 3), dump.c_str());
-		//FILETIME ftTimeStamp;
 		uint16_t l = Msg.L - 6, m = 0, n = 3;
 		while(l) {
 		    Msg.D[3] = Msg.D[n];
@@ -942,10 +898,10 @@ void *TMdContr::DAQTask(void *icntr)
 			n += m;
 			m = 0;
 		    } else {
-			mess_info(cntr.nodePath().c_str(), _("Unhandled event  %04X at %d"), TSYS::getUnalign16(Msg.D + n),n);
+			mess_info(cntr.nodePath().c_str(), _("Unhandled event  %04X at %d"), TSYS::getUnalign16(Msg.D + n), n);
 			string dump;
-			for (int i = 0; i< (Msg.L - 3); i++) {
-			    dump+=TSYS::strMess("%02X ",Msg.D[i]);
+			for(int i = 0; i < (Msg.L - 3); i++) {
+			    dump += TSYS::strMess("%02X ", Msg.D[i]);
 			}
 			mess_info(cntr.nodePath().c_str(), _("%d, %s"), (Msg.L - 3), dump.c_str());
 			break;
@@ -1010,15 +966,6 @@ void TMdContr::cntrCmdProc(XMLNode *opt)
 	TController::cntrCmdProc(opt);
 	ctrMkNode("fld", opt, -1, "/cntr/cfg/ADDR", cfg("ADDR").fld().descr(), enableStat() ? R_R_R_ : RWRWR_, "root", SDAQ_ID, 3, "tp", "str", "dest",
 		"select", "select", "/cntr/cfg/trLst");
-//	fldAdd(new TFld("TO_PRTR",_("Blocs"),TFld::String,TFld::Selected,"5","BUC","BUC;BTR;BVT;BVTS;BPI",_("BUC;BTR;BVT;BVTS;BPI")));
-	/*	ctrMkNode("fld",opt,-1,"/cntr/cfg/SCHEDULE",cfg("SCHEDULE").fld().descr(),RWRWR_,"root",SDAQ_ID,4,
-	 "tp","str","dest","sel_ed","sel_list",TMess::labSecCRONsel(),"help",TMess::labSecCRON());
-	 ctrMkNode("fld",opt,-1,"/cntr/cfg/FRAG_MERGE",cfg("FRAG_MERGE").fld().descr(),RWRWR_,"root",SDAQ_ID,1,
-	 "help",_("Merge not adjacent fragments of registers to single block for request.\n"
-	 "Attention! Some devices don't support accompany request wrong registers into single block."));
-	 ctrMkNode("fld",opt,-1,"/cntr/cfg/TM_REQ",cfg("TM_REQ").fld().descr(),RWRWR_,"root",SDAQ_ID,1,
-	 "help",_("Individual connection timeout for device requested by the task.\n"
-	 "For zero value used generic connection timeout from used output transport."));*/
 	return;
     }
     //> Process command to page
@@ -1034,46 +981,35 @@ void TMdContr::cntrCmdProc(XMLNode *opt)
 //*************************************************
 //* TMdPrm                                        *
 //*************************************************
-//!!! Constructor for DAQ-subsystem parameter object.
 TMdPrm::TMdPrm(string name, TTypeParam *tp_prm) :
 	TParamContr(name, tp_prm), p_el("w_attr"), mDA(NULL), needApply(false)
 {
-//	mess_info(nodePath().c_str(),_("TMdPrm::TMdPrm"));
-//	cfg("MOD").setView(false);
-//	cfg("STOP_TIME").setView(false);
+
 }
 
-//!!! Destructor for DAQ-subsystem parameter object.
 TMdPrm::~TMdPrm()
 {
-//mess_info(nodePath().c_str(),_("TMdPrm::~TMdPrm"));
-    //!!! Call for prevent access to data the object from included nodes on destruction.
     nodeDelAll();
 }
 
-TElem&	TMdPrm::prmIOE()
+TElem& TMdPrm::prmIOE()
 {
     return mod->prmIOE();
 }
-//!!! Post-enable processing virtual function
+
 void TMdPrm::postEnable(int flag)
 {
-//	mess_info(nodePath().c_str(),_("TMdPrm::postEnable"));
     TParamContr::postEnable(flag);
     if(!vlElemPresent(&p_el)) vlElemAtt(&p_el);
 }
 
-//!!! Direct link to parameter's owner controller
 TMdContr &TMdPrm::owner()
 {
-//mess_info(nodePath().c_str(),_("TMdPrm::owner"));
     return (TMdContr&) TParamContr::owner();
 }
 
-//!!! Processing virtual functions for enable parameter
 void TMdPrm::enable()
 {
-//	mess_info(nodePath().c_str(),_("TMdPrm::enable"));
     if(enableStat()) return;
 
     TParamContr::enable();
@@ -1089,7 +1025,6 @@ void TMdPrm::enable()
 
     //> Connect device's code
     if(type().name == "tp_BUC") {
-	//fldAdd( new TFld("STOP_TIME",_("Last stop time"),TFld::String,TCfg::Hide,"2","0","0;15") );
 	mDA = new B_BUC(*this, cfg("DEV_ID").getI());
     } else if(type().name == "tp_BVI")
 	mDA = new B_BVI(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
@@ -1110,20 +1045,16 @@ void TMdPrm::enable()
 	mDA = new B_BTR(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNTU").getI(), cfg("CHAN_COUNTR").getI(), cfg("WITH_PARAMS").getB());
     else if(type().name == "tp_BTE")
 	mDA = new B_BTE(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-//    else if(devTp.getVal() == "Ergomera")	mDA = new Ergomera(this);
     else
 	throw TError(nodePath().c_str(), _("No one device selected."));
 
     owner().prmEn(this, true);	//Put to process
-//    if (mDA) mDA->loadIO(true);
 
     needApply = false;
 }
 
-//!!! Processing virtual functions for disable parameter
 void TMdPrm::disable()
 {
-//	mess_info(nodePath().c_str(),_("TMdPrm::disable"));
     if(!enableStat()) return;
 
     owner().prmEn(this, false);	//Remove from process
@@ -1133,22 +1064,11 @@ void TMdPrm::disable()
     if(mDA) delete mDA;
     mDA = NULL;
 
-    //> Set EVAL to parameter attributes
-    /*    vector<string> ls;
-     elem().fldList(ls);
-     for(int i_el = 0; i_el < ls.size(); i_el++)
-     vlAt(ls[i_el]).at().setS(EVAL_STR,0,true);
-     */
     needApply = false;
 }
 
-
-
 uint16_t TMdPrm::Task(uint16_t cod)
-
-//string req, rez;	
 {
-//    mess_info(nodePath().c_str(),_("TMdContr::Task_Mdprm"));
     if(mDA) {
 	if(mDA->IsNeedUpdate()) mDA->Task(TaskRefresh);
 	return mDA->Task(cod);
@@ -1197,13 +1117,9 @@ uint8_t TMdPrm::cmdSet(uint8_t * req, uint8_t addr)
     }
 }
 
-//void TMdPrm::vlSet(TVal &valo, const TVariant &pvl)
-void TMdPrm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
+void TMdPrm::vlSet(TVal &vo, const TVariant &vl, const TVariant &pvl)
 {
-	mess_info(nodePath().c_str(),_("TMdPrm::vlSet name %s "),vo.name().c_str());
-//	mess_info(nodePath().c_str(),_("TMdPrm::vlSet reserve %s "),valo.fld().reserve().c_str());
-//	mess_info(nodePath().c_str(),_("TMdPrm::vlSet reserve %s "),valo.fld().
-//	.fldId
+    mess_info(nodePath().c_str(), _("TMdPrm::vlSet name %s "), vo.name().c_str());
     if(!enableStat() || !owner().startStat()) vo.setS(EVAL_STR, 0, true);
 
     if(vl.isEVal() || vl == pvl) return;
@@ -1211,8 +1127,8 @@ void TMdPrm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
     //Send to active reserve station
     if(owner().redntUse()) {
 	XMLNode req("set");
-	req.setAttr("path",nodePath(0,true)+"/%2fserv%2fattr")->childAdd("el")->setAttr("id",vo.name())->setText(vl.getS());
-	SYS->daq().at().rdStRequest(owner().workId(),req);
+	req.setAttr("path", nodePath(0, true) + "/%2fserv%2fattr")->childAdd("el")->setAttr("id", vo.name())->setText(vl.getS());
+	SYS->daq().at().rdStRequest(owner().workId(), req);
 	return;
     }
     if(mDA) {
@@ -1235,29 +1151,24 @@ void TMdPrm::vlGet(TVal &val)
 	}
     }
 }
-//!!! Processing virtual functions for load parameter from DB
+
 void TMdPrm::load_()
 {
-	mess_info(nodePath().c_str(),_("TMdPrm::load_"));
     TParamContr::load_();
     if(enableStat() && mDA) mDA->loadIO();
 }
 
-//!!! Processing virtual functions for save parameter to DB
 void TMdPrm::save_()
 {
-	mess_info(nodePath().c_str(),_("TMdPrm::save_"));
-//	string io_bd = type().name;//type().DB(&owner());
     TParamContr::save_();
- //   TConfig cfg(&prmIOE());
     if(enableStat() && mDA) mDA->saveIO();
 }
 
-string TMdPrm::typeDBName(){
+string TMdPrm::typeDBName()
+{
     return type().DB(&owner());
 }
 
-//!!! Processing virtual function for OpenSCADA control interface comands
 void TMdPrm::cntrCmdProc(XMLNode *opt)
 {
     string a_path = opt->attr("path");
@@ -1308,7 +1219,6 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
 
 }
 
-//!!! Processing virtual function for setup archive's parameters which associated with the parameter on time archive creation
 void TMdPrm::vlArchMake(TVal &val)
 {
     mess_info(nodePath().c_str(), _("TMdPrm::vlArchMake"));
