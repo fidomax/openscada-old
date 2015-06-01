@@ -228,7 +228,7 @@ void TProt::cntrCmdProc( XMLNode *opt )
 TProtIn::TProtIn(string name) :
 	TProtocolIn(name)
 {
-//    mess_info(nodePath().c_str(), _("Creation of TProtIn!"));
+
 }
 
 TProtIn::~TProtIn()
@@ -241,7 +241,7 @@ TProt &TProtIn::owner()
     return *(TProt*) nodePrev();
 }
 
-bool TProtIn::mess(const string &ireqst, string &answer/*, const string &sender*/)
+bool TProtIn::mess(const string &ireqst, string &answer)
 {
     string reqst = ireqst;
     string data_s;

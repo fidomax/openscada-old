@@ -32,12 +32,15 @@ namespace FT3
 	uint16_t ID;
 	uint16_t count_nu;
 	uint16_t count_nr;
+	uint8_t currTU;
 	bool with_params;
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
 	uint16_t setVal(TVal &val);
+	void setTU(uint8_t);
+	void runTU(uint8_t);
 	string getStatus(void);
 	void saveIO(void);
 	void loadIO(bool force = false );

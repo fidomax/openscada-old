@@ -341,23 +341,80 @@ uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
     uint16_t n = prmID & 0x3F;  // param
     uint l = 0;
     mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", k, n);
-    if(count_nu && (k <= count_nu)) {
+    if (k==0) {
 	switch(n) {
-	case 0:
-	    l = SetNewflWVal(TUdata[k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
-	    break;
 	case 1:
+	    setTU(req[2]);
 	    l = 3;
+	    break;
 	case 2:
-	    l = SetNewfl8Val(TUdata[k - 1].ExTime, addr, prmID,req[2]);
-
+	    runTU(req[2]);
+	    l = 3;
+	    break;
 	}
-
-
+    } else {
+	if(count_nu && (k <= count_nu)) {
+	    switch(n) {
+	    case 0:
+		l = SetNewflWVal(TUdata[k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
+		break;
+	    case 1:
+		l = 3;
+	    case 2:
+		l = SetNewfl8Val(TUdata[k - 1].ExTime, addr, prmID, req[2]);
+	    }
+	}
+	if(count_nr && ((k > count_nu) && (k <= count_nr + count_nu))) {
+	    mess_info(mPrm.nodePath().c_str(), "cmdSet Val");
+	    l = SetNewflVal(TRdata[k - 1 - count_nu].Value, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	}
     }
-    if(count_nr && ((k > count_nu) && (k <= count_nr + count_nu))) {
-	mess_info(mPrm.nodePath().c_str(), "cmdSet Val");
-	l = SetNewflVal(TRdata[k - 1 - count_nu].Value, addr, prmID, TSYS::getUnalignFloat(req + 2));
+}
+
+void B_BTR::setTU(uint8_t tu)
+{
+    uint8_t vl = tu >> 7;
+    uint8_t n = tu & 0x7F;
+    if((n > 0) && (n < count_nu)) {
+	STUchannel & TU = TUdata[n - 1];
+	currTU = n;
+	if(vl) {
+	    if(!TU.On.lnk.aprm.freeStat()) {
+		//on
+		TU.On.lnk.aprm.at().setI(1);
+		mPrm.vlAt(TU.On.lnk.prmName.c_str()).at().setI(1, 0, true);
+	    }
+	} else {
+	    if(!TUdata[n - 1].Off.lnk.aprm.freeStat()) {
+		//off
+		TU.Off.lnk.aprm.at().setI(1);
+		mPrm.vlAt(TU.Off.lnk.prmName.c_str()).at().setI(1, 0, true);
+	    }
+	}
+    }
+
+}
+void B_BTR::runTU(uint8_t tu)
+{
+    if(currTU) {
+	STUchannel & TU = TUdata[currTU - 1];
+	if(tu == 0x55) {
+	    if((!TU.Run.lnk.aprm.freeStat())) {
+		TU.Run.lnk.aprm.at().setI(1);
+		mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(1, 0, true);
+		currTU = 0;
+	    }
+	}
+    }
+    if(tu == 0x0) {
+	for(int i = 0; i < count_nu; i++) {
+	    STUchannel & TU = TUdata[i - 1];
+	    if((!TU.Reset.lnk.aprm.freeStat())) {
+		TU.Reset.lnk.aprm.at().setI(1);
+		mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
+		currTU = 0;
+	    }
+	}
     }
 }
 
@@ -383,46 +440,47 @@ uint16_t B_BTR::setVal(TVal &val)
 	    mPrm.owner().Transact(&Msg);
 	    break;
 	}
-    }
-    if(count_nu && (k <= count_nu)) {
-	switch(n) {
-	case 0:
-	    Msg.L = 7;
-	    Msg.C = SetData;
-	    Msg.D[0] = addr & 0xFF;
-	    Msg.D[1] = (addr >> 8) & 0xFF;
-	    *(uint16_t *) (Msg.D + 2) = (uint16_t) (val.get(NULL, true).getR()*10.0);
-	    mPrm.owner().Transact(&Msg);
-	    break;
-	case 1:
-	    Msg.L = 7;
-	    Msg.C = SetData;
-	    Msg.D[0] = addr & 0xFF;
-	    Msg.D[1] = (addr >> 8) & 0xFF;
-	    *(uint16_t *) (Msg.D + 2) = (uint16_t) val.get(NULL, true).getI();
-	    mPrm.owner().Transact(&Msg);
-	    break;
-	case 2:
-	    Msg.L = 6;
-	    Msg.C = SetData;
-	    Msg.D[0] = addr & 0xFF;
-	    Msg.D[1] = (addr >> 8) & 0xFF;
-	    Msg.D[2] = val.get(NULL, true).getR()*10.0;
-	    mPrm.owner().Transact(&Msg);
-	    break;
+    } else {
+	if(count_nu && (k <= count_nu)) {
+	    switch(n) {
+	    case 0:
+		Msg.L = 7;
+		Msg.C = SetData;
+		Msg.D[0] = addr & 0xFF;
+		Msg.D[1] = (addr >> 8) & 0xFF;
+		*(uint16_t *) (Msg.D + 2) = (uint16_t) (val.get(NULL, true).getR() * 10.0);
+		mPrm.owner().Transact(&Msg);
+		break;
+	    case 1:
+		Msg.L = 7;
+		Msg.C = SetData;
+		Msg.D[0] = addr & 0xFF;
+		Msg.D[1] = (addr >> 8) & 0xFF;
+		*(uint16_t *) (Msg.D + 2) = (uint16_t) val.get(NULL, true).getI();
+		mPrm.owner().Transact(&Msg);
+		break;
+	    case 2:
+		Msg.L = 6;
+		Msg.C = SetData;
+		Msg.D[0] = addr & 0xFF;
+		Msg.D[1] = (addr >> 8) & 0xFF;
+		Msg.D[2] = val.get(NULL, true).getR() * 10.0;
+		mPrm.owner().Transact(&Msg);
+		break;
+	    }
 	}
-    }
-    if(count_nr && ((k > count_nu) && (k <= count_nr + count_nu))) {
-	switch(n) {
-	case 0:
-	    Msg.L = 9;
-	    Msg.C = SetData;
-	    Msg.D[0] = addr & 0xFF;
-	    Msg.D[1] = (addr >> 8) & 0xFF;
-	    mess_info(mPrm.nodePath().c_str(), "new tr %f", (float) val.get(NULL, true).getR());
-	    *(float *) (Msg.D + 2) = (float) val.get(NULL, true).getR();
-	    mPrm.owner().Transact(&Msg);
-	    break;
+	if(count_nr && ((k > count_nu) && (k <= count_nr + count_nu))) {
+	    switch(n) {
+	    case 0:
+		Msg.L = 9;
+		Msg.C = SetData;
+		Msg.D[0] = addr & 0xFF;
+		Msg.D[1] = (addr >> 8) & 0xFF;
+		mess_info(mPrm.nodePath().c_str(), "new tr %f", (float) val.get(NULL, true).getR());
+		*(float *) (Msg.D + 2) = (float) val.get(NULL, true).getR();
+		mPrm.owner().Transact(&Msg);
+		break;
+	    }
 	}
     }
     return 0;
