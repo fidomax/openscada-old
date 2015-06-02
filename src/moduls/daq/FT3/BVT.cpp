@@ -202,7 +202,7 @@ void B_BVT::tmHandler(void)
 	    if(with_k) {
 		UpdateParamFl(data[i].CorFactor, ID | ((i + 1) << 6) | (10), 1);
 		if(with_rate) {
-		    UpdateParamFlState(data[i].Factor,data[i].State,ID | ((i+1) << 6) | (11),1);
+		    UpdateParamFlState(data[i].Rate,data[i].State,ID | ((i+1) << 6) | (11),1);
 		    UpdateParam8(data[i].Calcs,ID | ((i+1) << 6) | (12),1);
 		    UpdateParamFl(data[i].RateSens,ID | ((i+1) << 6) | (13),1);
 		    UpdateParamFl(data[i].RateLimit,ID | ((i+1) << 6) | (14),1);
