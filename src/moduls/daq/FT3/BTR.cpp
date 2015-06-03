@@ -408,7 +408,7 @@ void B_BTR::runTU(uint8_t tu)
     }
     if(tu == 0x0) {
 	for(int i = 0; i < count_nu; i++) {
-	    STUchannel & TU = TUdata[i - 1];
+	    STUchannel & TU = TUdata[i];
 	    if((!TU.Reset.lnk.aprm.freeStat())) {
 		TU.Reset.lnk.aprm.at().setI(1);
 		mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);

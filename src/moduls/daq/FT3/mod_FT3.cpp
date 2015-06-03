@@ -265,7 +265,9 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	    if(l < 3) l = -1;
 	    n = 0;
 	    while(l > 1) {
+		mess_info(nodePath().c_str(), _("l before %d"), l);
 		rc = cmdSet(msg->D + n, msg->B);
+		mess_info(nodePath().c_str(), _("rc after %d"), rc);
 		if(rc) {
 		    l -= rc;
 		    n += rc;
@@ -273,10 +275,13 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 		    l = 1;
 		}
 	    }
+	    mess_info(nodePath().c_str(), _("l after %d"), l);
 	    if(l) {
+		mess_info(nodePath().c_str(), _("XXXXXXXX"));
 		msgOut->L = 3;
 		msgOut->C = 1;
 	    } else {
+		mess_info(nodePath().c_str(), _("OOOOOOOO"));
 		msgOut->L = 3;
 		msgOut->C = 0;
 	    }
