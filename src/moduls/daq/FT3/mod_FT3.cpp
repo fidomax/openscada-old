@@ -203,7 +203,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
     MtxAlloc res(eventRes, true);
     msgOut->L = 0;
     if(msg->L == 1) {
-	mess_info(nodePath().c_str(), _("ProcessMessage one byte req L %02X C %02X"), msg->L, msg->C);
+//	mess_info(nodePath().c_str(), _("ProcessMessage one byte req L %02X C %02X"), msg->L, msg->C);
 	// One byte req
 	msgOut->L = 1;
 	msgOut->C = msg->A & 0x3F;
