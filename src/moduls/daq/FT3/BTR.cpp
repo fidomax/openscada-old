@@ -306,8 +306,8 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
 	    switch(n) {
 	    case 0:
 		out[0] = TUdata[k - 1].Time.s;
-		out[1] = ((uint16_t) TUdata[k - 1].Time.vl * 10);
-		out[2] = ((uint16_t) TUdata[k - 1].Time.vl * 10) >> 8;
+		out[1] = ((uint16_t) TUdata[k - 1].Time.vl);
+		out[2] = ((uint16_t) TUdata[k - 1].Time.vl) >> 8;
 		l = 3;
 		break;
 	    case 1:
@@ -318,7 +318,7 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
 		break;
 	    case 2:
 		out[0] = TUdata[k - 1].ExTime.s;
-		out[1] = ((uint16_t) TUdata[k - 1].ExTime.vl * 10);
+		out[1] = ((uint16_t) TUdata[k - 1].ExTime.vl);
 		l = 2;
 		break;
 	    }
