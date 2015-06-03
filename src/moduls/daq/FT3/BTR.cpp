@@ -369,6 +369,7 @@ uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
 	    l = SetNewflVal(TRdata[k - 1 - count_nu].Value, addr, prmID, TSYS::getUnalignFloat(req + 2));
 	}
     }
+    return l;
 }
 
 void B_BTR::setTU(uint8_t tu)
