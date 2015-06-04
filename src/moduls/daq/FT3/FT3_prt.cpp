@@ -228,7 +228,7 @@ void TProt::cntrCmdProc( XMLNode *opt )
 TProtIn::TProtIn(string name) :
 	TProtocolIn(name)
 {
-    mess_info(nodePath().c_str(), _("new TProtIn"));
+    mess_info(nodePath().c_str(), _("new TProtIn %s"),name.c_str());
 }
 
 TProtIn::~TProtIn()
@@ -274,5 +274,5 @@ bool TProtIn::mess(const string &ireqst, string &answer)
 	    if(i_l >= lst.size()) return false;
 	}
     }
-    return false;
+    return true;
 }
