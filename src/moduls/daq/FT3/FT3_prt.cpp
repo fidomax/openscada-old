@@ -228,12 +228,12 @@ void TProt::cntrCmdProc( XMLNode *opt )
 TProtIn::TProtIn(string name) :
 	TProtocolIn(name)
 {
-
+    mess_info(nodePath().c_str(), _("new TProtIn"));
 }
 
 TProtIn::~TProtIn()
 {
-    mess_info(nodePath().c_str(), _("new TProtIn"));
+    mess_info(nodePath().c_str(), _("delete TProtIn"));
 }
 
 TProt &TProtIn::owner()
