@@ -271,7 +271,7 @@ bool TProtIn::mess(const string &ireqst, string &answer)
 
 	    }
 
-	    if(i_l >= lst.size()) return false;
+	    if(i_l >= lst.size()) return true;
 	}
     }
     return true;
