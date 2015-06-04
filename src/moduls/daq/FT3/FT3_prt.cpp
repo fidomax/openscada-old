@@ -233,7 +233,7 @@ TProtIn::TProtIn(string name) :
 
 TProtIn::~TProtIn()
 {
-
+    mess_info(nodePath().c_str(), _("new TProtIn"));
 }
 
 TProt &TProtIn::owner()
