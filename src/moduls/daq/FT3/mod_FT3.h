@@ -51,13 +51,12 @@ using namespace OSCADA;
 
 #include "da.h"
 
-time_t DateTimeToTime_t(uint8_t *);
-
-void Time_tToDateTime(uint8_t *, time_t);
-
 
 namespace FT3
 {
+    time_t DateTimeToTime_t(uint8_t *);
+
+    void Time_tToDateTime(uint8_t *, time_t);
     /*    struct dhm{
      uint16_t d;
      uint8_t h;

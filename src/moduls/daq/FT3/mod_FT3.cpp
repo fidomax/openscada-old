@@ -57,7 +57,10 @@ extern "C"
     }
 }
 
-time_t DateTimeToTime_t(uint8_t * D)
+
+using namespace FT3;
+
+time_t FT3::DateTimeToTime_t(uint8_t * D)
 {
     char months[12] = { 31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     struct tm * timeinfo;
@@ -90,7 +93,7 @@ time_t DateTimeToTime_t(uint8_t * D)
     return rawtime;
 }
 
-void Time_tToDateTime(uint8_t * D, time_t time)
+void FT3::Time_tToDateTime(uint8_t * D, time_t time)
 {
     struct tm * timeinfo;
     timeinfo = localtime(&time);
@@ -101,8 +104,6 @@ void Time_tToDateTime(uint8_t * D, time_t time)
     D[3] = ms & 0xFF;
     D[4] = ms >> 8;
 }
-
-using namespace FT3;
 
 TFT3Channel::TFT3Channel() :
 	FCB2(0xFF), FCB3(0xFF)
