@@ -113,6 +113,8 @@ TFT3Channel::TFT3Channel() :
 	for(int i = 0; i < nBE; i++)
 	    empt.insert(&BE[i]);
     }
+    resp2.L = 0;
+    resp3.L = 0;
 }
 
 void TFT3Channel::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
@@ -242,38 +244,42 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
     case ReqData:
 	chain_BE *pC;
 	el_chBE *pBE;
-// TODO FCB check
-	switch(msg->C & 0x0F) {
-	case ReqData1:
-	    pC = &(Channels[msg->B].C1);
-	    break;
-	case ReqData2:
-	    pC = &(Channels[msg->B].C2);
-	    break;
-	default:
-	    if(Channels[msg->B].C1.head)
+	if(Channels[msg->B].FCB3 != msg->C) {
+	    Channels[msg->B].FCB3 = msg->C;
+	    switch(msg->C & 0x0F) {
+	    case ReqData1:
 		pC = &(Channels[msg->B].C1);
-	    else
+		break;
+	    case ReqData2:
 		pC = &(Channels[msg->B].C2);
-	}
-	if(!pC || !pC->head) {
-	    Channels[msg->B].resp3.L = 3;
-	    Channels[msg->B].resp3.C = 9;
+		break;
+	    default:
+		if(Channels[msg->B].C1.head)
+		    pC = &(Channels[msg->B].C1);
+		else
+		    pC = &(Channels[msg->B].C2);
+	    }
+	    if(!pC || !pC->head) {
+		Channels[msg->B].resp3.L = 3;
+		Channels[msg->B].resp3.C = 9;
+	    } else {
+
+		pBE = pC->getdel();
+		Channels[msg->B].resp3.D[0] = pBE->BE.d;
+		Channels[msg->B].resp3.D[1] = pBE->BE.d >> 8;
+		Channels[msg->B].resp3.D[2] = pBE->BE.h;
+		for(int i = 0; i < pBE->BE.l; i++)
+		    Channels[msg->B].resp3.D[i + 3] = pBE->BE.mD[i];
+		Channels[msg->B].resp3.L = pBE->BE.l + 6;
+
+		Channels[msg->B].resp3.C = 8;
+		Channels[msg->B].empt.insert(pBE);
+	    }
+	    if(Channels[msg->B].C1.head) {
+		Channels[msg->B].resp3.C |= 0x20;
+	    }
 	} else {
-
-	    pBE = pC->getdel();
-	    Channels[msg->B].resp3.D[0] = pBE->BE.d;
-	    Channels[msg->B].resp3.D[1] = pBE->BE.d >> 8;
-	    Channels[msg->B].resp3.D[2] = pBE->BE.h;
-	    for(int i = 0; i < pBE->BE.l; i++)
-		Channels[msg->B].resp3.D[i + 3] = pBE->BE.mD[i];
-	    Channels[msg->B].resp3.L = pBE->BE.l + 6;
-
-	    Channels[msg->B].resp3.C = 8;
-	    Channels[msg->B].empt.insert(pBE);
-	}
-	if(Channels[msg->B].C1.head) {
-	    Channels[msg->B].resp3.C |= 0x20;
+	    mess_info(nodePath().c_str(), _("ReqData BAD FCB!!!"));
 	}
 	memcpy(resp,&Channels[msg->B].resp3,sizeof(tagMsg));
 	break;
@@ -285,9 +291,9 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	    if(l < 3) l = -1;
 	    n = 0;
 	    while(l > 1) {
-		mess_info(nodePath().c_str(), _("l before %d"), l);
+//		mess_info(nodePath().c_str(), _("l before %d"), l);
 		rc = cmdSet(msg->D + n, msg->B);
-		mess_info(nodePath().c_str(), _("rc after %d"), rc);
+//		mess_info(nodePath().c_str(), _("rc after %d"), rc);
 		if(rc) {
 		    l -= rc;
 		    n += rc;
@@ -295,13 +301,13 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 		    l = 1;
 		}
 	    }
-	    mess_info(nodePath().c_str(), _("l after %d"), l);
+//	    mess_info(nodePath().c_str(), _("l after %d"), l);
 	    if(l) {
-		mess_info(nodePath().c_str(), _("XXXXXXXX"));
+//		mess_info(nodePath().c_str(), _("XXXXXXXX"));
 		Channels[msg->B].resp2.L = 3;
 		Channels[msg->B].resp2.C = 1;
 	    } else {
-		mess_info(nodePath().c_str(), _("OOOOOOOO"));
+//		mess_info(nodePath().c_str(), _("OOOOOOOO"));
 		Channels[msg->B].resp2.L = 3;
 		Channels[msg->B].resp2.C = 0;
 	    }
