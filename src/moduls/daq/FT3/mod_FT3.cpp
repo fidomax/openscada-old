@@ -57,8 +57,6 @@ extern "C"
     }
 }
 
-using namespace FT3;
-
 time_t DateTimeToTime_t(uint8_t * D)
 {
     char months[12] = { 31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -103,6 +101,8 @@ void Time_tToDateTime(uint8_t * D, time_t time)
     D[3] = ms & 0xFF;
     D[4] = ms >> 8;
 }
+
+using namespace FT3;
 
 TFT3Channel::TFT3Channel() :
 	FCB2(0xFF), FCB3(0xFF)

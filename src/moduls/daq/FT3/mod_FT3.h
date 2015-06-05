@@ -51,6 +51,11 @@ using namespace OSCADA;
 
 #include "da.h"
 
+time_t DateTimeToTime_t(uint8_t *);
+
+void Time_tToDateTime(uint8_t *, time_t);
+
+
 namespace FT3
 {
     /*    struct dhm{
@@ -163,9 +168,6 @@ namespace FT3
 #define task_None 0
 #define task_Idle 1
 #define task_Refresh 2
-	time_t DateTimeToTime_t(uint8_t *);
-
-	void Time_tToDateTime(uint8_t *, time_t);
 
 //!!! DAQ-subsystem parameter object realisation define. Add methods and attributes for your need.
 //*************************************************
