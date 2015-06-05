@@ -358,6 +358,9 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	Channels[msg->B].FCB2 = 0;
 	resp->L = 3;
 	resp->C = Channels[msg->B].FCB3;
+	while (Channels[msg->B].C2.head) {
+	    Channels[msg->B].empt.insert(Channels[msg->B].C2.getdel());
+	}
 	break;
     }
     resp->A = msg->B;
