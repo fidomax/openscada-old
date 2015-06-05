@@ -49,16 +49,15 @@ using namespace OSCADA;
 #define LICENSE		"GPL2"
 //*************************************************
 
-
 #include "da.h"
 
 namespace FT3
 {
-/*    struct dhm{
-      uint16_t d;
-      uint8_t h;
-      uint16_t ms100;
-    };*/
+    /*    struct dhm{
+     uint16_t d;
+     uint8_t h;
+     uint16_t ms100;
+     };*/
     typedef struct sMsg  // FT3 message
     {
 	uint8_t D[252]; // data
@@ -111,49 +110,62 @@ namespace FT3
 	el_chBE *next;  //Next event block pointer
     };
 
-    class chain_BE{
-      public:
-        el_chBE *head;  //First event block
-        el_chBE *tail;	//Last event block
-        el_chBE *temp;	//Temp pointer
+    class chain_BE
+    {
+    public:
+	el_chBE *head;  //First event block
+	el_chBE *tail;	//Last event block
+	el_chBE *temp;	//Temp pointer
 //	pthread_mutex_t eventRes;
 
-        chain_BE(){
-            head = NULL;
-            tail = NULL;
-            temp = NULL;
-/*            pthread_mutexattr_t attrM;
-            pthread_mutexattr_init(&attrM);
-            pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-            pthread_mutex_init(&eventRes, &attrM);
-            pthread_mutexattr_destroy(&attrM);*/
-        };
-/*        ~chain_BE(){
-            pthread_mutex_destroy(&eventRes);
-        };*/
+	chain_BE()
+	{
+	    head = NULL;
+	    tail = NULL;
+	    temp = NULL;
+	    /*            pthread_mutexattr_t attrM;
+	     pthread_mutexattr_init(&attrM);
+	     pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
+	     pthread_mutex_init(&eventRes, &attrM);
+	     pthread_mutexattr_destroy(&attrM);*/
+	}
+	;
+	/*        ~chain_BE(){
+	 pthread_mutex_destroy(&eventRes);
+	 };*/
 
-        el_chBE* getdel(){
-          //MtxAlloc res(eventRes, true);
-          temp = head;
-          if(head) head = head->next;
-          if(!head) tail = NULL;
-          return temp;
-        };
+	el_chBE* getdel()
+	{
+	    //MtxAlloc res(eventRes, true);
+	    temp = head;
+	    if(head) head = head->next;
+	    if(!head) tail = NULL;
+	    return temp;
+	}
+	;
 
-
-        void insert(el_chBE *p){
-          //MtxAlloc res(eventRes, true);
-          if(p){
-            if(head){tail->next = p;}
-            else{ head = p;}
-            tail = p; p->next = NULL;
-          }
-        };
+	void insert(el_chBE *p)
+	{
+	    //MtxAlloc res(eventRes, true);
+	    if(p) {
+		if(head) {
+		    tail->next = p;
+		} else {
+		    head = p;
+		}
+		tail = p;
+		p->next = NULL;
+	    }
+	}
+	;
     };
 
 #define task_None 0
 #define task_Idle 1
 #define task_Refresh 2
+	time_t DateTimeToTime_t(uint8_t *);
+
+	void Time_tToDateTime(uint8_t *, time_t);
 
 //!!! DAQ-subsystem parameter object realisation define. Add methods and attributes for your need.
 //*************************************************
@@ -175,12 +187,11 @@ namespace FT3
 	void enable();
 	void disable();
 
-
 	TElem &elem()
 	{
 	    return p_el;
 	}
-	TElem	&prmIOE();
+	TElem &prmIOE();
 	TMdContr &owner();
 
 	//!!! Get data from Logic FT3 parameter
@@ -204,7 +215,7 @@ namespace FT3
 	void postEnable(int flag);
 //	void postDisable( int flag );
 	void vlGet(TVal &val);
-	void vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl );
+	void vlSet(TVal &vo, const TVariant &vl, const TVariant &pvl);
 	void vlArchMake(TVal &val);
 	//Attributes
 	//!!! Parameter's structure element
@@ -213,7 +224,18 @@ namespace FT3
 
     };
 
-//!!! DAQ-subsystem controller object realisation define. Add methods and attributes for your need.
+    class TFT3Channel
+    {
+    public:
+	TFT3Channel();
+	uint8_t FCB2, FCB3;
+
+	el_chBE *BE;
+	chain_BE empt, C1, C2;
+	tagMsg resp2, resp3;
+	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
+    };
+
 //*************************************************
 //* Modft3::TMdContr                             *
 //*************************************************
@@ -245,15 +267,11 @@ namespace FT3
 
 	bool isLogic();
 	bool Transact(tagMsg * t);
-
-	time_t DateTimeToTime_t(uint8_t *);
-
-	void Time_tToDateTime(uint8_t *, time_t);
-
 	bool ProcessMessage(tagMsg *, tagMsg *);
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E/*, uint8_t* DHM*/);
 
 	uint8_t devAddr;
+	uint8_t nChannel;
 
     protected:
 
@@ -304,11 +322,7 @@ namespace FT3
 	vector<AutoHD<TMdPrm> > pHd;
 
 	double tm_gath;	// Gathering time
-	uint8_t FCB2, FCB3;
-
-	el_chBE *BE;
-	chain_BE empt, C1, C2;
-
+	vector<TFT3Channel> Channels;
     };
 
 //!!! Root module object define. Add methods and attributes for your need.
@@ -322,7 +336,10 @@ namespace FT3
 	TTpContr(string name);
 	~TTpContr();
 
-	TElem	&prmIOE( )	{ return elPrmIO; }
+	TElem &prmIOE()
+	{
+	    return elPrmIO;
+	}
     protected:
 	//Methods
 	void postEnable(int flag);
@@ -337,7 +354,7 @@ namespace FT3
 	//Methods
 	TController *ContrAttach(const string &name, const string &daq_db);
 	//Attributes
-	TElem	elPrmIO;
+	TElem elPrmIO;
     };
 
 //!!! The module root link

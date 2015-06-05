@@ -59,7 +59,7 @@ extern "C"
 
 using namespace FT3;
 
-time_t TMdContr::DateTimeToTime_t(uint8_t * D)
+time_t DateTimeToTime_t(uint8_t * D)
 {
     char months[12] = { 31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     struct tm * timeinfo;
@@ -92,7 +92,29 @@ time_t TMdContr::DateTimeToTime_t(uint8_t * D)
     return rawtime;
 }
 
-void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
+void Time_tToDateTime(uint8_t * D, time_t time)
+{
+    struct tm * timeinfo;
+    timeinfo = localtime(&time);
+    uint16_t ms = timeinfo->tm_min * 600 + timeinfo->tm_sec * 10;
+    D[0] = (timeinfo->tm_yday + 1) & 0xFF;
+    D[1] = ((timeinfo->tm_year - 100) << 1) | ((timeinfo->tm_yday + 1) >> 8);
+    D[2] = timeinfo->tm_hour;
+    D[3] = ms & 0xFF;
+    D[4] = ms >> 8;
+}
+
+TFT3Channel::TFT3Channel() :
+	FCB2(0xFF), FCB3(0xFF)
+{
+    BE = new el_chBE[nBE];
+    if(BE) {
+	for(int i = 0; i < nBE; i++)
+	    empt.insert(&BE[i]);
+    }
+}
+
+void TFT3Channel::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 {
     uint8_t DHM[5];
     time_t rawtime;
@@ -149,16 +171,12 @@ void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
     }
 }
 
-void TMdContr::Time_tToDateTime(uint8_t * D, time_t time)
+
+void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 {
-    struct tm * timeinfo;
-    timeinfo = localtime(&time);
-    uint16_t ms = timeinfo->tm_min * 600 + timeinfo->tm_sec * 10;
-    D[0] = (timeinfo->tm_yday + 1) & 0xFF;
-    D[1] = ((timeinfo->tm_year - 100) << 1) | ((timeinfo->tm_yday + 1) >> 8);
-    D[2] = timeinfo->tm_hour;
-    D[3] = ms & 0xFF;
-    D[4] = ms >> 8;
+    for(int i = 0; i < Channels.size(); i++) {
+	Channels[i].PushInBE(type, length, id, E);
+    }
 }
 
 uint8_t TMdContr::cmdGet(uint16_t prmID, uint8_t * out)
@@ -193,7 +211,7 @@ uint8_t TMdContr::cmdSet(uint8_t * req, uint8_t addr)
     return rc;
 }
 
-bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
+bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 {
 //    mess_info(nodePath().c_str(), _("Process message___"));
     uint8_t l;
@@ -201,22 +219,22 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
     uint16_t tm;
     uint8_t rc;
     MtxAlloc res(eventRes, true);
-    msgOut->L = 0;
+    resp->L = 0;
     if(msg->L == 1) {
 //	mess_info(nodePath().c_str(), _("ProcessMessage one byte req L %02X C %02X"), msg->L, msg->C);
 	// One byte req
-	msgOut->L = 1;
-	msgOut->C = msg->A & 0x3F;
-	if(C1.head) msgOut->C |= 0x40;
-	if(C2.head) msgOut->C |= 0x80;
-	return msgOut->L;
+	resp->L = 1;
+	resp->C = msg->A & 0x3F;
+	if(Channels[msg->B].C1.head) resp->C |= 0x40;
+	if(Channels[msg->B].C2.head) resp->C |= 0x80;
+	return resp->L;
     }
     switch(msg->C & 0x0F) {
     case ResetChan:
 	mess_info(nodePath().c_str(), _("ResetChan"));
-	FCB2 = FCB3 = 0xFF;
-	msgOut->L = 3;
-	msgOut->C = FCB3;
+	Channels[msg->B].FCB2 = Channels[msg->B].FCB3 = 0xFF;
+	resp->L = 3;
+	resp->C = Channels[msg->B].FCB3;
 	break;
     case ReqData1:
     case ReqData2:
@@ -226,41 +244,42 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 // TODO FCB check
 	switch(msg->C & 0x0F) {
 	case ReqData1:
-	    pC = &C1;
+	    pC = &(Channels[msg->B].C1);
 	    break;
 	case ReqData2:
-	    pC = &C2;
+	    pC = &(Channels[msg->B].C2);
 	    break;
 	default:
-	    if(C1.head)
-		pC = &C1;
+	    if(Channels[msg->B].C1.head)
+		pC = &(Channels[msg->B].C1);
 	    else
-		pC = &C2;
+		pC = &(Channels[msg->B].C2);
 	}
 	if(!pC || !pC->head) {
-	    msgOut->L = 3;
-	    msgOut->C = 9;
+	    Channels[msg->B].resp3.L = 3;
+	    Channels[msg->B].resp3.C = 9;
 	} else {
 
 	    pBE = pC->getdel();
-	    msgOut->D[0] = pBE->BE.d;
-	    msgOut->D[1] = pBE->BE.d >> 8;
-	    msgOut->D[2] = pBE->BE.h;
+	    Channels[msg->B].resp3.D[0] = pBE->BE.d;
+	    Channels[msg->B].resp3.D[1] = pBE->BE.d >> 8;
+	    Channels[msg->B].resp3.D[2] = pBE->BE.h;
 	    for(int i = 0; i < pBE->BE.l; i++)
-		msgOut->D[i + 3] = pBE->BE.mD[i];
-	    msgOut->L = pBE->BE.l + 6;
+		Channels[msg->B].resp3.D[i + 3] = pBE->BE.mD[i];
+	    Channels[msg->B].resp3.L = pBE->BE.l + 6;
 
-	    msgOut->C = 8;
-	    empt.insert(pBE);
+	    Channels[msg->B].resp3.C = 8;
+	    Channels[msg->B].empt.insert(pBE);
 	}
-	if(C1.head) {
-	    msgOut->C |= 0x20;
+	if(Channels[msg->B].C1.head) {
+	    Channels[msg->B].resp3.C |= 0x20;
 	}
+	memcpy(resp,&Channels[msg->B].resp3,sizeof(tagMsg));
 	break;
     case SetData:
-	mess_info(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"), FCB2, msg->C);
-	if(FCB2 != msg->C) {
-	    FCB2 = msg->C;
+	mess_info(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"), Channels[msg->B].FCB2, msg->C);
+	if(Channels[msg->B].FCB2 != msg->C) {
+	    Channels[msg->B].FCB2 = msg->C;
 	    l = msg->L - 3;
 	    if(l < 3) l = -1;
 	    n = 0;
@@ -278,64 +297,65 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *msgOut)
 	    mess_info(nodePath().c_str(), _("l after %d"), l);
 	    if(l) {
 		mess_info(nodePath().c_str(), _("XXXXXXXX"));
-		msgOut->L = 3;
-		msgOut->C = 1;
+		Channels[msg->B].resp2.L = 3;
+		Channels[msg->B].resp2.C = 1;
 	    } else {
 		mess_info(nodePath().c_str(), _("OOOOOOOO"));
-		msgOut->L = 3;
-		msgOut->C = 0;
+		Channels[msg->B].resp2.L = 3;
+		Channels[msg->B].resp2.C = 0;
 	    }
 	} else {
 	    mess_info(nodePath().c_str(), _("SetData BAD FCB!!!"));
 	}
+	memcpy(resp,&Channels[msg->B].resp2,sizeof(tagMsg));
 	break;
     case AddrReq:
 //	mess_info(nodePath().c_str(), _("AddrReq"));
-	msgOut->C = 8;
+	Channels[msg->B].resp3.C = 8;
 	time_t rawtime;
 	time(&rawtime);
-	Time_tToDateTime(msgOut->D, rawtime);
+	Time_tToDateTime(Channels[msg->B].resp3.D, rawtime);
 	l = 0;
 	n = 3;
-	tm = TSYS::getUnalign16(msgOut->D + 3);
+	tm = TSYS::getUnalign16(Channels[msg->B].resp3.D + 3);
 	while(l < (msg->L - 3)) {
 	    uint16_t id = TSYS::getUnalign16(msg->D + l);
 	    l += 2;
-	    msgOut->D[n++] = tm;
-	    msgOut->D[n++] = tm >> 8;
-	    msgOut->D[n++] = id;
-	    msgOut->D[n++] = id >> 8;
+	    Channels[msg->B].resp3.D[n++] = tm;
+	    Channels[msg->B].resp3.D[n++] = tm >> 8;
+	    Channels[msg->B].resp3.D[n++] = id;
+	    Channels[msg->B].resp3.D[n++] = id >> 8;
 	    vector<string> lst;
 	    list(lst);
 	    rc = 0;
-	    rc = cmdGet(id, msgOut->D + n);
+	    rc = cmdGet(id, Channels[msg->B].resp3.D + n);
 	    if(rc != 0) {
 		n += rc;
 	    }
 	    if(rc == 0) {
 		l = msg->L - 3;
 		mess_info(nodePath().c_str(), _("AddrReq ID not found! %04X"), id);
-		msgOut->C = 9;
+		Channels[msg->B].resp3.C = 9;
 		break;
 	    }
 	}
-	if(msgOut->C == 9) {
-	    msgOut->L = 3;
+	if(Channels[msg->B].resp3.C == 9) {
+	    Channels[msg->B].resp3.L = 3;
 	} else {
-	    msgOut->L = n + 3;
+	    Channels[msg->B].resp3.L = n + 3;
 	}
-
+	memcpy(resp,&Channels[msg->B].resp3,sizeof(tagMsg));
 	break;
     case ResData2:
 	mess_info(nodePath().c_str(), _("ResData2"));
-	FCB2 = 0;
-	msgOut->L = 3;
-	msgOut->C = FCB3;
+	Channels[msg->B].FCB2 = 0;
+	resp->L = 3;
+	resp->C = Channels[msg->B].FCB3;
 	break;
     }
-    msgOut->A = msg->B;
-    msgOut->B = devAddr;
-    return msgOut->L;
+    resp->A = msg->B;
+    resp->B = devAddr;
+    return resp->L;
 }
 
 //*************************************************
@@ -389,6 +409,7 @@ void TTpContr::postEnable(int flag)
     //fldAdd(new TFld("TO_PRTR",_("Blocs"),TFld::String,TFld::Selected,"5","BUC","BUC;BTR;BVT;BVTS;BPI",_("BUC;BTR;BVT;BVTS;BPI")));
     fldAdd(new TFld("NODE", _("Addres"), TFld::Integer, TFld::NoFlag, "2", "1", "1;63"));
     fldAdd(new TFld("ADDR", _("Transport address"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("NCHANNEL", _("Channels count"), TFld::Integer, TFld::NoFlag, "2", "1", "1;63"));
     //> Parameter type bd structure
 
     int t_prm = tpParmAdd("tp_BUC", "PRM_BD_BUC", _("BUC"));
@@ -479,11 +500,7 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
     pthread_mutexattr_destroy(&attrM);
 
     MtxAlloc res(eventRes, true);
-    BE = new el_chBE[nBE];
-    if(BE) {
-	for(int i = 0; i < nBE; i++)
-	    empt.insert(&BE[i]);
-    }
+
 }
 
 uint16_t TMdContr::CRC(char *data, uint16_t length)
@@ -511,14 +528,14 @@ bool TMdContr::Transact(tagMsg * pMsg)
     char io_buf[4096];
     switch(Cmd) {
     case SetData:
-	pMsg->C |= (FCB2 | 0x10);
+	pMsg->C |= (Channels[pMsg->B].FCB2 | 0x10);
 	break;
     case ReqData1:
     case ReqData2:
-	pMsg->C |= (FCB3 | 0x10);
+	pMsg->C |= (Channels[pMsg->B].FCB2 | 0x10);
 	break;
     case ReqData:
-	if(pMsg->L != 1) pMsg->C |= (FCB3 | 0x10);
+	if(pMsg->L != 1) pMsg->C |= (Channels[pMsg->B].FCB2 | 0x10);
 	break;
     }
     pMsg->A = devAddr;
@@ -605,16 +622,16 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	if(pMsg->L) switch(Cmd) {
 	case Reset:
 	case ResetChan:
-	    FCB2 = 0x20;
+	    Channels[pMsg->B].FCB2 = 0x20;
 	    break;
 	case SetData:
-	    FCB2 ^= 0x20;
+	    Channels[pMsg->B].FCB2 ^= 0x20;
 	    break;
 	case ReqData1:
 	case ReqData2:
 	case ReqData:
 
-	    FCB3 ^= 0x20;
+	    Channels[pMsg->B].FCB3 ^= 0x20;
 	    break;
 
 	}
@@ -787,7 +804,7 @@ TMdContr::~TMdContr()
 {
     if(startStat()) stop();
 
-    delete[] BE;
+//    delete[] BE;
     pthread_mutex_destroy(&enRes);
 }
 
@@ -814,10 +831,15 @@ TParamContr *TMdContr::ParamAttach(const string &name, int type)
 
 void TMdContr::start_()
 {
-    FCB2 = 0x20;
-    FCB3 = 0x20;
+//    FCB2 = 0x20;
+//    FCB3 = 0x20;
 //	mess_info(nodePath().c_str(),_("TMdContr::start_"));
-    devAddr = vmin(63, vmax(1,cfg("NODE").getId()));
+    nChannel = cfg("NCHANNEL").getI();
+    Channels.clear();
+    for (int i=0; i<=nChannel; i++) {
+	Channels.push_back(TFT3Channel());
+    }
+    devAddr = vmin(63, vmax(1,cfg("NODE").getI()));
     //> Start the gathering data task
     if(!prc_st) {
 	if(cfg("CTRTYPE").getS() == "DAQ") {

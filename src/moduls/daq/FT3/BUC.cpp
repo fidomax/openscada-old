@@ -91,9 +91,9 @@ uint16_t B_BUC::Task(uint16_t uc)
 		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
 		mPrm.vlAt("mod").at().setI(TSYS::getUnalign16(Msg.D + 12), 0, true);
 		mPrm.vlAt("sttimer").at().setI(Msg.D[18], 0, true);
-		time_t t = mPrm.owner().DateTimeToTime_t(Msg.D + 24);
+		time_t t = DateTimeToTime_t(Msg.D + 24);
 		mPrm.vlAt("curdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
-		t = mPrm.owner().DateTimeToTime_t(Msg.D + 33);
+		t = DateTimeToTime_t(Msg.D + 33);
 		mPrm.vlAt("stopdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
 		mPrm.vlAt("dl1").at().setI(Msg.D[43], 0, true);
 		mPrm.vlAt("dl2").at().setI(Msg.D[49], 0, true);
@@ -115,7 +115,7 @@ uint16_t B_BUC::Task(uint16_t uc)
 	Msg.L = 10;
 	Msg.C = SetData;
 	*((uint16_t *) Msg.D) = ID | (1 << 6) | (1); //текущее время
-	mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
+	Time_tToDateTime(Msg.D + 2, rawtime);
 	mPrm.owner().Transact(&Msg);
 	if(Msg.C == GOOD2) {
 	    rc = 1;
@@ -157,12 +157,12 @@ uint16_t B_BUC::HandleEvent(uint8_t * D)
 	l = 3;
 	break;
     case 1:
-	t = mPrm.owner().DateTimeToTime_t(D + 3);
+	t = DateTimeToTime_t(D + 3);
 	mPrm.vlAt("curdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
 	l = 8;
 	break;
     case 2:
-	t = mPrm.owner().DateTimeToTime_t(D + 2);
+	t = DateTimeToTime_t(D + 2);
 	mPrm.vlAt("stopdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
 	l = 7;
 	break;
@@ -204,7 +204,7 @@ uint16_t B_BUC::setVal(TVal &val)
 	    Msg.C = SetData;
 	    Msg.D[0] = addr & 0xFF;
 	    Msg.D[1] = (addr >> 8) & 0xFF;
-	    mPrm.owner().Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
+	    Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
 	    mPrm.owner().Transact(&Msg);
 	    break;
 	}
@@ -260,12 +260,12 @@ uint8_t B_BUC::cmdGet(uint16_t prmID, uint8_t * out)
 	case 1:
 	    out[0] = s_tm;
 	    time(&rawtime);
-	    mPrm.owner().Time_tToDateTime(out + 1, rawtime);
+	    Time_tToDateTime(out + 1, rawtime);
 	    l = 6;
 	    break;
 	case 2:
 	    time(&rawtime);
-	    mPrm.owner().Time_tToDateTime(out, rawtime);
+	    Time_tToDateTime(out, rawtime);
 	    l = 5;
 	    break;
 	}

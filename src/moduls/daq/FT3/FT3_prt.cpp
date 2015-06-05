@@ -261,7 +261,7 @@ bool TProtIn::mess(const string &ireqst, string &answer)
 	    SYS->daq().at().at("FT3").at().list(lst);
 	    for(i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdContr> t = SYS->daq().at().at("FT3").at().at(lst[i_l]);
-		if((t.at().cfg("CTRTYPE").getS() == "Logic") && (t.at().devAddr == msg.A)) {
+		if((t.at().cfg("CTRTYPE").getS() == "Logic") && (t.at().devAddr == msg.A) && (msg.B < t.at().nChannel)) {
 		    answer = "";
 		    if(t.at().ProcessMessage(&msg, &msgOut)) {
 
