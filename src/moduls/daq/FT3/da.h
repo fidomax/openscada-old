@@ -40,6 +40,12 @@ typedef union
 
 typedef union
 {
+	uint8_t b[4];
+	uint32_t ui32;
+} ui832;
+
+typedef union
+{
 	uint8_t b[2];
 	uint16_t w;
 } ui8w;
@@ -86,7 +92,7 @@ class DA: public TElem
 	};
 	class ui8Data{
 	public:
-	    ui8Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(254), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    ui8Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
 	    uint8_t vl;
 	    uint8_t s;
 	    SLnk lnk;
@@ -94,15 +100,27 @@ class DA: public TElem
 
 	class ui16Data{
 	public:
-	    ui16Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(65534), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    ui16Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
 	    uint16_t vl;
+	    uint8_t s;
+	    SLnk lnk;
+	};
+
+	class ui32Data{
+	public:
+	    ui32Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    union
+	    {
+		uint8_t b_vl[4];
+		uint32_t vl;
+	    };
 	    uint8_t s;
 	    SLnk lnk;
 	};
 
 	class flData{
 	public:
-	    flData(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(EVAL_RFlt), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    flData(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
 	    union
 	    {
 		uint8_t b_vl[4];
@@ -121,6 +139,7 @@ class DA: public TElem
 	void saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
 	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
+	uint8_t SetNew32Val(ui32Data& d, uint8_t addr, uint16_t prmID, uint32_t val);
 	uint8_t SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, uint16_t val);
 	uint8_t SetNewfl8Val(flData& d, uint8_t addr, uint16_t prmID, uint8_t val);
 	uint8_t SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2);
@@ -129,6 +148,7 @@ class DA: public TElem
 	void UpdateParam8(ui8Data& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamW(ui16Data& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamFl(flData& param, uint16_t ID, uint8_t cl = 2);
+	void UpdateParam32(ui32Data& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamFlState(flData& param, ui8Data& state, uint16_t ID, uint8_t cl);
 	void UpdateParam2Fl(flData& param1, flData& param2, uint16_t ID, uint8_t cl);
     public:
