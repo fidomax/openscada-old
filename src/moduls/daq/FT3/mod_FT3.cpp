@@ -228,8 +228,14 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	// One byte req
 	resp->L = 1;
 	resp->C = msg->A & 0x3F;
-	if(Channels[msg->B].C1.head) resp->C |= 0x40;
-	if(Channels[msg->B].C2.head) resp->C |= 0x80;
+	if(Channels[msg->B].C1.head) {
+	    mess_info(nodePath().c_str(), _("one byte has C1"));
+	    resp->C |= 0x40;
+	}
+	if(Channels[msg->B].C2.head) {
+	    mess_info(nodePath().c_str(), _("one byte has C2"));
+	    resp->C |= 0x80;
+	}
 	return resp->L;
     }
     switch(msg->C & 0x0F) {
@@ -248,18 +254,24 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	    Channels[msg->B].FCB3 = msg->C;
 	    switch(msg->C & 0x0F) {
 	    case ReqData1:
+		mess_info(nodePath().c_str(), _("ReqData1 C1"));
 		pC = &(Channels[msg->B].C1);
 		break;
 	    case ReqData2:
+		mess_info(nodePath().c_str(), _("ReqData2 C2"));
 		pC = &(Channels[msg->B].C2);
 		break;
 	    default:
-		if(Channels[msg->B].C1.head)
+		if(Channels[msg->B].C1.head) {
 		    pC = &(Channels[msg->B].C1);
-		else
+		    mess_info(nodePath().c_str(), _("ReqData C1"));
+		} else {
 		    pC = &(Channels[msg->B].C2);
+		    mess_info(nodePath().c_str(), _("ReqData C2"));
+		}
 	    }
 	    if(!pC || !pC->head) {
+		mess_info(nodePath().c_str(), _("empty"));
 		Channels[msg->B].resp3.L = 3;
 		Channels[msg->B].resp3.C = 9;
 	    } else {
