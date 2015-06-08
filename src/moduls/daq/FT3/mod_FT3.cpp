@@ -229,11 +229,11 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	resp->L = 1;
 	resp->C = msg->A & 0x3F;
 	if(Channels[msg->B].C1.head != NULL) {
-	    mess_info(nodePath().c_str(), _("one byte has C1 %08X &08X"), &Channels[msg->B].C1, Channels[msg->B].C1.head);
+	    mess_info(nodePath().c_str(), _("%d one byte has C1 %08X %08X"), &(Channels[msg->B].C1), msg->B, Channels[msg->B].C1.head);
 	    resp->C |= 0x40;
 	}
 	if(Channels[msg->B].C2.head != NULL) {
-	    mess_info(nodePath().c_str(), _("one byte has C2%08X &08X"), &Channels[msg->B].C1, Channels[msg->B].C1.head);
+	    mess_info(nodePath().c_str(), _("%d one byte has C2%08X %08X"), &(Channels[msg->B].C1), msg->B, Channels[msg->B].C1.head);
 	    resp->C |= 0x80;
 	}
 	return resp->L;
@@ -253,23 +253,23 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	    switch(msg->C & 0x0F) {
 	    case ReqData1:
 		pC = &(Channels[msg->B].C1);
-		mess_info(nodePath().c_str(), _("ReqData1 C1 %08X &08X"), pC, pC->head);
+		mess_info(nodePath().c_str(), _("%d ReqData1 C1 %08X %08X"), msg->B, pC, pC->head);
 		break;
 	    case ReqData2:
 		pC = &(Channels[msg->B].C2);
-		mess_info(nodePath().c_str(), _("ReqData1 C2 %08X &08X"), pC, pC->head);
+		mess_info(nodePath().c_str(), _("%d ReqData1 C2 %08X %08X"), msg->B, pC, pC->head);
 		break;
 	    default:
 		if(Channels[msg->B].C1.head) {
 		    pC = &(Channels[msg->B].C1);
-		    mess_info(nodePath().c_str(), _("default ReqData C1 %08X &08X"), pC, pC->head);
+		    mess_info(nodePath().c_str(), _("default ReqData C1 %08X %08X"), pC, pC->head);
 		} else {
 		    pC = &(Channels[msg->B].C2);
-		    mess_info(nodePath().c_str(), _("default ReqData C2 %08X &08X"), pC, pC->head);
+		    mess_info(nodePath().c_str(), _("default ReqData C2 %08X %08X"), pC, pC->head);
 		}
 	    }
 	    if((pC == NULL) || (pC->head == NULL)) {
-		mess_info(nodePath().c_str(), _("empty %08X &08X"), pC, pC->head);
+		mess_info(nodePath().c_str(), _("%d empty %08X %08X"), msg->B, pC, pC->head);
 		Channels[msg->B].resp3.L = 3;
 		Channels[msg->B].resp3.C = 9;
 	    } else {
