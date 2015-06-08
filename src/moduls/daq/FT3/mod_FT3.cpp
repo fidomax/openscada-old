@@ -57,7 +57,6 @@ extern "C"
     }
 }
 
-
 using namespace FT3;
 
 time_t FT3::DateTimeToTime_t(uint8_t * D)
@@ -174,7 +173,6 @@ void TFT3Channel::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E
     }
 }
 
-
 void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 {
     for(int i = 0; i < Channels.size(); i++) {
@@ -221,6 +219,8 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
     uint8_t n;
     uint16_t tm;
     uint8_t rc;
+    chain_BE *pC = NULL;
+    el_chBE *pBE;
     MtxAlloc res(eventRes, true);
     resp->L = 0;
     if(msg->L == 1) {
@@ -248,8 +248,6 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
     case ReqData1:
     case ReqData2:
     case ReqData:
-	chain_BE *pC = NULL;
-	el_chBE *pBE;
 	if(Channels[msg->B].FCB3 != msg->C) {
 	    Channels[msg->B].FCB3 = msg->C;
 	    switch(msg->C & 0x0F) {
@@ -293,7 +291,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	} else {
 	    mess_info(nodePath().c_str(), _("ReqData BAD FCB!!!"));
 	}
-	memcpy(resp,&Channels[msg->B].resp3,sizeof(tagMsg));
+	memcpy(resp, &Channels[msg->B].resp3, sizeof(tagMsg));
 	break;
     case SetData:
 	mess_info(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"), Channels[msg->B].FCB2, msg->C);
@@ -326,7 +324,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	} else {
 	    mess_info(nodePath().c_str(), _("SetData BAD FCB!!!"));
 	}
-	memcpy(resp,&Channels[msg->B].resp2,sizeof(tagMsg));
+	memcpy(resp, &Channels[msg->B].resp2, sizeof(tagMsg));
 	break;
     case AddrReq:
 //	mess_info(nodePath().c_str(), _("AddrReq"));
@@ -363,14 +361,14 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	} else {
 	    Channels[msg->B].resp3.L = n + 3;
 	}
-	memcpy(resp,&Channels[msg->B].resp3,sizeof(tagMsg));
+	memcpy(resp, &Channels[msg->B].resp3, sizeof(tagMsg));
 	break;
     case ResData2:
 	mess_info(nodePath().c_str(), _("ResData2"));
 	Channels[msg->B].FCB2 = 0;
 	resp->L = 3;
 	resp->C = Channels[msg->B].FCB3;
-	while (Channels[msg->B].C2.head) {
+	while(Channels[msg->B].C2.head) {
 	    Channels[msg->B].empt.insert(Channels[msg->B].C2.getdel());
 	}
 	break;
@@ -858,7 +856,7 @@ void TMdContr::start_()
 //	mess_info(nodePath().c_str(),_("TMdContr::start_"));
     nChannel = cfg("NCHANNEL").getI();
     Channels.clear();
-    for (int i=0; i<=nChannel; i++) {
+    for(int i = 0; i <= nChannel; i++) {
 	Channels.push_back(TFT3Channel());
     }
     devAddr = vmin(63, vmax(1,cfg("NODE").getI()));
