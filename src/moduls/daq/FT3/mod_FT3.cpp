@@ -228,11 +228,11 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	// One byte req
 	resp->L = 1;
 	resp->C = msg->A & 0x3F;
-	if(Channels[msg->B].C1.head) {
+	if(Channels[msg->B].C1.head != NULL) {
 	    mess_info(nodePath().c_str(), _("one byte has C1"));
 	    resp->C |= 0x40;
 	}
-	if(Channels[msg->B].C2.head) {
+	if(Channels[msg->B].C2.head != NULL) {
 	    mess_info(nodePath().c_str(), _("one byte has C2"));
 	    resp->C |= 0x80;
 	}
@@ -248,7 +248,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
     case ReqData1:
     case ReqData2:
     case ReqData:
-	chain_BE *pC;
+	chain_BE *pC = NULL;
 	el_chBE *pBE;
 	if(Channels[msg->B].FCB3 != msg->C) {
 	    Channels[msg->B].FCB3 = msg->C;
@@ -270,7 +270,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 		    mess_info(nodePath().c_str(), _("ReqData C2"));
 		}
 	    }
-	    if(!pC || !pC->head) {
+	    if((pC == NULL) || (pC->head == NULL)) {
 		mess_info(nodePath().c_str(), _("empty"));
 		Channels[msg->B].resp3.L = 3;
 		Channels[msg->B].resp3.C = 9;
