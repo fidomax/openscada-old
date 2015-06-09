@@ -27,8 +27,8 @@
 
 using namespace FT3;
 
-B_BVI::B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), ID(id << 12), count_n(n), with_params(has_params)
+B_BVI::B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_ext_period) :
+	DA(prm), ID(id << 12), count_n(n), with_params(has_params), ext_period(has_ext_period)
 {
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
@@ -126,7 +126,11 @@ void B_BVI::tmHandler(void)
 	    float f;
 	} tmpfl, tmpfl1;
 	if(with_params) {
-	    UpdateParam8(data[i].Period, ID | ((i + 1) << 6) | (2), 1);
+	    if (ext_period) {
+		UpdateParamW(data[i].Period, ID | ((i + 1) << 6) | (2), 1);
+	    } else {
+		UpdateParam8(data[i].Period, ID | ((i + 1) << 6) | (2), 1);
+	    }
 	    UpdateParamFl(data[i].Sens, ID | ((i + 1) << 6) | (3), 1);
 	    UpdateParam32(data[i].Count, ID | ((i + 1) << 6) | (4), 1);
 	    UpdateParamFl(data[i].Factor, ID | ((i + 1) << 6) | (5), 1);
@@ -227,9 +231,14 @@ uint16_t B_BVI::HandleEvent(uint8_t * D)
 		break;
 	    case 2:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("period_%d", k).c_str()).at().setI(D[3], 0, true);
+		    if (ext_period) {
+			mPrm.vlAt(TSYS::strMess("period_%d", k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
+			l = 5;
+		    } else {
+			mPrm.vlAt(TSYS::strMess("period_%d", k).c_str()).at().setI(D[3], 0, true);
+			l = 4;
+		    }
 		}
-		l = 4;
 		break;
 	    case 3:
 		if(with_params) {
@@ -302,8 +311,14 @@ uint8_t B_BVI::cmdGet(uint16_t prmID, uint8_t * out)
 		break;
 	    case 2:
 		out[0] = data[k - 1].Period.s;
-		out[1] = data[k - 1].Period.vl;
-		l = 2;
+		if(ext_period) {
+		    out[1] = data[k - 1].Period.vl;
+		    out[2] = data[k - 1].Period.vl >> 8;
+		    l = 3;
+		} else {
+		    out[1] = data[k - 1].Period.vl;
+		    l = 2;
+		}
 		break;
 	    case 3:
 		out[0] = data[k - 1].Sens.s;
@@ -347,7 +362,11 @@ uint8_t B_BVI::cmdSet(uint8_t * req, uint8_t addr)
 	switch(n) {
 	case 2:
 	    mess_info(mPrm.nodePath().c_str(), "cmdSet Period");
-	    l = SetNew8Val(data[k - 1].Period, addr, prmID, req[2]);
+	    if(ext_period) {
+		l = SetNewWVal(data[k - 1].Period, addr, prmID, req[2]);
+	    } else {
+		l = SetNew8Val(data[k - 1].Period, addr, prmID, req[2]);
+	    }
 	    break;
 	case 3:
 	    mess_info(mPrm.nodePath().c_str(), "cmdSet Sens");
@@ -379,6 +398,22 @@ uint16_t B_BVI::setVal(TVal &val)
     tagMsg Msg;
     switch(n) {
     case 2:
+	if(ext_period) {
+	    Msg.L = 7;
+	    Msg.C = SetData;
+	    Msg.D[0] = addr & 0xFF;
+	    Msg.D[1] = (addr >> 8) & 0xFF;
+	    *(uint16_t *) (Msg.D + 2) = (uint16_t) val.get(NULL, true).getI();
+	    mPrm.owner().Transact(&Msg);
+	} else {
+	    Msg.L = 6;
+	    Msg.C = SetData;
+	    Msg.D[0] = addr & 0xFF;
+	    Msg.D[1] = (addr >> 8) & 0xFF;
+	    Msg.D[2] = val.get(NULL, true).getI();
+	    mPrm.owner().Transact(&Msg);
+	}
+	break;
     case 6:
 	Msg.L = 6;
 	Msg.C = SetData;

@@ -313,7 +313,7 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
 	    case 1:
 		out[0] = TUdata[k - 1].TC.s;
 		out[1] = TUdata[k - 1].TC.vl;
-		out[1] = TUdata[k - 1].TC.vl >> 8;
+		out[2] = TUdata[k - 1].TC.vl >> 8;
 		l = 3;
 		break;
 	    case 2:

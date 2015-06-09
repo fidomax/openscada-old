@@ -101,7 +101,11 @@ class DA: public TElem
 	class ui16Data{
 	public:
 	    ui16Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
-	    uint16_t vl;
+	    union
+	    {
+		uint8_t b_vl[2];
+		uint16_t vl;
+	    }
 	    uint8_t s;
 	    SLnk lnk;
 	};
@@ -138,6 +142,8 @@ class DA: public TElem
 	void loadLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	void saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
+	uint8_t SetNew8Val(ui16Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
+	uint8_t SetNewWVal(ui16Data& d, uint8_t addr, uint16_t prmID, uint16_t val);
 	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
 	uint8_t SetNew32Val(ui32Data& d, uint8_t addr, uint16_t prmID, uint32_t val);
 	uint8_t SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, uint16_t val);
@@ -146,6 +152,7 @@ class DA: public TElem
 	void UpdateParamFlW(flData& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamFlB(flData& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParam8(ui8Data& param, uint16_t ID, uint8_t cl = 2);
+	void UpdateParam8(ui16Data& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamW(ui16Data& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamFl(flData& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParam32(ui32Data& param, uint16_t ID, uint8_t cl = 2);

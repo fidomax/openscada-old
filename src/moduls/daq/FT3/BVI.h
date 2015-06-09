@@ -27,7 +27,7 @@ namespace FT3
     {
     public:
 	//Methods
-	B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
+	B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_ext_period);
 	~B_BVI();
 	uint16_t ID;
 	uint16_t count_n;
@@ -56,8 +56,9 @@ namespace FT3
 	    }
 	    uint8_t id;
 
-	    ui8Data State, Period, Dimension;
+	    ui8Data State, Dimension;
 
+	    ui16Data Period;
 	    flData Value, Sens, Factor;
 	    ui32Data Count;
 	};
@@ -121,7 +122,7 @@ namespace FT3
 	    }
 	}
     private:
-	bool with_params;
+	bool with_params, ext_period;
 	vector<SDataRec> chan_err;
 
     };
