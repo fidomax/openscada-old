@@ -105,7 +105,7 @@ class DA: public TElem
 	    {
 		uint8_t b_vl[2];
 		uint16_t vl;
-	    }
+	    };
 	    uint8_t s;
 	    SLnk lnk;
 	};
