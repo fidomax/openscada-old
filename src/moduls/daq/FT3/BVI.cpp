@@ -53,7 +53,7 @@ B_BVI::B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	    fld->setReserve(TSYS::strMess("%d:6", i + 1));
 	}
     }
-
+    loadIO(true);
 }
 
 B_BVI::~B_BVI()
