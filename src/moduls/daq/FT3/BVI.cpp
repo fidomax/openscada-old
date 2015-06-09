@@ -34,7 +34,7 @@ B_BVI::B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_ext
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
 
-    for(int i = 0; i <= count_n; i++) {
+    for(int i = 0; i < count_n; i++) {
 	data.push_back(STIchannel(i));
 	mPrm.p_el.fldAdd(fld = new TFld(data[i].State.lnk.prmName.c_str(), data[i].State.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
 	fld->setReserve(TSYS::strMess("%d:0", i + 1));
