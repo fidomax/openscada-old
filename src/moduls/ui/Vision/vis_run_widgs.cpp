@@ -606,7 +606,7 @@ void RunPageView::closeEvent( QCloseEvent *event )
 //*********************************************
 //* Play sound thread for RunTime session     *
 //*********************************************
-SndPlay::SndPlay( QObject *parent ) : QThread(parent)
+/*SndPlay::SndPlay( QObject *parent ) : QThread(parent)
 {
 
 }
@@ -615,7 +615,7 @@ VisRun *SndPlay::mainWin( )	{ return (VisRun *)parent(); }
 
 void SndPlay::run( )
 {
-    if(mPlayData.empty()) return;
+    if(mod->playCom().empty() || mPlayData.empty()) return;
 
     size_t comPos = 0;
     string com = mod->playCom();
@@ -645,7 +645,7 @@ void SndPlay::run( )
     if(!srcToPipe) remove(srcFile.c_str());
 
     mPlayData.clear();
-};
+};*/
 
 //*********************************************
 //* Status bar styles                         *
