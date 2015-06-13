@@ -50,6 +50,20 @@ typedef union
 	uint16_t w;
 } ui8w;
 
+typedef struct sFT3ID  // FT3 ID
+{
+	uint8_t g; // group
+	uint8_t k; // object
+	uint8_t n; // parameter
+} FT3ID;
+
+typedef enum eTypeFT3
+{
+	GRS = 0x0,
+	KA = 0x1,
+} TypeFT3;
+
+
 class DA: public TElem
 {
     friend class TMdPrm;
@@ -139,6 +153,7 @@ class DA: public TElem
 	//Attributes
 	TMdPrm &mPrm;
 	bool NeedInit;
+	TypeFT3 mTypeFT3;
 	void loadLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	void saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
@@ -158,6 +173,10 @@ class DA: public TElem
 	void UpdateParam32(ui32Data& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamFlState(flData& param, ui8Data& state, uint16_t ID, uint8_t cl);
 	void UpdateParam2Fl(flData& param1, flData& param2, uint16_t ID, uint8_t cl);
+	FT3ID UnpackID(uint16_t ID);
+	uint16_t PackID(FT3ID ID);
+	uint16_t PackID(uint8_t g, uint8_t k, uint8_t n);
+
     public:
 	virtual int lnkSize( ){}
 

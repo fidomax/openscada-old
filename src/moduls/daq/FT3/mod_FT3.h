@@ -69,7 +69,6 @@ namespace FT3
 	uint8_t C; // command
 	uint8_t A; // destination address
 	uint8_t B; // source address
-//		uint8_t N;
     } tagMsg;
 
     typedef enum eCodFT3

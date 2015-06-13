@@ -80,7 +80,7 @@ uint8_t DA::SetNewWVal(ui16Data& d, uint8_t addr, uint16_t prmID, uint16_t val)
 	d.vl = val;
 	d.lnk.aprm.at().setI(d.vl);
 	mPrm.vlAt(d.lnk.prmName.c_str()).at().setI(d.vl, 0, true);
-	uint8_t E[3] = { addr, d.b_vl[0], d.b_vl[1]};
+	uint8_t E[3] = { addr, d.b_vl[0], d.b_vl[1] };
 	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 2;
     } else {
@@ -334,4 +334,50 @@ void DA::UpdateParam2Fl(flData& param1, flData& param2, uint16_t ID, uint8_t cl)
 	    mPrm.owner().PushInBE(1, sizeof(E), ID, E);
 	}
     }
+}
+
+FT3ID DA::UnpackID(uint16_t ID)
+{
+    FT3ID rc;
+    switch(mTypeFT3) {
+    case GRS:
+	rc.g = ID >> 12;
+	rc.k = (ID >> 6) & 0x3F;
+	rc.n = ID & 0x3F;
+	break;
+    case KA:
+	rc.g = ID & 0x0F;
+	rc.k = (ID >> 4) & 0x3F;
+	rc.n = (ID >> 10) & 0x3F;
+	break;
+    }
+    return rc;
+}
+
+uint16_t DA::PackID(FT3ID ID)
+{
+    uint16_t rc;
+    switch(mTypeFT3) {
+    case GRS:
+	rc = ID.g << 12 | (ID.k << 6) | (ID.n);
+	break;
+    case KA:
+	rc = ID.g | (ID.k << 4) | (ID.n << 10);
+	break;
+    }
+    return rc;
+}
+
+uint16_t DA::PackID(uint8_t g, uint8_t k, uint8_t n)
+{
+    uint16_t rc;
+    switch(mTypeFT3) {
+    case GRS:
+	rc = g << 12 | (k << 6) | (n);
+	break;
+    case KA:
+	rc = g | (k << 4) | (n << 10);
+	break;
+    }
+    return rc;
 }

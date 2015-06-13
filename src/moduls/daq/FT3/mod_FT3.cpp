@@ -414,6 +414,7 @@ void TTpContr::postEnable(int flag)
 
     //> Controler's bd structure
     fldAdd(new TFld("CTRTYPE", _("Type"), TFld::String, TFld::Selected, "5", "Logic", "Logic;DAQ", _("Logic;DAQ")));
+    fldAdd(new TFld("PRTTYPE", _("Type"), TFld::String, TFld::Selected, "5", "GRS", "GRS;KA", _("GRS;KA")));
     fldAdd(new TFld("PRM_BD_BUC", _("BUC Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_BVTS", _("BVTS Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_BVT", _("BVT Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));

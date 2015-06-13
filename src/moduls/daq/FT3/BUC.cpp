@@ -28,7 +28,7 @@
 using namespace FT3;
 
 B_BUC::B_BUC(TMdPrm& prm, uint16_t id) :
-	DA(prm), ID(id << 12), mod_KP(0), state(0), stateWatch(0), s_tm(0), wt1(0), wt2(0), s_wt1(0), s_wt2(0)
+	DA(prm), ID(id), mod_KP(0), state(0), stateWatch(0), s_tm(0), wt1(0), wt2(0), s_wt1(0), s_wt2(0)
 {
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
@@ -79,13 +79,13 @@ uint16_t B_BUC::Task(uint16_t uc)
     case TaskRefresh:
 	Msg.L = 17;
 	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = ID | (0 << 6) | (0); //состояние
-	*((uint16_t *) (Msg.D + 2)) = ID | (0 << 6) | (1); //модификация
-	*((uint16_t *) (Msg.D + 4)) = ID | (1 << 6) | (0); //состояние таймера
-	*((uint16_t *) (Msg.D + 6)) = ID | (1 << 6) | (1); //текущее время
-	*((uint16_t *) (Msg.D + 8)) = ID | (1 << 6) | (2); //время останова
-	*((uint16_t *) (Msg.D + 10)) = ID | (2 << 6) | (1); //задержка 1
-	*((uint16_t *) (Msg.D + 12)) = ID | (2 << 6) | (2); //задержка 2
+	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
+	*((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //модификация
+	*((uint16_t *) (Msg.D + 4)) = PackID(ID, 1, 0); //состояние таймера
+	*((uint16_t *) (Msg.D + 6)) = PackID(ID, 1, 1); //текущее время
+	*((uint16_t *) (Msg.D + 8)) = PackID(ID, 1, 2); //время останова
+	*((uint16_t *) (Msg.D + 10)) = PackID(ID, 2, 1); //задержка 1
+	*((uint16_t *) (Msg.D + 12)) = PackID(ID, 2, 2); //задержка 2
 	if(mPrm.owner().Transact(&Msg)) {
 	    if(Msg.C == GOOD3) {
 		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
@@ -114,7 +114,7 @@ uint16_t B_BUC::Task(uint16_t uc)
 	time(&rawtime);
 	Msg.L = 10;
 	Msg.C = SetData;
-	*((uint16_t *) Msg.D) = ID | (1 << 6) | (1); //текущее время
+	*((uint16_t *) Msg.D) = PackID(ID, 1, 1); //текущее время
 	Time_tToDateTime(Msg.D + 2, rawtime);
 	mPrm.owner().Transact(&Msg);
 	if(Msg.C == GOOD2) {
@@ -132,13 +132,12 @@ uint16_t B_BUC::Task(uint16_t uc)
 
 uint16_t B_BUC::HandleEvent(uint8_t * D)
 {
-    if((TSYS::getUnalign16(D) & 0xF000) != ID) return 0;
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+    if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
-    uint16_t k = (TSYS::getUnalign16(D) >> 6) & 0x3F; // номер объекта
-    uint16_t n = TSYS::getUnalign16(D) & 0x3F;  // номер параметра
-    switch(k) {
+    switch(ft3ID.k) {
     case 0:
-	switch(n) {
+	switch(ft3ID.n) {
 	case 0:
 	    mPrm.vlAt("state").at().setI(D[2], 0, true);
 	    l = 3;
@@ -150,7 +149,7 @@ uint16_t B_BUC::HandleEvent(uint8_t * D)
 	}
 	break;
     case 1:
-	switch(n) {
+	switch(ft3ID.n) {
 	time_t t;
     case 0:
 	mPrm.vlAt("sttimer").at().setI(D[2], 0, true);
@@ -169,7 +168,7 @@ uint16_t B_BUC::HandleEvent(uint8_t * D)
 	}
 	break;
     case 2:
-	switch(n) {
+	switch(ft3ID.n) {
 	case 1:
 	    mPrm.vlAt("dl1").at().setI(D[3], 0, true);
 	    l = 4;
@@ -187,39 +186,34 @@ uint16_t B_BUC::HandleEvent(uint8_t * D)
 uint16_t B_BUC::setVal(TVal &val)
 {
     int off = 0;
-    uint16_t k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    uint16_t n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
-    uint16_t addr = ID | (k << 6) | n;
-
+    FT3ID ft3ID;
+    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
+    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    ft3ID.g = ID;
     tagMsg Msg;
-    switch(k) {
+    Msg.L = 0;
+    Msg.C = SetData;
+    *((uint16_t *) Msg.D) = PackID(ft3ID);
+    switch(ft3ID.k) {
     case 1:
-	switch(n) {
+	switch(ft3ID.n) {
 	case 1:
 	    struct tm tm_tm;
 
 	    strptime(val.get(NULL, true).getS().c_str(), "%d.%m.%Y %H:%M:%S", &tm_tm);
 
 	    Msg.L = 10;
-	    Msg.C = SetData;
-	    Msg.D[0] = addr & 0xFF;
-	    Msg.D[1] = (addr >> 8) & 0xFF;
 	    Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
-	    mPrm.owner().Transact(&Msg);
 	    break;
 	}
 	break;
     case 2:
-	switch(n) {
+	switch(ft3ID.n) {
 	case 1:
 	case 2:
 	    tagMsg Msg;
 	    Msg.L = 6;
-	    Msg.C = SetData;
-	    Msg.D[0] = addr & 0xFF;
-	    Msg.D[1] = (addr >> 8) & 0xFF;
 	    Msg.D[2] = val.get(NULL, true).getI();
-	    mPrm.owner().Transact(&Msg);
 	    break;
 
 	}
@@ -231,14 +225,13 @@ uint16_t B_BUC::setVal(TVal &val)
 
 uint8_t B_BUC::cmdGet(uint16_t prmID, uint8_t * out)
 {
-    if((prmID & 0xF000) != ID) return false;
-    uint16_t k = (prmID >> 6) & 0x3F; // номер объекта
-    uint16_t n = prmID & 0x3F;  // номер параметра
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != ID) return 0;
     uint l = 0;
     time_t rawtime;
-    switch(k) {
+    switch(ft3ID.k) {
     case 0:
-	switch(n) {
+	switch(ft3ID.n) {
 	case 0:
 	    out[0] = state;
 	    l = 1;
@@ -252,7 +245,7 @@ uint8_t B_BUC::cmdGet(uint16_t prmID, uint8_t * out)
 	break;
 
     case 1:
-	switch(n) {
+	switch(ft3ID.n) {
 	case 0:
 	    out[0] = stateWatch;
 	    l = 1;
@@ -271,7 +264,7 @@ uint8_t B_BUC::cmdGet(uint16_t prmID, uint8_t * out)
 	}
 	break;
     case 2:
-	switch(n) {
+	switch(ft3ID.n) {
 	/*		case 0:
 	 out[0] = s_tlg;
 	 do
