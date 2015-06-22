@@ -184,12 +184,12 @@ void B_BVT::tmHandler(void)
 {
     NeedInit = false;
     for(int i = 0; i < count_n; i++) {
-	uint8_t tmpui8;
+/*	uint8_t tmpui8;
 	union
 	{
 	    uint8_t b[4];
 	    float f;
-	} tmpfl, tmpfl1;
+	} tmpfl, tmpfl1;*/
 	if(with_params) {
 	    UpdateParam8(data[i].Period, PackID(ID, (i + 1), 2), 1);
 	    UpdateParamFl(data[i].Sens, PackID(ID, (i + 1), 3), 1);

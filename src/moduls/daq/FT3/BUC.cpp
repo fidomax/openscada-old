@@ -27,9 +27,188 @@
 
 using namespace FT3;
 
+KA_BUC::KA_BUC(TMdPrm& prm, uint16_t id) :
+	DA(prm), ID(id), modification(0), state(0), s_state(0), config(0)
+{
+    mTypeFT3 = KA;
+    TFld * fld;
+    mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TVal::DirWrite));
+    fld->setReserve("0:0");
+    mPrm.p_el.fldAdd(fld = new TFld("config", _("Configuration"), TFld::Integer, TFld::NoWrite));
+    fld->setReserve("0:1");
+    mPrm.p_el.fldAdd(fld = new TFld("modification", _("Modification"), TFld::Integer, TFld::NoWrite));
+    fld->setReserve("0:2");
+}
+
+KA_BUC::~KA_BUC()
+{
+
+}
+
+string KA_BUC::getStatus(void)
+{
+    string rez;
+    if(NeedInit) {
+	rez = "20: Опрос";
+    } else {
+	rez = "0: Норма";
+    }
+    return rez;
+
+}
+
+void KA_BUC::tmHandler(void)
+{
+
+}
+
+uint16_t KA_BUC::Task(uint16_t uc)
+{
+    tagMsg Msg;
+    uint16_t rc = 0;
+    switch(uc) {
+    case TaskRefresh:
+	Msg.L = 9;
+	Msg.C = AddrReq;
+	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+	*((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //configuration
+	*((uint16_t *) (Msg.D + 4)) = PackID(ID, 0, 2); //modification
+	if(mPrm.owner().Transact(&Msg)) {
+	    if(Msg.C == GOOD3) {
+		mPrm.vlAt("state").at().setI(Msg.D[8], 0, true);
+		mPrm.vlAt("config").at().setI(TSYS::getUnalign16(Msg.D + 13), 0, true);
+		mPrm.vlAt("modification").at().setI(TSYS::getUnalign16(Msg.D + 19), 0, true);
+		if(mPrm.vlAt("state").at().getI(0, true) != 1) {
+		    if(Task(TaskSet) == 1) {
+			rc = 1;
+		    }
+		} else {
+		    rc = 1;
+		}
+	    }
+
+	}
+	if(rc) NeedInit = false;
+	break;
+    case TaskIdle:
+	if(mPrm.vlAt("state").at().getI(0, true) != 0) {
+	    rc = 2;
+	}
+	break;
+    }
+    return rc;
+}
+
+uint16_t KA_BUC::HandleEvent(uint8_t * D)
+{
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+    if(ft3ID.g != ID) return 0;
+    uint16_t l = 0;
+    switch(ft3ID.k) {
+    case 0:
+	switch(ft3ID.n) {
+	case 0:
+	    mPrm.vlAt("state").at().setI(D[3], 0, true);
+	    l = 4;
+	    break;
+	case 1:
+	    mPrm.vlAt("config").at().setI(TSYS::getUnalign16(D + 2), 0, true);
+	    l = 4;
+	    break;
+	case 2:
+	    mPrm.vlAt("modification").at().setI(TSYS::getUnalign16(D + 2), 0, true);
+	    l = 4;
+	    break;
+
+	}
+	break;
+    }
+    return l;
+}
+
+uint16_t KA_BUC::setVal(TVal &val)
+{
+    int off = 0;
+    FT3ID ft3ID;
+    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
+    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    ft3ID.g = ID;
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    *((uint16_t *) Msg.D) = PackID(ft3ID);
+    switch(ft3ID.k) {
+    case 0:
+	switch(ft3ID.n) {
+	case 0:
+	    tagMsg Msg;
+	    Msg.L = 6;
+	    Msg.D[2] = val.get(NULL, true).getI();
+	    break;
+	}
+	break;
+    }
+    return 0;
+}
+
+uint8_t KA_BUC::cmdGet(uint16_t prmID, uint8_t * out)
+{
+    mess_info("KA_BUC", "cmdGet %04X",prmID);
+    FT3ID ft3ID = UnpackID(prmID);
+    mess_info("KA_BUC", "ID ft3ID g k n ",ID, ft3ID.g,ft3ID.k,ft3ID.n);
+    if(ft3ID.g != ID) return 0;
+    uint l = 0;
+    switch(ft3ID.k) {
+    case 0:
+	switch(ft3ID.n) {
+	case 0:
+	    out[0] = s_state;
+	    out[1] = state;
+	    l = 2;
+	    break;
+	case 1:
+	    out[0] = config & 0xFF;
+	    out[1] = (config >> 8) & 0xFF;
+	    l = 2;
+	    break;
+	case 2:
+	    out[0] = modification & 0xFF;
+	    out[1] = (modification >> 8) & 0xFF;
+	    l = 2;
+	    break;
+	}
+	break;
+    }
+    return l;
+}
+uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
+{
+    uint16_t prmID = TSYS::getUnalign16(req);
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != ID) return 0;
+    uint l = 0;
+    switch(ft3ID.k) {
+    case 0:
+	switch(ft3ID.k) {
+	case 0:
+	    state = req[2];
+	    s_state = addr;
+	    uint8_t E[2] = { addr, req[2] };
+	    mPrm.owner().PushInBE(1, 2, prmID, E);
+	    uint l = 3;
+	    break;
+	}
+	break;
+    }
+    return l;
+}
+
+
+
 B_BUC::B_BUC(TMdPrm& prm, uint16_t id) :
 	DA(prm), ID(id), mod_KP(0), state(0), stateWatch(0), s_tm(0), wt1(0), wt2(0), s_wt1(0), s_wt2(0)
 {
+    mTypeFT3 = KA;
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
 

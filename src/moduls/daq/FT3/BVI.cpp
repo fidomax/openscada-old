@@ -28,7 +28,7 @@
 using namespace FT3;
 
 B_BVI::B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_ext_period) :
-	DA(prm), ID(id << 12), count_n(n), with_params(has_params), ext_period(has_ext_period)
+	DA(prm), ID(id), count_n(n), with_params(has_params), ext_period(has_ext_period)
 {
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
@@ -127,16 +127,16 @@ void B_BVI::tmHandler(void)
 	} tmpfl, tmpfl1;
 	if(with_params) {
 	    if (ext_period) {
-		UpdateParamW(data[i].Period, ID | ((i + 1) << 6) | (2), 1);
+		UpdateParamW(data[i].Period, PackID(ID, (i + 1), 2), 1);
 	    } else {
-		UpdateParam8(data[i].Period, ID | ((i + 1) << 6) | (2), 1);
+		UpdateParam8(data[i].Period, PackID(ID, (i + 1), 2), 1);
 	    }
-	    UpdateParamFl(data[i].Sens, ID | ((i + 1) << 6) | (3), 1);
-	    UpdateParam32(data[i].Count, ID | ((i + 1) << 6) | (4), 1);
-	    UpdateParamFl(data[i].Factor, ID | ((i + 1) << 6) | (5), 1);
-	    UpdateParam8(data[i].Dimension, ID | ((i + 1) << 6) | (6), 1);
+	    UpdateParamFl(data[i].Sens, PackID(ID, (i + 1), 3), 1);
+	    UpdateParam32(data[i].Count, PackID(ID, (i + 1), 4), 1);
+	    UpdateParamFl(data[i].Factor, PackID(ID, (i + 1), 5), 1);
+	    UpdateParam8(data[i].Dimension, PackID(ID, (i + 1), 6), 1);
 	}
-	UpdateParamFlState(data[i].Value, data[i].State, ID | ((i + 1) << 6) | (1), 1);
+	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 1);
     }
 }
 
@@ -148,7 +148,7 @@ uint16_t B_BVI::Task(uint16_t uc)
     case TaskRefresh:
 	Msg.L = 5;
 	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = ID | (0 << 6) | (0); //состояние
+	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
 	if(mPrm.owner().Transact(&Msg)) {
 	    if(Msg.C == GOOD3) {
 		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
@@ -156,12 +156,12 @@ uint16_t B_BVI::Task(uint16_t uc)
 		    for(int i = 1; i <= count_n; i++) {
 			Msg.L = 15;
 			Msg.C = AddrReq;
-			*((uint16_t *) Msg.D) = ID | (i << 6) | (1); //Значение ТИ
-			*((uint16_t *) (Msg.D + 2)) = ID | (i << 6) | (2); //Период измерений
-			*((uint16_t *) (Msg.D + 4)) = ID | (i << 6) | (3); //Чувствительность
-			*((uint16_t *) (Msg.D + 6)) = ID | (i << 6) | (4); //Счетчик импульсов
-			*((uint16_t *) (Msg.D + 8)) = ID | (i << 6) | (5); //Коэффициент
-			*((uint16_t *) (Msg.D + 10)) = ID | (i << 6) | (6); //Размерность
+			*((uint16_t *) Msg.D) = PackID(ID, i, 1); //Значение ТИ
+			*((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 2); //Период измерений
+			*((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 3); //Чувствительность
+			*((uint16_t *) (Msg.D + 6)) = PackID(ID, i, 4); //Счетчик импульсов
+			*((uint16_t *) (Msg.D + 8)) = PackID(ID, i, 5); //Коэффициент
+			*((uint16_t *) (Msg.D + 10)) = PackID(ID, i, 6); //Размерность
 			if(mPrm.owner().Transact(&Msg)) {
 			    if(Msg.C == GOOD3) {
 				mPrm.vlAt(TSYS::strMess("state_%d", i).c_str()).at().setI(Msg.D[7], 0, true);
@@ -193,14 +193,12 @@ uint16_t B_BVI::Task(uint16_t uc)
 }
 uint16_t B_BVI::HandleEvent(uint8_t * D)
 {
-    if((TSYS::getUnalign16(D) & 0xF000) != ID) return 0;
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+    if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
-    uint16_t k = (TSYS::getUnalign16(D) >> 6) & 0x3F; // номер объекта
-    uint16_t n = TSYS::getUnalign16(D) & 0x3F;  // номер параметра
-
-    switch(k) {
+    switch(ft3ID.k) {
     case 0:
-	switch(n) {
+	switch(ft3ID.n) {
 	case 0:
 	    mPrm.vlAt("state").at().setI(D[2], 0, true);
 	    l = 3;
@@ -217,50 +215,50 @@ uint16_t B_BVI::HandleEvent(uint8_t * D)
 	}
 	break;
     default:
-	if(k && (k <= count_n)) {
-	    switch(n) {
+	if(ft3ID.k && (ft3ID.k <= count_n)) {
+	    switch(ft3ID.n) {
 	    case 0:
-		mPrm.vlAt(TSYS::strMess("state_%d", k).c_str()).at().setI(D[2], 0, true);
+		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().setI(D[2], 0, true);
 		l = 3;
 		break;
 	    case 1:
-		mPrm.vlAt(TSYS::strMess("state_%d", k).c_str()).at().setI(D[2], 0, true);
-		mPrm.vlAt(TSYS::strMess("TI_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
+		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().setI(D[2], 0, true);
+		mPrm.vlAt(TSYS::strMess("TI_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
 
 		l = 7;
 		break;
 	    case 2:
 		if(with_params) {
 		    if (ext_period) {
-			mPrm.vlAt(TSYS::strMess("period_%d", k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
+			mPrm.vlAt(TSYS::strMess("period_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
 			l = 5;
 		    } else {
-			mPrm.vlAt(TSYS::strMess("period_%d", k).c_str()).at().setI(D[3], 0, true);
+			mPrm.vlAt(TSYS::strMess("period_%d", ft3ID.k).c_str()).at().setI(D[3], 0, true);
 			l = 4;
 		    }
 		}
 		break;
 	    case 3:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("sens_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
+		    mPrm.vlAt(TSYS::strMess("sens_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
 		}
 		l = 7;
 		break;
 	    case 4:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("countP_%d", k).c_str()).at().setI(TSYS::getUnalign32(D + 3), 0, true);
+		    mPrm.vlAt(TSYS::strMess("countP_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign32(D + 3), 0, true);
 		}
 		l = 7;
 		break;
 	    case 5:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("factor_%d", k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
+		    mPrm.vlAt(TSYS::strMess("factor_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
 		}
 		l = 7;
 		break;
 	    case 6:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("dimens_%d", k).c_str()).at().setI(D[3], 0, true);
+		    mPrm.vlAt(TSYS::strMess("dimens_%d", ft3ID.k).c_str()).at().setI(D[3], 0, true);
 		}
 		l = 4;
 		break;
@@ -272,12 +270,11 @@ uint16_t B_BVI::HandleEvent(uint8_t * D)
 }
 uint8_t B_BVI::cmdGet(uint16_t prmID, uint8_t * out)
 {
-    if((prmID & 0xF000) != ID) return 0;
-    uint16_t k = (prmID >> 6) & 0x3F; // object
-    uint16_t n = prmID & 0x3F;  // param
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != ID) return 0;
     uint l = 0;
-    if(k == 0) {
-	switch(n) {
+    if(ft3ID.k == 0) {
+	switch(ft3ID.n) {
 	case 0:
 	    //state
 	    out[0] = 0;
@@ -297,51 +294,51 @@ uint8_t B_BVI::cmdGet(uint16_t prmID, uint8_t * out)
 	    break;
 	}
     } else {
-	if(k <= count_n) {
-	    switch(n) {
+	if(ft3ID.k <= count_n) {
+	    switch(ft3ID.n) {
 	    case 0:
-		out[0] = data[k - 1].State.vl;
+		out[0] = data[ft3ID.k - 1].State.vl;
 		l = 1;
 		break;
 	    case 1:
-		out[0] = data[k - 1].State.vl;
+		out[0] = data[ft3ID.k - 1].State.vl;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[k - 1].Value.b_vl[j];
+		    out[1 + j] = data[ft3ID.k - 1].Value.b_vl[j];
 		l = 5;
 		break;
 	    case 2:
-		out[0] = data[k - 1].Period.s;
+		out[0] = data[ft3ID.k - 1].Period.s;
 		if(ext_period) {
-		    out[1] = data[k - 1].Period.vl;
-		    out[2] = data[k - 1].Period.vl >> 8;
+		    out[1] = data[ft3ID.k - 1].Period.vl;
+		    out[2] = data[ft3ID.k - 1].Period.vl >> 8;
 		    l = 3;
 		} else {
-		    out[1] = data[k - 1].Period.vl;
+		    out[1] = data[ft3ID.k - 1].Period.vl;
 		    l = 2;
 		}
 		break;
 	    case 3:
-		out[0] = data[k - 1].Sens.s;
+		out[0] = data[ft3ID.k - 1].Sens.s;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[k - 1].Sens.b_vl[j];
+		    out[1 + j] = data[ft3ID.k - 1].Sens.b_vl[j];
 		l = 5;
 		break;
 	    case 4:
-		out[0] = data[k - 1].Count.s;
+		out[0] = data[ft3ID.k - 1].Count.s;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[k - 1].Count.b_vl[j];
+		    out[1 + j] = data[ft3ID.k - 1].Count.b_vl[j];
 		l = 5;
 		break;
 	    case 5:
-		out[0] = data[k - 1].Factor.s;
+		out[0] = data[ft3ID.k - 1].Factor.s;
 		for(uint8_t j = 0; j < 4; j++) {
-		    out[1 + j] = data[k - 1].Factor.b_vl[j];
+		    out[1 + j] = data[ft3ID.k - 1].Factor.b_vl[j];
 		}
 		l = 5;
 		break;
 	    case 6:
-		out[0] = data[k - 1].Dimension.s;
-		out[1] = data[k - 1].Dimension.vl;
+		out[0] = data[ft3ID.k - 1].Dimension.s;
+		out[1] = data[ft3ID.k - 1].Dimension.vl;
 		l = 2;
 		break;
 	    }

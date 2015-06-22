@@ -414,7 +414,7 @@ void TTpContr::postEnable(int flag)
 
     //> Controler's bd structure
     fldAdd(new TFld("CTRTYPE", _("Type"), TFld::String, TFld::Selected, "5", "Logic", "Logic;DAQ", _("Logic;DAQ")));
-    fldAdd(new TFld("PRTTYPE", _("Type"), TFld::String, TFld::Selected, "5", "GRS", "GRS;KA", _("GRS;KA")));
+    fldAdd(new TFld("PRTTYPE", _("Protocol"), TFld::String, TFld::Selected, "5", "GRS", "GRS;KA", _("GRS;KA")));
     fldAdd(new TFld("PRM_BD_BUC", _("BUC Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_BVTS", _("BVTS Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_BVT", _("BVT Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
@@ -1073,29 +1073,25 @@ void TMdPrm::enable()
     }
 
     //> Connect device's code
-    if(type().name == "tp_BUC") {
-	mDA = new B_BUC(*this, cfg("DEV_ID").getI());
-    } else if(type().name == "tp_BVI")
-	mDA = new B_BVI(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("EXT_PERIOD").getB());
-    else if(type().name == "tp_BVTS")
-	mDA = new B_BVTC(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-    else if(type().name == "tp_BVT")
-	mDA = new B_BVT(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("WITH_KPARAMS").getB(),
-		cfg("WITH_RATEPARAMS").getB());
-    else if(type().name == "tp_BIP")
-	mDA = new B_BIP(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-    else if(type().name == "tp_PAUK")
-	mDA = new B_PAUK(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-    else if(type().name == "tp_BTU")
-	mDA = new B_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-    else if(type().name == "tp_ACCOUNT")
-	mDA = new B_UTHET(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-    else if(type().name == "tp_BTR")
-	mDA = new B_BTR(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNTU").getI(), cfg("CHAN_COUNTR").getI(), cfg("WITH_PARAMS").getB());
-    else if(type().name == "tp_BTE")
-	mDA = new B_BTE(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-    else
-	throw TError(nodePath().c_str(), _("No one device selected."));
+    if(owner().cfg("PRTTYPE").getS() == "KA") {
+	if(type().name == "tp_BUC") mDA = new KA_BUC(*this, cfg("DEV_ID").getI());
+	if(type().name == "tp_BVTS") mDA = new KA_BVTC(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+    } else {
+	if(type().name == "tp_BUC") mDA = new B_BUC(*this, cfg("DEV_ID").getI());
+	if(type().name == "tp_BVI") mDA = new B_BVI(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("EXT_PERIOD").getB());
+	if(type().name == "tp_BVTS") mDA = new B_BVTC(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_BVT")
+	    mDA = new B_BVT(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("WITH_KPARAMS").getB(),
+		    cfg("WITH_RATEPARAMS").getB());
+	if(type().name == "tp_BIP") mDA = new B_BIP(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_PAUK") mDA = new B_PAUK(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_BTU") mDA = new B_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_ACCOUNT") mDA = new B_UTHET(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_BTR")
+	    mDA = new B_BTR(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNTU").getI(), cfg("CHAN_COUNTR").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_BTE") mDA = new B_BTE(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+    }
+    if (mDA==NULL) throw TError(nodePath().c_str(), _("No one device selected."));
 
     owner().prmEn(this, true);	//Put to process
 
@@ -1116,7 +1112,8 @@ void TMdPrm::disable()
     needApply = false;
 }
 
-uint16_t TMdPrm::Task(uint16_t cod)
+uint16_t
+TMdPrm::Task(uint16_t cod)
 {
     if(mDA) {
 	if(mDA->IsNeedUpdate()) mDA->Task(TaskRefresh);
@@ -1127,7 +1124,8 @@ uint16_t TMdPrm::Task(uint16_t cod)
 
 }
 
-uint16_t TMdPrm::HandleEvent(uint8_t * D)
+uint16_t
+TMdPrm::HandleEvent(uint8_t * D)
 {
     if(mDA) {
 	//mess_info(nodePath().c_str(),_("TMdContr::HandleEvent %04X"),TSYS::getUnalign16(D));
@@ -1148,7 +1146,8 @@ void TMdPrm::tmHandler()
 
 }
 
-uint8_t TMdPrm::cmdGet(uint16_t prmID, uint8_t * out)
+uint8_t
+TMdPrm::cmdGet(uint16_t prmID, uint8_t * out)
 {
     if(mDA) {
 	return mDA->cmdGet(prmID, out);
@@ -1157,7 +1156,8 @@ uint8_t TMdPrm::cmdGet(uint16_t prmID, uint8_t * out)
     }
 }
 
-uint8_t TMdPrm::cmdSet(uint8_t * req, uint8_t addr)
+uint8_t
+TMdPrm::cmdSet(uint8_t * req, uint8_t addr)
 {
     if(mDA) {
 	return mDA->cmdSet(req, addr);
@@ -1173,7 +1173,7 @@ void TMdPrm::vlSet(TVal &vo, const TVariant &vl, const TVariant &pvl)
 
     if(vl.isEVal() || vl == pvl) return;
 
-    //Send to active reserve station
+//Send to active reserve station
     if(owner().redntUse()) {
 	XMLNode req("set");
 	req.setAttr("path", nodePath(0, true) + "/%2fserv%2fattr")->childAdd("el")->setAttr("id", vo.name())->setText(vl.getS());
@@ -1213,68 +1213,69 @@ void TMdPrm::save_()
     if(enableStat() && mDA) mDA->saveIO();
 }
 
-string TMdPrm::typeDBName()
+string
+TMdPrm::typeDBName()
 {
     return type().DB(&owner());
 }
 
 void TMdPrm::cntrCmdProc(XMLNode *opt)
 {
-    string a_path = opt->attr("path");
-    if(a_path.substr(0, 6) == "/serv/") {
-	TParamContr::cntrCmdProc(opt);
-	return;
-    }
+string a_path = opt->attr("path");
+if(a_path.substr(0, 6) == "/serv/") {
+    TParamContr::cntrCmdProc(opt);
+    return;
+}
 
-    //> Get page info
-    if(opt->name() == "info") {
-	TParamContr::cntrCmdProc(opt);
-	if(owner().isLogic() && ctrMkNode("area", opt, -1, "/cfg", _("Parameters configuration"))) {
-	    if(ctrMkNode("area", opt, -1, "/cfg/prm", _("Parameters"))) {
-		if(mDA) {
-		    for(int i_io = 0; i_io < mDA->lnkSize(); i_io++) {
-			ctrMkNode("fld", opt, -1, (string("/cfg/prm/pr_") + mDA->lnk(i_io).prmName).c_str(), mDA->lnk(i_io).prmDesc, RWRWR_, "root", SDAQ_ID, 3,
-				"tp", "str", "dest", "sel_ed", "select", (string("/cfg/prm/pl_") + mDA->lnk(i_io).prmName).c_str());
-		    }
+//> Get page info
+if(opt->name() == "info") {
+    TParamContr::cntrCmdProc(opt);
+    if(owner().isLogic() && ctrMkNode("area", opt, -1, "/cfg", _("Parameters configuration"))) {
+	if(ctrMkNode("area", opt, -1, "/cfg/prm", _("Parameters"))) {
+	    if(mDA) {
+		for(int i_io = 0; i_io < mDA->lnkSize(); i_io++) {
+		    ctrMkNode("fld", opt, -1, (string("/cfg/prm/pr_") + mDA->lnk(i_io).prmName).c_str(), mDA->lnk(i_io).prmDesc, RWRWR_, "root", SDAQ_ID, 3,
+			    "tp", "str", "dest", "sel_ed", "select", (string("/cfg/prm/pl_") + mDA->lnk(i_io).prmName).c_str());
 		}
-
 	    }
 
 	}
 
-	return;
     }
-    if(a_path.substr(0, 12) == "/cfg/prm/pr_") {
-	if(ctrChkNode(opt, "get", RWRWR_, "root", SDAQ_ID, SEC_RD)) {
-	    string lnk_val = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
-	    if(!SYS->daq().at().attrAt(lnk_val, '.', true).freeStat()) {
-		opt->setText(lnk_val + " (+)");
-	    } else
-		opt->setText(lnk_val);
-	}
-	if(ctrChkNode(opt, "set", RWRWR_, "root", SDAQ_ID, SEC_WR)) {
-	    string no_set;
-	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr = opt->text();
-	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).aprm = SYS->daq().at().attrAt(mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr, '.', true);
-	    modif();
-	}
-    } else if((a_path.compare(0, 12, "/cfg/prm/pl_") == 0) && ctrChkNode(opt)) {
-	string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
-	;
-	if(!SYS->daq().at().attrAt(m_prm, '.', true).freeStat()) m_prm = m_prm.substr(0, m_prm.rfind("."));
-	SYS->daq().at().ctrListPrmAttr(opt, m_prm, false, '.');
+
+    return;
+}
+if(a_path.substr(0, 12) == "/cfg/prm/pr_") {
+    if(ctrChkNode(opt, "get", RWRWR_, "root", SDAQ_ID, SEC_RD)) {
+	string lnk_val = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
+	if(!SYS->daq().at().attrAt(lnk_val, '.', true).freeStat()) {
+	    opt->setText(lnk_val + " (+)");
+	} else
+	opt->setText(lnk_val);
     }
-    TParamContr::cntrCmdProc(opt);
+    if(ctrChkNode(opt, "set", RWRWR_, "root", SDAQ_ID, SEC_WR)) {
+	string no_set;
+	mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr = opt->text();
+	mDA->lnk(mDA->lnkId((a_path.substr(12)))).aprm = SYS->daq().at().attrAt(mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr, '.', true);
+	modif();
+    }
+} else if((a_path.compare(0, 12, "/cfg/prm/pl_") == 0) && ctrChkNode(opt)) {
+    string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
+    ;
+    if(!SYS->daq().at().attrAt(m_prm, '.', true).freeStat()) m_prm = m_prm.substr(0, m_prm.rfind("."));
+    SYS->daq().at().ctrListPrmAttr(opt, m_prm, false, '.');
+}
+TParamContr::cntrCmdProc(opt);
 
 }
 
 void TMdPrm::vlArchMake(TVal &val)
 {
-    mess_info(nodePath().c_str(), _("TMdPrm::vlArchMake"));
-    if(val.arch().freeStat()) return;
-    mess_info(nodePath().c_str(), _("%s"), val.arch().at().srcData().c_str());
-    val.arch().at().setSrcMode(TVArchive::PassiveAttr, val.arch().at().srcData());
-    val.arch().at().setPeriod((long long) (owner().period() * 1000000));
-    val.arch().at().setHardGrid(true);
-    val.arch().at().setHighResTm(true);
+mess_info(nodePath().c_str(), _("TMdPrm::vlArchMake"));
+if(val.arch().freeStat()) return;
+mess_info(nodePath().c_str(), _("%s"), val.arch().at().srcData().c_str());
+val.arch().at().setSrcMode(TVArchive::PassiveAttr, val.arch().at().srcData());
+val.arch().at().setPeriod((long long) (owner().period() * 1000000));
+val.arch().at().setHardGrid(true);
+val.arch().at().setHighResTm(true);
 }

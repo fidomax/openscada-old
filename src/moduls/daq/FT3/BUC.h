@@ -24,6 +24,36 @@
 
 namespace FT3
 {
+
+    class KA_BUC: public DA
+    {
+    public:
+	//Methods
+ 	KA_BUC(TMdPrm& prm, uint16_t id);
+ 	~KA_BUC();
+ 	uint16_t ID;
+ 	uint16_t Task(uint16_t);
+ 	uint16_t HandleEvent(uint8_t *);
+ 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
+ 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
+ 	uint16_t setVal(TVal &val);
+ 	string getStatus(void);
+ 	void tmHandler(void);
+
+ 	uint16_t modification;
+ 	uint16_t config;
+ 	uint8_t state;
+ 	uint8_t s_state;
+	int lnkSize()
+	{
+	    return 0;
+	}
+	int lnkId(const string &id)
+	{
+	    return -1;
+	}
+    };
+
     class B_BUC: public DA
     {
     public:

@@ -24,6 +24,83 @@
 
 namespace FT3
 {
+    class KA_BVTC: public DA
+    {
+    public:
+	//Methods
+	KA_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
+	~KA_BVTC();
+	uint16_t ID;
+	uint16_t count_n;
+	bool with_params;
+	uint16_t Task(uint16_t);
+	uint16_t HandleEvent(uint8_t *);
+	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
+	uint8_t cmdSet(uint8_t * req, uint8_t addr);
+	uint16_t setVal(TVal &val);
+	string getStatus(void);
+	void saveIO(void);
+	void loadIO(bool force = false );
+	void tmHandler(void);
+	class SKATCchannel
+	{
+	public:
+	    SKATCchannel(uint8_t iid) :
+		    id(iid),
+		    Value(TSYS::strMess("TC_%d", id+1).c_str(), TSYS::strMess(_("TC %d"), id+1).c_str()),
+//		    Mask(TSYS::strMess("Mask_%d", id+1).c_str(), TSYS::strMess(_("Mask %d"), id+1).c_str()),
+		    Period(TSYS::strMess("Period_%d", id+1).c_str(), TSYS::strMess(_("Period %d"), id+1).c_str()),
+		    Count(TSYS::strMess("Count_%d", id+1).c_str(), TSYS::strMess(_("Count %d"), id+1).c_str())
+	    {
+	    }
+	    uint8_t id;
+	    ui8Data Value, Period, Count;
+	};
+ 	uint16_t config;
+	vector<SKATCchannel> data;
+	int lnkSize( ){
+	    if(with_params) {
+		return data.size() * 3;
+	    } else {
+		return data.size();
+	    }
+	}
+	int lnkId( const string &id ){
+	    if(with_params) {
+		for(int i_l = 0; i_l < data.size(); i_l++) {
+		    if(data[i_l].Value.lnk.prmName == id) return i_l * 4;
+//		    if(data[i_l].Mask.lnk.prmName == id) return i_l * 4 + 1;
+		    if(data[i_l].Period.lnk.prmName == id) return i_l * 4 + 2;
+		    if(data[i_l].Count.lnk.prmName == id) return i_l * 4 + 3;
+		}
+	    } else {
+		for(int i_l = 0; i_l < data.size(); i_l++) {
+		    if(data[i_l].Value.lnk.prmName == id) {
+			return i_l;
+		    }
+		}
+	    }
+	    return -1;
+	}
+	SLnk &lnk(int num)
+	{
+	    int k;
+	    if(with_params) {
+		k = 3;
+	    } else {
+		k = 1;
+	    }
+	    switch(num % k) {
+	    case 0:
+		return data[num / k].Value.lnk;
+	    case 1:
+		return data[num / k].Period.lnk;
+	    case 2:
+		return data[num / k].Count.lnk;
+	    }
+	}
+    };
+
     class B_BVTC: public DA
     {
     public:

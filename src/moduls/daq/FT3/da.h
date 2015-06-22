@@ -1,4 +1,3 @@
-
 //OpenSCADA system module DAQ.AMRDevs file: da.h
 /***************************************************************************
  *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
@@ -29,135 +28,202 @@ using namespace OSCADA;
 namespace FT3
 {
 
-class TMdPrm;
-class TMdContr;
+    class TMdPrm;
+    class TMdContr;
 
-typedef union
-{
+    typedef union
+    {
 	uint8_t b[4];
 	float f;
-} ui8fl;
+    } ui8fl;
 
-typedef union
-{
+    typedef union
+    {
 	uint8_t b[4];
 	uint32_t ui32;
-} ui832;
+    } ui832;
 
-typedef union
-{
+    typedef union
+    {
 	uint8_t b[2];
 	uint16_t w;
-} ui8w;
+    } ui8w;
 
-typedef struct sFT3ID  // FT3 ID
-{
+    typedef struct sFT3ID  // FT3 ID
+    {
 	uint8_t g; // group
 	uint8_t k; // object
 	uint8_t n; // parameter
-} FT3ID;
+    } FT3ID;
 
-typedef enum eTypeFT3
-{
-	GRS = 0x0,
-	KA = 0x1,
-} TypeFT3;
+    typedef enum eTypeFT3
+    {
+	GRS = 0x0, KA = 0x1,
+    } TypeFT3;
 
-
-class DA: public TElem
-{
-    friend class TMdPrm;
+    class DA: public TElem
+    {
+	friend class TMdPrm;
     public:
 	//Methods
-	DA( TMdPrm& prm ) : mPrm(prm), NeedInit(true)	{ }
-	virtual ~DA( )			{ }
+	DA(TMdPrm& prm) :
+		mPrm(prm), NeedInit(true)
+	{
+	}
+	virtual ~DA()
+	{
+	}
 
-	virtual void getVals( )		{ }
-	virtual uint16_t Task(uint16_t) { }
-	virtual uint16_t HandleEvent(uint8_t *) { }
-	virtual uint16_t setVal(TVal &) { }
-	virtual uint8_t cmdGet(uint16_t, uint8_t *) {}
-	virtual uint8_t cmdSet(uint8_t *, uint8_t) {}
-	virtual bool cntrCmdProc( XMLNode *opt )	{ return false; }
-	virtual string getStatus( )	{ }
-	virtual void saveIO(void) { }
-	virtual void loadIO(bool force = false ) { }
-	virtual void tmHandler(void) { }
-	void setInit(bool bInit) {NeedInit = bInit;}
-	bool IsNeedUpdate() {return NeedInit;}
-
-
+	virtual void getVals()
+	{
+	}
+	virtual uint16_t Task(uint16_t)
+	{
+	}
+	virtual uint16_t HandleEvent(uint8_t *)
+	{
+	}
+	virtual uint16_t setVal(TVal &)
+	{
+	}
+	virtual uint8_t cmdGet(uint16_t, uint8_t *)
+	{
+	}
+	virtual uint8_t cmdSet(uint8_t *, uint8_t)
+	{
+	}
+	virtual bool cntrCmdProc(XMLNode *opt)
+	{
+	    return false;
+	}
+	virtual string getStatus()
+	{
+	}
+	virtual void saveIO(void)
+	{
+	}
+	virtual void loadIO(bool force = false)
+	{
+	}
+	virtual void tmHandler(void)
+	{
+	}
+	void setInit(bool bInit)
+	{
+	    NeedInit = bInit;
+	}
+	bool IsNeedUpdate()
+	{
+	    return NeedInit;
+	}
 
     protected:
 	class SDataRec
 	{
-	    public:
-		SDataRec(void ): state (0){};
-		int		state;		//Channel state
+	public:
+	    SDataRec(void) :
+		    state(0)
+	    {
+	    }
+	    ;
+	    int state;		//Channel state
 	};
 	//Data
-	class SLnk {
-	    public:
-		SLnk( const string &iprmName, const string &iprmDesc, const string &iprmAttr = "" ) :  prmAttr(iprmAttr),prmName(iprmName),prmDesc(iprmDesc) { }
-		string	prmAttr;
-		string	prmName;
-		string	prmDesc;
-		AutoHD<TVal> aprm;
-	};
-	class ui8Data{
+	class SLnk
+	{
 	public:
-	    ui8Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    SLnk(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :
+		    prmAttr(iprmAttr), prmName(iprmName), prmDesc(iprmDesc)
+	    {
+	    }
+	    string prmAttr;
+	    string prmName;
+	    string prmDesc;
+	    AutoHD<TVal> aprm;
+	    bool Check()
+	    {
+		if(aprm.freeStat()) {
+		    aprm = SYS->daq().at().attrAt(prmAttr, '.', true);
+		    return true;
+		} else {
+		    return false;
+		}
+	    }
+	};
+	class ui8Data
+	{
+	public:
+	    ui8Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :
+		    vl(0), s(0), err(0), lnk(iprmName, iprmDesc, iprmAttr)
+	    {
+	    }
 	    uint8_t vl;
 	    uint8_t s;
+	    uint8_t err;
 	    SLnk lnk;
 	};
 
-	class ui16Data{
+	class ui16Data
+	{
 	public:
-	    ui16Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    ui16Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :
+		    vl(0), s(0), err(0), lnk(iprmName, iprmDesc, iprmAttr)
+	    {
+	    }
 	    union
 	    {
 		uint8_t b_vl[2];
 		uint16_t vl;
 	    };
 	    uint8_t s;
+	    uint16_t err;
 	    SLnk lnk;
 	};
 
-	class ui32Data{
+	class ui32Data
+	{
 	public:
-	    ui32Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    ui32Data(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :
+		    vl(0), s(0), err(0), lnk(iprmName, iprmDesc, iprmAttr)
+	    {
+	    }
 	    union
 	    {
 		uint8_t b_vl[4];
 		uint32_t vl;
 	    };
 	    uint8_t s;
+	    uint32_t err;
 	    SLnk lnk;
 	};
 
-	class flData{
+	class flData
+	{
 	public:
-	    flData(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :vl(0), s(0), lnk(iprmName,iprmDesc,iprmAttr){}
+	    flData(const string &iprmName, const string &iprmDesc, const string &iprmAttr = "") :
+		    vl(0), s(0), err(0), lnk(iprmName, iprmDesc, iprmAttr)
+	    {
+	    }
 	    union
 	    {
 		uint8_t b_vl[4];
 		float vl;
 	    };
 	    uint8_t s;
+	    float err;
 	    SLnk lnk;
 	};
 
-
 	//vector<SLnk> mlnk;
 	//Attributes
+	TypeFT3 mTypeFT3;
 	TMdPrm &mPrm;
 	bool NeedInit;
-	TypeFT3 mTypeFT3;
 	void loadLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	void saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
 	uint8_t SetNew8Val(ui16Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
+	uint8_t SetNew28Val(ui8Data& d1, ui8Data& d2, uint8_t addr, uint16_t prmID, uint8_t val1, uint8_t val2);
 	uint8_t SetNewWVal(ui16Data& d, uint8_t addr, uint16_t prmID, uint16_t val);
 	uint8_t SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val);
 	uint8_t SetNew32Val(ui32Data& d, uint8_t addr, uint16_t prmID, uint32_t val);
@@ -173,17 +239,24 @@ class DA: public TElem
 	void UpdateParam32(ui32Data& param, uint16_t ID, uint8_t cl = 2);
 	void UpdateParamFlState(flData& param, ui8Data& state, uint16_t ID, uint8_t cl);
 	void UpdateParam2Fl(flData& param1, flData& param2, uint16_t ID, uint8_t cl);
+	void UpdateParam28(ui8Data& param1, ui8Data& param2, uint16_t ID, uint8_t cl);
 	FT3ID UnpackID(uint16_t ID);
 	uint16_t PackID(FT3ID ID);
 	uint16_t PackID(uint8_t g, uint8_t k, uint8_t n);
 
     public:
-	virtual int lnkSize( ){}
+	virtual int lnkSize()
+	{
+	}
 
-	virtual int lnkId( const string &id ){}
-	virtual SLnk &lnk(int num) {}
+	virtual int lnkId(const string &id)
+	{
+	}
+	virtual SLnk &lnk(int num)
+	{
+	}
 
-};
+    };
 
 } //End namespace
 

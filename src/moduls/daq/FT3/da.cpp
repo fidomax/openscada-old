@@ -45,7 +45,7 @@ void DA::saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig
 
 uint8_t DA::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 {
-    if(!d.lnk.aprm.freeStat()) {
+    if(!d.lnk.Check()) {
 	d.s = addr;
 	d.vl = val;
 	d.lnk.aprm.at().setI(d.vl);
@@ -60,7 +60,7 @@ uint8_t DA::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 
 uint8_t DA::SetNew8Val(ui16Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 {
-    if(!d.lnk.aprm.freeStat()) {
+    if(!d.lnk.Check()) {
 	d.s = addr;
 	d.vl = val;
 	d.lnk.aprm.at().setI(d.vl);
@@ -73,9 +73,29 @@ uint8_t DA::SetNew8Val(ui16Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
     }
 }
 
+
+uint8_t DA::SetNew28Val(ui8Data& d1, ui8Data& d2, uint8_t addr, uint16_t prmID, uint8_t val1, uint8_t val2)
+{
+    if((!d1.lnk.Check()) && (!d2.lnk.Check())) {
+	d1.s = addr;
+	d1.vl = val1;
+	d1.lnk.aprm.at().setI(d1.vl);
+	mPrm.vlAt(d1.lnk.prmName.c_str()).at().setI(d1.vl, 0, true);
+	d2.s = addr;
+	d2.vl = val2;
+	d2.lnk.aprm.at().setI(d2.vl);
+	mPrm.vlAt(d2.lnk.prmName.c_str()).at().setI(d2.vl, 0, true);
+	uint8_t E[3] = { addr, d1.vl };
+	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+	return 2 + 2;
+    } else {
+	return 0;
+    }
+}
+
 uint8_t DA::SetNewWVal(ui16Data& d, uint8_t addr, uint16_t prmID, uint16_t val)
 {
-    if(!d.lnk.aprm.freeStat()) {
+    if(!d.lnk.Check()) {
 	d.s = addr;
 	d.vl = val;
 	d.lnk.aprm.at().setI(d.vl);
@@ -90,7 +110,7 @@ uint8_t DA::SetNewWVal(ui16Data& d, uint8_t addr, uint16_t prmID, uint16_t val)
 
 uint8_t DA::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
 {
-    if(!d.lnk.aprm.freeStat()) {
+    if(!d.lnk.Check()) {
 	d.s = addr;
 	d.vl = val;
 	d.lnk.aprm.at().setR(d.vl);
@@ -105,7 +125,7 @@ uint8_t DA::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
 
 uint8_t DA::SetNew32Val(ui32Data& d, uint8_t addr, uint16_t prmID, uint32_t val)
 {
-    if(!d.lnk.aprm.freeStat()) {
+    if(!d.lnk.Check()) {
 	d.s = addr;
 	d.vl = val;
 	d.lnk.aprm.at().setI(d.vl);
@@ -120,7 +140,7 @@ uint8_t DA::SetNew32Val(ui32Data& d, uint8_t addr, uint16_t prmID, uint32_t val)
 
 uint8_t DA::SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, uint16_t val)
 {
-    if(!d.lnk.aprm.freeStat()) {
+    if(!d.lnk.Check()) {
 	d.s = addr;
 	d.vl = val;
 	d.lnk.aprm.at().setI(d.vl);
@@ -137,7 +157,7 @@ uint8_t DA::SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, uint16_t val)
 
 uint8_t DA::SetNewfl8Val(flData& d, uint8_t addr, uint16_t prmID, uint8_t val)
 {
-    if(!d.lnk.aprm.freeStat()) {
+    if(!d.lnk.Check()) {
 	d.s = addr;
 	d.vl = val;
 	d.lnk.aprm.at().setI(d.vl);
@@ -152,7 +172,7 @@ uint8_t DA::SetNewfl8Val(flData& d, uint8_t addr, uint16_t prmID, uint8_t val)
 
 uint8_t DA::SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2)
 {
-    if((!d1.lnk.aprm.freeStat()) && (!d2.lnk.aprm.freeStat())) {
+    if((!d1.lnk.Check()) && (!d2.lnk.Check())) {
 	d1.s = addr;
 	d1.vl = val1;
 	d1.lnk.aprm.at().setR(d1.vl);
@@ -173,123 +193,114 @@ void DA::UpdateParamFlW(flData& param, uint16_t ID, uint8_t cl)
 {
     ui8fl tmpfl;
     ui8w tmpw;
-    if(param.lnk.aprm.freeStat()) {
-	//no connection
-	param.vl = EVAL_RFlt;
+    if(param.lnk.Check()) {
+	tmpfl.f = param.err;
     } else {
 	tmpfl.f = param.lnk.aprm.at().getR();
-	if(tmpfl.f != param.vl) {
-	    mess_info(mPrm.nodePath().c_str(), "UpdateParamFlW new value %f", tmpfl.f);
-	    param.vl = tmpfl.f;
-	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f / 10, 0, true);
-	    tmpw.w = (uint16_t) (param.vl);
-	    uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1] };
-	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-	}
+    }
+    if(tmpfl.f != param.vl) {
+//	    mess_info(mPrm.nodePath().c_str(), "UpdateParamFlW new value %f", tmpfl.f);
+	param.vl = tmpfl.f;
+	mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f / 10, 0, true);
+	tmpw.w = (uint16_t) (param.vl);
+	uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1] };
+	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
 void DA::UpdateParamFlB(flData& param, uint16_t ID, uint8_t cl)
 {
     ui8fl tmpfl;
-    if(param.lnk.aprm.freeStat()) {
-	//no connection
-	param.vl = EVAL_RFlt;
+    if(param.lnk.Check()) {
+	tmpfl.f = param.err;
     } else {
 	tmpfl.f = param.lnk.aprm.at().getR();
-	if(tmpfl.f != param.vl) {
-	    param.vl = tmpfl.f;
-	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f / 10, 0, true);
-	    uint8_t E[2] = { 0, (uint8_t) (param.vl) };
-	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-	}
+    }
+    if(tmpfl.f != param.vl) {
+	param.vl = tmpfl.f;
+	mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f / 10, 0, true);
+	uint8_t E[2] = { 0, (uint8_t) (param.vl) };
+	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
 void DA::UpdateParam8(ui8Data& param, uint16_t ID, uint8_t cl)
 {
     uint8_t tmpui8;
-    if(param.lnk.aprm.freeStat()) {
-	//no connection
-	param.vl = 0;
+    if(param.lnk.Check()) {
+	tmpui8 = param.err;
     } else {
-
 	tmpui8 = param.lnk.aprm.at().getI();
-	if(tmpui8 != param.vl) {
-	    param.vl = tmpui8;
-	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
-	    uint8_t E[2] = { 0, tmpui8 };
-	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-	}
+    }
+    if(tmpui8 != param.vl) {
+	param.vl = tmpui8;
+	mPrm.vlAt(param.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
+	uint8_t E[2] = { 0, tmpui8 };
+	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
 void DA::UpdateParam8(ui16Data& param, uint16_t ID, uint8_t cl)
 {
     uint8_t tmpui8;
-    if(param.lnk.aprm.freeStat()) {
-	//no connection
-	param.vl = 0;
+    if(param.lnk.Check()) {
+	tmpui8 = param.err;
     } else {
-
 	tmpui8 = param.lnk.aprm.at().getI();
-	if(tmpui8 != param.vl) {
-	    param.vl = tmpui8;
-	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
-	    uint8_t E[2] = { 0, tmpui8 };
-	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-	}
+    }
+    if(tmpui8 != param.vl) {
+	param.vl = tmpui8;
+	mPrm.vlAt(param.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
+	uint8_t E[2] = { 0, tmpui8 };
+	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
 void DA::UpdateParamW(ui16Data& param, uint16_t ID, uint8_t cl)
 {
     ui8w tmpw;
-    if(param.lnk.aprm.freeStat()) {
-	//no connection
-	param.vl = 0;
+    if(param.lnk.Check()) {
+	tmpw.w = param.err;
     } else {
 	tmpw.w = param.lnk.aprm.at().getI();
-	if(tmpw.w != param.vl) {
-	    param.vl = tmpw.w;
-	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setI(tmpw.w, 0, true);
-	    uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1] };
-	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-	}
+    }
+    if(tmpw.w != param.vl) {
+	param.vl = tmpw.w;
+	mPrm.vlAt(param.lnk.prmName.c_str()).at().setI(tmpw.w, 0, true);
+	uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1] };
+	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
 void DA::UpdateParamFl(flData& param, uint16_t ID, uint8_t cl)
 {
     ui8fl tmpfl;
-    if(param.lnk.aprm.freeStat()) {
-	//no connection
-	param.vl = EVAL_RFlt;
+    if(param.lnk.Check()) {
+	tmpfl.f = param.err;
     } else {
 	tmpfl.f = param.lnk.aprm.at().getR();
-	if(tmpfl.f != param.vl) {
-	    param.vl = tmpfl.f;
-	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
-	    uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-	}
+    }
+    if(tmpfl.f != param.vl) {
+	param.vl = tmpfl.f;
+	mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+	uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
 void DA::UpdateParam32(ui32Data& param, uint16_t ID, uint8_t cl)
 {
     ui832 tmp;
-    if(param.lnk.aprm.freeStat()) {
-	//no connection
-	param.vl = 0;
+    if(param.lnk.Check()) {
+	tmp.ui32 = param.err;
     } else {
 	tmp.ui32 = param.lnk.aprm.at().getI();
-	if(tmp.ui32 != param.vl) {
-	    param.vl = tmp.ui32;
-	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setI(tmp.ui32, 0, true);
-	    uint8_t E[5] = { 0, tmp.b[0], tmp.b[1], tmp.b[2], tmp.b[3] };
-	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-	}
+    }
+    if(tmp.ui32 != param.vl) {
+	param.vl = tmp.ui32;
+	mPrm.vlAt(param.lnk.prmName.c_str()).at().setI(tmp.ui32, 0, true);
+	uint8_t E[5] = { 0, tmp.b[0], tmp.b[1], tmp.b[2], tmp.b[3] };
+	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
@@ -297,42 +308,61 @@ void DA::UpdateParamFlState(flData& param, ui8Data& state, uint16_t ID, uint8_t 
 {
     uint8_t tmpui8;
     ui8fl tmpfl;
-    if(param.lnk.aprm.freeStat() || state.lnk.aprm.freeStat()) {
-	//no connection
-	param.vl = EVAL_RFlt;
-	state.vl = 0;
+    if(param.lnk.Check() || state.lnk.Check()) {
+	tmpui8 = state.err;
+	tmpfl.f = param.err;
     } else {
 	tmpui8 = state.lnk.aprm.at().getI();
 	tmpfl.f = param.lnk.aprm.at().getR();
-	if((tmpfl.f != param.vl) || (tmpui8 != state.vl)) {
-	    state.vl = tmpui8;
-	    mPrm.vlAt(state.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
-	    param.vl = tmpfl.f;
-	    mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
-	    uint8_t E[5] = { state.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-	    mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-	}
+    }
+    if((tmpfl.f != param.vl) || (tmpui8 != state.vl)) {
+	state.vl = tmpui8;
+	mPrm.vlAt(state.lnk.prmName.c_str()).at().setI(tmpui8, 0, true);
+	param.vl = tmpfl.f;
+	mPrm.vlAt(param.lnk.prmName.c_str()).at().setR(tmpfl.f, 0, true);
+	uint8_t E[5] = { state.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
+	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
 void DA::UpdateParam2Fl(flData& param1, flData& param2, uint16_t ID, uint8_t cl)
 {
     ui8fl tmpfl1, tmpfl2;
-    if(param1.lnk.aprm.freeStat() || param2.lnk.aprm.freeStat()) {
+    if(param1.lnk.Check() || param2.lnk.Check()) {
 	//no connection
-	param1.vl = EVAL_RFlt;
-	param2.vl = EVAL_RFlt;
+	tmpfl1.f = param1.err;
+	tmpfl2.f = param2.err;
     } else {
 	tmpfl1.f = param1.lnk.aprm.at().getR();
 	tmpfl2.f = param2.lnk.aprm.at().getR();
-	if(tmpfl1.f != param1.vl || tmpfl2.f != param2.vl) {
-	    param1.vl = tmpfl1.f;
-	    param2.vl = tmpfl2.f;
-	    mPrm.vlAt(param1.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
-	    mPrm.vlAt(param2.lnk.prmName.c_str()).at().setR(tmpfl2.f, 0, true);
-	    uint8_t E[9] = { 0, tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3], tmpfl2.b[0], tmpfl2.b[1], tmpfl2.b[2], tmpfl2.b[3] };
-	    mPrm.owner().PushInBE(1, sizeof(E), ID, E);
-	}
+    }
+    if(tmpfl1.f != param1.vl || tmpfl2.f != param2.vl) {
+	param1.vl = tmpfl1.f;
+	param2.vl = tmpfl2.f;
+	mPrm.vlAt(param1.lnk.prmName.c_str()).at().setR(tmpfl1.f, 0, true);
+	mPrm.vlAt(param2.lnk.prmName.c_str()).at().setR(tmpfl2.f, 0, true);
+	uint8_t E[9] = { 0, tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3], tmpfl2.b[0], tmpfl2.b[1], tmpfl2.b[2], tmpfl2.b[3] };
+	mPrm.owner().PushInBE(1, sizeof(E), ID, E);
+    }
+}
+
+void DA::UpdateParam28(ui8Data& param1, ui8Data& param2, uint16_t ID, uint8_t cl)
+{
+    uint8_t tmp1,tmp2;
+    if(param1.lnk.Check()|| param2.lnk.Check()) {
+	tmp1 = param1.err;
+	tmp2 = param2.err;
+    } else {
+	tmp1 = param1.lnk.aprm.at().getI();
+	tmp2 = param2.lnk.aprm.at().getI();
+    }
+    if(tmp1 != param1.vl || tmp2 != param2.vl) {
+	param1.vl = tmp1;
+	param2.vl = tmp2;
+	mPrm.vlAt(param1.lnk.prmName.c_str()).at().setI(tmp1, 0, true);
+	mPrm.vlAt(param1.lnk.prmName.c_str()).at().setI(tmp1, 0, true);
+	uint8_t E[3] = { 0, tmp1, tmp2};
+	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
 }
 

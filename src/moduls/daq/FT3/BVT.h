@@ -44,7 +44,8 @@ namespace FT3
 	{
 	public:
 	    STTchannel(uint8_t iid) :
-		    id(iid), State(TSYS::strMess("state_%d", id + 1).c_str(), TSYS::strMess(_("State %d"), id + 1).c_str()),
+		    id(iid),
+		    State(TSYS::strMess("state_%d", id + 1).c_str(), TSYS::strMess(_("State %d"), id + 1).c_str()),
 		    Value(TSYS::strMess("value_%d", id + 1).c_str(), TSYS::strMess(_("Value %d"), id + 1).c_str()),
 		    Period(TSYS::strMess("period_%d", id + 1).c_str(), TSYS::strMess(_("Measure period %d"), id + 1).c_str()),
 		    Sens(TSYS::strMess("sens_%d", id + 1).c_str(), TSYS::strMess(_("Sensitivity %d"), id + 1).c_str()),
