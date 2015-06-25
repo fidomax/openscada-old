@@ -1091,7 +1091,7 @@ void TMdPrm::enable()
 	    mDA = new B_BTR(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNTU").getI(), cfg("CHAN_COUNTR").getI(), cfg("WITH_PARAMS").getB());
 	if(type().name == "tp_BTE") mDA = new B_BTE(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     }
-    if (mDA==NULL) throw TError(nodePath().c_str(), _("No one device selected."));
+    if(mDA == NULL) throw TError(nodePath().c_str(), _("No one device selected."));
 
     owner().prmEn(this, true);	//Put to process
 
@@ -1112,8 +1112,7 @@ void TMdPrm::disable()
     needApply = false;
 }
 
-uint16_t
-TMdPrm::Task(uint16_t cod)
+uint16_t TMdPrm::Task(uint16_t cod)
 {
     if(mDA) {
 	if(mDA->IsNeedUpdate()) mDA->Task(TaskRefresh);
@@ -1124,8 +1123,7 @@ TMdPrm::Task(uint16_t cod)
 
 }
 
-uint16_t
-TMdPrm::HandleEvent(uint8_t * D)
+uint16_t TMdPrm::HandleEvent(uint8_t * D)
 {
     if(mDA) {
 	//mess_info(nodePath().c_str(),_("TMdContr::HandleEvent %04X"),TSYS::getUnalign16(D));
@@ -1146,8 +1144,7 @@ void TMdPrm::tmHandler()
 
 }
 
-uint8_t
-TMdPrm::cmdGet(uint16_t prmID, uint8_t * out)
+uint8_t TMdPrm::cmdGet(uint16_t prmID, uint8_t * out)
 {
     if(mDA) {
 	return mDA->cmdGet(prmID, out);
@@ -1156,8 +1153,7 @@ TMdPrm::cmdGet(uint16_t prmID, uint8_t * out)
     }
 }
 
-uint8_t
-TMdPrm::cmdSet(uint8_t * req, uint8_t addr)
+uint8_t TMdPrm::cmdSet(uint8_t * req, uint8_t addr)
 {
     if(mDA) {
 	return mDA->cmdSet(req, addr);
@@ -1213,69 +1209,68 @@ void TMdPrm::save_()
     if(enableStat() && mDA) mDA->saveIO();
 }
 
-string
-TMdPrm::typeDBName()
+string TMdPrm::typeDBName()
 {
     return type().DB(&owner());
 }
 
 void TMdPrm::cntrCmdProc(XMLNode *opt)
 {
-string a_path = opt->attr("path");
-if(a_path.substr(0, 6) == "/serv/") {
-    TParamContr::cntrCmdProc(opt);
-    return;
-}
+    string a_path = opt->attr("path");
+    if(a_path.substr(0, 6) == "/serv/") {
+	TParamContr::cntrCmdProc(opt);
+	return;
+    }
 
 //> Get page info
-if(opt->name() == "info") {
-    TParamContr::cntrCmdProc(opt);
-    if(owner().isLogic() && ctrMkNode("area", opt, -1, "/cfg", _("Parameters configuration"))) {
-	if(ctrMkNode("area", opt, -1, "/cfg/prm", _("Parameters"))) {
-	    if(mDA) {
-		for(int i_io = 0; i_io < mDA->lnkSize(); i_io++) {
-		    ctrMkNode("fld", opt, -1, (string("/cfg/prm/pr_") + mDA->lnk(i_io).prmName).c_str(), mDA->lnk(i_io).prmDesc, RWRWR_, "root", SDAQ_ID, 3,
-			    "tp", "str", "dest", "sel_ed", "select", (string("/cfg/prm/pl_") + mDA->lnk(i_io).prmName).c_str());
+    if(opt->name() == "info") {
+	TParamContr::cntrCmdProc(opt);
+	if(owner().isLogic() && ctrMkNode("area", opt, -1, "/cfg", _("Parameters configuration"))) {
+	    if(ctrMkNode("area", opt, -1, "/cfg/prm", _("Parameters"))) {
+		if(mDA) {
+		    for(int i_io = 0; i_io < mDA->lnkSize(); i_io++) {
+			ctrMkNode("fld", opt, -1, (string("/cfg/prm/pr_") + mDA->lnk(i_io).prmName).c_str(), mDA->lnk(i_io).prmDesc, RWRWR_, "root", SDAQ_ID, 3,
+				"tp", "str", "dest", "sel_ed", "select", (string("/cfg/prm/pl_") + mDA->lnk(i_io).prmName).c_str());
+		    }
 		}
+
 	    }
 
 	}
 
+	return;
     }
-
-    return;
-}
-if(a_path.substr(0, 12) == "/cfg/prm/pr_") {
-    if(ctrChkNode(opt, "get", RWRWR_, "root", SDAQ_ID, SEC_RD)) {
-	string lnk_val = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
-	if(!SYS->daq().at().attrAt(lnk_val, '.', true).freeStat()) {
-	    opt->setText(lnk_val + " (+)");
-	} else
-	opt->setText(lnk_val);
+    if(a_path.substr(0, 12) == "/cfg/prm/pr_") {
+	if(ctrChkNode(opt, "get", RWRWR_, "root", SDAQ_ID, SEC_RD)) {
+	    string lnk_val = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
+	    if(!SYS->daq().at().attrAt(lnk_val, '.', true).freeStat()) {
+		opt->setText(lnk_val + " (+)");
+	    } else
+		opt->setText(lnk_val);
+	}
+	if(ctrChkNode(opt, "set", RWRWR_, "root", SDAQ_ID, SEC_WR)) {
+	    string no_set;
+	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr = opt->text();
+	    mDA->lnk(mDA->lnkId((a_path.substr(12)))).aprm = SYS->daq().at().attrAt(mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr, '.', true);
+	    modif();
+	}
+    } else if((a_path.compare(0, 12, "/cfg/prm/pl_") == 0) && ctrChkNode(opt)) {
+	string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
+	;
+	if(!SYS->daq().at().attrAt(m_prm, '.', true).freeStat()) m_prm = m_prm.substr(0, m_prm.rfind("."));
+	SYS->daq().at().ctrListPrmAttr(opt, m_prm, false, '.');
     }
-    if(ctrChkNode(opt, "set", RWRWR_, "root", SDAQ_ID, SEC_WR)) {
-	string no_set;
-	mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr = opt->text();
-	mDA->lnk(mDA->lnkId((a_path.substr(12)))).aprm = SYS->daq().at().attrAt(mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr, '.', true);
-	modif();
-    }
-} else if((a_path.compare(0, 12, "/cfg/prm/pl_") == 0) && ctrChkNode(opt)) {
-    string m_prm = mDA->lnk(mDA->lnkId((a_path.substr(12)))).prmAttr;
-    ;
-    if(!SYS->daq().at().attrAt(m_prm, '.', true).freeStat()) m_prm = m_prm.substr(0, m_prm.rfind("."));
-    SYS->daq().at().ctrListPrmAttr(opt, m_prm, false, '.');
-}
-TParamContr::cntrCmdProc(opt);
+    TParamContr::cntrCmdProc(opt);
 
 }
 
 void TMdPrm::vlArchMake(TVal &val)
 {
-mess_info(nodePath().c_str(), _("TMdPrm::vlArchMake"));
-if(val.arch().freeStat()) return;
-mess_info(nodePath().c_str(), _("%s"), val.arch().at().srcData().c_str());
-val.arch().at().setSrcMode(TVArchive::PassiveAttr, val.arch().at().srcData());
-val.arch().at().setPeriod((long long) (owner().period() * 1000000));
-val.arch().at().setHardGrid(true);
-val.arch().at().setHighResTm(true);
+    mess_info(nodePath().c_str(), _("TMdPrm::vlArchMake"));
+    if(val.arch().freeStat()) return;
+    mess_info(nodePath().c_str(), _("%s"), val.arch().at().srcData().c_str());
+    val.arch().at().setSrcMode(TVArchive::PassiveAttr, val.arch().at().srcData());
+    val.arch().at().setPeriod((long long) (owner().period() * 1000000));
+    val.arch().at().setHardGrid(true);
+    val.arch().at().setHighResTm(true);
 }

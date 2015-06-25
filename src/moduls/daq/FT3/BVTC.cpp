@@ -243,14 +243,15 @@ uint8_t KA_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 	if(ft3ID.k <= count_n) {
 	    switch(ft3ID.n) {
 	    case 0:
-		out[0] = data[ft3ID.k].Value.s;
-		out[1] = data[ft3ID.k].Value.vl;
+		out[0] = data[ft3ID.k-1].Value.s;
+		out[1] = data[ft3ID.k-1].Value.vl;
 		l = 2;
 		break;
 	    case 1:
-		out[0] = data[ft3ID.k].Period.vl;
-		out[1] = data[ft3ID.k].Count.vl;
-		l = 2;
+		out[0] = data[ft3ID.k-1].Period.s;
+		out[1] = data[ft3ID.k-1].Period.vl;
+		out[2] = data[ft3ID.k-1].Count.vl;
+		l = 3;
 		break;
 	    }
 	}
@@ -264,18 +265,16 @@ uint8_t KA_BVTC::cmdSet(uint8_t * req, uint8_t addr)
     FT3ID ft3ID = UnpackID(prmID);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
-    switch(ft3ID.k) {
     if((ft3ID.k > 0) && (ft3ID.k <= count_n)) {
 	switch (ft3ID.n){
 	case 0:
 	    l = SetNew8Val(data[ft3ID.k - 1].Value, addr, prmID, req[2]);
 	    break;
-	}
 	case 1:
 	    l = SetNew28Val(data[ft3ID.k - 1].Period, data[ft3ID.k - 1].Count, addr, prmID, req[2], req[3]);
 	    break;
-	}
 	break;
+	}
     }
     return l;
 }

@@ -48,7 +48,6 @@ namespace FT3
 	    SKATCchannel(uint8_t iid) :
 		    id(iid),
 		    Value(TSYS::strMess("TC_%d", id+1).c_str(), TSYS::strMess(_("TC %d"), id+1).c_str()),
-//		    Mask(TSYS::strMess("Mask_%d", id+1).c_str(), TSYS::strMess(_("Mask %d"), id+1).c_str()),
 		    Period(TSYS::strMess("Period_%d", id+1).c_str(), TSYS::strMess(_("Period %d"), id+1).c_str()),
 		    Count(TSYS::strMess("Count_%d", id+1).c_str(), TSYS::strMess(_("Count %d"), id+1).c_str())
 	    {
@@ -68,10 +67,9 @@ namespace FT3
 	int lnkId( const string &id ){
 	    if(with_params) {
 		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].Value.lnk.prmName == id) return i_l * 4;
-//		    if(data[i_l].Mask.lnk.prmName == id) return i_l * 4 + 1;
-		    if(data[i_l].Period.lnk.prmName == id) return i_l * 4 + 2;
-		    if(data[i_l].Count.lnk.prmName == id) return i_l * 4 + 3;
+		    if(data[i_l].Value.lnk.prmName == id) return i_l * 3;
+		    if(data[i_l].Period.lnk.prmName == id) return i_l * 3 + 1;
+		    if(data[i_l].Count.lnk.prmName == id) return i_l * 3 + 2;
 		}
 	    } else {
 		for(int i_l = 0; i_l < data.size(); i_l++) {
