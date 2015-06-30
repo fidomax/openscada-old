@@ -411,3 +411,8 @@ uint16_t DA::PackID(uint8_t g, uint8_t k, uint8_t n)
     }
     return rc;
 }
+
+void DA::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
+{
+    mPrm.owner().PushInBE(type, length, id, E);
+}

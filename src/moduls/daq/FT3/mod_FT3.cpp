@@ -1076,6 +1076,7 @@ void TMdPrm::enable()
     if(owner().cfg("PRTTYPE").getS() == "KA") {
 	if(type().name == "tp_BUC") mDA = new KA_BUC(*this, cfg("DEV_ID").getI());
 	if(type().name == "tp_BVTS") mDA = new KA_BVTC(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_BVT") mDA = new KA_BVT(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     } else {
 	if(type().name == "tp_BUC") mDA = new B_BUC(*this, cfg("DEV_ID").getI());
 	if(type().name == "tp_BVI") mDA = new B_BVI(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("EXT_PERIOD").getB());

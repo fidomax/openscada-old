@@ -161,6 +161,22 @@ namespace FT3
 	    uint8_t s;
 	    uint8_t err;
 	    SLnk lnk;
+	    AutoHD<TVal> vlattr;
+	    void Update(uint8_t d){
+		vl = d;
+		vlattr.at().setI(vl, 0, true);
+	    };
+	    void Set(uint8_t d){
+		Update(d);
+		lnk.aprm.at().setI(vl);
+	    };
+	    uint8_t Get(){
+		if(lnk.Check()) {
+		    return err;
+		} else {
+		    return lnk.aprm.at().getI();
+		}
+	    }
 	};
 
 	class ui16Data
@@ -212,6 +228,22 @@ namespace FT3
 	    uint8_t s;
 	    float err;
 	    SLnk lnk;
+	    AutoHD<TVal> vlattr;
+	    void Update(float d){
+		vl = d;
+		vlattr.at().setR(vl, 0, true);
+	    };
+	    void Set(float d){
+		Update(d);
+		lnk.aprm.at().setR(vl);
+	    };
+	    float Get(){
+		if(lnk.Check()) {
+		    return err;
+		} else {
+		    return lnk.aprm.at().getR();
+		}
+	    }
 	};
 
 	//vector<SLnk> mlnk;
@@ -244,7 +276,10 @@ namespace FT3
 	uint16_t PackID(FT3ID ID);
 	uint16_t PackID(uint8_t g, uint8_t k, uint8_t n);
 
+
+
     public:
+	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
 	virtual int lnkSize()
 	{
 	}
