@@ -23,38 +23,40 @@
 #include <tsys.h>
 
 #include "mod_FT3.h"
-#include "GKR.h"
+#include "BTR.h"
 
 using namespace FT3;
 
-B_GKR::B_GKR(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), ID(id << 12), count_n(n), with_params(has_params) //, numReg(0)
+B_GKR::B_GKR(TMdPrm& prm, uint16_t id, uint16_t nkr, uint16_t nr, bool has_params) :
+	DA(prm), ID(id), count_kr(nkr), count_nr(nr), with_params(has_params)
+
 {
     TFld * fld;
+    state = 0;
+    currTU = run = 0;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
-    fld->setReserve("0:0");
-    mPrm.p_el.fldAdd(fld = new TFld("selection", _("Valve select"), TFld::Integer, TVal::DirWrite));
-    fld->setReserve("0:1");
-    mPrm.p_el.fldAdd(fld = new TFld("execution", _("Execution"), TFld::Integer, TVal::DirWrite));
-    fld->setReserve("0:2");
-    mPrm.p_el.fldAdd(fld = new TFld("control", _("Control"), TFld::Integer, TFld::NoWrite));
-    fld->setReserve("0:4");
-    mPrm.p_el.fldAdd(fld = new TFld("errors", _("Errors"), TFld::Integer, TFld::NoWrite));
-    fld->setReserve("0:5");
-
-    for(int i = 1; i <= count_n; i++) {
-	mPrm.p_el.fldAdd(fld = new TFld(TSYS::strMess("state_%d", i).c_str(), TSYS::strMess(_("Valve state %d"), i).c_str(), TFld::Integer, TFld::NoWrite));
-	fld->setReserve(TSYS::strMess("%d:0", i));
-
+    //fld->setReserve("0:0");
+    for(int i = 0; i < count_kr; i++) {
+	KRdata.push_back(SKRchannel(i));
+	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].State.lnk.prmName.c_str(), KRdata[i].State.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].On.lnk.prmName.c_str(), KRdata[i].On.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Off.lnk.prmName.c_str(), KRdata[i].Off.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Run.lnk.prmName.c_str(), KRdata[i].Run.ln k.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Reset.lnk.prmName.c_str(), KRdata[i].Reset.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Ban_MC.lnk.prmName.c_str(), KRdata[i].Ban_MC.ln k.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Lubrication.lnk.prmName.c_str(), KRdata[i].Lubrication.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));	
 	if(with_params) {
-	    mPrm.p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("time_%d", i).c_str(), TSYS::strMess(_("Persistence time %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:1", i));
-	    mPrm.p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("astime_%d", i).c_str(), TSYS::strMess(_("Persistence astime %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:2", i));
+	    mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Time.lnk.prmName.c_str(), KRdata[i].Time.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
+	    //fld->setReserve(TSYS::strMess("%d:0", i + 1));
+	    mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].ExTime.lnk.prmName.c_str(), KRdata[i].ExTime.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
+	    //fld->setReserve(TSYS::strMess("%d:2", i + 1));
+	    mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Time_Lub.lnk.prmName.c_str(), KRdata[i].Time_Lub.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
+	    //fld->setReserve(TSYS::strMess("%d:0", i + 1));
+	    mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Timeout_PO.lnk.prmName.c_str(), KRdata[i].Timeout_PO.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
+	    //fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	}
     }
+    loadIO(true);
 }
 
 B_GKR::~B_GKR()
@@ -74,41 +76,124 @@ string B_GKR::getStatus(void)
 
 }
 
-uint16_t B_GKR::Task(uint16_t uc)
+void B_GKR::loadIO(bool force)
 {
-    tagMsg Msg;
-    uint16_t rc = 0;
+	//Load links
+	//mess_info("B_BVT::loadIO", "");
+    if(mPrm.owner().startStat() && !force) {
+	mPrm.modif(true);
+	return;
+    }	//Load/reload IO context only allow for stopped controllers for prevent throws
+
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
+    for(int i = 0; i < count_kr; i++) {
+	loadLnk(KRdata[i].State.lnk, io_bd, io_table, cfg);
+	loadLnk(KRdata[i].On.lnk, io_bd, io_table, cfg);
+	loadLnk(KRdata[i].Off.lnk, io_bd, io_table, cfg);
+	loadLnk(KRdata[i].Run.lnk, io_bd, io_table, cfg);
+	loadLnk(KRdata[i].Reset.lnk, io_bd, io_table, cfg);
+	loadLnk(KRdata[i].Ban_MC.lnk, io_bd, io_table, cfg);
+	loadLnk(KRdata[i].Lubrication.lnk, io_bd, io_table, cfg);	
+	loadLnk(KRdata[i].Time.lnk, io_bd, io_table, cfg);
+	loadLnk(KRdata[i].ExTime.lnk, io_bd, io_table, cfg);
+	loadLnk(KRdata[i].Time_Lub.lnk, io_bd, io_table, cfg);
+	loadLnk(KRdata[i].Timeout_PO.lnk, io_bd, io_table, cfg);
+    }
+}
+
+void B_GKR::saveIO()
+{
+    //Save links
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
+    for(int i = 0; i < count_kr; i++) {
+	saveLnk(KRdata[i].State.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].On.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].Off.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].Run.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].Reset.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].Ban_MC.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].Lubrication.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].Time.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].ExTime.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].Time_Lub.lnk, io_bd, io_table, cfg);
+	saveLnk(KRdata[i].Timeout_PO.lnk, io_bd, io_table, cfg);
+    }
+}
+
+void B_GKR::tmHandler(void)//////////////////////////////
+{
+    NeedInit = false;
+    for(int i = 0; i < count_kr; i++) {
+	UpdateParamFlW(KRdata[i].Time, PackID(ID, i + 1, 5), 1);
+	UpdateParamFlB(KRdata[i].ExTime, PackID(ID, i + 1, 6), 1);
+	UpdateParamFlW(KRdata[i].Time_Lub, PackID(ID, i + 1, 7), 1);
+	UpdateParamFlB(KRdata[i].Timeout_PO, PackID(ID, i + 1, 8), 1);
+    }
+}
+
+uint16_t B_GKR::Task(uint16_t uc)
+{    uint16_t rc = 0;
+    /*tagMsg Msg;
+    
     switch(uc) {
     case TaskRefresh:
-	Msg.L = 13;
+	Msg.L = 5;
 	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = ID | (0 << 6) | (0); //состояние
-	*((uint16_t *) (Msg.D + 2)) = ID | (0 << 6) | (1); //выбор крана
-	*((uint16_t *) (Msg.D + 4)) = ID | (0 << 6) | (2); //исполнение
-	*((uint16_t *) (Msg.D + 6)) = ID | (0 << 6) | (4); //управление
-	*((uint16_t *) (Msg.D + 8)) = ID | (0 << 6) | (5); //ошибки
+	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
 	if(mPrm.owner().Transact(&Msg)) {
 	    if(Msg.C == GOOD3) {
-		//mess_info(mPrm.nodePath().c_str(),_("Data"));
 		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
-		mPrm.vlAt("selection").at().setI(Msg.D[12], 0, true);
-		mPrm.vlAt("execution").at().setI(Msg.D[18], 0, true);
-		mPrm.vlAt("control").at().setI(Msg.D[24], 0, true);
-		mPrm.vlAt("errors").at().setI(Msg.D[29], 0, true);
+		if(count_kr) {
+		    Msg.L = 7;
+		    Msg.C = AddrReq;
+		    *((uint16_t *) (Msg.D)) = PackID(ID, 0, 1); //выбор ТУ
+		    *((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 2); //исполнение
+		    if(mPrm.owner().Transact(&Msg)) {
+			if(Msg.C == GOOD3) {
+			    mPrm.vlAt("selection").at().setI(Msg.D[8], 0, true);
+			    mPrm.vlAt("execution").at().setI(Msg.D[14], 0, true);
+			}
+		    }
+		    if(with_params) {
+			for(int i = 1; i <= count_kr; i++) {
+			    Msg.L = 9;
+			    Msg.C = AddrReq;
+			    *((uint16_t *) Msg.D) = PackID(ID, i, 0); //время выдержки
+			    *((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 1); //ТС
+			    *((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 2); //доп время выдержки
 
-		if(with_params) {
-		    for(int i = 1; i <= count_n; i++) {
-			Msg.L = 9;
+			    if(mPrm.owner().Transact(&Msg)) {
+				if(Msg.C == GOOD3) {
+				    mPrm.vlAt(TSYS::strMess("time_%d", i).c_str()).at().setR(TSYS::getUnalign16(Msg.D + 8) / 10.0, 0, true);
+				    mPrm.vlAt(TSYS::strMess("tc_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 15), 0, true);
+				    mPrm.vlAt(TSYS::strMess("extime_%d", i).c_str()).at().setR(Msg.D[22] / 10.0, 0, true);
+				    rc = 1;
+				} else {
+				    rc = 0;
+				    break;
+				}
+			    } else {
+				rc = 0;
+				break;
+			    }
+
+			}
+		    }
+		}
+		if(count_nr) {
+		    for(int i = 1; i <= count_nr; i++) {
+			Msg.L = 5;
 			Msg.C = AddrReq;
-			*((uint16_t *) Msg.D) = ID | (i << 6) | (0); //состояние крана
-			*((uint16_t *) (Msg.D + 2)) = ID | (i << 6) | (1); //время выдержки
-			*((uint16_t *) (Msg.D + 4)) = ID | (i << 6) | (2); //доп время выдержки
-
+			*((uint16_t *) Msg.D) = PackID(ID, i + count_kr, 0); //уставка
 			if(mPrm.owner().Transact(&Msg)) {
 			    if(Msg.C == GOOD3) {
-				mPrm.vlAt(TSYS::strMess("state_%d", i).c_str()).at().setI(Msg.D[7], 0, true);
-				mPrm.vlAt(TSYS::strMess("time_%d", i).c_str()).at().setI(Msg.D[13], 0, true);
-				mPrm.vlAt(TSYS::strMess("astime_%d", i).c_str()).at().setI(Msg.D[19], 0, true);
+				mPrm.vlAt(TSYS::strMess("value_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 8), 0, true);
 				rc = 1;
 			    } else {
 				rc = 0;
@@ -118,29 +203,24 @@ uint16_t B_GKR::Task(uint16_t uc)
 			    rc = 0;
 			    break;
 			}
-
 		    }
 		} else {
 		    rc = 1;
 		}
 	    }
-
 	}
 	if(rc) NeedInit = false;
 	break;
-    }
+    }*/
     return rc;
 }
-uint16_t B_GKR::HandleEvent(uint8_t * D)
-{
-    if((TSYS::getUnalign16(D) & 0xF000) != ID) return 0;
-    uint16_t l = 0;
-    uint16_t k = (TSYS::getUnalign16(D) >> 6) & 0x3F; // номер объекта
-    uint16_t n = TSYS::getUnalign16(D) & 0x3F;  // номер параметра
 
-    switch(k) {
-    case 0:
-	switch(n) {
+uint16_t B_GKR::HandleEvent(uint8_t * D)
+{   uint16_t l = 0;
+    /*FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+    if(ft3ID.g != ID) return 0;
+    if(ft3ID.k == 0) {
+	switch(ft3ID.n) {
 	case 0:
 	    mPrm.vlAt("state").at().setI(D[2], 0, true);
 	    l = 3;
@@ -153,77 +233,268 @@ uint16_t B_GKR::HandleEvent(uint8_t * D)
 	    mPrm.vlAt(TSYS::strMess("execution").c_str()).at().setI(D[3], 0, true);
 	    l = 4;
 	    break;
-	case 3:
-	    mPrm.vlAt("state").at().setI(D[2], 0, true);
-	    l = 3 + count_n / 2;
-	    for(int j = 1; j <= count_n; j++) {
-		mPrm.vlAt(TSYS::strMess("state_%d", j).c_str()).at().setI(((D[2 + (j + 1) / 2]) >> ((j % 2) * 4)) & 0x0F, 0, true);
+	}
+    }
+    if(count_kr && (ft3ID.k <= count_kr)) {
+	switch(ft3ID.n) {
+	case 0:
+	    mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalign16(D + 3) / 10.0, 0, true);
+	    l = 5;
+	    break;
+
+	case 1:
+	    if(with_params) {
+		mPrm.vlAt(TSYS::strMess("tc_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
 	    }
-	    l = 11;
+	    l = 5;
 	    break;
-	case 4:
-	    mPrm.vlAt(TSYS::strMess("control").c_str()).at().setI(D[2], 0, true);
-	    l = 3;
-	    break;
-	case 5:
-	    mPrm.vlAt(TSYS::strMess("errors").c_str()).at().setI(D[2], 0, true);
-	    l = 3;
+	case 2:
+	    if(with_params) {
+		mPrm.vlAt(TSYS::strMess("extime_%d", ft3ID.k).c_str()).at().setR(D[3] / 10.0, 0, true);
+		;
+	    }
+	    l = 4;
 	    break;
 
 	}
-	break;
-    default:
-	if(k && (k <= count_n)) {
-	    switch(n) {
+    }
+    if(count_nr && ((ft3ID.k > count_kr) && (ft3ID.k <= count_nr + count_kr))) {
+	switch(ft3ID.n) {
+	case 0:
+	    mPrm.vlAt(TSYS::strMess("value_%d", ft3ID.k - count_kr).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
+	    l = 7;
+	    break;
+
+	}
+    }*/
+    return l;
+}
+
+uint8_t B_GKR::cmdGet(uint16_t prmID, uint8_t * out)
+{   uint l = 0;
+    uint16_t i;
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != ID) return 0;
+    
+    if(ft3ID.k == 0) {
+	switch(ft3ID.n) {
+	case 0:
+	    out[0] = state;
+	    l = 1;
+	    break;
+	case 1:
+	    for(i=0; i<=count_kr; i++){
+	        out[i] = KRdata[i].State.vl;
+	    }
+	    l = count_kr;
+	    break;
+	}
+    } else {
+	if(count_kr && (ft3ID.k <= count_kr)) {
+	    switch(ft3ID.n) {
 	    case 0:
-		mPrm.vlAt(TSYS::strMess("state_%d", k).c_str()).at().setI(D[2], 0, true);
+		out[0] = KRdata[ft3ID.k - 1].State.vl;
+		l = 1;
+	    	break;
+	    case 1:
+		out[0] = s_currTU;
+		out[1] = currTU;
+		l = 2;
+	    	break;
+	    case 2:
+		out[0] = s_run;
+		out[1] = run;
+		l = 2;
+	    	break;
+	    case 3:
+		out[0] =  KRdata[ft3ID.k - 1].Ban_MC.s;
+		out[1] =  KRdata[ft3ID.k - 1].Ban_MC.vl;
+		l = 2;
+	    	break;
+	    case 4:
+		out[0] =  KRdata[ft3ID.k - 1].Lubrication.s;
+		out[1] =  KRdata[ft3ID.k - 1].Lubrication.vl;
+		l = 2;
+	    	break;
+	    case 5:
+		out[0] = KRdata[ft3ID.k - 1].Time.s;
+		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Time.vl*10);//msec
+		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Time.vl*10) >> 8;//msec
 		l = 3;
 		break;
-
-	    case 1:
-		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("time_%d", k).c_str()).at().setI(D[3], 0, true);
-		}
-		l = 4;
+	    case 6:
+		out[0] = KRdata[ft3ID.k - 1].ExTime.s;
+		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].ExTime.vl*10);//msec
+		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].ExTime.vl*10) >> 8;//msec
+		l = 3;
 		break;
-	    case 2:
-		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("astime_%d", k).c_str()).at().setI(D[3], 0, true);
-		    ;
-		}
-		l = 4;
+	    case 7:
+		out[0] = KRdata[ft3ID.k - 1].Time_Lub.s;
+		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Time_Lub.vl*10);//msec
+		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Time_Lub.vl*10) >> 8;//msec
+		l = 3;
 		break;
-
+	    case 7:
+		out[0] = KRdata[ft3ID.k - 1].Timeout_PO.s;
+		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Timeout_PO.vl*10);//msec
+		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Timeout_PO.vl*10) >> 8;//msec
+		l = 3;
+		break;
 	    }
 	}
-	break;
     }
     return l;
 }
 
-uint16_t B_GKR::setVal(TVal &val)
+uint8_t B_GKR::cmdSet(uint8_t * req, uint8_t addr)
 {
-    int off = 0;
-    uint16_t k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    uint16_t n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
-    uint16_t addr = ID | (k << 6) | n;
-    tagMsg Msg;
-    switch(n) {
-    case 1:
-    case 2:
-	Msg.L = 6;
-	Msg.C = SetData;
-	Msg.D[0] = addr & 0xFF;
-	Msg.D[1] = (addr >> 8) & 0xFF;
-	Msg.D[2] = val.get(NULL, true).getI();
-	if((n == 2) && (Msg.D[2] != 0x55)) {
-	    Msg.D[2] = 0;
+    uint16_t prmID = TSYS::getUnalign16(req);
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != ID) return 0;
+    uint l = 0;
+    mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
+    if(ft3ID.k != 0){
+	if(count_kr && (ft3ID.k <= count_kr)) {
+	    switch(ft3ID.n){
+	    case 1:
+		setTU(req[2], addr, prmID);
+		l = 3;
+		break;
+	    case 2:
+		runTU(req[2], addr, prmID);
+		l = 3;
+		break;
+	    case 3:
+		l = SetNew8Val(KRdata[ft3ID.k - 1].Ban_MC, addr, prmID, req[2]);
+		break;
+	    case 4:
+		l = SetNew8Val(KRdata[ft3ID.k - 1].Lubrication, addr, prmID, req[2]);
+		break;
+	    case 5:
+		l = SetNewflWVal(KRdata[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
+		break;
+	    case 6:
+		l = SetNewflWVal(KRdata[ft3ID.k - 1].ExTime, addr, prmID, TSYS::getUnalign16(req + 2));
+		break;
+	    case 7:
+		l = SetNewflWVal(KRdata[ft3ID.k - 1].Time_Lub, addr, prmID, TSYS::getUnalign16(req + 2));
+		break;
+	    case 8:
+		l = SetNewflWVal(KRdata[ft3ID.k - 1].Timeout_PO, addr, prmID, TSYS::getUnalign16(req + 2));
+		break;
+	    }
 	}
-	mPrm.owner().Transact(&Msg);
-	break;
     }
-
-    return 0;
+    return l;
 }
 
+void B_GKR::setTU(uint8_t tu, uint8_t addr, uint16_t prmID)
+{
+    uint8_t vl = tu >> 7;
+    uint8_t n = tu & 0x7F;
+    if((n > 0) && (n < count_kr)) {
+	STUchannel & TU = KRdata[n - 1];
+	currTU = n;
+	if(vl) {
+	    if(!TU.On.lnk.Check()) {
+		//on
+		TU.s = addr;
+		TU.On.lnk.aprm.at().setI(1);
+		mPrm.vlAt(TU.On.lnk.prmName.c_str()).at().setI(currTU, 0, true);
+		uint8_t E[2] = { addr, tu };
+		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+	    }
+	} else {
+	    if(!TU.Off.lnk.Check()) {
+		//off
+		TU.s = addr;
+		TU.Off.lnk.aprm.at().setI(1);
+		mPrm.vlAt(TU.Off.lnk.prmName.c_str()).at().setI(currTU, 0, true);
+		uint8_t E[2] = { addr, tu };
+		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+	    }
+	}
+    }
+}
+void B_GKR::runTU(uint8_t tu, uint8_t addr, uint16_t prmID)
+{
+    if(currTU) {
+	STUchannel & TU = KRdata[currTU - 1];
+	if(tu == 0x55) {
+	    if((!TU.Run.lnk.Check())) {
+		TU.s = addr;
+		TU.Run.lnk.aprm.at().setI(1);
+		mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(0, 0, true);
+		uint8_t E[2] = { addr, 0 };
+		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+		currTU = 0;
+	    }
+	}
+    }
+    if(tu == 0x0) {
+	for(int i = 0; i < count_kr; i++) {
+	    STUchannel & TU = KRdata[i];
+	    if((!TU.Reset.lnk.aprm.freeStat())) {
+		TU.s = addr;
+		TU.Reset.lnk.aprm.at().setI(1);
+		mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
+		uint8_t E[2] = { addr, 0 };
+		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+		currTU = 0;
+	    }
+	}
+    }
+}
+
+uint16_t B_GKR::setVal(TVal &val)
+{/*
+    int off = 0;
+    FT3ID ft3ID;
+    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
+    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    ft3ID.g = ID;
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    *((uint16_t *) Msg.D) = PackID(ft3ID);
+    if(ft3ID.k == 0) {
+	switch(ft3ID.n) {
+	case 1:
+	case 2:
+	    Msg.L = 6;
+	    Msg.D[2] = val.get(NULL, true).getI();
+	    if((ft3ID.n == 2) && (Msg.D[2] != 0x55)) {
+		Msg.D[2] = 0;
+	    }
+	    break;
+	}
+    } else {
+	if(count_kr && (ft3ID.k <= count_kr)) {
+	    switch(ft3ID.n) {
+	    case 0:
+		Msg.L = 7;
+		*(uint16_t *) (Msg.D + 2) = (uint16_t) (val.get(NULL, true).getR() * 10.0);
+		break;
+	    case 1:
+		Msg.L = 7;
+		*(uint16_t *) (Msg.D + 2) = (uint16_t) val.get(NULL, true).getI();
+		break;
+	    case 2:
+		Msg.L = 6;
+		Msg.D[2] = val.get(NULL, true).getR() * 10.0;
+		break;
+	    }
+	}
+	if(count_nr && ((ft3ID.k > count_kr) && (ft3ID.k <= count_nr + count_kr))) {
+	    switch(ft3ID.n) {
+	    case 0:
+		Msg.L = 9;
+		*(float *) (Msg.D + 2) = (float) val.get(NULL, true).getR();
+		break;
+	    }
+	}
+    }
+    if (Msg.L) mPrm.owner().Transact(&Msg);*/
+    return 0;
+}
 //---------------------------------------------------------------------------
