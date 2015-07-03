@@ -181,7 +181,7 @@ namespace FT3
 		}
 	    }
 	    if (ret == NULL){ throw TError(mPrm.nodePath().c_str(),_("Parameter is disabled or is not based on the template."));}
-	    else{ return ret;}
+	    else{ return *ret;}
 	}
     };
 
