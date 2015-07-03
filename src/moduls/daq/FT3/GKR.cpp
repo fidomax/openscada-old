@@ -425,7 +425,7 @@ void B_GKR::runTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 	    TU.On.vl = TU.Off.vl = 0;
 	}
 	if((!val)&&(!TU.Reset.lnk.aprm.freeStat())){
-	    TU..Reset.s = addr;
+	    TU.Reset.s = addr;
 	    TU.Reset.lnk.aprm.at().setI(1);
 	    mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
 	    uint8_t E[2] = { addr, 0 };
