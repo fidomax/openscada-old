@@ -28,7 +28,7 @@ namespace FT3
     {
     public:
 	//Methods
-	B_GKR(TMdPrm& prm, uint16_t id, uint16_t nkr, uint16_t nr, bool has_params);
+	B_GKR(TMdPrm& prm, uint16_t id, uint16_t nkr, bool has_params);
 	~B_GKR();
 	uint8_t  state;
 	uint16_t ID;
@@ -39,8 +39,8 @@ namespace FT3
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
 	uint16_t setVal(TVal &val);
-	//void setTU(uint8_t);
-	//void runTU(uint8_t);
+	void setTU(uint8_t, uint8_t, uint8_t, uint16_t);
+	void runTU(uint8_t, uint8_t, uint8_t, uint16_t);
 	string getStatus(void);
 	void saveIO(void);
 	void loadIO(bool force = false );
@@ -66,11 +66,7 @@ namespace FT3
 		{
 		}
 		uint8_t id;
-		uint8_t s_currTU;
-		uint8_t currTU;
-		uint8_t s_run;
-		uint8_t run;
-		
+
 		ui8Data State, On, Off, Run, Reset, Ban_MC, Lubrication;
 		flData  Time, ExTime, Time_Lub, Timeout_PO;
 	};

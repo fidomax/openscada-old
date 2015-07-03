@@ -27,13 +27,12 @@
 
 using namespace FT3;
 
-B_GKR::B_GKR(TMdPrm& prm, uint16_t id, uint16_t nkr, uint16_t nr, bool has_params) :
-	DA(prm), ID(id), count_kr(nkr), count_nr(nr), with_params(has_params)
+B_GKR::B_GKR(TMdPrm& prm, uint16_t id, uint16_t nkr, bool has_params) :
+	DA(prm), ID(id), count_kr(nkr), with_params(has_params)
 
 {
     TFld * fld;
     state = 0;
-    currTU = run = 0;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     //fld->setReserve("0:0");
     for(int i = 0; i < count_kr; i++) {
@@ -41,9 +40,9 @@ B_GKR::B_GKR(TMdPrm& prm, uint16_t id, uint16_t nkr, uint16_t nr, bool has_param
 	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].State.lnk.prmName.c_str(), KRdata[i].State.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
 	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].On.lnk.prmName.c_str(), KRdata[i].On.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
 	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Off.lnk.prmName.c_str(), KRdata[i].Off.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
-	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Run.lnk.prmName.c_str(), KRdata[i].Run.ln k.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Run.lnk.prmName.c_str(), KRdata[i].Run.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
 	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Reset.lnk.prmName.c_str(), KRdata[i].Reset.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
-	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Ban_MC.lnk.prmName.c_str(), KRdata[i].Ban_MC.ln k.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
+	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Ban_MC.lnk.prmName.c_str(), KRdata[i].Ban_MC.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
 	mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Lubrication.lnk.prmName.c_str(), KRdata[i].Lubrication.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));	
 	if(with_params) {
 	    mPrm.p_el.fldAdd(fld = new TFld(KRdata[i].Time.lnk.prmName.c_str(), KRdata[i].Time.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
@@ -297,13 +296,13 @@ uint8_t B_GKR::cmdGet(uint16_t prmID, uint8_t * out)
 		l = 1;
 	    	break;
 	    case 1:
-		out[0] = s_currTU;
-		out[1] = currTU;
+		out[0] = KRdata[ft3ID.k - 1].On.s;
+		out[1] = KRdata[ft3ID.k - 1].On.vl;
 		l = 2;
 	    	break;
 	    case 2:
-		out[0] = s_run;
-		out[1] = run;
+		out[0] = KRdata[ft3ID.k - 1].Run.s;
+		out[1] = KRdata[ft3ID.k - 1].Run.vl;
 		l = 2;
 	    	break;
 	    case 3:
@@ -357,11 +356,11 @@ uint8_t B_GKR::cmdSet(uint8_t * req, uint8_t addr)
 	if(count_kr && (ft3ID.k <= count_kr)) {
 	    switch(ft3ID.n){
 	    case 1:
-		setTU(req[2], addr, prmID);
+		setTU(k, req[2], addr, prmID);
 		l = 3;
 		break;
 	    case 2:
-		runTU(req[2], addr, prmID);
+		runTU(k, req[2], addr, prmID);
 		l = 3;
 		break;
 	    case 3:
@@ -388,60 +387,50 @@ uint8_t B_GKR::cmdSet(uint8_t * req, uint8_t addr)
     return l;
 }
 
-void B_GKR::setTU(uint8_t tu, uint8_t addr, uint16_t prmID)
+void B_GKR::setTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 {
-    uint8_t vl = tu >> 7;
-    uint8_t n = tu & 0x7F;
-    if((n > 0) && (n < count_kr)) {
-	STUchannel & TU = KRdata[n - 1];
-	currTU = n;
-	if(vl) {
+    if((k > 0) && (k < count_kr)) {
+	STUchannel & TU = KRdata[k - 1];
+	if(val) {
 	    if(!TU.On.lnk.Check()) {
 		//on
-		TU.s = addr;
 		TU.On.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.On.lnk.prmName.c_str()).at().setI(currTU, 0, true);
-		uint8_t E[2] = { addr, tu };
+		mPrm.vlAt(TU.On.lnk.prmName.c_str()).at().setI(k, 0, true);
+		uint8_t E[2] = { addr, val };
 		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 	    }
 	} else {
 	    if(!TU.Off.lnk.Check()) {
 		//off
-		TU.s = addr;
 		TU.Off.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Off.lnk.prmName.c_str()).at().setI(currTU, 0, true);
-		uint8_t E[2] = { addr, tu };
+		mPrm.vlAt(TU.Off.lnk.prmName.c_str()).at().setI(k, 0, true);
+		uint8_t E[2] = { addr, val };
 		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 	    }
 	}
+	TU.Off.vl = TU.On.vl = val;
+	TU.On.s = TU.Off.s = addr;
     }
 }
-void B_GKR::runTU(uint8_t tu, uint8_t addr, uint16_t prmID)
+void B_GKR::runTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 {
-    if(currTU) {
-	STUchannel & TU = KRdata[currTU - 1];
-	if(tu == 0x55) {
-	    if((!TU.Run.lnk.Check())) {
-		TU.s = addr;
-		TU.Run.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(0, 0, true);
-		uint8_t E[2] = { addr, 0 };
-		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
-		currTU = 0;
-	    }
+    if((k > 0) && (k < count_kr)){
+	STUchannel & TU = KRdata[k - 1];
+	if((val == 0x55) && (!TU.Run.lnk.Check())){
+	    TU.s = addr;
+	    TU.Run.lnk.aprm.at().setI(1);
+	    mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(0, 0, true);
+	    uint8_t E[2] = { addr, 0 };
+	    mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+	    TU.On.vl = TU.Off.vl = 0;
 	}
-    }
-    if(tu == 0x0) {
-	for(int i = 0; i < count_kr; i++) {
-	    STUchannel & TU = KRdata[i];
-	    if((!TU.Reset.lnk.aprm.freeStat())) {
-		TU.s = addr;
-		TU.Reset.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
-		uint8_t E[2] = { addr, 0 };
-		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
-		currTU = 0;
-	    }
+	if((!val)&&(!TU.Reset.lnk.aprm.freeStat())){
+	    TU.s = addr;
+	    TU.Reset.lnk.aprm.at().setI(1);
+	    mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
+	    uint8_t E[2] = { addr, 0 };
+	    mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+	    TU.On.vl = TU.Off.vl = 0;
 	}
     }
 }
