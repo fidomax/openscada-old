@@ -140,6 +140,7 @@ namespace FT3
 	    string prmName;
 	    string prmDesc;
 	    AutoHD<TVal> aprm;
+	    AutoHD<TVal> vlattr;
 	    bool Check()
 	    {
 		if(aprm.freeStat()) {
@@ -161,10 +162,9 @@ namespace FT3
 	    uint8_t s;
 	    uint8_t err;
 	    SLnk lnk;
-	    AutoHD<TVal> vlattr;
 	    void Update(uint8_t d){
 		vl = d;
-		vlattr.at().setI(vl, 0, true);
+		lnk.vlattr.at().setI(vl, 0, true);
 	    };
 	    void Set(uint8_t d){
 		Update(d);
@@ -194,6 +194,21 @@ namespace FT3
 	    uint8_t s;
 	    uint16_t err;
 	    SLnk lnk;
+	    void Update(uint16_t d){
+		vl = d;
+		lnk.vlattr.at().setI(vl, 0, true);
+	    };
+	    void Set(uint16_t d){
+		Update(d);
+		lnk.aprm.at().setI(vl);
+	    };
+	    uint16_t Get(){
+		if(lnk.Check()) {
+		    return err;
+		} else {
+		    return lnk.aprm.at().getI();
+		}
+	    }
 	};
 
 	class ui32Data
@@ -228,10 +243,9 @@ namespace FT3
 	    uint8_t s;
 	    float err;
 	    SLnk lnk;
-	    AutoHD<TVal> vlattr;
 	    void Update(float d){
 		vl = d;
-		vlattr.at().setR(vl, 0, true);
+		lnk.vlattr.at().setR(vl, 0, true);
 	    };
 	    void Set(float d){
 		Update(d);

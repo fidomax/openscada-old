@@ -1,4 +1,4 @@
-//OpenSCADA system module DAQ.AMRDevs file: da_Ergomera.cpp
+//OpenSCADA system module DAQ.FT3 file: BVT.cpp
 /***************************************************************************
  *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
@@ -67,7 +67,7 @@ void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
 	da->PushInBE(cl, sizeof(E), ID, E);
     }
 }
-;
+
 uint8_t KA_BVT::SKATTchannel::SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
     if(Period.lnk.Check() || Sens.lnk.Check() || MinS.lnk.Check() || MaxS.lnk.Check() || MinPV.lnk.Check() || MaxPV.lnk.Check() || MinW.lnk.Check()
@@ -94,7 +94,6 @@ uint8_t KA_BVT::SKATTchannel::SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_
 	return 2 + 45;
     }
 }
-;
 
 KA_BVT::KA_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), ID(id), count_n(n), with_params(has_params)
@@ -110,47 +109,47 @@ KA_BVT::KA_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	AddTTChannel(i);
 //	data.push_back(SKATTchannel(1,*this));
 	mPrm.p_el.fldAdd(fld = new TFld(data[i].State.lnk.prmName.c_str(), data[i].State.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	data[i].State.vlattr = mPrm.vlAt(data[i].State.lnk.prmName.c_str());
+	data[i].State.lnk.vlattr = mPrm.vlAt(data[i].State.lnk.prmName.c_str());
 	fld->setReserve(TSYS::strMess("%d:1", i + 1));
 	mPrm.p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-	data[i].Value.vlattr = mPrm.vlAt(data[i].Value.lnk.prmName.c_str());
+	data[i].Value.lnk.vlattr = mPrm.vlAt(data[i].Value.lnk.prmName.c_str());
 	fld->setReserve(TSYS::strMess("%d:0", i + 1));
 	if(with_params) {
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Period.lnk.prmName.c_str(), data[i].Period.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    data[i].Period.vlattr = mPrm.vlAt(data[i].Period.lnk.prmName.c_str());
+	    data[i].Period.lnk.vlattr = mPrm.vlAt(data[i].Period.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Sens.lnk.prmName.c_str(), data[i].Sens.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].Sens.vlattr = mPrm.vlAt(data[i].Sens.lnk.prmName.c_str());
+	    data[i].Sens.lnk.vlattr = mPrm.vlAt(data[i].Sens.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinS.lnk.prmName.c_str(), data[i].MinS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MinS.vlattr = mPrm.vlAt(data[i].MinS.lnk.prmName.c_str());
+	    data[i].MinS.lnk.vlattr = mPrm.vlAt(data[i].MinS.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxS.lnk.prmName.c_str(), data[i].MaxS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MaxS.vlattr = mPrm.vlAt(data[i].MaxS.lnk.prmName.c_str());
+	    data[i].MaxS.lnk.vlattr = mPrm.vlAt(data[i].MaxS.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinPV.lnk.prmName.c_str(), data[i].MinPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MinPV.vlattr = mPrm.vlAt(data[i].MinPV.lnk.prmName.c_str());
+	    data[i].MinPV.lnk.vlattr = mPrm.vlAt(data[i].MinPV.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxPV.lnk.prmName.c_str(), data[i].MaxPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MaxPV.vlattr = mPrm.vlAt(data[i].MaxPV.lnk.prmName.c_str());
+	    data[i].MaxPV.lnk.vlattr = mPrm.vlAt(data[i].MaxPV.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinW.lnk.prmName.c_str(), data[i].MinW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MinW.vlattr = mPrm.vlAt(data[i].MinW.lnk.prmName.c_str());
+	    data[i].MinW.lnk.vlattr = mPrm.vlAt(data[i].MinW.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxW.lnk.prmName.c_str(), data[i].MaxW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MaxW.vlattr = mPrm.vlAt(data[i].MaxW.lnk.prmName.c_str());
+	    data[i].MaxW.lnk.vlattr = mPrm.vlAt(data[i].MaxW.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinA.lnk.prmName.c_str(), data[i].MinA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MinA.vlattr = mPrm.vlAt(data[i].MinA.lnk.prmName.c_str());
+	    data[i].MinA.lnk.vlattr = mPrm.vlAt(data[i].MinA.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxA.lnk.prmName.c_str(), data[i].MaxA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MaxA.vlattr = mPrm.vlAt(data[i].MaxA.lnk.prmName.c_str());
+	    data[i].MaxA.lnk.vlattr = mPrm.vlAt(data[i].MaxA.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Factor.lnk.prmName.c_str(), data[i].Factor.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].Factor.vlattr = mPrm.vlAt(data[i].Factor.lnk.prmName.c_str());
+	    data[i].Factor.lnk.vlattr = mPrm.vlAt(data[i].Factor.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Adjust.lnk.prmName.c_str(), data[i].Adjust.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].Adjust.vlattr = mPrm.vlAt(data[i].Adjust.lnk.prmName.c_str());
+	    data[i].Adjust.lnk.vlattr = mPrm.vlAt(data[i].Adjust.lnk.prmName.c_str());
 	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
 	}
     }
@@ -246,14 +245,6 @@ void KA_BVT::tmHandler(void)
     for(int i = 0; i < count_n; i++) {
 	if(with_params) {
 	    data[i].UpdateTTParam(PackID(ID, (i + 1), 2), 1);
-	    /*	    UpdateParam8(data[i].Period, PackID(ID, (i + 1), 2), 1);
-	     UpdateParamFl(data[i].Sens, PackID(ID, (i + 1), 3), 1);
-	     UpdateParam2Fl(data[i].MinS, data[i].MaxS, PackID(ID, (i + 1), 4), 1);
-	     UpdateParam2Fl(data[i].MinPV, data[i].MaxPV, PackID(ID, (i + 1), 5), 1);
-	     UpdateParam2Fl(data[i].MinW, data[i].MaxW, PackID(ID, (i + 1), 6), 1);
-	     UpdateParam2Fl(data[i].MinA, data[i].MaxA, PackID(ID, (i + 1), 7), 1);
-	     UpdateParamFl(data[i].Factor, PackID(ID, (i + 1), 8), 1);
-	     UpdateParamFl(data[i].Adjust, PackID(ID, (i + 1), 9), 1);*/
 	}
 	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 0);
     }
@@ -581,7 +572,7 @@ uint8_t KA_BVT::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_BVT::setVal(TVal &val)
 {
-    int off = 0;
+/*    int off = 0;
     FT3ID ft3ID;
     ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
     ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
@@ -626,7 +617,7 @@ uint16_t KA_BVT::setVal(TVal &val)
 	*(float *) (Msg.D + 6) = (float) mPrm.vlAt(TSYS::strMess("maxA_%d", ft3ID.k).c_str()).at().getR(0, true);
 	break;
     }
-    if(Msg.L) mPrm.owner().Transact(&Msg);
+    if(Msg.L) mPrm.owner().Transact(&Msg);*/
     return 0;
 }
 
