@@ -333,7 +333,7 @@ uint8_t B_GKR::cmdGet(uint16_t prmID, uint8_t * out)
 		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Time_Lub.vl*10) >> 8;//msec
 		l = 3;
 		break;
-	    case 7:
+	    case 8:
 		out[0] = KRdata[ft3ID.k - 1].Timeout_PO.s;
 		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Timeout_PO.vl*10);//msec
 		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Timeout_PO.vl*10) >> 8;//msec
@@ -417,7 +417,7 @@ void B_GKR::runTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
     if((k > 0) && (k < count_kr)){
 	SKRchannel & TU = KRdata[k - 1];
 	if((val == 0x55) && (!TU.Run.lnk.Check())){
-	    TU.s = addr;
+	    TU.Run.s = addr;
 	    TU.Run.lnk.aprm.at().setI(1);
 	    mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(0, 0, true);
 	    uint8_t E[2] = { addr, 0 };
@@ -425,7 +425,7 @@ void B_GKR::runTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 	    TU.On.vl = TU.Off.vl = 0;
 	}
 	if((!val)&&(!TU.Reset.lnk.aprm.freeStat())){
-	    TU.s = addr;
+	    TU..Reset.s = addr;
 	    TU.Reset.lnk.aprm.at().setI(1);
 	    mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
 	    uint8_t E[2] = { addr, 0 };
