@@ -75,9 +75,9 @@ namespace FT3
 	int lnkSize()
 	{
 	    if(with_params) {
-		return KRdata.size() * c_wp + TRdata.size();//params SKRchannel
+		return KRdata.size() * c_wp;//params SKRchannel
 	    } else {
-		return KRdata.size() * c_p + TRdata.size();//params SKRchannel
+		return KRdata.size() * c_p;//params SKRchannel
 	    }
 	}
 	int lnkId(const string &id)
@@ -114,42 +114,42 @@ namespace FT3
 	}
 	SLnk &lnk(int num)
 	{
-	    SLnk ret = NULL;
+	    SLnk *ret = NULL;
 	    if(with_params) {
 		if((KRdata.size() > 0) && ((KRdata.size() * c_wp) > num)) {
 		    switch(num % c_wp) {
 		    case 0:
-			ret = KRdata[num / c_wp].State.lnk;
+			ret = &KRdata[num / c_wp].State.lnk;
 			break;
 		    case 1:
-			ret = KRdata[num / c_wp].On.lnk;
+			ret = &KRdata[num / c_wp].On.lnk;
 			break;
 		    case 2:
-			ret = KRdata[num / c_wp].Off.lnk;
+			ret = &KRdata[num / c_wp].Off.lnk;
 			break;
 		    case 3:
-			ret = KRdata[num / c_wp].Run.lnk;
+			ret = &KRdata[num / c_wp].Run.lnk;
 			break;
 		    case 4:
-			ret = KRdata[num / c_wp].Reset.lnk;
+			ret = &KRdata[num / c_wp].Reset.lnk;
 			break;
 		    case 5:
-			ret = KRdata[num / c_wp].Ban_MC.lnk;
+			ret = &KRdata[num / c_wp].Ban_MC.lnk;
 			break;
 		    case 6:
-			ret = KRdata[num / c_wp].Lubrication.lnk;
+			ret = &KRdata[num / c_wp].Lubrication.lnk;
 			break;
 		    case 7:
-			ret = KRdata[num / c_wp].Time.lnk;
+			ret = &KRdata[num / c_wp].Time.lnk;
 			break;
 		    case 8:
-			ret = KRdata[num / c_wp].ExTime.lnk;
+			ret = &KRdata[num / c_wp].ExTime.lnk;
 			break;
 		    case 9:
-			ret = KRdata[num / c_wp].Time_Lub.lnk;
+			ret = &KRdata[num / c_wp].Time_Lub.lnk;
 			break;
 		    case 10:
-			ret = KRdata[num / c_wp].Timeout_PO.lnk;
+			ret = &KRdata[num / c_wp].Timeout_PO.lnk;
 			break;
 		    }
 		}
@@ -157,30 +157,31 @@ namespace FT3
 		if((KRdata.size() > 0) && ((KRdata.size() * c_p) > num)) {
 		    switch(num % c_p) {
 		    case 0:
-			ret = KRdata[num / c_p].State.lnk;
+			ret = &KRdata[num / c_p].State.lnk;
 			break;
 		    case 1:
-			ret = KRdata[num / c_p].On.lnk;
+			ret = &KRdata[num / c_p].On.lnk;
 			break;
 		    case 2:
-			ret = KRdata[num / c_p].Off.lnk;
+			ret = &KRdata[num / c_p].Off.lnk;
 			break;
 		    case 3:
-			ret = KRdata[num / c_p].Run.lnk;
+			ret = &KRdata[num / c_p].Run.lnk;
 			break;
 		    case 4:
-			ret = KRdata[num / c_p].Reset.lnk;
+			ret = &KRdata[num / c_p].Reset.lnk;
 			break;
 		    case 5:
-			ret = KRdata[num / c_p].Ban_MC.lnk;
+			ret = &KRdata[num / c_p].Ban_MC.lnk;
 			break;
 		    case 6:
-			ret = KRdata[num / c_p].Lubrication.lnk;
+			ret = &KRdata[num / c_p].Lubrication.lnk;
 			break;
 		    }
 		}
 	    }
-	    return ret;
+	    if (ret == NULL) throw TError(nodePath().c_str(),_("Parameter is disabled or is not based on the template."));
+	    else return ret;
 	}
     };
 
