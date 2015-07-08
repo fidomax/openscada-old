@@ -23,12 +23,12 @@
 
 namespace FT3
 {
-    class KA_BTR: public DA
+    class KA_BTU: public DA
     {
     public:
 	//Methods
-	KA_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params);
-	~KA_BTR();
+	KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params);
+	~KA_BTU();
 	uint16_t ID;
 	uint16_t count_nu;
 	bool with_params;
@@ -43,84 +43,58 @@ namespace FT3
 	void saveIO(void);
 	void loadIO(bool force = false);
 	void tmHandler(void);
-	class STUchannel
+	class SKATUchannel
 	{
 	public:
-	    STUchannel(uint8_t iid) :
-		    id(iid),
-		    On(TSYS::strMess("on_%d", id + 1).c_str(), TSYS::strMess(_("On %d"), id + 1).c_str()),
-		    Off(TSYS::strMess("off_%d", id + 1).c_str(), TSYS::strMess(_("Off %d"), id + 1).c_str()),
-		    Run(TSYS::strMess("run_%d", id + 1).c_str(), TSYS::strMess(_("Run %d"), id + 1).c_str()),
-		    Reset(TSYS::strMess("reset_%d", id + 1).c_str(), TSYS::strMess(_("Reset %d"), id + 1).c_str()),
-		    Time(TSYS::strMess("time_%d", id + 1).c_str(), TSYS::strMess(_("Time %d"), id + 1).c_str())
+	    SKATUchannel(uint8_t iid) :
+		    id(iid), Line(TSYS::strMess("Line_%d", id + 1).c_str(), TSYS::strMess(_("Line %d"), id + 1).c_str())
 	    {
+		for(int i = 0; i < 16; i++) {
+		    Time.push_back(ui16Data(TSYS::strMess("Time%d_%d", i, id + 1).c_str(), TSYS::strMess(_("Line #%d %d"), i, id + 1).c_str()));
+		}
 	    }
 	    uint8_t id;
-	    uint8_t currTU;
-	    ui8Data On, Off, Run, Reset;
-	    flData Time;
+	    ui16Data Line;
+	    vector<ui16Data> Time;
 	};
-	vector<STUchannel> TUdata;
+	vector<SKATUchannel> TUdata;
 	int lnkSize()
 	{
 	    if(with_params) {
-		return TUdata.size() * 5;
+		return TUdata.size() * 17;
 	    } else {
-		return TUdata.size() * 4;
+		return TUdata.size() * 1;
 	    }
 	}
 	int lnkId(const string &id)
 	{
 	    if(with_params) {
 		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
-		    if(TUdata[i_l].On.lnk.prmName == id) return i_l * 5;
-		    if(TUdata[i_l].Off.lnk.prmName == id) return i_l * 5 + 1;
-		    if(TUdata[i_l].Run.lnk.prmName == id) return i_l * 5 + 2;
-		    if(TUdata[i_l].Reset.lnk.prmName == id) return i_l * 5 + 3;
-		    if(TUdata[i_l].Time.lnk.prmName == id) return i_l * 5 + 4;
+		    if(TUdata[i_l].Line.lnk.prmName == id) return i_l * 17;
+			for(int i = 0; i < 16; i_l++) {
+			    if(TUdata[i_l].Time[i].lnk.prmName == id) return i_l * 17 + i + 1;
+			}
 		}
 	    } else {
 		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
-		    if(TUdata[i_l].On.lnk.prmName == id) return i_l * 4;
-		    if(TUdata[i_l].Off.lnk.prmName == id) return i_l * 4 + 1;
-		    if(TUdata[i_l].Run.lnk.prmName == id) return i_l * 4 + 2;
-		    if(TUdata[i_l].Reset.lnk.prmName == id) return i_l * 4 + 3;
+		    if(TUdata[i_l].Line.lnk.prmName == id) return i_l;
 		}
 	    }
 	    return -1;
 	}
 	SLnk &lnk(int num)
 	{
+	    int k;
 	    if(with_params) {
-		if(TUdata.size() > 0) {
-		    switch(num % 5) {
-		    case 0:
-			return TUdata[num / 5].On.lnk;
-		    case 1:
-			return TUdata[num / 5].Off.lnk;
-		    case 2:
-			return TUdata[num / 5].Run.lnk;
-		    case 3:
-			return TUdata[num / 5].Reset.lnk;
-		    case 4:
-			return TUdata[num / 5].Time.lnk;
-		    }
-		}
+		k = 17;
 	    } else {
-		if(TUdata.size() > 0) {
-		    switch(num % 4) {
-		    case 0:
-			return TUdata[num / 4].On.lnk;
-		    case 1:
-			return TUdata[num / 4].Off.lnk;
-		    case 2:
-			return TUdata[num / 4].Run.lnk;
-		    case 3:
-			return TUdata[num / 4].Reset.lnk;
-
-		    }
-		}
-
+		k = 1;
+	    }
+	    switch(num % k) {
+	    case 0:
+		return TUdata[num / k].Line.lnk;
+	    default:
+		return TUdata[num / k].Time[num % k - 1].lnk;
 	    }
 	}
     };
