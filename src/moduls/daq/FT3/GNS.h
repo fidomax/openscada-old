@@ -69,7 +69,7 @@ namespace FT3
 	    ui16Data TUOn, TUOff, TUStop, TURemote, TUManual;
 	    ui16Data TimeOn, TimeOff, TimeStop, TimeRemote, TimeManual;
 	    ui16Data TCOn, TCOff, TCMode;
-	    ui16Data Time;
+	    ui32Data Time;
 
 	    void UpdateTUParam(uint16_t ID, uint8_t cl);
 	    void UpdateTCParam(uint16_t ID, uint8_t cl);
@@ -78,7 +78,7 @@ namespace FT3
 	};
 	vector<SKANSchannel> data;
 	void AddNSChannel(uint8_t iid);
-	void AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex);
+	//void AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex);
 	int lnkSize()
 	{
 	    if(with_params) {

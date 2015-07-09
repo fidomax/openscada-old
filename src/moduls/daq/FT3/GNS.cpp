@@ -172,13 +172,13 @@ void KA_GNS::AddNSChannel(uint8_t iid)
     }
 }
 
-void KA_GNS::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
+/*void KA_GNS::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
 {
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld(param.prmName.c_str(), param.prmDesc.c_str(), type, flg));
     param.vlattr = mPrm.vlAt(param.prmName.c_str());
     fld->setReserve(ex);
-}
+}*/
 
 string KA_GNS::getStatus(void)
 {
@@ -267,7 +267,7 @@ void KA_GNS::tmHandler(void)
 	if(with_params) {
 	    data[i].UpdateTUParam(PackID(ID, (i + 1), 1), 1);
 	    data[i].UpdateTCParam(PackID(ID, (i + 1), 2), 1);
-	    UpdateParamW(data[i].Time, PackID(ID, (i + 1), 4), 2);
+	    UpdateParam32(data[i].Time, PackID(ID, (i + 1), 4), 2);
 	    //    data[i].UpdateTTParam(PackID(ID, (i + 1), 2), 1);
 	}
 	UpdateParam8(data[i].State, PackID(ID, (i + 1), 0), 1);
@@ -367,7 +367,9 @@ uint8_t KA_GNS::cmdGet(uint16_t prmID, uint8_t * out)
 		out[0] = data[ft3ID.k - 1].Time.s;
 		out[1] = data[ft3ID.k - 1].Time.b_vl[0];
 		out[2] = data[ft3ID.k - 1].Time.b_vl[1];
-		l = 3;
+		out[3] = data[ft3ID.k - 1].Time.b_vl[2];
+		out[4] = data[ft3ID.k - 1].Time.b_vl[3];
+		l = 5;
 		break;
 
 	    }
@@ -401,7 +403,7 @@ uint8_t KA_GNS::cmdSet(uint8_t * req, uint8_t addr)
 	    l = SetNew8Val(data[ft3ID.k - 1].Function, addr, prmID, req[2]);
 	    break;
 	case 4:
-	    l = SetNewWVal(data[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
+	    l = SetNew32Val(data[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
 	    break;
 	}
 

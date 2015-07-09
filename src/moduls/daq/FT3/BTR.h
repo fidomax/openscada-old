@@ -29,6 +29,7 @@ namespace FT3
 	//Methods
 	KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params);
 	~KA_BTU();
+	void AddChannel(uint8_t iid);
 	uint16_t ID;
 	uint16_t count_nu;
 	bool with_params;
@@ -46,15 +47,19 @@ namespace FT3
 	class SKATUchannel
 	{
 	public:
-	    SKATUchannel(uint8_t iid) :
-		    id(iid), Line(TSYS::strMess("Line_%d", id + 1).c_str(), TSYS::strMess(_("Line %d"), id + 1).c_str())
+	    SKATUchannel(uint8_t iid, DA* owner) :
+		    da(owner), id(iid), iTY(0), Line(TSYS::strMess("Line_%d", id + 1).c_str(), TSYS::strMess(_("Line %d"), id + 1).c_str())
 	    {
 		for(int i = 0; i < 16; i++) {
-		    Time.push_back(ui16Data(TSYS::strMess("Time%d_%d", i, id + 1).c_str(), TSYS::strMess(_("Line #%d %d"), i, id + 1).c_str()));
+		    mess_info("______", "SKATUchannel %d", i);
+		    Time.push_back(ui16Data(TSYS::strMess("Time%d_%d", i + 1, id + 1).c_str(), TSYS::strMess(_("Time #%d %d"), i + 1, id + 1).c_str()));
+		    mess_info("______", "SKATUchannel--- %s", Time[i].lnk.prmName.c_str());
 		}
 	    }
+	    DA* da;
 	    uint8_t id;
 	    ui16Data Line;
+	    uint8_t iTY;
 	    vector<ui16Data> Time;
 	};
 	vector<SKATUchannel> TUdata;
@@ -71,9 +76,9 @@ namespace FT3
 	    if(with_params) {
 		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
 		    if(TUdata[i_l].Line.lnk.prmName == id) return i_l * 17;
-			for(int i = 0; i < 16; i_l++) {
-			    if(TUdata[i_l].Time[i].lnk.prmName == id) return i_l * 17 + i + 1;
-			}
+		    for(int i = 0; i < 16; i++) {
+			if(TUdata[i_l].Time[i].lnk.prmName == id) return i_l * 17 + i + 1;
+		    }
 		}
 	    } else {
 		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
@@ -93,11 +98,27 @@ namespace FT3
 	    switch(num % k) {
 	    case 0:
 		return TUdata[num / k].Line.lnk;
-	    default:
-		return TUdata[num / k].Time[num % k - 1].lnk;
+	    case 1:
+	    case 2:
+	    case 3:
+	    case 4:
+	    case 5:
+	    case 6:
+	    case 7:
+	    case 8:
+	    case 9:
+	    case 10:
+	    case 11:
+	    case 12:
+	    case 13:
+	    case 14:
+	    case 15:
+	    case 16:
+		 return TUdata[num / k].Time[num % k - 1].lnk;
 	    }
 	}
-    };
+    }
+    ;
 
     class B_BTR: public DA
     {

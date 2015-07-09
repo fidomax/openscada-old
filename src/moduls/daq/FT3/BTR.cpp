@@ -27,8 +27,6 @@
 
 using namespace FT3;
 
-
-
 KA_BTU::KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params) :
 	DA(prm), ID(id), count_nu(nu), with_params(has_params)
 
@@ -40,10 +38,6 @@ KA_BTU::KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params) :
 
     for(int i = 0; i < count_nu; i++) {
 	AddChannel(i);
-	/*	    data.push_back(SKANSchannel(i, this));
-	 mPrm.p_el.fldAdd(fld = new TFld(data.back().State.lnk.prmName.c_str(), data[i].State.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	 data.back().State.lnk.vlattr = mPrm.vlAt(data[i].State.lnk.prmName.c_str());
-	 fld->setReserve(TSYS::strMess("%d:1", i + 1));*/
     }
     loadIO(true);
 }
@@ -51,6 +45,17 @@ KA_BTU::KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params) :
 KA_BTU::~KA_BTU()
 {
 
+}
+
+void KA_BTU::AddChannel(uint8_t iid)
+{
+    TUdata.push_back(SKATUchannel(iid, this));
+    AddAttr(TUdata.back().Line.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
+    if(with_params) {
+	for(int i = 0; i < 16; i++) {
+	    //AddAttr(TUdata.back().Time[i].lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+	}
+    }
 }
 
 string KA_BTU::getStatus(void)
@@ -67,8 +72,6 @@ string KA_BTU::getStatus(void)
 
 void KA_BTU::loadIO(bool force)
 {
-    //Load links
-//    mess_info("B_BVT::loadIO", "");
     if(mPrm.owner().startStat() && !force) {
 	mPrm.modif(true);
 	return;
@@ -79,16 +82,10 @@ void KA_BTU::loadIO(bool force)
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_nu; i++) {
-	loadLnk(TUdata[i].On.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].Off.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].Run.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].Reset.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].Time.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].TC.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].ExTime.lnk, io_bd, io_table, cfg);
-    }
-    for(int i = 0; i < count_nr; i++) {
-	loadLnk(TRdata[i].Value.lnk, io_bd, io_table, cfg);
+	loadLnk(TUdata[i].Line.lnk, io_bd, io_table, cfg);
+/*	for(int j = 0; i < 16; i++) {
+	    loadLnk(TUdata[i].Time[j].lnk, io_bd, io_table, cfg);
+	}*/
     }
 
 }
@@ -101,16 +98,10 @@ void KA_BTU::saveIO()
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_nu; i++) {
-	saveLnk(TUdata[i].On.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].Off.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].Run.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].Reset.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].Time.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].TC.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].ExTime.lnk, io_bd, io_table, cfg);
-    }
-    for(int i = 0; i < count_nr; i++) {
-	saveLnk(TRdata[i].Value.lnk, io_bd, io_table, cfg);
+	saveLnk(TUdata[i].Line.lnk, io_bd, io_table, cfg);
+	for(int j = 0; i < 16; i++) {
+	    saveLnk(TUdata[i].Time[j].lnk, io_bd, io_table, cfg);
+	}
     }
 }
 
@@ -118,12 +109,9 @@ void KA_BTU::tmHandler(void)
 {
     NeedInit = false;
     for(int i = 0; i < count_nu; i++) {
-	UpdateParamFlW(TUdata[i].Time, PackID(ID, i + 1, 0), 1);
-	UpdateParamW(TUdata[i].TC, PackID(ID, i + 1, 1), 1);
-	UpdateParamFlB(TUdata[i].ExTime, PackID(ID, i + 1, 2), 1);
-    }
-    for(int i = 0; i < count_nr; i++) {
-	UpdateParamFl(TRdata[i].Value, PackID(ID, i + 1 + count_nu, 0), 1);
+	for(int j = 0; i < 16; i++) {
+	    UpdateParamW(TUdata[i].Time[j], PackID(ID, i + 1, 1), 1);
+	}
     }
 }
 
@@ -131,77 +119,6 @@ uint16_t KA_BTU::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
-    case TaskRefresh:
-	Msg.L = 5;
-	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
-	if(mPrm.owner().Transact(&Msg)) {
-	    if(Msg.C == GOOD3) {
-		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
-		if(count_nu) {
-		    Msg.L = 7;
-		    Msg.C = AddrReq;
-		    *((uint16_t *) (Msg.D)) = PackID(ID, 0, 1); //выбор ТУ
-		    *((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 2); //исполнение
-		    if(mPrm.owner().Transact(&Msg)) {
-			if(Msg.C == GOOD3) {
-			    mPrm.vlAt("selection").at().setI(Msg.D[8], 0, true);
-			    mPrm.vlAt("execution").at().setI(Msg.D[14], 0, true);
-			}
-		    }
-		    if(with_params) {
-			for(int i = 1; i <= count_nu; i++) {
-			    Msg.L = 9;
-			    Msg.C = AddrReq;
-			    *((uint16_t *) Msg.D) = PackID(ID, i, 0); //время выдержки
-			    *((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 1); //ТС
-			    *((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 2); //доп время выдержки
-
-			    if(mPrm.owner().Transact(&Msg)) {
-				if(Msg.C == GOOD3) {
-				    mPrm.vlAt(TSYS::strMess("time_%d", i).c_str()).at().setR(TSYS::getUnalign16(Msg.D + 8) / 10.0, 0, true);
-				    mPrm.vlAt(TSYS::strMess("tc_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 15), 0, true);
-				    mPrm.vlAt(TSYS::strMess("extime_%d", i).c_str()).at().setR(Msg.D[22] / 10.0, 0, true);
-				    rc = 1;
-				} else {
-				    rc = 0;
-				    break;
-				}
-			    } else {
-				rc = 0;
-				break;
-			    }
-
-			}
-		    }
-		}
-		if(count_nr) {
-		    for(int i = 1; i <= count_nr; i++) {
-			Msg.L = 5;
-			Msg.C = AddrReq;
-			*((uint16_t *) Msg.D) = PackID(ID, i + count_nu, 0); //уставка
-			if(mPrm.owner().Transact(&Msg)) {
-			    if(Msg.C == GOOD3) {
-				mPrm.vlAt(TSYS::strMess("value_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 8), 0, true);
-				rc = 1;
-			    } else {
-				rc = 0;
-				break;
-			    }
-			} else {
-			    rc = 0;
-			    break;
-			}
-		    }
-		} else {
-		    rc = 1;
-		}
-	    }
-	}
-	if(rc) NeedInit = false;
-	break;
-    }
     return rc;
 }
 uint16_t KA_BTU::HandleEvent(uint8_t * D)
@@ -209,54 +126,6 @@ uint16_t KA_BTU::HandleEvent(uint8_t * D)
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
     if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
-    if(ft3ID.k == 0) {
-	switch(ft3ID.n) {
-	case 0:
-	    mPrm.vlAt("state").at().setI(D[2], 0, true);
-	    l = 3;
-	    break;
-	case 1:
-	    mPrm.vlAt(TSYS::strMess("selection").c_str()).at().setI(D[3], 0, true);
-	    l = 4;
-	    break;
-	case 2:
-	    mPrm.vlAt(TSYS::strMess("execution").c_str()).at().setI(D[3], 0, true);
-	    l = 4;
-	    break;
-	}
-    }
-    if(count_nu && (ft3ID.k <= count_nu)) {
-	switch(ft3ID.n) {
-	case 0:
-	    mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalign16(D + 3) / 10.0, 0, true);
-	    l = 5;
-	    break;
-
-	case 1:
-	    if(with_params) {
-		mPrm.vlAt(TSYS::strMess("tc_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), 0, true);
-	    }
-	    l = 5;
-	    break;
-	case 2:
-	    if(with_params) {
-		mPrm.vlAt(TSYS::strMess("extime_%d", ft3ID.k).c_str()).at().setR(D[3] / 10.0, 0, true);
-		;
-	    }
-	    l = 4;
-	    break;
-
-	}
-    }
-    if(count_nr && ((ft3ID.k > count_nu) && (ft3ID.k <= count_nr + count_nu))) {
-	switch(ft3ID.n) {
-	case 0:
-	    mPrm.vlAt(TSYS::strMess("value_%d", ft3ID.k - count_nu).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-	    l = 7;
-	    break;
-
-	}
-    }
     return l;
 }
 
@@ -286,32 +155,62 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
 	if(count_nu && (ft3ID.k <= count_nu)) {
 	    switch(ft3ID.n) {
 	    case 0:
-		out[0] = TUdata[ft3ID.k - 1].Time.s;
-		out[1] = ((uint16_t) TUdata[ft3ID.k - 1].Time.vl);
-		out[2] = ((uint16_t) TUdata[ft3ID.k - 1].Time.vl) >> 8;
-		l = 3;
+		out[0] = TUdata[ft3ID.k - 1].Line.s;
+		out[1] = TUdata[ft3ID.k - 1].iTY;
+		l = 2;
 		break;
 	    case 1:
-		out[0] = TUdata[ft3ID.k - 1].TC.s;
-		out[1] = TUdata[ft3ID.k - 1].TC.vl;
-		out[2] = TUdata[ft3ID.k - 1].TC.vl >> 8;
+	    case 2:
+	    case 3:
+	    case 4:
+	    case 5:
+	    case 6:
+	    case 7:
+	    case 8:
+	    case 9:
+	    case 10:
+	    case 11:
+	    case 12:
+	    case 13:
+	    case 14:
+	    case 15:
+	    case 16:
+		out[0] = TUdata[ft3ID.k - 1].Time[ft3ID.n].s;
+		out[1] = TUdata[ft3ID.k - 1].Time[ft3ID.n].vl;
+		out[2] = TUdata[ft3ID.k - 1].Time[ft3ID.n].vl >> 8;
 		l = 3;
 		break;
-	    case 2:
-		out[0] = TUdata[ft3ID.k - 1].ExTime.s;
-		out[1] = ((uint16_t) TUdata[ft3ID.k - 1].ExTime.vl);
-		l = 2;
+	    case 32:
+		out[0] = TUdata[ft3ID.k - 1].Line.s;
+		out[1] = TUdata[ft3ID.k - 1].Line.vl;
+		out[1] = TUdata[ft3ID.k - 1].Line.vl >> 8;
+		l = 3;
 		break;
 	    }
 	}
-	if(count_nr && ((ft3ID.k > count_nu) && (ft3ID.k <= count_nr + count_nu))) {
-	    out[0] = TRdata[ft3ID.k - 1 - count_nu].Value.s;
-	    for(uint8_t j = 0; j < 4; j++)
-		out[1 + j] = TRdata[ft3ID.k - 1 - count_nu].Value.b_vl[j];
-	    l = 5;
-	}
     }
     return l;
+}
+
+void KA_BTU::runTU(uint8_t tu)
+{
+    if(tu == 0x55) {
+	for(int i = 0; i < count_nu; i++) {
+	    if(TUdata[i].iTY) {
+		TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
+		TUdata[i].Line.vl = 0;
+		TUdata[i].iTY = 0;
+	    }
+	}
+    }
+    if(tu == 0x0) {
+	for(int i = 0; i < count_nu; i++) {
+	    TUdata[i].Line.vl = 0;
+	    TUdata[i].iTY = 0;
+	    TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
+
+	}
+    }
 }
 
 uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
@@ -323,10 +222,6 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
     mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
-	case 1:
-	    setTU(req[2]);
-	    l = 3;
-	    break;
 	case 2:
 	    runTU(req[2]);
 	    l = 3;
@@ -336,122 +231,45 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 	if(count_nu && (ft3ID.k <= count_nu)) {
 	    switch(ft3ID.n) {
 	    case 0:
-		l = SetNewflWVal(TUdata[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
+		TUdata[ft3ID.k - 1].Line.s = addr;
+		TUdata[ft3ID.k - 1].iTY = req[2];
+		TUdata[ft3ID.k - 1].Line.vl = 1 << TUdata[ft3ID.k - 1].iTY - 1;
+		l = 3;
 		break;
 	    case 1:
-		l = 3;
 	    case 2:
-		l = SetNewfl8Val(TUdata[ft3ID.k - 1].ExTime, addr, prmID, req[2]);
+	    case 3:
+	    case 4:
+	    case 5:
+	    case 6:
+	    case 7:
+	    case 8:
+	    case 9:
+	    case 10:
+	    case 11:
+	    case 12:
+	    case 13:
+	    case 14:
+	    case 15:
+	    case 16:
+		l = SetNewWVal(TUdata[ft3ID.k - 1].Time[ft3ID.n], addr, prmID, TSYS::getUnalign16(req + 2));
+		break;
+	    case 32:
+		TUdata[ft3ID.k - 1].Line.s = addr;
+		TUdata[ft3ID.k - 1].iTY = 1;
+		TUdata[ft3ID.k - 1].Line.vl = TSYS::getUnalign16(req + 2);
+		l = 3;
+		break;
 	    }
-	}
-	if(count_nr && ((ft3ID.k > count_nu) && (ft3ID.k <= count_nr + count_nu))) {
-	    mess_info(mPrm.nodePath().c_str(), "cmdSet Val");
-	    l = SetNewflVal(TRdata[ft3ID.k - 1 - count_nu].Value, addr, prmID, TSYS::getUnalignFloat(req + 2));
 	}
     }
     return l;
 }
 
-void KA_BTU::setTU(uint8_t tu)
-{
-    uint8_t vl = tu >> 7;
-    uint8_t n = tu & 0x7F;
-    if((n > 0) && (n < count_nu)) {
-	STUchannel & TU = TUdata[n - 1];
-	currTU = n;
-	if(vl) {
-	    if(!TU.On.lnk.aprm.freeStat()) {
-		//on
-		TU.On.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.On.lnk.prmName.c_str()).at().setI(1, 0, true);
-	    }
-	} else {
-	    if(!TUdata[n - 1].Off.lnk.aprm.freeStat()) {
-		//off
-		TU.Off.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Off.lnk.prmName.c_str()).at().setI(1, 0, true);
-	    }
-	}
-    }
-
-}
-void KA_BTU::runTU(uint8_t tu)
-{
-    if(currTU) {
-	STUchannel & TU = TUdata[currTU - 1];
-	if(tu == 0x55) {
-	    if((!TU.Run.lnk.aprm.freeStat())) {
-		TU.Run.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(1, 0, true);
-		currTU = 0;
-	    }
-	}
-    }
-    if(tu == 0x0) {
-	for(int i = 0; i < count_nu; i++) {
-	    STUchannel & TU = TUdata[i];
-	    if((!TU.Reset.lnk.aprm.freeStat())) {
-		TU.Reset.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
-		currTU = 0;
-	    }
-	}
-    }
-}
-
 uint16_t KA_BTU::setVal(TVal &val)
 {
-    int off = 0;
-    FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
-    ft3ID.g = ID;
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = SetData;
-    *((uint16_t *) Msg.D) = PackID(ft3ID);
-    if(ft3ID.k == 0) {
-	switch(ft3ID.n) {
-	case 1:
-	case 2:
-	    Msg.L = 6;
-	    Msg.D[2] = val.get(NULL, true).getI();
-	    if((ft3ID.n == 2) && (Msg.D[2] != 0x55)) {
-		Msg.D[2] = 0;
-	    }
-	    break;
-	}
-    } else {
-	if(count_nu && (ft3ID.k <= count_nu)) {
-	    switch(ft3ID.n) {
-	    case 0:
-		Msg.L = 7;
-		*(uint16_t *) (Msg.D + 2) = (uint16_t) (val.get(NULL, true).getR() * 10.0);
-		break;
-	    case 1:
-		Msg.L = 7;
-		*(uint16_t *) (Msg.D + 2) = (uint16_t) val.get(NULL, true).getI();
-		break;
-	    case 2:
-		Msg.L = 6;
-		Msg.D[2] = val.get(NULL, true).getR() * 10.0;
-		break;
-	    }
-	}
-	if(count_nr && ((ft3ID.k > count_nu) && (ft3ID.k <= count_nr + count_nu))) {
-	    switch(ft3ID.n) {
-	    case 0:
-		Msg.L = 9;
-		*(float *) (Msg.D + 2) = (float) val.get(NULL, true).getR();
-		break;
-	    }
-	}
-    }
-    if (Msg.L) mPrm.owner().Transact(&Msg);
     return 0;
 }
-
-
 
 B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params) :
 	DA(prm), ID(id), count_nu(nu), count_nr(nr), with_params(has_params)
@@ -510,7 +328,7 @@ string B_BTR::getStatus(void)
 
 void B_BTR::loadIO(bool force)
 {
-    //Load links
+//Load links
 //    mess_info("B_BVT::loadIO", "");
     if(mPrm.owner().startStat() && !force) {
 	mPrm.modif(true);
@@ -538,7 +356,7 @@ void B_BTR::loadIO(bool force)
 
 void B_BTR::saveIO()
 {
-    //Save links
+//Save links
     TConfig cfg(&mPrm.prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
@@ -890,7 +708,7 @@ uint16_t B_BTR::setVal(TVal &val)
 	    }
 	}
     }
-    if (Msg.L) mPrm.owner().Transact(&Msg);
+    if(Msg.L) mPrm.owner().Transact(&Msg);
     return 0;
 }
 

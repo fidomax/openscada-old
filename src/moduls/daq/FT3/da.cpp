@@ -27,6 +27,15 @@
 
 using namespace FT3;
 
+
+void DA::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
+{
+    TFld * fld;
+    mPrm.p_el.fldAdd(fld = new TFld(param.prmName.c_str(), param.prmDesc.c_str(), type, flg));
+    param.vlattr = mPrm.vlAt(param.prmName.c_str());
+    fld->setReserve(ex);
+}
+
 void DA::loadLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg)
 {
     cfg.cfg("ID").setS(lnk.prmName);

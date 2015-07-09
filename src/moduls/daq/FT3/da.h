@@ -265,6 +265,7 @@ namespace FT3
 	TypeFT3 mTypeFT3;
 	TMdPrm &mPrm;
 	bool NeedInit;
+	void AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex);
 	void loadLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	void saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg);
 	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
