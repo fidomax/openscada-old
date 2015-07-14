@@ -53,7 +53,7 @@ void KA_BTU::AddChannel(uint8_t iid)
     AddAttr(TUdata.back().Line.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
     if(with_params) {
 	for(int i = 0; i < 16; i++) {
-	    //AddAttr(TUdata.back().Time[i].lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+	    AddAttr(TUdata.back().Time[i].lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
 	}
     }
 }
@@ -83,9 +83,9 @@ void KA_BTU::loadIO(bool force)
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_nu; i++) {
 	loadLnk(TUdata[i].Line.lnk, io_bd, io_table, cfg);
-/*	for(int j = 0; i < 16; i++) {
+	for(int j = 0; j < 16; j++) {
 	    loadLnk(TUdata[i].Time[j].lnk, io_bd, io_table, cfg);
-	}*/
+	}
     }
 
 }
@@ -99,7 +99,7 @@ void KA_BTU::saveIO()
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_nu; i++) {
 	saveLnk(TUdata[i].Line.lnk, io_bd, io_table, cfg);
-	for(int j = 0; i < 16; i++) {
+	for(int j = 0; j < 16; j++) {
 	    saveLnk(TUdata[i].Time[j].lnk, io_bd, io_table, cfg);
 	}
     }
@@ -109,7 +109,7 @@ void KA_BTU::tmHandler(void)
 {
     NeedInit = false;
     for(int i = 0; i < count_nu; i++) {
-	for(int j = 0; i < 16; i++) {
+	for(int j = 0; j < 16; j++) {
 	    UpdateParamW(TUdata[i].Time[j], PackID(ID, i + 1, 1), 1);
 	}
     }
@@ -175,9 +175,9 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
 	    case 14:
 	    case 15:
 	    case 16:
-		out[0] = TUdata[ft3ID.k - 1].Time[ft3ID.n].s;
-		out[1] = TUdata[ft3ID.k - 1].Time[ft3ID.n].vl;
-		out[2] = TUdata[ft3ID.k - 1].Time[ft3ID.n].vl >> 8;
+		out[0] = TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].s;
+		out[1] = TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].vl;
+		out[2] = TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].vl >> 8;
 		l = 3;
 		break;
 	    case 32:
@@ -252,7 +252,7 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 	    case 14:
 	    case 15:
 	    case 16:
-		l = SetNewWVal(TUdata[ft3ID.k - 1].Time[ft3ID.n], addr, prmID, TSYS::getUnalign16(req + 2));
+		l = SetNewWVal(TUdata[ft3ID.k - 1].Time[ft3ID.n - 1], addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 32:
 		TUdata[ft3ID.k - 1].Line.s = addr;
