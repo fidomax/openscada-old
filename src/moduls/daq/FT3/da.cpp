@@ -369,7 +369,7 @@ void DA::UpdateParam28(ui8Data& param1, ui8Data& param2, uint16_t ID, uint8_t cl
 	param1.vl = tmp1;
 	param2.vl = tmp2;
 	mPrm.vlAt(param1.lnk.prmName.c_str()).at().setI(tmp1, 0, true);
-	mPrm.vlAt(param1.lnk.prmName.c_str()).at().setI(tmp1, 0, true);
+	mPrm.vlAt(param2.lnk.prmName.c_str()).at().setI(tmp2, 0, true);
 	uint8_t E[3] = { 0, tmp1, tmp2};
 	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
     }
