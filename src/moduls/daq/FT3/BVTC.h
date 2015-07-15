@@ -42,6 +42,7 @@ namespace FT3
 	void saveIO(void);
 	void loadIO(bool force = false );
 	void tmHandler(void);
+ 	uint16_t config;
 	class SKATCchannel
 	{
 	public:
@@ -55,7 +56,6 @@ namespace FT3
 	    uint8_t id;
 	    ui8Data Value, Period, Count;
 	};
- 	uint16_t config;
 	vector<SKATCchannel> data;
 	int lnkSize( ){
 	    if(with_params) {

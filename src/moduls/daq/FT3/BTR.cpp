@@ -28,7 +28,7 @@
 using namespace FT3;
 
 KA_BTU::KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params) :
-	DA(prm), ID(id), count_nu(nu), with_params(has_params)
+	DA(prm), ID(id), count_nu(nu), with_params(has_params), config(4 | (nu << 4) | (16 << 10))
 
 {
     mTypeFT3 = KA;
@@ -141,8 +141,8 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
 	    l = 1;
 	    break;
 	case 1:
-	    out[0] = 0;
-	    out[1] = 0;
+	    out[0] = config & 0xFF;
+	    out[1] = (config >> 8) & 0xFF;
 	    l = 2;
 	    break;
 	case 2:

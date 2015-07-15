@@ -28,7 +28,7 @@
 using namespace FT3;
 
 KA_BUC::KA_BUC(TMdPrm& prm, uint16_t id) :
-	DA(prm), ID(id), clockID(id + 1), modification(0), state(0), clockstate(0), s_state(0), config(0), clockconfig(0)
+	DA(prm), ID(id), clockID(id + 1), modification(0), state(0), clockstate(0), s_state(0), config(0x2800 | (2 << 10)), clockconfig(0x01 | (1 << 10))
 {
     mTypeFT3 = KA;
     TFld * fld;

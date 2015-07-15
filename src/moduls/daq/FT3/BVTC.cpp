@@ -28,7 +28,7 @@ using namespace FT3;
 //* B_BVTC                                             *
 //******************************************************
 KA_BVTC::KA_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), count_n(n), ID(id), with_params(has_params), config(0)
+	DA(prm), count_n(n), ID(id), with_params(has_params), config(3 | (n << 4) | (3 << 10))
 {
     mTypeFT3 = KA;
     TFld * fld;

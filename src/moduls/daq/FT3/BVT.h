@@ -40,6 +40,7 @@ namespace FT3
 	void saveIO(void);
 	void loadIO(bool force = false);
 	void tmHandler(void);
+ 	uint16_t config;
 	class SKATTchannel
 	{
 	public:

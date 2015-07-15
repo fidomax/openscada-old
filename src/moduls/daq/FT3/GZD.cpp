@@ -130,7 +130,7 @@ uint8_t KA_GZD::SKAZDchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_
 }
 
 KA_GZD::KA_GZD(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), ID(id), count_n(n), with_params(has_params)
+	DA(prm), ID(id), count_n(n), with_params(has_params), config(0xF | (n << 4) | (2 << 10))
 {
     mTypeFT3 = KA;
     chan_err.clear();
@@ -313,10 +313,9 @@ uint8_t KA_GZD::cmdGet(uint16_t prmID, uint8_t * out)
 	    l = 1;
 	    break;
 	case 1:
-	    out[0] = 0;
-	    out[1] = 0;
+	    out[0] = config >> 8;
+	    out[1] = config;
 	    l = 2;
-	    //config
 	    break;
 	case 2:
 	    for(uint8_t i = 0; i < count_n; i++) {
