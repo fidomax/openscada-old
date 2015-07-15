@@ -28,7 +28,7 @@
 using namespace FT3;
 
 KA_BUC::KA_BUC(TMdPrm& prm, uint16_t id) :
-	DA(prm), ID(id), modification(0), state(0), s_state(0), config(0)
+	DA(prm), ID(id), clockID(id + 1), modification(0), state(0), clockstate(0), s_state(0), config(0), clockconfig(0)
 {
     mTypeFT3 = KA;
     TFld * fld;
@@ -102,26 +102,49 @@ uint16_t KA_BUC::Task(uint16_t uc)
 uint16_t KA_BUC::HandleEvent(uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
-    if(ft3ID.g != ID) return 0;
+    //if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
-    switch(ft3ID.k) {
-    case 0:
-	switch(ft3ID.n) {
+    if(ft3ID.g == ID) {
+	switch(ft3ID.k) {
 	case 0:
-	    mPrm.vlAt("state").at().setI(D[3], 0, true);
-	    l = 4;
-	    break;
-	case 1:
-	    mPrm.vlAt("config").at().setI(TSYS::getUnalign16(D + 2), 0, true);
-	    l = 4;
-	    break;
-	case 2:
-	    mPrm.vlAt("modification").at().setI(TSYS::getUnalign16(D + 2), 0, true);
-	    l = 4;
-	    break;
+	    switch(ft3ID.n) {
+	    case 0:
+		mPrm.vlAt("state").at().setI(D[3], 0, true);
+		l = 4;
+		break;
+	    case 1:
+		mPrm.vlAt("config").at().setI(TSYS::getUnalign16(D + 2), 0, true);
+		l = 4;
+		break;
+	    case 2:
+		mPrm.vlAt("modification").at().setI(TSYS::getUnalign16(D + 2), 0, true);
+		l = 4;
+		break;
 
+	    }
+	    break;
 	}
-	break;
+    }
+    if(ft3ID.g == clockID) {
+	/*	switch(ft3ID.k) {
+	 case 0:
+	 switch(ft3ID.n) {
+	 case 0:
+	 mPrm.vlAt("state").at().setI(D[3], 0, true);
+	 l = 4;
+	 break;
+	 case 1:
+	 mPrm.vlAt("config").at().setI(TSYS::getUnalign16(D + 2), 0, true);
+	 l = 4;
+	 break;
+	 case 2:
+	 mPrm.vlAt("modification").at().setI(TSYS::getUnalign16(D + 2), 0, true);
+	 l = 4;
+	 break;
+
+	 }
+	 break;
+	 }*/
     }
     return l;
 }
@@ -153,31 +176,62 @@ uint16_t KA_BUC::setVal(TVal &val)
 
 uint8_t KA_BUC::cmdGet(uint16_t prmID, uint8_t * out)
 {
-    mess_info("KA_BUC", "cmdGet %04X",prmID);
+    mess_info("KA_BUC", "cmdGet %04X", prmID);
     FT3ID ft3ID = UnpackID(prmID);
-    mess_info("KA_BUC", "ID ft3ID g k n ",ID, ft3ID.g,ft3ID.k,ft3ID.n);
-    if(ft3ID.g != ID) return 0;
+    mess_info("KA_BUC", "ID ft3ID g k n ", ID, ft3ID.g, ft3ID.k, ft3ID.n);
+    time_t rawtime;
+//    if(ft3ID.g != ID) return 0;
     uint l = 0;
-    switch(ft3ID.k) {
-    case 0:
-	switch(ft3ID.n) {
+    if(ft3ID.g == ID) {
+	switch(ft3ID.k) {
 	case 0:
-	    out[0] = s_state;
-	    out[1] = state;
-	    l = 2;
-	    break;
-	case 1:
-	    out[0] = config & 0xFF;
-	    out[1] = (config >> 8) & 0xFF;
-	    l = 2;
-	    break;
-	case 2:
-	    out[0] = modification & 0xFF;
-	    out[1] = (modification >> 8) & 0xFF;
-	    l = 2;
+	    switch(ft3ID.n) {
+	    case 0:
+		out[0] = s_state;
+		out[1] = state;
+		l = 2;
+		break;
+	    case 1:
+		out[0] = config & 0xFF;
+		out[1] = (config >> 8) & 0xFF;
+		l = 2;
+		break;
+	    case 2:
+		out[0] = modification & 0xFF;
+		out[1] = (modification >> 8) & 0xFF;
+		l = 2;
+		break;
+	    }
 	    break;
 	}
-	break;
+    }
+    if(ft3ID.g == clockID) {
+	switch(ft3ID.k) {
+	case 0:
+	    switch(ft3ID.n) {
+	    case 0:
+		out[0] = clockstate;
+		l = 1;
+		break;
+	    case 1:
+		out[0] = clockconfig & 0xFF;
+		out[1] = (clockconfig >> 8) & 0xFF;
+		l = 2;
+		break;
+	    case 2:
+		out[0] = s_state;
+		time(&rawtime);
+		mPrm.owner().Time_tToDateTime(out + 1, rawtime);
+		l = 6;
+		break;
+	    case 3:
+		time(&rawtime);
+		mPrm.owner().Time_tToDateTime(out, rawtime);
+		l = 5;
+		break;
+	    }
+	    break;
+	}
     }
     return l;
 }
@@ -185,25 +239,42 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
 {
     uint16_t prmID = TSYS::getUnalign16(req);
     FT3ID ft3ID = UnpackID(prmID);
-    if(ft3ID.g != ID) return 0;
+    //if(ft3ID.g != ID) return 0;
     uint l = 0;
-    switch(ft3ID.k) {
-    case 0:
+    time_t rawtime;
+    if(ft3ID.g == ID) {
 	switch(ft3ID.k) {
 	case 0:
-	    state = req[2];
-	    s_state = addr;
-	    uint8_t E[2] = { addr, req[2] };
-	    mPrm.owner().PushInBE(1, 2, prmID, E);
-	    uint l = 3;
+	    switch(ft3ID.k) {
+	    case 0:
+		state = req[2];
+		s_state = addr;
+		uint8_t E[2] = { addr, req[2] };
+		mPrm.owner().PushInBE(1, 2, prmID, E);
+		uint l = 3;
+		break;
+	    }
 	    break;
 	}
-	break;
     }
+    if(ft3ID.g == clockID) {
+	switch(ft3ID.k) {
+	case 0:
+	    switch(ft3ID.n) {
+	    case 2:
+		s_state = addr;
+		state = clockstate = 1;
+		rawtime = mPrm.owner().DateTimeToTime_t(req + 2);
+		stime (&rawtime);
+		l = 7;
+		break;
+	    }
+	    break;
+	}
+    }
+
     return l;
 }
-
-
 
 B_BUC::B_BUC(TMdPrm& prm, uint16_t id) :
 	DA(prm), ID(id), mod_KP(0), state(0), stateWatch(0), s_tm(0), wt1(0), wt2(0), s_wt1(0), s_wt2(0)
@@ -270,9 +341,9 @@ uint16_t B_BUC::Task(uint16_t uc)
 		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
 		mPrm.vlAt("mod").at().setI(TSYS::getUnalign16(Msg.D + 12), 0, true);
 		mPrm.vlAt("sttimer").at().setI(Msg.D[18], 0, true);
-		time_t t = DateTimeToTime_t(Msg.D + 24);
+		time_t t = mPrm.owner().DateTimeToTime_t(Msg.D + 24);
 		mPrm.vlAt("curdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
-		t = DateTimeToTime_t(Msg.D + 33);
+		t = mPrm.owner().DateTimeToTime_t(Msg.D + 33);
 		mPrm.vlAt("stopdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
 		mPrm.vlAt("dl1").at().setI(Msg.D[43], 0, true);
 		mPrm.vlAt("dl2").at().setI(Msg.D[49], 0, true);
@@ -294,7 +365,7 @@ uint16_t B_BUC::Task(uint16_t uc)
 	Msg.L = 10;
 	Msg.C = SetData;
 	*((uint16_t *) Msg.D) = PackID(ID, 1, 1); //текущее время
-	Time_tToDateTime(Msg.D + 2, rawtime);
+	mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
 	mPrm.owner().Transact(&Msg);
 	if(Msg.C == GOOD2) {
 	    rc = 1;
@@ -335,12 +406,12 @@ uint16_t B_BUC::HandleEvent(uint8_t * D)
 	l = 3;
 	break;
     case 1:
-	t = DateTimeToTime_t(D + 3);
+	t = mPrm.owner().DateTimeToTime_t(D + 3);
 	mPrm.vlAt("curdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
 	l = 8;
 	break;
     case 2:
-	t = DateTimeToTime_t(D + 2);
+	t = mPrm.owner().DateTimeToTime_t(D + 2);
 	mPrm.vlAt("stopdt").at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
 	l = 7;
 	break;
@@ -382,7 +453,7 @@ uint16_t B_BUC::setVal(TVal &val)
 	    strptime(val.get(NULL, true).getS().c_str(), "%d.%m.%Y %H:%M:%S", &tm_tm);
 
 	    Msg.L = 10;
-	    Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
+	    mPrm.owner().Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
 	    break;
 	}
 	break;
@@ -432,12 +503,12 @@ uint8_t B_BUC::cmdGet(uint16_t prmID, uint8_t * out)
 	case 1:
 	    out[0] = s_tm;
 	    time(&rawtime);
-	    Time_tToDateTime(out + 1, rawtime);
+	    mPrm.owner().Time_tToDateTime(out + 1, rawtime);
 	    l = 6;
 	    break;
 	case 2:
 	    time(&rawtime);
-	    Time_tToDateTime(out, rawtime);
+	    mPrm.owner().Time_tToDateTime(out, rawtime);
 	    l = 5;
 	    break;
 	}

@@ -242,7 +242,7 @@ uint16_t B_UTHET::Task(uint16_t uc)
 				mPrm.vlAt(TSYS::strMess("hourP_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 112), 0, true);
 				mPrm.vlAt(TSYS::strMess("hourE_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 116), 0, true);
 				mPrm.vlAt(TSYS::strMess("period_date_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 128), 0, true);
-				time_t t = DateTimeToTime_t(Msg.D + 125);
+				time_t t = mPrm.owner().DateTimeToTime_t(Msg.D + 125);
 				mPrm.vlAt(TSYS::strMess("datet_%d", i).c_str()).at().setS(TSYS::time2str(t, "%d.%m.%Y %H:%M:%S"), 0, true);
 				string data_s;
 				mPrm.vlAt(TSYS::strMess("avgQ_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 135), 0, true);
@@ -431,7 +431,7 @@ uint16_t B_UTHET::HandleEvent(uint8_t * D)
 		mPrm.vlAt(TSYS::strMess("period_date_%d", k).c_str()).at().setI(D[6], 0, true);
 		D[6] = 0;
 		D[7] = 0;
-		t = DateTimeToTime_t(D + 3);
+		t = mPrm.owner().DateTimeToTime_t(D + 3);
 		mPrm.vlAt(TSYS::strMess("datet_%d", k).c_str()).at().setS(TSYS::time2str(t, "%d.%m.%Y %H:00:00"), 0, true);
 
 	    }
@@ -677,7 +677,7 @@ uint16_t B_UTHET::setVal(TVal &val)
 	Msg.D[0] = addr & 0xFF;
 	Msg.D[1] = (addr >> 8) & 0xFF;
 	uint16_t h = (uint16_t) mPrm.vlAt(TSYS::strMess("period_date_%d", k).c_str()).at().getI(0, true);
-	Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
+	mPrm.owner().Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
 	mess_info(mPrm.nodePath().c_str(), _("Time_tToDateTime"));
 	Msg.D[5] = h & 0xFF;
 	Msg.D[6] = (h >> 8) & 0xFF;

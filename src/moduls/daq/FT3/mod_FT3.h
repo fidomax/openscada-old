@@ -51,12 +51,14 @@ using namespace OSCADA;
 
 #include "da.h"
 
-
 namespace FT3
 {
-    time_t DateTimeToTime_t(uint8_t *);
+    time_t GRSDateTimeToTime_t(uint8_t *);
 
-    void Time_tToDateTime(uint8_t *, time_t);
+    void Time_tToGRSDateTime(uint8_t *, time_t);
+    time_t KADateTimeToTime_t(uint8_t *);
+
+    void Time_tToKADateTime(uint8_t *, time_t);
     /*    struct dhm{
      uint16_t d;
      uint8_t h;
@@ -227,14 +229,28 @@ namespace FT3
     class TFT3Channel
     {
     public:
-	TFT3Channel();
+	TFT3Channel() :
+		FCB2(0xFF), FCB3(0xFF)
+	{
+	    BE = new el_chBE[nBE];
+	    if(BE) {
+		for(int i = 0; i < nBE; i++)
+		    empt.insert(&BE[i]);
+	    }
+	    resp2.L = 0;
+	    resp3.L = 0;
+	}
+	virtual ~TFT3Channel()
+	{
+	}
 	uint8_t FCB2, FCB3;
 
 	el_chBE *BE;
 	chain_BE empt, C1, C2;
 	tagMsg resp2, resp3;
-	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
+	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E, uint8_t *DHM);
     };
+
 
 //*************************************************
 //* Modft3::TMdContr                             *
@@ -268,7 +284,24 @@ namespace FT3
 	bool isLogic();
 	bool Transact(tagMsg * t);
 	bool ProcessMessage(tagMsg *, tagMsg *);
-	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E/*, uint8_t* DHM*/);
+	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
+	time_t DateTimeToTime_t(uint8_t *d)
+	{
+	    if(cfg("PRTTYPE").getS() == "GRS") {
+		return GRSDateTimeToTime_t(d);
+	    } else {
+		return KADateTimeToTime_t(d);
+	    }
+	}
+
+	void Time_tToDateTime(uint8_t *d, time_t t)
+	{
+	    if(cfg("PRTTYPE").getS() == "GRS") {
+		Time_tToGRSDateTime(d, t);
+	    } else {
+		Time_tToKADateTime(d, t);
+	    }
+	}
 
 	uint8_t devAddr;
 	uint8_t nChannel;

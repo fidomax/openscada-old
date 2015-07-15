@@ -62,7 +62,7 @@ extern "C"
 
 using namespace FT3;
 
-time_t FT3::DateTimeToTime_t(uint8_t * D)
+time_t FT3::GRSDateTimeToTime_t(uint8_t * D)
 {
     char months[12] = { 31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
     struct tm * timeinfo;
@@ -95,7 +95,38 @@ time_t FT3::DateTimeToTime_t(uint8_t * D)
     return rawtime;
 }
 
-void FT3::Time_tToDateTime(uint8_t * D, time_t time)
+time_t FT3::KADateTimeToTime_t(uint8_t * D)
+{
+    struct tm * timeinfo;
+    time_t rawtime;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    uint8_t m = (TSYS::getUnalign16(D) >> 5) & 0xF;
+    uint16_t d = TSYS::getUnalign16(D) >> 9;
+    timeinfo->tm_year = d + 100;
+    d = TSYS::getUnalign16(D) & 0x1F;
+    timeinfo->tm_mday = d;
+    timeinfo->tm_mon = m - 1;
+    timeinfo->tm_hour = D[2];
+    d = TSYS::getUnalign16(D + 3);
+    timeinfo->tm_min = d >> 10;
+    timeinfo->tm_sec = (d >> 4) & 0x3F;
+    rawtime = mktime(timeinfo);
+    return rawtime;
+}
+
+void FT3::Time_tToKADateTime(uint8_t * D, time_t time)
+{
+    struct tm * timeinfo;
+    timeinfo = localtime(&time);
+    D[0] = timeinfo->tm_mday | ((timeinfo->tm_mon + 1) << 5);
+    D[1] = (timeinfo->tm_year - 100 << 1) | ((timeinfo->tm_mon + 1) >> 4);
+    D[2] = timeinfo->tm_hour;
+    D[3] = timeinfo->tm_sec << 4;
+    D[4] = (timeinfo->tm_sec >> 4) | (timeinfo->tm_min << 2);
+}
+
+void FT3::Time_tToGRSDateTime(uint8_t * D, time_t time)
 {
     struct tm * timeinfo;
     timeinfo = localtime(&time);
@@ -107,24 +138,24 @@ void FT3::Time_tToDateTime(uint8_t * D, time_t time)
     D[4] = ms >> 8;
 }
 
-TFT3Channel::TFT3Channel() :
-	FCB2(0xFF), FCB3(0xFF)
-{
-    BE = new el_chBE[nBE];
-    if(BE) {
-	for(int i = 0; i < nBE; i++)
-	    empt.insert(&BE[i]);
-    }
-    resp2.L = 0;
-    resp3.L = 0;
-}
+/*TFT3Channel::TFT3Channel() :
+ FCB2(0xFF), FCB3(0xFF)
+ {
+ BE = new el_chBE[nBE];
+ if(BE) {
+ for(int i = 0; i < nBE; i++)
+ empt.insert(&BE[i]);
+ }
+ resp2.L = 0;
+ resp3.L = 0;
+ }*/
 
-void TFT3Channel::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
+void TFT3Channel::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E, uint8_t *DHM)
 {
-    uint8_t DHM[5];
-    time_t rawtime;
-    time(&rawtime);
-    Time_tToDateTime(DHM, rawtime);
+//    uint8_t DHM[5];
+//    time_t rawtime;
+//    time(&rawtime);
+//    Time_tToGRSDateTime(DHM, rawtime);
 
     uint8_t *pE = E;
     chain_BE *pCi;
@@ -179,7 +210,11 @@ void TFT3Channel::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E
 void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 {
     for(int i = 0; i < Channels.size(); i++) {
-	Channels[i].PushInBE(type, length, id, E);
+	uint8_t DHM[5];
+	time_t rawtime;
+	time(&rawtime);
+	Time_tToDateTime(DHM, rawtime);
+	Channels[i].PushInBE(type, length, id, E, DHM);
     }
 }
 
@@ -876,7 +911,11 @@ void TMdContr::start_()
     nChannel = cfg("NCHANNEL").getI();
     Channels.clear();
     for(int i = 0; i <= nChannel; i++) {
+//	if(cfg("PRTTYPE").getS() == "GRS") {
+	//Channels.push_back(TGRSFT3Channel());
+	//} else {
 	Channels.push_back(TFT3Channel());
+	//}
     }
     devAddr = vmin(63, vmax(1,cfg("NODE").getI()));
     //> Start the gathering data task

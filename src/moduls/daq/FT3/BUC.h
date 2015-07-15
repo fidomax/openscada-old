@@ -24,7 +24,6 @@
 
 namespace FT3
 {
-
     class KA_BUC: public DA
     {
     public:
@@ -32,6 +31,7 @@ namespace FT3
  	KA_BUC(TMdPrm& prm, uint16_t id);
  	~KA_BUC();
  	uint16_t ID;
+ 	uint16_t clockID;
  	uint16_t Task(uint16_t);
  	uint16_t HandleEvent(uint8_t *);
  	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
@@ -42,7 +42,9 @@ namespace FT3
 
  	uint16_t modification;
  	uint16_t config;
+ 	uint16_t clockconfig;
  	uint8_t state;
+ 	uint8_t clockstate;
  	uint8_t s_state;
 	int lnkSize()
 	{
