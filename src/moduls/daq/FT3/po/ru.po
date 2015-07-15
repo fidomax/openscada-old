@@ -296,10 +296,10 @@ msgstr "Среднее E за предыдущий час %d"
 msgid "Datetime %d"
 msgstr "Период %d"
 
-msgid "Period TC %d"
+msgid "Period ТС %d"
 msgstr "Период TC %d"
 
-msgid "Count TC %d"
+msgid "Count ТС %d"
 msgstr "Количество срабатываний %d"
 
 
