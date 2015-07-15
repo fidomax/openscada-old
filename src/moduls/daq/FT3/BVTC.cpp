@@ -40,11 +40,11 @@ KA_BVTC::KA_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	data[i].Value.vl = 0;
 	fld->setReserve(TSYS::int2str(i) + ":" + TSYS::int2str(0));
 	if(with_params) {
-	    data[i].Count.vl = 0;
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Count.lnk.prmName.c_str(), data[i].Count.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::int2str(i) + ":" + TSYS::int2str(1));
 	    data[i].Period.vl = 0;
 	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Period.lnk.prmName.c_str(), data[i].Period.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
+	    fld->setReserve(TSYS::int2str(i) + ":" + TSYS::int2str(1));
+	    data[i].Count.vl = 0;
+	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Count.lnk.prmName.c_str(), data[i].Count.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::int2str(i) + ":" + TSYS::int2str(1));
 	}
     }
