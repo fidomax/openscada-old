@@ -108,7 +108,7 @@ void KA_BVTC::tmHandler(void)
     for(int i = 0; i < count_n; i++) {
 	UpdateParam8(data[i].Value, PackID(ID, (i + 1), 0), 1);
 	if(with_params) {
-	    UpdateParam28(data[i].Period, data[i].Count, PackID(ID, (i + 1), 0), 1);
+	    UpdateParam28(data[i].Period, data[i].Count, PackID(ID, (i + 1), 1), 1);
 	}
 
     }
