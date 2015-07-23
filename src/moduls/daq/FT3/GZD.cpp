@@ -129,6 +129,50 @@ uint8_t KA_GZD::SKAZDchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_
     }
 }
 
+uint8_t KA_GZD::SKAZDchannel::SetNewState(uint8_t addr, uint16_t prmID, uint8_t *val)
+{
+    uint8_t rc = 0;
+    if(State.lnk.Connected()) {
+	if(Function.vl == 0) {
+	    State.s = addr;
+	    State.Set((State.vl & 0x80) | *val);
+	    uint8_t E[2] = { addr, State.vl };
+	    da->PushInBE(1, sizeof(E), prmID, E);
+	    rc = 2 + 1;
+	}
+    }
+    return rc;
+}
+
+uint8_t KA_GZD::SKAZDchannel::SetNewFunction(uint8_t addr, uint16_t prmID, uint8_t *val)
+{
+    uint8_t rc = 0;
+    if(Function.lnk.Connected() && State.lnk.Connected()) {
+	if(((State.vl & 0x0F) == vs_06) || Function.vl) {
+	    if(Function.vl == *val) {
+		rc = 3;
+	    } else {
+		if(*val > 2) {
+		    Function.s = addr;
+		    Function.Set(*val);
+		    State.Set(State.vl & 0x8F);
+		    uint8_t E[2] = { addr, Function.vl };
+		    da->PushInBE(1, sizeof(E), prmID, E);
+		    rc = 3;
+		}
+	    }
+	} else {
+	    Function.s = addr;
+	    Function.Set(*val);
+	    State.Set(State.vl & 0x8F);
+	    uint8_t E[2] = { addr, Function.vl };
+	    da->PushInBE(1, sizeof(E), prmID, E);
+	    rc = 3;
+	}
+    }
+    return rc;
+}
+
 KA_GZD::KA_GZD(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), ID(id), count_n(n), with_params(has_params), config(0xF | (n << 4) | (2 << 10))
 {
@@ -141,10 +185,6 @@ KA_GZD::KA_GZD(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
     for(int i = 0; i < count_n; i++) {
 	chan_err.insert(chan_err.end(), SDataRec());
 	AddZDChannel(i);
-/*	    data.push_back(SKAZDchannel(i, this));
-		mPrm.p_el.fldAdd(fld = new TFld(data.back().State.lnk.prmName.c_str(), data[i].State.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-		data.back().State.lnk.vlattr = mPrm.vlAt(data[i].State.lnk.prmName.c_str());
-		fld->setReserve(TSYS::strMess("%d:1", i + 1));*/
     }
     loadIO(true);
 }
@@ -156,7 +196,6 @@ KA_GZD::~KA_GZD()
 
 void KA_GZD::AddZDChannel(uint8_t iid)
 {
-    //SKAZDchannel* t = new SKAZDchannel(iid, this);
     data.push_back(SKAZDchannel(iid, this));
     AddAttr(data.back().State.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
     AddAttr(data.back().Function.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:3", iid + 1));
@@ -176,7 +215,6 @@ void KA_GZD::AddZDChannel(uint8_t iid)
 	AddAttr(data.back().TCMode.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 2));
 	AddAttr(data.back().TCOpenErr.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 2));
 	AddAttr(data.back().TCCloseErr.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 2));
-
     }
 }
 
@@ -239,7 +277,6 @@ void KA_GZD::loadIO(bool force)
 	loadLnk(data[i].TCOpenErr.lnk, io_bd, io_table, cfg);
 	loadLnk(data[i].TCCloseErr.lnk, io_bd, io_table, cfg);
     }
-
 }
 
 void KA_GZD::saveIO(void)
@@ -267,7 +304,6 @@ void KA_GZD::saveIO(void)
 	saveLnk(data[i].TCOpenErr.lnk, io_bd, io_table, cfg);
 	saveLnk(data[i].TCCloseErr.lnk, io_bd, io_table, cfg);
     }
-
 }
 
 void KA_GZD::tmHandler(void)
@@ -277,7 +313,6 @@ void KA_GZD::tmHandler(void)
 	if(with_params) {
 	    data[i].UpdateTUParam(PackID(ID, (i + 1), 1), 1);
 	    data[i].UpdateTCParam(PackID(ID, (i + 1), 2), 1);
-	    //    data[i].UpdateTTParam(PackID(ID, (i + 1), 2), 1);
 	}
 	UpdateParam8(data[i].State, PackID(ID, (i + 1), 0), 1);
 	UpdateParam8(data[i].Function, PackID(ID, (i + 1), 3), 1);
@@ -321,7 +356,6 @@ uint8_t KA_GZD::cmdGet(uint16_t prmID, uint8_t * out)
 	    for(uint8_t i = 0; i < count_n; i++) {
 		out[i * 2] = i;
 		out[i * 2 + 1] = data[i].State.vl;
-
 	    }
 	    l = count_n * 2;
 	    break;
@@ -375,9 +409,7 @@ uint8_t KA_GZD::cmdGet(uint16_t prmID, uint8_t * out)
 		out[1] = data[ft3ID.k - 1].Function.vl;
 		l = 2;
 		break;
-
 	    }
-
 	}
     }
     return l;
@@ -393,18 +425,16 @@ uint8_t KA_GZD::cmdSet(uint8_t * req, uint8_t addr)
     if(ft3ID.k <= count_n) {
 	switch(ft3ID.n) {
 	case 0:
-	    l = SetNew8Val(data[ft3ID.k - 1].State, addr, prmID, req[2]);
+	    l = data[ft3ID.k - 1].SetNewState(addr, prmID, req + 2);
 	    break;
 	case 1:
-	    mess_info(mPrm.nodePath().c_str(), "cmdSet TUparams");
 	    l = data[ft3ID.k - 1].SetNewTUParam(addr, prmID, req + 2);
 	    break;
 	case 2:
-	    mess_info(mPrm.nodePath().c_str(), "cmdSet TCparams");
 	    l = data[ft3ID.k - 1].SetNewTCParam(addr, prmID, req + 2);
 	    break;
 	case 3:
-	    l = SetNew8Val(data[ft3ID.k - 1].Function, addr, prmID, req[2]);
+	    l = data[ft3ID.k - 1].SetNewFunction(addr, prmID, req + 2);
 	}
 
     }

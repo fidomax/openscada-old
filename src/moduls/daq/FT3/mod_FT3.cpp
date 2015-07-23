@@ -138,25 +138,8 @@ void FT3::Time_tToGRSDateTime(uint8_t * D, time_t time)
     D[4] = ms >> 8;
 }
 
-/*TFT3Channel::TFT3Channel() :
- FCB2(0xFF), FCB3(0xFF)
- {
- BE = new el_chBE[nBE];
- if(BE) {
- for(int i = 0; i < nBE; i++)
- empt.insert(&BE[i]);
- }
- resp2.L = 0;
- resp3.L = 0;
- }*/
-
 void TFT3Channel::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E, uint8_t *DHM)
 {
-//    uint8_t DHM[5];
-//    time_t rawtime;
-//    time(&rawtime);
-//    Time_tToGRSDateTime(DHM, rawtime);
-
     uint8_t *pE = E;
     chain_BE *pCi;
     el_chBE *pBE;
@@ -229,7 +212,6 @@ uint8_t TMdContr::cmdGet(uint16_t prmID, uint8_t * out)
 	if(rc) {
 	    break;
 	}
-
     }
     return rc;
 }
@@ -245,7 +227,6 @@ uint8_t TMdContr::cmdSet(uint8_t * req, uint8_t addr)
 	if(rc) {
 	    break;
 	}
-
     }
     return rc;
 }
@@ -423,7 +404,6 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 TTpContr::TTpContr(string name) :
 	TTypeDAQ(MOD_ID)
 {
-
     mod = this;
     mName = MOD_NAME;
     mType = MOD_TYPE;

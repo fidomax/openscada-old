@@ -35,7 +35,6 @@ KA_BTU::KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params) :
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
-
     for(int i = 0; i < count_nu; i++) {
 	AddChannel(i);
     }
@@ -44,7 +43,7 @@ KA_BTU::KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params) :
 
 KA_BTU::~KA_BTU()
 {
-
+    TUdata.clear();
 }
 
 void KA_BTU::AddChannel(uint8_t iid)

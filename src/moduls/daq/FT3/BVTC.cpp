@@ -56,6 +56,17 @@ KA_BVTC::~KA_BVTC()
     data.clear();
 }
 
+void KA_BVTC::AddChannel(uint8_t iid)
+{
+/*    TUdata.push_back(SKATUchannel(iid, this));
+    AddAttr(TUdata.back().Line.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
+    if(with_params) {
+	for(int i = 0; i < 16; i++) {
+	    AddAttr(TUdata.back().Time[i].lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+	}
+    }*/
+}
+
 string KA_BVTC::getStatus(void)
 {
     string rez;
@@ -65,7 +76,6 @@ string KA_BVTC::getStatus(void)
 	rez = "0: Норма";
     }
     return rez;
-
 }
 
 void KA_BVTC::loadIO(bool force)
@@ -81,7 +91,6 @@ void KA_BVTC::loadIO(bool force)
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_n; i++) {
 	loadLnk(data[i].Value.lnk, io_bd, io_table, cfg);
-//	loadLnk(data[i].Mask.lnk, io_bd, io_table, cfg);
 	loadLnk(data[i].Count.lnk, io_bd, io_table, cfg);
 	loadLnk(data[i].Period.lnk, io_bd, io_table, cfg);
     }
@@ -96,7 +105,6 @@ void KA_BVTC::saveIO()
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_n; i++) {
 	saveLnk(data[i].Value.lnk, io_bd, io_table, cfg);
-//	saveLnk(data[i].Mask.lnk, io_bd, io_table, cfg);
 	saveLnk(data[i].Count.lnk, io_bd, io_table, cfg);
 	saveLnk(data[i].Period.lnk, io_bd, io_table, cfg);
     }
@@ -205,7 +213,6 @@ uint16_t KA_BVTC::HandleEvent(uint8_t * D)
 	    for(int i = 0; i < 8; i++) {
 		if((1 + (ft3ID.n << 3) + i) > count_n) break;
 		mPrm.vlAt(TSYS::strMess("Mask_%d", 1 + (ft3ID.n << 3) + i).c_str()).at().setB((D[3] >> i) & 1, 0, true);
-//		    mess_info("B_BVTC", "new mask event!!!!");
 	    }
 	}
 	break;

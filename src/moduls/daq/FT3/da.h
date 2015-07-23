@@ -150,6 +150,20 @@ namespace FT3
 		    return false;
 		}
 	    }
+	    bool Connected()
+	    {
+		if(aprm.freeStat()) {
+		    aprm = SYS->daq().at().attrAt(prmAttr, '.', true);
+		    if(aprm.freeStat()) {
+			return false;
+		    } else {
+			return true;
+		    }
+		} else {
+		    return true;
+		}
+	    }
+
 	};
 	class ui8Data
 	{
@@ -162,15 +176,20 @@ namespace FT3
 	    uint8_t s;
 	    uint8_t err;
 	    SLnk lnk;
-	    void Update(uint8_t d){
+	    void Update(uint8_t d)
+	    {
 		vl = d;
 		lnk.vlattr.at().setI(vl, 0, true);
-	    };
-	    void Set(uint8_t d){
+	    }
+	    ;
+	    void Set(uint8_t d)
+	    {
 		Update(d);
 		lnk.aprm.at().setI(vl);
-	    };
-	    uint8_t Get(){
+	    }
+	    ;
+	    uint8_t Get()
+	    {
 		if(lnk.Check()) {
 		    return err;
 		} else {
@@ -194,15 +213,20 @@ namespace FT3
 	    uint8_t s;
 	    uint16_t err;
 	    SLnk lnk;
-	    void Update(uint16_t d){
+	    void Update(uint16_t d)
+	    {
 		vl = d;
 		lnk.vlattr.at().setI(vl, 0, true);
-	    };
-	    void Set(uint16_t d){
+	    }
+	    ;
+	    void Set(uint16_t d)
+	    {
 		Update(d);
 		lnk.aprm.at().setI(vl);
-	    };
-	    uint16_t Get(){
+	    }
+	    ;
+	    uint16_t Get()
+	    {
 		if(lnk.Check()) {
 		    return err;
 		} else {
@@ -243,15 +267,20 @@ namespace FT3
 	    uint8_t s;
 	    float err;
 	    SLnk lnk;
-	    void Update(float d){
+	    void Update(float d)
+	    {
 		vl = d;
 		lnk.vlattr.at().setR(vl, 0, true);
-	    };
-	    void Set(float d){
+	    }
+	    ;
+	    void Set(float d)
+	    {
 		Update(d);
 		lnk.aprm.at().setR(vl);
-	    };
-	    float Get(){
+	    }
+	    ;
+	    float Get()
+	    {
 		if(lnk.Check()) {
 		    return err;
 		} else {
@@ -290,8 +319,6 @@ namespace FT3
 	FT3ID UnpackID(uint16_t ID);
 	uint16_t PackID(FT3ID ID);
 	uint16_t PackID(uint8_t g, uint8_t k, uint8_t n);
-
-
 
     public:
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);

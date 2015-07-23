@@ -29,10 +29,13 @@ namespace FT3
 	//Methods
 	KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params);
 	~KA_BTU();
-	void AddChannel(uint8_t iid);
 	uint16_t ID;
 	uint16_t count_nu;
 	bool with_params;
+ 	uint16_t config;
+	void AddChannel(uint8_t iid);
+	void saveIO(void);
+	void loadIO(bool force = false);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
@@ -41,10 +44,7 @@ namespace FT3
 	void setTU(uint8_t);
 	void runTU(uint8_t);
 	string getStatus(void);
-	void saveIO(void);
-	void loadIO(bool force = false);
 	void tmHandler(void);
- 	uint16_t config;
 	class SKATUchannel
 	{
 	public:
@@ -52,9 +52,7 @@ namespace FT3
 		    da(owner), id(iid), iTY(0), Line(TSYS::strMess("Line_%d", id + 1).c_str(), TSYS::strMess(_("Line %d"), id + 1).c_str())
 	    {
 		for(int i = 0; i < 16; i++) {
-		    mess_info("______", "SKATUchannel %d", i);
 		    Time.push_back(ui16Data(TSYS::strMess("Time%d_%d", i + 1, id + 1).c_str(), TSYS::strMess(_("Time #%d %d"), i + 1, id + 1).c_str()));
-		    mess_info("______", "SKATUchannel--- %s", Time[i].lnk.prmName.c_str());
 		}
 	    }
 	    DA* da;

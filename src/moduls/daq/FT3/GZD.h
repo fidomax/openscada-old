@@ -23,6 +23,14 @@
 
 namespace FT3
 {
+#define vs_AWR       0       // авария
+#define vs_OFF       1       // закрыто(выкл.)
+#define vs_ON        2       // открыто(вкл.)
+#define vs_03        3
+#define vs_04        4
+#define vs_05        5
+#define vs_06        6
+
     class KA_GZD: public DA
     {
     public:
@@ -77,6 +85,8 @@ namespace FT3
 	    void UpdateTCParam(uint16_t ID, uint8_t cl);
 	    uint8_t SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val);
 	    uint8_t SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val);
+	    uint8_t SetNewState(uint8_t addr, uint16_t prmID, uint8_t *val);
+	    uint8_t SetNewFunction(uint8_t addr, uint16_t prmID, uint8_t *val);
 	};
 	vector<SKAZDchannel> data;
 	void AddZDChannel(uint8_t iid);
