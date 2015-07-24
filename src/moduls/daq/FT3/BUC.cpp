@@ -247,11 +247,23 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
 	case 0:
 	    switch(ft3ID.k) {
 	    case 0:
-		state = req[2];
-		s_state = addr;
-		uint8_t E[2] = { addr, req[2] };
-		mPrm.owner().PushInBE(1, 2, prmID, E);
-		uint l = 3;
+		if(req[2] & 0x81) {
+		    if(state != req[2]) {
+			if(req[2] == 1) {
+			    if((state == 0x80) || (state == 0x02)) {
+				state = 1;
+			    } else {
+				state = 0x81;
+			    }
+			} else {
+			    state = req[2];
+			}
+		    }
+		    s_state = addr;
+		    uint8_t E[2] = { addr, state };
+		    mPrm.owner().PushInBE(1, 2, prmID, E);
+		    uint l = 3;
+		}
 		break;
 	    }
 	    break;
@@ -265,7 +277,7 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
 		s_state = addr;
 		state = clockstate = 1;
 		rawtime = mPrm.owner().DateTimeToTime_t(req + 2);
-		stime (&rawtime);
+		stime(&rawtime);
 		l = 7;
 		break;
 	    }
