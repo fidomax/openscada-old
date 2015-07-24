@@ -151,7 +151,7 @@ uint16_t TProt::VerifyPacket(string &pdu)
 	if(pdu.size() > 7) {
 	    if((pdu[0] == 0x05) && (pdu[0] != 0x64)) {
 		if(!((raslen = Len(pdu[2])) == pdu.size() && VerCRC(pdu, pdu.size()))) if(!(pdu.size() > raslen && VerCRC(pdu, raslen))) {
-		    mess_info(nodePath().c_str(), _("VerifyPacket bad packet"));
+		    mess_info(nodePath().c_str(), _("VerifyPacket bad packet pdu.size:%d raslen:%d VerCRC(pdu, pdu.size()):%d VerCRC(pdu, raslen):%d"),pdu.size(),raslen,VerCRC(pdu, pdu.size()),VerCRC(pdu, raslen));
 		    return 2; //неправильный пакет
 		}else {
 		    mess_info(nodePath().c_str(), _("VerifyPacket bad tail"));
