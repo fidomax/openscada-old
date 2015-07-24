@@ -150,16 +150,21 @@ uint16_t TProt::VerifyPacket(string &pdu)
 	//нормальный пакет
 	if(pdu.size() > 7) {
 	    if((pdu[0] == 0x05) && (pdu[0] != 0x64)) {
-		if(!((raslen = Len(pdu[2])) == pdu.size() && VerCRC(pdu, pdu.size()))) if(!(pdu.size() > raslen && VerCRC(pdu, raslen)))
+		if(!((raslen = Len(pdu[2])) == pdu.size() && VerCRC(pdu, pdu.size()))) if(!(pdu.size() > raslen && VerCRC(pdu, raslen))) {
+		    mess_info(nodePath().c_str(), _("VerifyPacket bad packet"));
 		    return 2; //неправильный пакет
-		else
+		}else {
+		    mess_info(nodePath().c_str(), _("VerifyPacket bad tail"));
 		    pdu.erase(raslen); //пакет с мусором в конце
-
+		}
 	    } else {
+		mess_info(nodePath().c_str(), _("VerifyPacket no header"));
 		return 1; //нет начала пакета
 	    }
-	} else
+	} else {
+		mess_info(nodePath().c_str(), _("VerifyPacket no packet"));
 	    return 3; //не пакет
+	}
     }
     return 0;
 }
@@ -248,14 +253,14 @@ bool TProtIn::mess(const string &ireqst, string &answer)
     for(int i = 0; i < reqst.size(); i++) {
 	data_s += TSYS::int2str((uint8_t) reqst[i], TSYS::Hex) + " ";
     }
-//    mess_info(nodePath().c_str(), _("request: %s"), data_s.c_str());
+    mess_info(nodePath().c_str(), _("request: %s"), data_s.c_str());
     if(modPrt->VerifyPacket(reqst) == 0) {
-//	mess_info(nodePath().c_str(), _("Correct packet found!"));
+	mess_info(nodePath().c_str(), _("Correct packet found!"));
 	tagMsg msg, msgOut;
 	if(modPrt->ParsePacket(reqst, &msg) == 0) {
 	    unsigned i_l;
-//	    mess_info(nodePath().c_str(), _("Packet parsed!"), data_s.c_str());
-//	    mess_info(nodePath().c_str(), _("L:%02d C:%02X A:%02d B:%02d "), msg.L, msg.C, msg.A, msg.B);
+	    mess_info(nodePath().c_str(), _("Packet parsed!"), data_s.c_str());
+	    mess_info(nodePath().c_str(), _("L:%02d C:%02X A:%02d B:%02d "), msg.L, msg.C, msg.A, msg.B);
 	    //finding DAQ
 	    vector<string> lst;
 	    SYS->daq().at().at("FT3").at().list(lst);
