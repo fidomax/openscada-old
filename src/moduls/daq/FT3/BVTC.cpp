@@ -271,6 +271,7 @@ uint8_t KA_BVTC::cmdSet(uint8_t * req, uint8_t addr)
     uint16_t prmID = TSYS::getUnalign16(req);
     FT3ID ft3ID = UnpackID(prmID);
     if(ft3ID.g != ID) return 0;
+    mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     uint l = 0;
     if((ft3ID.k > 0) && (ft3ID.k <= count_n)) {
 	switch (ft3ID.n){
