@@ -240,7 +240,7 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
     uint16_t prmID = TSYS::getUnalign16(req);
     FT3ID ft3ID = UnpackID(prmID);
     //if(ft3ID.g != ID) return 0;
-    uint l = 0;
+    uint8_t l = 0;
     time_t rawtime;
     if(ft3ID.g == ID) {
 	switch(ft3ID.k) {
@@ -262,7 +262,7 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
 		    s_state = addr;
 		    uint8_t E[2] = { addr, state };
 		    mPrm.owner().PushInBE(1, 2, prmID, E);
-		    uint l = 3;
+		    l = 3;
 		}
 		break;
 	    }
