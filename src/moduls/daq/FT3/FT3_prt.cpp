@@ -113,7 +113,8 @@ void TProt::MakePacket(string &pdu, tagMsg * msg)
 	    z = l - x;
 	    if(z > 16) z = 16;
 	    w = CRC((char *) (msg->D + x), z);
-	    for(z; z > 0; z--) pdu += msg->D[x++];
+	    for(z; z > 0; z--)
+		pdu += msg->D[x++];
 	    pdu += w;
 	    pdu += w >> 8;
 	}
@@ -124,13 +125,14 @@ void TProt::MakePacket(string &pdu, tagMsg * msg)
 bool TProt::VerCRC(string &pdu, int l)
 {
     l -= 2;
-    uint16_t leng = pdu[2], lD;
+    uint8_t leng = pdu[2];
+    uint16_t lD;
     if((uint16_t) TSYS::getUnalign16(pdu.data() + 6) != CRC(pdu.data() + 2, 4)) return 0;
     if(leng > 3) {
 	leng -= 3;
 	lD = leng / 16;
 	leng %= 16;
-	for(uint8_t i = 0; i < lD; i++) {
+	for(uint16_t i = 0; i < lD; i++) {
 	    if((uint16_t) TSYS::getUnalign16(pdu.data() + 8 + ((i + 1) * 16) + (i * 2)) != CRC((pdu.data() + 8 + (i * 16) + (i * 2)), 16)) return 0;
 	}
 	if(leng) if((uint16_t) TSYS::getUnalign16(pdu.data() + l) != CRC(pdu.data() + (l - leng), leng)) return 0;
@@ -150,19 +152,21 @@ uint16_t TProt::VerifyPacket(string &pdu)
 	//нормальный пакет
 	if(pdu.size() > 7) {
 	    if((pdu[0] == 0x05) && (pdu[0] != 0x64)) {
-		if(!((raslen = Len(pdu[2])) == pdu.size() && VerCRC(pdu, pdu.size()))) if(!(pdu.size() > raslen && VerCRC(pdu, raslen))) {
-		    mess_info(nodePath().c_str(), _("VerifyPacket bad packet pdu.size:%d raslen:%d VerCRC(pdu, pdu.size()):%d VerCRC(pdu, raslen):%d"),pdu.size(),raslen,VerCRC(pdu, pdu.size()),VerCRC(pdu, raslen));
-		    return 2; //неправильный пакет
-		}else {
-		    mess_info(nodePath().c_str(), _("VerifyPacket bad tail"));
-		    pdu.erase(raslen); //пакет с мусором в конце
-		}
+		if(!((raslen = Len(pdu[2])) == pdu.size() && VerCRC(pdu, pdu.size())))
+		    if(!(pdu.size() > raslen && VerCRC(pdu, raslen))) {
+			mess_info(nodePath().c_str(), _("VerifyPacket bad packet pdu.size:%d raslen:%d VerCRC(pdu, pdu.size()):%d VerCRC(pdu, raslen):%d"),
+				pdu.size(), raslen, VerCRC(pdu, pdu.size()), VerCRC(pdu, raslen));
+			return 2; //неправильный пакет
+		    } else {
+			mess_info(nodePath().c_str(), _("VerifyPacket bad tail"));
+			pdu.erase(raslen); //пакет с мусором в конце
+		    }
 	    } else {
 		mess_info(nodePath().c_str(), _("VerifyPacket no header"));
 		return 1; //нет начала пакета
 	    }
 	} else {
-		mess_info(nodePath().c_str(), _("VerifyPacket no packet"));
+	    mess_info(nodePath().c_str(), _("VerifyPacket no packet"));
 	    return 3; //не пакет
 	}
     }
@@ -190,7 +194,7 @@ uint16_t TProt::ParsePacket(string &pdu, tagMsg * msg)
 	    x += 2;
 	}
     }
-    if ((pdu.size() == 1) && ((pdu[0] & 0xC0)==0x80)) {
+    if((pdu.size() == 1) && ((pdu[0] & 0xC0) == 0x80)) {
 	msg->L = 1;
 	msg->C = pdu[0];
 	msg->A = (~pdu[0]) & 0x3F;
@@ -200,9 +204,9 @@ uint16_t TProt::ParsePacket(string &pdu, tagMsg * msg)
     return 0;
 }
 //-------------------------------------------------------------------------------
-uint16_t TProt::Len(uint16_t l)
+uint16_t TProt::Len(uint8_t l)
 {
-    int lD = 0, lP;
+    uint16_t lD = 0, lP;
 
     if(l > 3) {
 	lP = l - 3;
@@ -213,11 +217,10 @@ uint16_t TProt::Len(uint16_t l)
     return (l += 5 + lD);
 }
 //-------------------------------------------------------------------------------
-void TProt::cntrCmdProc( XMLNode *opt )
+void TProt::cntrCmdProc(XMLNode *opt)
 {
     //> Get page info
-    if(opt->name() == "info")
-    {
+    if(opt->name() == "info") {
 	TProtocol::cntrCmdProc(opt);
 	return;
     }
@@ -233,7 +236,7 @@ void TProt::cntrCmdProc( XMLNode *opt )
 TProtIn::TProtIn(string name) :
 	TProtocolIn(name)
 {
-    mess_info(nodePath().c_str(), _("new TProtIn %s"),name.c_str());
+    mess_info(nodePath().c_str(), _("new TProtIn %s"), name.c_str());
 }
 
 TProtIn::~TProtIn()

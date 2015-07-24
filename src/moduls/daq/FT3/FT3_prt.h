@@ -90,7 +90,7 @@ namespace FT3
 	bool VerCRC(string &pdu, int l);
 	uint16_t VerifyPacket(string &pdu);
 	uint16_t ParsePacket(string &pdu, tagMsg * msg);
-	uint16_t Len(uint16_t l);
+	uint16_t Len(uint8_t l);
 
     protected:
 	//Methods
