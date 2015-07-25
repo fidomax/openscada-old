@@ -22,6 +22,7 @@
 #define FT3_PRT_H
 
 #include <stdint.h>
+#include <stdarg.h>
 
 #include <string>
 #include <map>
@@ -72,7 +73,6 @@ namespace FT3
 	string req_buf;
     };
 
-
 //*************************************************
 //* TProt                                         *
 //*************************************************
@@ -81,9 +81,9 @@ namespace FT3
     public:
 	//Methods
 	//!!! Constructor for root module object.
-	TProt( string name );
+	TProt(string name);
 	//!!! Destructor for root module object.
-	~TProt( );
+	~TProt();
 	//> Special FT3 protocol's functions
 	uint16_t CRC(const char *data, uint16_t length);
 	void MakePacket(string &pdu, tagMsg * msg);
@@ -91,24 +91,32 @@ namespace FT3
 	uint16_t VerifyPacket(string &pdu);
 	uint16_t ParsePacket(string &pdu, tagMsg * msg);
 	uint16_t Len(uint8_t l);
-
+	bool debug()
+	{
+	    return (mess_lev() == TMess::Debug);
+	}
+	void debugMess(const string &mess, ...)
+	{
+	    va_list argptr;
+	    va_start(argptr, mess);
+	    mess_debug(nodePath().c_str(), mess.c_str(),argptr);
+	    va_end(argptr);
+	}
     protected:
 	//Methods
 	//!!! Inherited (virtual) load and save object's node methods. Call from OpenSCADA kernel.
-	void load_( );
-	void save_( );
+	void load_();
+	void save_();
 
     private:
 	//Methods
 	//!!! Module's comandline options for print help function.
-	string optDescr( );
+	string optDescr();
 	//!!! Main subsystem API function for self modules input protocol object creation.
-	TProtocolIn *in_open( const string &name );
+	TProtocolIn *in_open(const string &name);
 
 	//!!! OpenSCADA control interface comands process virtual function.
-	void cntrCmdProc( XMLNode *opt );	//Control interface command process
-
-
+	void cntrCmdProc(XMLNode *opt);	//Control interface command process
 
 
     };
