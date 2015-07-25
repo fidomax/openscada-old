@@ -243,23 +243,21 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
     MtxAlloc res(eventRes, true);
     resp->L = 0;
     if(msg->L == 1) {
-//	mess_info(nodePath().c_str(), _("ProcessMessage one byte req L %02X C %02X"), msg->L, msg->C);
+    	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ProcessMessage one byte req A %02X"), msg->A);
 	// One byte req from first block event
 	resp->L = 1;
 	resp->C = msg->A & 0x3F;
 	if(Channels[1].C1.head != NULL) {
-//	    mess_info(nodePath().c_str(), _("%d one byte has C1 %08X %08X"), &(Channels[msg->B].C1), msg->B, Channels[msg->B].C1.head);
 	    resp->C |= 0x40;
 	}
 	if(Channels[1].C2.head != NULL) {
-//	    mess_info(nodePath().c_str(), _("%d one byte has C2%08X %08X"), &(Channels[msg->B].C1), msg->B, Channels[msg->B].C1.head);
 	    resp->C |= 0x80;
 	}
 	return resp->L;
     }
     switch(msg->C & 0x0F) {
     case ResetChan:
-	mess_info(nodePath().c_str(), _("ResetChan"));
+    	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ResetChan"));
 	Channels[msg->B].FCB2 = Channels[msg->B].FCB3 = 0xFF;
 	resp->L = 3;
 	resp->C = Channels[msg->B].FCB3;
@@ -308,12 +306,12 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 		Channels[msg->B].resp3.C |= 0x20;
 	    }
 	} else {
-	    mess_info(nodePath().c_str(), _("ReqData BAD FCB!!!"));
+		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ReqData BAD FCB!!!"));
 	}
 	memcpy(resp, &Channels[msg->B].resp3, sizeof(tagMsg));
 	break;
     case SetData:
-	mess_info(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"), Channels[msg->B].FCB2, msg->C);
+    	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"), Channels[msg->B].FCB2, msg->C);
 	if(Channels[msg->B].FCB2 != msg->C) {
 	    Channels[msg->B].FCB2 = msg->C;
 	    l = msg->L - 3;
@@ -346,7 +344,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	memcpy(resp, &Channels[msg->B].resp2, sizeof(tagMsg));
 	break;
     case AddrReq:
-//	mess_info(nodePath().c_str(), _("AddrReq"));
+    	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("AddrReq"));
 	Channels[msg->B].resp3.C = 8;
 	time_t rawtime;
 	time(&rawtime);
@@ -370,7 +368,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	    }
 	    if(rc == 0) {
 		l = msg->L - 3;
-		mess_info(nodePath().c_str(), _("AddrReq ID not found! %04X"), id);
+		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("AddrReq ID not found! %04X"), id);
 		Channels[msg->B].resp3.C = 9;
 		break;
 	    }
@@ -383,7 +381,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	memcpy(resp, &Channels[msg->B].resp3, sizeof(tagMsg));
 	break;
     case ResData2:
-	mess_info(nodePath().c_str(), _("ResData2"));
+    	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ResData2"));
 	Channels[msg->B].FCB2 = 0;
 	resp->L = 3;
 	resp->C = Channels[msg->B].FCB3;
