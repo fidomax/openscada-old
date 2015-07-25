@@ -93,7 +93,7 @@ void TProt::MakePacket(string &pdu, tagMsg * msg)
     uint16_t x, y, l, z;
     uint16_t w;
     if((msg->L == 1)) {
-	if (debug()) debugMess(_("MakePacket one byte req %02X"),msg->C);
+	if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("MakePacket one byte req %02X"), msg->C);
 	// one byte req
 	pdu += (char) msg->C;
     } else {
@@ -113,7 +113,7 @@ void TProt::MakePacket(string &pdu, tagMsg * msg)
 	    z = l - x;
 	    if(z > 16) z = 16;
 	    w = CRC((char *) (msg->D + x), z);
-	    for(z; z > 0; z--)
+	    for(; z > 0; z--)
 		pdu += msg->D[x++];
 	    pdu += w;
 	    pdu += w >> 8;
@@ -146,7 +146,7 @@ uint16_t TProt::VerifyPacket(string &pdu)
     uint16_t raslen;
     if(pdu.size() == 1) {
 	//байтовый опрос
-	if (debug()) debugMess( _("VerifyPacket one byte req"));
+	if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("VerifyPacket one byte req"));
 	return 0;
     } else {
 	//нормальный пакет
@@ -154,19 +154,21 @@ uint16_t TProt::VerifyPacket(string &pdu)
 	    if((pdu[0] == 0x05) && (pdu[0] != 0x64)) {
 		if(!((raslen = Len(pdu[2])) == pdu.size() && VerCRC(pdu, pdu.size())))
 		    if(!(pdu.size() > raslen && VerCRC(pdu, raslen))) {
-			if (debug()) debugMess( _("VerifyPacket bad packet pdu.size:%d raslen:%d VerCRC(pdu, pdu.size()):%d VerCRC(pdu, raslen):%d"),
-				pdu.size(), raslen, VerCRC(pdu, pdu.size()), VerCRC(pdu, raslen));
+			if(mess_lev() == TMess::Debug)
+			    mess_debug_(nodePath().c_str(),
+				    _("VerifyPacket bad packet pdu.size:%d raslen:%d VerCRC(pdu, pdu.size()):%d VerCRC(pdu, raslen):%d"), pdu.size(), raslen,
+				    VerCRC(pdu, pdu.size()), VerCRC(pdu, raslen));
 			return 2; //неправильный пакет
 		    } else {
-			if (debug()) debugMess( _("VerifyPacket bad tail"));
+			if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("VerifyPacket bad tail"));
 			pdu.erase(raslen); //пакет с мусором в конце
 		    }
 	    } else {
-		if (debug()) debugMess( _("VerifyPacket no header"));
+		if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("VerifyPacket no header"));
 		return 1; //нет начала пакета
 	    }
 	} else {
-	    if (debug()) debugMess( _("VerifyPacket no packet"));
+	    if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("VerifyPacket no packet"));
 	    return 3; //не пакет
 	}
     }
@@ -189,7 +191,7 @@ uint16_t TProt::ParsePacket(string &pdu, tagMsg * msg)
 		z -= 2;
 	    else
 		z = 16;
-	    for(z; z > 0; z--)
+	    for(; z > 0; z--)
 		msg->D[y++] = pdu[x++];
 	    x += 2;
 	}
@@ -199,7 +201,7 @@ uint16_t TProt::ParsePacket(string &pdu, tagMsg * msg)
 	msg->C = pdu[0];
 	msg->A = (~pdu[0]) & 0x3F;
 	msg->B = 0;
-	if (debug()) debugMess( _("ParsePacket one byte req C %02X A %02X"),msg->C,msg->A);
+	if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("ParsePacket one byte req C %02X A %02X"), msg->C, msg->A);
     }
     return 0;
 }
@@ -236,12 +238,12 @@ void TProt::cntrCmdProc(XMLNode *opt)
 TProtIn::TProtIn(string name) :
 	TProtocolIn(name)
 {
-    if (modPrt->debug()) modPrt->debugMess( _("new TProtIn %s"), name.c_str());
+    if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("new TProtIn %s"), name.c_str());
 }
 
 TProtIn::~TProtIn()
 {
-    if (modPrt->debug()) modPrt->debugMess( _("delete TProtIn"));
+    if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("delete TProtIn"));
 }
 
 TProt &TProtIn::owner()
@@ -256,14 +258,14 @@ bool TProtIn::mess(const string &ireqst, string &answer)
     for(int i = 0; i < reqst.size(); i++) {
 	data_s += TSYS::int2str((uint8_t) reqst[i], TSYS::Hex) + " ";
     }
-    if (modPrt->debug()) modPrt->debugMess(  _("request: %s"), data_s.c_str());
+    if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("request: %s"), data_s.c_str());
     if(modPrt->VerifyPacket(reqst) == 0) {
-	    if (modPrt->debug()) modPrt->debugMess(  _("Correct packet found!"));
+	if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("Correct packet found!"));
 	tagMsg msg, msgOut;
 	if(modPrt->ParsePacket(reqst, &msg) == 0) {
 	    unsigned i_l;
-	    if (modPrt->debug()) modPrt->debugMess(  _("Packet parsed!"), data_s.c_str());
-	    if (modPrt->debug()) modPrt->debugMess(  _("L:%02d C:%02X A:%02d B:%02d "), msg.L, msg.C, msg.A, msg.B);
+	    if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("Packet parsed!"), data_s.c_str());
+	    if(mess_lev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("L:%02d C:%02X A:%02d B:%02d "), msg.L, msg.C, msg.A, msg.B);
 	    //finding DAQ
 	    vector<string> lst;
 	    SYS->daq().at().at("FT3").at().list(lst);

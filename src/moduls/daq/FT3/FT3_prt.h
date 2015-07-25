@@ -91,17 +91,7 @@ namespace FT3
 	uint16_t VerifyPacket(string &pdu);
 	uint16_t ParsePacket(string &pdu, tagMsg * msg);
 	uint16_t Len(uint8_t l);
-	bool debug()
-	{
-	    return (mess_lev() == TMess::Debug);
-	}
-	void debugMess(const string &mess, ...)
-	{
-	    va_list argptr;
-	    va_start(argptr, mess);
-	    mess_debug(nodePath().c_str(), mess.c_str(),argptr);
-	    va_end(argptr);
-	}
+
     protected:
 	//Methods
 	//!!! Inherited (virtual) load and save object's node methods. Call from OpenSCADA kernel.
