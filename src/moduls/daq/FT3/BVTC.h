@@ -111,6 +111,7 @@ namespace FT3
 	uint16_t ID;
 	uint16_t count_n;
 	bool with_params;
+	void AddChannel(uint8_t iid);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
@@ -123,11 +124,12 @@ namespace FT3
 	class STCchannel
 	{
 	public:
-	    STCchannel(uint8_t iid) :
-		    id(iid), Value(TSYS::strMess("TC_%d", id + 1).c_str(), TSYS::strMess(_("TC %d"), id + 1).c_str()),
+	    STCchannel(uint8_t iid, DA* owner) :
+		    da(owner), id(iid), Value(TSYS::strMess("TC_%d", id + 1).c_str(), TSYS::strMess(_("TC %d"), id + 1).c_str()),
 		    Mask(TSYS::strMess("Mask_%d", id + 1).c_str(), TSYS::strMess(_("Mask %d"), id + 1).c_str())
 	    {
 	    }
+	    DA* da;
 	    uint8_t id;
 	    ui8Data Value, Mask;
 	};

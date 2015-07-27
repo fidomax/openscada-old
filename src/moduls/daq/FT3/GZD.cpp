@@ -218,14 +218,6 @@ void KA_GZD::AddZDChannel(uint8_t iid)
     }
 }
 
-void KA_GZD::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
-{
-    TFld * fld;
-    mPrm.p_el.fldAdd(fld = new TFld(param.prmName.c_str(), param.prmDesc.c_str(), type, flg));
-    param.vlattr = mPrm.vlAt(param.prmName.c_str());
-    fld->setReserve(ex);
-}
-
 string KA_GZD::getStatus(void)
 {
     string rez;

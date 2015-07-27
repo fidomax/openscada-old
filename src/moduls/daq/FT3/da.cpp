@@ -53,7 +53,7 @@ void DA::saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig
 
 uint8_t DA::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 {
-    if(!d.lnk.Check()) {
+    if(d.lnk.Connected()) {
 	d.s = addr;
 	d.Set(val);
 	uint8_t E[2] = { addr, d.vl };
@@ -66,7 +66,7 @@ uint8_t DA::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 
 uint8_t DA::SetNew8Val(ui16Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 {
-    if(!d.lnk.Check()) {
+    if(d.lnk.Connected()) {
 	d.s = addr;
 	d.Set(val);
 	uint8_t E[2] = { addr, val };
@@ -79,7 +79,7 @@ uint8_t DA::SetNew8Val(ui16Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 
 uint8_t DA::SetNew28Val(ui8Data& d1, ui8Data& d2, uint8_t addr, uint16_t prmID, uint8_t val1, uint8_t val2)
 {
-    if((!d1.lnk.Check()) && (!d2.lnk.Check())) {
+    if((d1.lnk.Connected()) && (d2.lnk.Connected())) {
 	d1.s = addr;
 	d1.Set(val1);
 	d2.s = addr;
@@ -94,7 +94,7 @@ uint8_t DA::SetNew28Val(ui8Data& d1, ui8Data& d2, uint8_t addr, uint16_t prmID, 
 
 uint8_t DA::SetNewWVal(ui16Data& d, uint8_t addr, uint16_t prmID, uint16_t val)
 {
-    if(!d.lnk.Check()) {
+    if(d.lnk.Connected()) {
 	d.s = addr;
 	d.Set(val);
 	uint8_t E[3] = { addr, d.b_vl[0], d.b_vl[1] };
@@ -107,7 +107,7 @@ uint8_t DA::SetNewWVal(ui16Data& d, uint8_t addr, uint16_t prmID, uint16_t val)
 
 uint8_t DA::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
 {
-    if(!d.lnk.Check()) {
+    if(d.lnk.Connected()) {
 	d.s = addr;
 	d.Set(val);
 	uint8_t E[5] = { addr, d.b_vl[0], d.b_vl[1], d.b_vl[2], d.b_vl[3] };
@@ -120,7 +120,7 @@ uint8_t DA::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
 
 uint8_t DA::SetNew32Val(ui32Data& d, uint8_t addr, uint16_t prmID, uint32_t val)
 {
-    if(!d.lnk.Check()) {
+    if(d.lnk.Connected()) {
 	d.s = addr;
 	d.Set(val);
 	uint8_t E[5] = { addr, d.b_vl[0], d.b_vl[1], d.b_vl[2], d.b_vl[3] };
@@ -131,42 +131,9 @@ uint8_t DA::SetNew32Val(ui32Data& d, uint8_t addr, uint16_t prmID, uint32_t val)
     }
 }
 
-/*uint8_t DA::SetNewflWVal(flData& d, uint8_t addr, uint16_t prmID, uint16_t val)
-{
-    if(!d.lnk.Check()) {
-	d.s = addr;
-	d.Set(val);
-	d.vl = val;
-	d.lnk.aprm.at().setI(d.vl);
-	mPrm.vlAt(d.lnk.prmName.c_str()).at().setR(d.vl / 10, 0, true);
-	ui8w t;
-	t.w = d.vl;
-	uint8_t E[3] = { addr, t.b[0], t.b[1] };
-	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 2;
-    } else {
-	return 0;
-    }
-}
-
-uint8_t DA::SetNewfl8Val(flData& d, uint8_t addr, uint16_t prmID, uint8_t val)
-{
-    if(!d.lnk.Check()) {
-	d.s = addr;
-	d.vl = val;
-	d.lnk.aprm.at().setI(d.vl);
-	mPrm.vlAt(d.lnk.prmName.c_str()).at().setR(d.vl / 10, 0, true);
-	uint8_t E[2] = { addr, val };
-	mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 1;
-    } else {
-	return 0;
-    }
-}*/
-
 uint8_t DA::SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2)
 {
-    if((!d1.lnk.Check()) && (!d2.lnk.Check())) {
+    if(d1.lnk.Connected() && d2.lnk.Connected()) {
 	d1.s = addr;
 	d1.Set(val1);
 	d2.s = addr;
@@ -178,30 +145,6 @@ uint8_t DA::SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, f
 	return 0;
     }
 }
-
-/*void DA::UpdateParamFlW(flData& param, uint16_t ID, uint8_t cl)
-{
-    ui8fl tmpfl;
-    ui8w tmpw;
-    tmpfl.f = param.Get()/10;
-    if(tmpfl.f != param.vl) {
-	param.Update(tmpfl.f);
-	tmpw.w = (uint16_t) (param.vl*10);
-	uint8_t E[3] = { 0, tmpw.b[0], tmpw.b[1] };
-	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-    }
-}
-
-void DA::UpdateParamFlB(flData& param, uint16_t ID, uint8_t cl)
-{
-    ui8fl tmpfl;
-    tmpfl.f = param.Get()/10;
-    if(tmpfl.f != param.vl) {
-	param.Update(tmpfl.f);
-	uint8_t E[2] = { 0, (uint8_t) (param.vl*10) };
-	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
-    }
-}*/
 
 void DA::UpdateParam8(ui8Data& param, uint16_t ID, uint8_t cl)
 {

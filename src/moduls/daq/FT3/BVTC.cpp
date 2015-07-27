@@ -114,50 +114,7 @@ uint16_t KA_BVTC::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
-    case TaskRefresh:
-	Msg.L = 5;
-	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
-	if(mPrm.owner().Transact(&Msg)) {
-	    if(Msg.C == GOOD3) {
-		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
-		uint16_t nTC = (count_n / 8 + (count_n % 8 ? 1 : 0));
-		Msg.L = 3 + nTC * 2;
-		Msg.C = AddrReq;
-		for(int i = 0; i < nTC; i++) {
-		    *((uint16_t *) (Msg.D + i * 2)) = PackID(ID, 1, i); //TC Value
-		}
-		if(mPrm.owner().Transact(&Msg)) {
-		    if(Msg.C == GOOD3) {
-			for(int i = 1; i <= count_n; i++) {
-			    mPrm.vlAt(TSYS::strMess("TC_%d", i).c_str()).at().setB(((Msg.D[7 + ((i - 1) / 8 * 5)]) >> ((i - 1) % 8)) & 0x01, 0, true);
-			}
-			if(with_params) {
-			    Msg.L = 3 + nTC * 2;
-			    Msg.C = AddrReq;
-			    for(int i = 0; i < nTC; i++) {
-				*((uint16_t *) (Msg.D + i * 2)) = PackID(ID, 2, i); //маски ТC
-			    }
-			    if(mPrm.owner().Transact(&Msg)) {
-				if(Msg.C == GOOD3) {
-				    for(int i = 1; i <= count_n; i++) {
-					mPrm.vlAt(TSYS::strMess("Mask_%d", i).c_str()).at().setB(((Msg.D[8 + ((i - 1) / 8 * 6)]) >> ((i - 1) % 8)) & 0x01, 0,
-						true);
-				    }
-				    rc = 1;
-				}
-			    }
-			} else {
-			    rc = 1;
-			}
-		    }
-		}
-	    }
-	}
-	if(rc) NeedInit = false;
-	break;
-    }
+    //TODO
     return rc;
 }
 
@@ -166,45 +123,7 @@ uint16_t KA_BVTC::HandleEvent(uint8_t * D)
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
     if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
-    switch(ft3ID.k) {
-    case 0:
-	switch(ft3ID.n) {
-	case 0:
-	    mPrm.vlAt("state").at().setI(D[2], 0, true);
-	    l = 3;
-	    break;
-	case 1:
-	    mPrm.vlAt("state").at().setI(D[2], 0, true);
-	    l = 3 + count_n / 4;
-	    for(int j = 1; j <= count_n; j++) {
-
-		mPrm.vlAt(TSYS::strMess("TC_%d", j).c_str()).at().setB((D[((j - 1) >> 3) + 3] >> (j % 8)) & 1, 0, true);
-		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("Mask_%d", j).c_str()).at().setB((D[((j - 1) >> 3) + 3 + count_n / 8] >> (j % 8)) & 1, 0, true);
-		}
-
-	    }
-	    break;
-
-	}
-	break;
-    case 1:
-	l = 3;
-	for(int i = 0; i < 8; i++) {
-	    if((1 + (ft3ID.n << 3) + i) > count_n) break;
-	    mPrm.vlAt(TSYS::strMess("TC_%d", 1 + (ft3ID.n << 3) + i).c_str()).at().setB((D[2] >> i) & 1, 0, true);
-	}
-	break;
-    case 2:
-	l = 4;
-	if(with_params) {
-	    for(int i = 0; i < 8; i++) {
-		if((1 + (ft3ID.n << 3) + i) > count_n) break;
-		mPrm.vlAt(TSYS::strMess("Mask_%d", 1 + (ft3ID.n << 3) + i).c_str()).at().setB((D[3] >> i) & 1, 0, true);
-	    }
-	}
-	break;
-    }
+    //TODO
     return l;
 }
 
@@ -269,7 +188,6 @@ uint8_t KA_BVTC::cmdSet(uint8_t * req, uint8_t addr)
 	case 1:
 	    l = SetNew28Val(data[ft3ID.k - 1].Period, data[ft3ID.k - 1].Count, addr, prmID, req[2], req[3]);
 	    break;
-	    break;
 	}
     }
     return l;
@@ -277,25 +195,7 @@ uint8_t KA_BVTC::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_BVTC::setVal(TVal &val)
 {
-    int off = 0;
-    FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
-    ft3ID.g = ID;
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = SetData;
-    *((uint16_t *) Msg.D) = PackID(ft3ID);
-
-    Msg.D[2] = 0;
-    uint16_t st = ft3ID.n * 8 + 1;
-    uint16_t en = (ft3ID.n + 1) * 8;
-    if(en > count_n) en = count_n;
-    Msg.L = 6;
-    for(int i = st; i <= en; i++) {
-	Msg.D[2] |= ((mPrm.vlAt(TSYS::strMess("Mask_%d", i).c_str()).at().getB(0, true)) << ((i - 1) % 8));
-    }
-    mPrm.owner().Transact(&Msg);
+    //TODO
     return 0;
 }
 
@@ -309,17 +209,18 @@ B_BVTC::B_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
     for(int i = 0; i < count_n; i++) {
-	data.push_back(STCchannel(i));
-	mPrm.p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Boolean, TFld::NoWrite));
-	data[i].Value.vl = EVAL_BOOL;
-	fld->setReserve("1:" + TSYS::int2str((i) / 8));
-	if(with_params) {
-	    data[i].Mask.vl = EVAL_BOOL;
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Mask.lnk.prmName.c_str(), data[i].Mask.lnk.prmDesc.c_str(), TFld::Boolean, TVal::DirWrite));
-	    fld->setReserve("2:" + TSYS::int2str((i) / 8));
-	}
+	AddChannel(i);
     }
     loadIO(true);
+}
+
+void B_BVTC::AddChannel(uint8_t iid)
+{
+    data.push_back(STCchannel(iid, this));
+    AddAttr(data.back().Value.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("1:%d", iid / 8));
+    if(with_params) {
+	AddAttr(data.back().Mask.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("2:%d", iid / 8));
+    }
 }
 
 B_BVTC::~B_BVTC()
@@ -376,43 +277,28 @@ void B_BVTC::tmHandler(void)
 	uint8_t tmpval;
 	uint8_t g = i / 8;
 	if(data[i].Mask.vl == 0) {
-	    if(data[i].Value.lnk.aprm.freeStat()) {
-		//no connection
-		data[i].Value.vl = EVAL_BOOL;
-	    } else {
-		tmpval = data[i].Value.lnk.aprm.at().getB();
-		if(tmpval != data[i].Value.vl) {
-		    data[i].Value.vl = tmpval;
-		    mPrm.vlAt(data[i].Value.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
-		    uint8_t E[1] = { 0 };
-		    for(int j = 0; j < 8; j++) {
-			E[0] |= (data[g * 8 + j].Value.vl & 0x01) << j;
-		    }
-		    mPrm.owner().PushInBE(1, 1, PackID(ID, 1, i / 8), E);
-
+	    tmpval = data[i].Value.Get();
+	    if(tmpval != data[i].Value.vl) {
+		data[i].Value.Update(tmpval);
+		uint8_t E[1] = { 0 };
+		for(int j = 0; j < 8; j++) {
+		    E[0] |= (data[g * 8 + j].Value.vl & 0x01) << j;
 		}
+		mPrm.owner().PushInBE(1, 1, PackID(ID, 1, i / 8), E);
 	    }
 	}
 	if(with_params) {
-	    if(data[i].Mask.lnk.aprm.freeStat()) {
-		//no connection
-		data[i].Mask.vl = EVAL_BOOL;
-	    } else {
-		tmpval = data[i].Mask.lnk.aprm.at().getB();
-		if(tmpval != data[i].Mask.vl) {
-		    data[i].Mask.vl = tmpval;
-		    data[i].Mask.s = 0;
-		    mPrm.vlAt(data[i].Mask.lnk.prmName.c_str()).at().setB(tmpval, 0, true);
-		    uint8_t E[2] = { 0, 0 };
-		    for(int j = 0; j < 8; j++) {
-			E[1] |= (data[g * 8 + j].Mask.vl & 0x01) << j;
-		    }
-		    mPrm.owner().PushInBE(1, 2, PackID(ID, 2, i / 8), E);
-
+	    tmpval = data[i].Mask.Get();
+	    if(tmpval != data[i].Mask.vl) {
+		data[i].Mask.s = 0;
+		data[i].Mask.Update(tmpval);
+		uint8_t E[2] = { 0, 0 };
+		for(int j = 0; j < 8; j++) {
+		    E[1] |= (data[g * 8 + j].Mask.vl & 0x01) << j;
 		}
+		mPrm.owner().PushInBE(1, 2, PackID(ID, 2, i / 8), E);
 	    }
 	}
-
     }
 }
 
@@ -592,10 +478,8 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t addr)
 		mess_info("BVTC ", _("found! %d"), i);
 
 		data[i].Mask.s = addr;
-		data[i].Mask.vl = newMask & 0x01;
-		if(!data[i].Mask.lnk.aprm.freeStat()) {
-		    data[i].Mask.lnk.aprm.at().setB(data[i].Mask.vl);
-		    mPrm.vlAt(data[i].Mask.lnk.prmName.c_str()).at().setB(data[i].Mask.vl, 0, true);
+		if(data[i].Mask.lnk.Connected()) {
+		    data[i].Mask.Set(newMask & 0x01);
 		    newMask = newMask >> 1;
 		    l = 3;
 		} else {

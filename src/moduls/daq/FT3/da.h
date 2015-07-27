@@ -190,10 +190,10 @@ namespace FT3
 	    ;
 	    uint8_t Get()
 	    {
-		if(lnk.Check()) {
-		    return err;
-		} else {
+		if(lnk.Connected()) {
 		    return lnk.aprm.at().getI();
+		} else {
+		    return err;
 		}
 	    }
 	};
@@ -227,10 +227,10 @@ namespace FT3
 	    ;
 	    uint16_t Get()
 	    {
-		if(lnk.Check()) {
-		    return err;
-		} else {
+		if(lnk.Connected()) {
 		    return lnk.aprm.at().getI();
+		} else {
+		    return err;
 		}
 	    }
 	};
@@ -264,10 +264,10 @@ namespace FT3
 	    ;
 	    uint32_t Get()
 	    {
-		if(lnk.Check()) {
-		    return err;
-		} else {
+		if(lnk.Connected()) {
 		    return lnk.aprm.at().getI();
+		} else {
+		    return err;
 		}
 	    }
 	};
@@ -301,10 +301,10 @@ namespace FT3
 	    ;
 	    float Get()
 	    {
-		if(lnk.Check()) {
-		    return err;
+		if(lnk.Connected()) {
+		    return lnk.aprm.at().getI();
 		} else {
-		    return lnk.aprm.at().getR();
+		    return err;
 		}
 	    }
 	};

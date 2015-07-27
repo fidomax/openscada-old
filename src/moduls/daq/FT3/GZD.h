@@ -90,7 +90,6 @@ namespace FT3
 	};
 	vector<SKAZDchannel> data;
 	void AddZDChannel(uint8_t iid);
-	void AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex);
 	int lnkSize()
 	{
 	    if(with_params) {
