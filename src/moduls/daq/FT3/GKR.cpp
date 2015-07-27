@@ -197,26 +197,26 @@ uint8_t B_GKR::cmdGet(uint16_t prmID, uint8_t * out)
 		break;
 	    case 5:
 		out[0] = KRdata[ft3ID.k - 1].Time.s;
-		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Time.vl * 10);	//msec
-		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Time.vl * 10) >> 8;	//msec
+		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Time.vl);	//msec
+		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Time.vl) >> 8;	//msec
 		l = 3;
 		break;
 	    case 6:
 		out[0] = KRdata[ft3ID.k - 1].ExTime.s;
-		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].ExTime.vl * 10);	//msec
-		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].ExTime.vl * 10) >> 8;	//msec
+		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].ExTime.vl);	//msec
+		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].ExTime.vl) >> 8;	//msec
 		l = 3;
 		break;
 	    case 7:
 		out[0] = KRdata[ft3ID.k - 1].Time_Lub.s;
-		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Time_Lub.vl * 10);	//msec
-		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Time_Lub.vl * 10) >> 8;	//msec
+		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Time_Lub.vl);	//msec
+		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Time_Lub.vl) >> 8;	//msec
 		l = 3;
 		break;
 	    case 8:
 		out[0] = KRdata[ft3ID.k - 1].Timeout_PO.s;
-		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Timeout_PO.vl * 10);	//msec
-		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Timeout_PO.vl * 10) >> 8;	//msec
+		out[1] = ((uint16_t) KRdata[ft3ID.k - 1].Timeout_PO.vl);	//msec
+		out[2] = ((uint16_t) KRdata[ft3ID.k - 1].Timeout_PO.vl) >> 8;	//msec
 		l = 3;
 		break;
 	    }

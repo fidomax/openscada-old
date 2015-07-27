@@ -420,9 +420,9 @@ uint16_t B_BTR::Task(uint16_t uc)
 
 			    if(mPrm.owner().Transact(&Msg)) {
 				if(Msg.C == GOOD3) {
-				    mPrm.vlAt(TSYS::strMess("time_%d", i).c_str()).at().setR(TSYS::getUnalign16(Msg.D + 8) / 10.0, 0, true);
+				    mPrm.vlAt(TSYS::strMess("time_%d", i).c_str()).at().setR(TSYS::getUnalign16(Msg.D + 8), 0, true);
 				    mPrm.vlAt(TSYS::strMess("tc_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 15), 0, true);
-				    mPrm.vlAt(TSYS::strMess("extime_%d", i).c_str()).at().setR(Msg.D[22] / 10.0, 0, true);
+				    mPrm.vlAt(TSYS::strMess("extime_%d", i).c_str()).at().setR(Msg.D[22] , 0, true);
 				    rc = 1;
 				} else {
 				    rc = 0;
@@ -488,7 +488,7 @@ uint16_t B_BTR::HandleEvent(uint8_t * D)
     if(count_nu && (ft3ID.k <= count_nu)) {
 	switch(ft3ID.n) {
 	case 0:
-	    mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalign16(D + 3) / 10.0, 0, true);
+	    mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalign16(D + 3), 0, true);
 	    l = 5;
 	    break;
 
@@ -500,7 +500,7 @@ uint16_t B_BTR::HandleEvent(uint8_t * D)
 	    break;
 	case 2:
 	    if(with_params) {
-		mPrm.vlAt(TSYS::strMess("extime_%d", ft3ID.k).c_str()).at().setR(D[3] / 10.0, 0, true);
+		mPrm.vlAt(TSYS::strMess("extime_%d", ft3ID.k).c_str()).at().setR(D[3], 0, true);
 		;
 	    }
 	    l = 4;
@@ -686,7 +686,7 @@ uint16_t B_BTR::setVal(TVal &val)
 	    switch(ft3ID.n) {
 	    case 0:
 		Msg.L = 7;
-		*(uint16_t *) (Msg.D + 2) = (uint16_t) (val.get(NULL, true).getR() * 10.0);
+		*(uint16_t *) (Msg.D + 2) = (uint16_t) (val.get(NULL, true).getR());
 		break;
 	    case 1:
 		Msg.L = 7;
@@ -694,7 +694,7 @@ uint16_t B_BTR::setVal(TVal &val)
 		break;
 	    case 2:
 		Msg.L = 6;
-		Msg.D[2] = val.get(NULL, true).getR() * 10.0;
+		Msg.D[2] = val.get(NULL, true).getR();
 		break;
 	    }
 	}
