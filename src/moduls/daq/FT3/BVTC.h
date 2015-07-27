@@ -43,29 +43,31 @@ namespace FT3
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
 	void tmHandler(void);
- 	uint16_t config;
+	uint16_t config;
 	class SKATCchannel
 	{
 	public:
-	    SKATCchannel(uint8_t iid) :
-		    id(iid),
-		    Value(TSYS::strMess("TC_%d", id+1).c_str(), TSYS::strMess(_("TC %d"), id+1).c_str()),
-		    Period(TSYS::strMess("Period_%d", id+1).c_str(), TSYS::strMess(_("Period ТС %d"), id+1).c_str()),
-		    Count(TSYS::strMess("Count_%d", id+1).c_str(), TSYS::strMess(_("Count ТС %d"), id+1).c_str())
+	    SKATCchannel(uint8_t iid, DA* owner) :
+		    da(owner), id(iid), Value(TSYS::strMess("TC_%d", id + 1).c_str(), TSYS::strMess(_("TC %d"), id + 1).c_str()),
+		    Period(TSYS::strMess("Period_%d", id + 1).c_str(), TSYS::strMess(_("Period ТС %d"), id + 1).c_str()),
+		    Count(TSYS::strMess("Count_%d", id + 1).c_str(), TSYS::strMess(_("Count ТС %d"), id + 1).c_str())
 	    {
 	    }
+	    DA* da;
 	    uint8_t id;
 	    ui8Data Value, Period, Count;
 	};
 	vector<SKATCchannel> data;
-	int lnkSize( ){
+	int lnkSize()
+	{
 	    if(with_params) {
 		return data.size() * 3;
 	    } else {
 		return data.size();
 	    }
 	}
-	int lnkId( const string &id ){
+	int lnkId(const string &id)
+	{
 	    if(with_params) {
 		for(int i_l = 0; i_l < data.size(); i_l++) {
 		    if(data[i_l].Value.lnk.prmName == id) return i_l * 3;
@@ -116,29 +118,30 @@ namespace FT3
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
 	void saveIO(void);
-	void loadIO(bool force = false );
+	void loadIO(bool force = false);
 	void tmHandler(void);
 	class STCchannel
 	{
 	public:
 	    STCchannel(uint8_t iid) :
-		    id(iid),
-		    Value(TSYS::strMess("TC_%d", id+1).c_str(), TSYS::strMess(_("TC %d"), id+1).c_str()),
-		    Mask(TSYS::strMess("Mask_%d", id+1).c_str(), TSYS::strMess(_("Mask %d"), id+1).c_str())
+		    id(iid), Value(TSYS::strMess("TC_%d", id + 1).c_str(), TSYS::strMess(_("TC %d"), id + 1).c_str()),
+		    Mask(TSYS::strMess("Mask_%d", id + 1).c_str(), TSYS::strMess(_("Mask %d"), id + 1).c_str())
 	    {
 	    }
 	    uint8_t id;
 	    ui8Data Value, Mask;
 	};
 	vector<STCchannel> data;
-	int lnkSize( ){
+	int lnkSize()
+	{
 	    if(with_params) {
 		return data.size() * 2;
 	    } else {
 		return data.size();
 	    }
 	}
-	int lnkId( const string &id ){
+	int lnkId(const string &id)
+	{
 	    if(with_params) {
 		for(int i_l = 0; i_l < data.size(); i_l++) {
 		    if(data[i_l].Value.lnk.prmName == id) {

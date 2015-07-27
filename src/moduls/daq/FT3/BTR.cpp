@@ -378,9 +378,9 @@ void B_BTR::tmHandler(void)
 {
     NeedInit = false;
     for(int i = 0; i < count_nu; i++) {
-	UpdateParamFlW(TUdata[i].Time, PackID(ID, i + 1, 0), 1);
+	UpdateParamW(TUdata[i].Time, PackID(ID, i + 1, 0), 1);
 	UpdateParamW(TUdata[i].TC, PackID(ID, i + 1, 1), 1);
-	UpdateParamFlB(TUdata[i].ExTime, PackID(ID, i + 1, 2), 1);
+	UpdateParam8(TUdata[i].ExTime, PackID(ID, i + 1, 2), 1);
     }
     for(int i = 0; i < count_nr; i++) {
 	UpdateParamFl(TRdata[i].Value, PackID(ID, i + 1 + count_nu, 0), 1);
@@ -596,12 +596,12 @@ uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
 	if(count_nu && (ft3ID.k <= count_nu)) {
 	    switch(ft3ID.n) {
 	    case 0:
-		l = SetNewflWVal(TUdata[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
+		l = SetNewWVal(TUdata[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 1:
 		l = 3;
 	    case 2:
-		l = SetNewfl8Val(TUdata[ft3ID.k - 1].ExTime, addr, prmID, req[2]);
+		l = SetNew8Val(TUdata[ft3ID.k - 1].ExTime, addr, prmID, req[2]);
 	    }
 	}
 	if(count_nr && ((ft3ID.k > count_nu) && (ft3ID.k <= count_nr + count_nu))) {

@@ -170,7 +170,8 @@ namespace FT3
 
 	    ui8Data On, Off, Run, Reset;
 	    ui16Data TC;
-	    flData Time, ExTime;
+	    ui16Data Time;
+	    ui8Data ExTime;
 	};
 	vector<STRchannel> TRdata;
 	vector<STUchannel> TUdata;

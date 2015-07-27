@@ -35,18 +35,7 @@ KA_BVTC::KA_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
     for(int i = 0; i < count_n; i++) {
-	data.push_back(SKATCchannel(i));
-	mPrm.p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	data[i].Value.vl = 0;
-	fld->setReserve(TSYS::int2str(i) + ":" + TSYS::int2str(0));
-	if(with_params) {
-	    data[i].Period.vl = 0;
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Period.lnk.prmName.c_str(), data[i].Period.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::int2str(i) + ":" + TSYS::int2str(1));
-	    data[i].Count.vl = 0;
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Count.lnk.prmName.c_str(), data[i].Count.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::int2str(i) + ":" + TSYS::int2str(1));
-	}
+	AddChannel(i);
     }
     loadIO(true);
 }
@@ -58,13 +47,12 @@ KA_BVTC::~KA_BVTC()
 
 void KA_BVTC::AddChannel(uint8_t iid)
 {
-/*    TUdata.push_back(SKATUchannel(iid, this));
-    AddAttr(TUdata.back().Line.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
+    data.push_back(SKATCchannel(iid, this));
+    AddAttr(data.back().Value.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
     if(with_params) {
-	for(int i = 0; i < 16; i++) {
-	    AddAttr(TUdata.back().Time[i].lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	}
-    }*/
+	AddAttr(data.back().Period.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+	AddAttr(data.back().Count.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+    }
 }
 
 string KA_BVTC::getStatus(void)
@@ -222,9 +210,9 @@ uint16_t KA_BVTC::HandleEvent(uint8_t * D)
 
 uint8_t KA_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 {
-    mess_info("KA_BVTC", "cmdGet %04X",prmID);
+    mess_info("KA_BVTC", "cmdGet %04X", prmID);
     FT3ID ft3ID = UnpackID(prmID);
-    mess_info("KA_BVTC", "ID %d ft3ID g%d k%d n%d ",ID, ft3ID.g,ft3ID.k,ft3ID.n);
+    mess_info("KA_BVTC", "ID %d ft3ID g%d k%d n%d ", ID, ft3ID.g, ft3ID.k, ft3ID.n);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
     if(ft3ID.k == 0) {
@@ -250,14 +238,14 @@ uint8_t KA_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 	if(ft3ID.k <= count_n) {
 	    switch(ft3ID.n) {
 	    case 0:
-		out[0] = data[ft3ID.k-1].Value.s;
-		out[1] = data[ft3ID.k-1].Value.vl;
+		out[0] = data[ft3ID.k - 1].Value.s;
+		out[1] = data[ft3ID.k - 1].Value.vl;
 		l = 2;
 		break;
 	    case 1:
-		out[0] = data[ft3ID.k-1].Period.s;
-		out[1] = data[ft3ID.k-1].Period.vl;
-		out[2] = data[ft3ID.k-1].Count.vl;
+		out[0] = data[ft3ID.k - 1].Period.s;
+		out[1] = data[ft3ID.k - 1].Period.vl;
+		out[2] = data[ft3ID.k - 1].Count.vl;
 		l = 3;
 		break;
 	    }
@@ -274,14 +262,14 @@ uint8_t KA_BVTC::cmdSet(uint8_t * req, uint8_t addr)
     mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     uint l = 0;
     if((ft3ID.k > 0) && (ft3ID.k <= count_n)) {
-	switch (ft3ID.n){
+	switch(ft3ID.n) {
 	case 0:
 	    l = SetNew8Val(data[ft3ID.k - 1].Value, addr, prmID, req[2]);
 	    break;
 	case 1:
 	    l = SetNew28Val(data[ft3ID.k - 1].Period, data[ft3ID.k - 1].Count, addr, prmID, req[2], req[3]);
 	    break;
-	break;
+	    break;
 	}
     }
     return l;

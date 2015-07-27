@@ -129,10 +129,10 @@ void B_GKR::tmHandler(void)
 {
     NeedInit = false;
     for(int i = 0; i < count_kr; i++) {
-	UpdateParamFlW(KRdata[i].Time, PackID(ID, i + 1, 5), 1);
-	UpdateParamFlB(KRdata[i].ExTime, PackID(ID, i + 1, 6), 1);
-	UpdateParamFlW(KRdata[i].Time_Lub, PackID(ID, i + 1, 7), 1);
-	UpdateParamFlB(KRdata[i].Timeout_PO, PackID(ID, i + 1, 8), 1);
+	UpdateParamW(KRdata[i].Time, PackID(ID, i + 1, 5), 1);
+	UpdateParam8(KRdata[i].ExTime, PackID(ID, i + 1, 6), 1);
+	UpdateParamW(KRdata[i].Time_Lub, PackID(ID, i + 1, 7), 1);
+	UpdateParam8(KRdata[i].Timeout_PO, PackID(ID, i + 1, 8), 1);
     }
 }
 
@@ -250,16 +250,16 @@ uint8_t B_GKR::cmdSet(uint8_t * req, uint8_t addr)
 		l = SetNew8Val(KRdata[ft3ID.k - 1].Lubrication, addr, prmID, req[2]);
 		break;
 	    case 5:
-		l = SetNewflWVal(KRdata[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
+		l = SetNewWVal(KRdata[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 6:
-		l = SetNewflWVal(KRdata[ft3ID.k - 1].ExTime, addr, prmID, TSYS::getUnalign16(req + 2));
+		l = SetNew8Val(KRdata[ft3ID.k - 1].ExTime, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 7:
-		l = SetNewflWVal(KRdata[ft3ID.k - 1].Time_Lub, addr, prmID, TSYS::getUnalign16(req + 2));
+		l = SetNewWVal(KRdata[ft3ID.k - 1].Time_Lub, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 8:
-		l = SetNewflWVal(KRdata[ft3ID.k - 1].Timeout_PO, addr, prmID, TSYS::getUnalign16(req + 2));
+		l = SetNew8Val(KRdata[ft3ID.k - 1].Timeout_PO, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    }
 	}
