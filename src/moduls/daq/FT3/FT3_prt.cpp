@@ -145,11 +145,11 @@ uint16_t TProt::VerifyPacket(string &pdu)
 {
     uint16_t raslen;
     if(pdu.size() == 1) {
-	//байтовый опрос
+	//one byte req
 	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("VerifyPacket one byte req"));
 	return 0;
     } else {
-	//нормальный пакет
+	//normal packet
 	if(pdu.size() > 7) {
 	    if((pdu[0] == 0x05) && (pdu[0] != 0x64)) {
 		if(!((raslen = Len(pdu[2])) == pdu.size() && VerCRC(pdu, pdu.size())))
@@ -158,18 +158,18 @@ uint16_t TProt::VerifyPacket(string &pdu)
 			    mess_debug(nodePath().c_str(),
 				    _("VerifyPacket bad packet pdu.size:%d raslen:%d VerCRC(pdu, pdu.size()):%d VerCRC(pdu, raslen):%d"), pdu.size(), raslen,
 				    VerCRC(pdu, pdu.size()), VerCRC(pdu, raslen));
-			return 2; //неправильный пакет
+			return 2; //wrong packet
 		    } else {
 			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("VerifyPacket bad tail"));
-			pdu.erase(raslen); //пакет с мусором в конце
+			pdu.erase(raslen); //trash in tail
 		    }
 	    } else {
 		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("VerifyPacket no header"));
-		return 1; //нет начала пакета
+		return 1; //no start sequence
 	    }
 	} else {
 	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("VerifyPacket no packet"));
-	    return 3; //не пакет
+	    return 3; //not a packet
 	}
     }
     return 0;

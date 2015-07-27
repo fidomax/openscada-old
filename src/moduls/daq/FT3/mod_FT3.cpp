@@ -777,13 +777,9 @@ uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 		}
 
 	    } else {
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ept"));
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ept %d"), (t[0] == 0x05));
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ept %d"), (t[0] != 0x64));
 		return 1; //no start bytes
 	    }
 	} else {
-	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("WTF???"));
 	    return 3; //not a packet
 	}
     }

@@ -49,8 +49,8 @@ namespace FT3
 	public:
 	    SKATCchannel(uint8_t iid, DA* owner) :
 		    da(owner), id(iid), Value(TSYS::strMess("TC_%d", id + 1).c_str(), TSYS::strMess(_("TC %d"), id + 1).c_str()),
-		    Period(TSYS::strMess("Period_%d", id + 1).c_str(), TSYS::strMess(_("Period ТС %d"), id + 1).c_str()),
-		    Count(TSYS::strMess("Count_%d", id + 1).c_str(), TSYS::strMess(_("Count ТС %d"), id + 1).c_str())
+		    Period(TSYS::strMess("Period_%d", id + 1).c_str(), TSYS::strMess(_("Period TC %d"), id + 1).c_str()),
+		    Count(TSYS::strMess("Count_%d", id + 1).c_str(), TSYS::strMess(_("Count TC %d"), id + 1).c_str())
 	    {
 	    }
 	    DA* da;
