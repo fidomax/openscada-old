@@ -288,7 +288,6 @@ uint16_t B_UTHET::Task(uint16_t uc)
 				break;
 			    }
 			} else {
-			    mess_info(mPrm.nodePath().c_str(), _("Abuyz"));
 			    rc = 0;
 			    break;
 			}
@@ -427,7 +426,6 @@ uint16_t B_UTHET::HandleEvent(uint8_t * D)
 		for(int i = 0; i < 10; i++) {
 		    data_s += TSYS::int2str((uint8_t) D[i], TSYS::Hex) + " ";
 		}
-		mess_info(mPrm.nodePath().c_str(), _("io_buf: %s"), data_s.c_str());
 		mPrm.vlAt(TSYS::strMess("period_date_%d", k).c_str()).at().setI(D[6], 0, true);
 		D[6] = 0;
 		D[7] = 0;
@@ -667,27 +665,21 @@ uint16_t B_UTHET::setVal(TVal &val)
 	mPrm.owner().Transact(&Msg);
 	break;
     case 12:
-	mess_info(mPrm.nodePath().c_str(), _("set date"));
 	struct tm tm_tm;
 	strptime(mPrm.vlAt(TSYS::strMess("datet_%d", k).c_str()).at().getS().c_str(), "%d.%m.%Y %H:%M:%S", &tm_tm);
-
-	mess_info(mPrm.nodePath().c_str(), _("strptime"));
 	Msg.L = 10;
 	Msg.C = SetData;
 	Msg.D[0] = addr & 0xFF;
 	Msg.D[1] = (addr >> 8) & 0xFF;
 	uint16_t h = (uint16_t) mPrm.vlAt(TSYS::strMess("period_date_%d", k).c_str()).at().getI(0, true);
 	mPrm.owner().Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
-	mess_info(mPrm.nodePath().c_str(), _("Time_tToDateTime"));
 	Msg.D[5] = h & 0xFF;
 	Msg.D[6] = (h >> 8) & 0xFF;
 	mPrm.owner().Transact(&Msg);
-	mess_info(mPrm.nodePath().c_str(), _("strptime"));
 	string data_s;
 	for(int i = 0; i < 7; i++) {
 	    data_s += TSYS::int2str((uint8_t) Msg.D[i], TSYS::Hex) + " ";
 	}
-	mess_info(mPrm.nodePath().c_str(), _("io_buf: %s"), data_s.c_str());
 	break;
 
     }

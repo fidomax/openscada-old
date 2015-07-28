@@ -1,15 +1,15 @@
 # OpenSCADA.DAQ.FT3 translate to Russian.
-# Copyright (C) 2007-2010 Olga Avdeyeva
+# Copyright (C) 2007-2015 Maxim Kothetkov, Olga Avdeyeva, Olga Kuzmickaya
 # This file is distributed under the same license as the OpenSCADA.DAQ.FT3 package module.
 #
-# Olga Avdeyeva, 2007-2010.
+# Maxim Kothetkov, 2007-2015.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.FT3 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-27 23:37+0300\n"
+"POT-Creation-Date: 2015-07-28 07:50+0300\n"
 "PO-Revision-Date: 2007-10-29 10:21+0200\n"
 "Last-Translator: Maxim Kothetkov, Olga Avdeyeva, Olga Kuzmickaya\n"
 "Language-Team: \n"
@@ -17,809 +17,1117 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
+#: BIP.cpp:34
+#: BTE.cpp:35
+#: BTR.cpp:36
+#: BTR.cpp:279
+#: BTU.cpp:37
+#: BUC.cpp:35
+#: BUC.cpp:296
+#: BVI.cpp:34
+#: BVTC.cpp:35
+#: BVTC.cpp:209
+#: BVT.cpp:104
+#: BVT.cpp:628
+#: GKR.cpp:36
+#: GNS.cpp:132
+#: GZD.cpp:182
+#: PAUK.cpp:34
+#: UTHET.cpp:35
 msgid "State"
 msgstr "Состояние"
 
+#: BIP.cpp:38
+#: BTE.cpp:39
+#: UTHET.cpp:39
+#: BVI.h:47
+#: BVT.h:48
+#: BVT.h:186
+#: GKR.h:53
+#: GNS.h:48
+#: GZD.h:57
 #, c-format
 msgid "State %d"
 msgstr "Состояние %d"
 
+#: BIP.cpp:40
+#: BTE.cpp:41
+#: BTR.h:148
+#: BVI.h:48
+#: BVT.h:49
+#: BVT.h:187
 #, c-format
 msgid "Value %d"
 msgstr "Значение %d"
 
+#: BIP.cpp:44
+#: BTE.cpp:45
+#: UTHET.cpp:45
+#: BVI.h:49
+#: BVT.h:50
+#: BVT.h:188
 #, c-format
 msgid "Measure period %d"
 msgstr "Период измерений %d"
 
+#: BIP.cpp:46
+#: BTE.cpp:47
+#: UTHET.cpp:47
+#: BVI.h:50
+#: BVT.h:51
+#: BVT.h:189
 #, c-format
 msgid "Sensitivity %d"
 msgstr "Чувствительность %d"
 
+#: BIP.cpp:49
+#: BTE.cpp:52
+#: UTHET.cpp:50
+#: BVT.h:56
+#: BVT.h:194
 #, c-format
 msgid "Warning minimum %d"
 msgstr "Мин. предупред. %d"
 
+#: BIP.cpp:52
+#: BTE.cpp:55
+#: UTHET.cpp:53
+#: BVT.h:57
+#: BVT.h:195
 #, c-format
 msgid "Warning maximum %d"
 msgstr "Макс. предупред. %d"
 
+#: BIP.cpp:54
+#: BTE.cpp:57
+#: UTHET.cpp:55
+#: BVT.h:58
+#: BVT.h:196
 #, c-format
 msgid "Alarm minimum %d"
 msgstr "Мин. аварии ФВ %d"
 
+#: BIP.cpp:56
+#: BTE.cpp:59
+#: UTHET.cpp:57
+#: BVT.h:59
+#: BVT.h:197
 #, c-format
 msgid "Alarm maximum %d"
 msgstr "Макс. аварии ФВ %d"
 
+#: BIP.cpp:59
+#: BVI.h:53
+#: BVT.h:199
 #, c-format
 msgid "Dimension %d"
 msgstr "Размерность %d"
 
+#: BIP.cpp:61
+#: BVT.h:54
+#: BVT.h:192
 #, c-format
 msgid "PV minimum %d"
 msgstr "Мин. ФВ %d"
 
+#: BIP.cpp:63
+#: BVT.h:55
+#: BVT.h:193
 #, c-format
 msgid "PV maximum %d"
 msgstr "Макс. ФВ %d"
 
+#: BIP.cpp:66
 #, c-format
 msgid "Minimum frequency %d"
 msgstr "Минимум частоты %d"
 
+#: BIP.cpp:69
 #, c-format
 msgid "Maximum frequency %d"
 msgstr "Максимум частоты %d"
 
+#: BIP.cpp:71
 #, c-format
 msgid "Factor %d"
 msgstr "Коэффициент (множитель) %d"
 
+#: BTE.cpp:49
 #, fuzzy
 msgid "Alarms %d"
 msgstr "Мин. аварии ФВ %d"
 
+#: BTE.cpp:61
 #, c-format
 msgid "Ki %d"
 msgstr ""
 
+#: BTE.cpp:63
 #, c-format
 msgid "Ku %d"
 msgstr ""
 
+#: BTE.cpp:65
 #, c-format
 msgid "A %d"
 msgstr ""
 
+#: BTR.cpp:282
+#: BTU.cpp:39
 msgid "Select TU"
 msgstr "Выбор ТУ"
 
+#: BTR.cpp:284
+#: BTU.cpp:41
+#: PAUK.cpp:38
 msgid "Execution"
 msgstr "Исполнение"
 
+#: BTU.cpp:47
+#: PAUK.cpp:51
 #, c-format
 msgid "Persistence time %d"
 msgstr "Время выжержки ТУ %d"
 
+#: BTU.cpp:49
 #, c-format
 msgid "TC bind %d"
 msgstr "ТС концевиков %d"
 
+#: BTU.cpp:52
+#: PAUK.cpp:54
 #, c-format
 msgid "Persistence astime %d"
 msgstr "Доп. время выжержки ТУ %d"
 
+#: BUC.cpp:37
 msgid "Configuration"
 msgstr "Конфигурация"
 
+#: BUC.cpp:39
+#: BUC.cpp:299
+#: mod_FT3.cpp:457
 msgid "Modification"
 msgstr "Модификация"
 
+#: BUC.cpp:301
 msgid "Timer state"
 msgstr "Состояние таймера"
 
+#: BUC.cpp:303
 msgid "Current datetime"
 msgstr "Текущие дата-время"
 
+#: BUC.cpp:305
 msgid "Stop datetime"
 msgstr "Дата-время последнего останова"
 
+#: BUC.cpp:307
 msgid "Delay 1"
 msgstr "Величина задержки 1"
 
+#: BUC.cpp:309
 msgid "Delay 2"
 msgstr "Величина задержки 2"
 
+#: BVTC.cpp:478
 #, c-format
 msgid "found! %d"
-msgstr ""
+msgstr "найдено! %d"
 
+#: FT3_prt.cpp:96
 #, c-format
 msgid "MakePacket one byte req %02X"
-msgstr ""
+msgstr "Создание пакета байтового опроса %02X"
 
+#: FT3_prt.cpp:149
 msgid "VerifyPacket one byte req"
-msgstr ""
+msgstr "Проверка пакета байтового опроса "
 
+#: FT3_prt.cpp:159
 #, c-format
 msgid ""
 "VerifyPacket bad packet pdu.size:%d raslen:%d VerCRC(pdu, pdu.size()):%d "
 "VerCRC(pdu, raslen):%d"
-msgstr ""
+msgstr "Плохой пакет pdu.size:%d raslen:%d VerCRC:%d VerCRC:%d"
 
+#: FT3_prt.cpp:163
 msgid "VerifyPacket bad tail"
-msgstr ""
+msgstr "Плохое окончание пакета"
 
+#: FT3_prt.cpp:167
 msgid "VerifyPacket no header"
-msgstr ""
+msgstr "Нет заголовка пакета"
 
+#: FT3_prt.cpp:171
 msgid "VerifyPacket no packet"
-msgstr ""
+msgstr "Не пакет"
 
+#: FT3_prt.cpp:204
 #, c-format
 msgid "ParsePacket one byte req C %02X A %02X"
-msgstr ""
+msgstr "Разбор пакета байтового опроса req C %02X A %02X"
 
+#: FT3_prt.cpp:241
 #, c-format
 msgid "new TProtIn %s"
-msgstr ""
+msgstr "Новое соединение %s"
 
+#: FT3_prt.cpp:246
 msgid "delete TProtIn"
-msgstr ""
+msgstr "Отключение"
 
+#: FT3_prt.cpp:261
 #, c-format
 msgid "request: %s"
-msgstr ""
+msgstr "запрос: %s"
 
+#: FT3_prt.cpp:263
 msgid "Correct packet found!"
 msgstr "Правильный пакет обнаружен"
 
+#: FT3_prt.cpp:267
 msgid "Packet parsed!"
-msgstr ""
+msgstr "Пакет разобран"
 
+#: FT3_prt.cpp:268
 #, c-format
 msgid "L:%02d C:%02X A:%02d B:%02d "
-msgstr ""
+msgstr "L:%02d C:%02X A:%02d B:%02d"
 
+#: mod_FT3.cpp:246
 #, c-format
 msgid "ProcessMessage one byte req A %02X"
-msgstr ""
+msgstr "Разбор пакета байтового опроса A %02X"
 
+#: mod_FT3.cpp:260
 msgid "ResetChan"
-msgstr ""
+msgstr "Сброс канала"
 
+#: mod_FT3.cpp:310
 msgid "ReqData BAD FCB!!!"
-msgstr ""
+msgstr "Запрос данных неверный FCB"
 
+#: mod_FT3.cpp:315
 #, c-format
 msgid "SetData FCB2 %02X newFCB2 %02X"
-msgstr ""
+msgstr "Установка данных FCB2 %02X newFCB2 %02X"
 
+#: mod_FT3.cpp:343
 msgid "SetData BAD FCB!!!"
-msgstr ""
+msgstr "Установка данных неверный FCB"
 
+#: mod_FT3.cpp:348
 msgid "AddrReq"
 msgstr "Адресный запрос"
 
+#: mod_FT3.cpp:372
 #, c-format
 msgid "AddrReq ID not found! %04X"
-msgstr ""
+msgstr "Адресный опрос ID не обнаружено %04X"
 
+#: mod_FT3.cpp:385
 msgid "ResData2"
-msgstr ""
+msgstr "Сброс данных класса 2"
 
+#: mod_FT3.cpp:433
 msgid "Type"
-msgstr ""
+msgstr "Тип"
 
+#: mod_FT3.cpp:433
 msgid "Logic;DAQ"
-msgstr ""
+msgstr "Логический;Контроллер"
 
+#: mod_FT3.cpp:434
 msgid "Protocol"
 msgstr "Протокол"
 
+#: mod_FT3.cpp:434
 msgid "GRS;KA"
-msgstr ""
+msgstr "ГРС;КА"
 
+#: mod_FT3.cpp:435
 msgid "BUC Parameteres table"
 msgstr "Таблица параметров БУЦ"
 
+#: mod_FT3.cpp:436
 msgid "BVTS Parameteres table"
 msgstr "Таблица параметров БВТС"
 
+#: mod_FT3.cpp:437
 msgid "BVT Parameteres table"
 msgstr "Таблица параметров БВТ"
 
+#: mod_FT3.cpp:438
 msgid "BVI Parameteres table"
 msgstr "Таблица параметров БВИ"
 
+#: mod_FT3.cpp:439
 msgid "BIP Parameteres table"
 msgstr "Таблица параметров БИП"
 
+#: mod_FT3.cpp:440
 msgid "PAUK Parameteres table"
 msgstr "Таблица параметров ПАУК"
 
+#: mod_FT3.cpp:441
 msgid "BTU Parameteres table"
 msgstr "Таблица параметров БТУ"
 
+#: mod_FT3.cpp:442
 msgid "ACCOUNT Parameteres table"
 msgstr "Таблица параметров Узла учета"
 
+#: mod_FT3.cpp:443
 msgid "BTR Parameteres table"
 msgstr "Таблица параметров БТР"
 
+#: mod_FT3.cpp:444
 msgid "BTE Parameteres table"
 msgstr "Таблица параметров БТЭ"
 
+#: mod_FT3.cpp:445
 msgid "GZD Parameteres table"
 msgstr "Таблица параметров ГЗД"
 
+#: mod_FT3.cpp:446
 msgid "GNS Parameteres table"
 msgstr "Таблица параметров ГНС"
 
+#: mod_FT3.cpp:447
 msgid "Gather data period (s)"
 msgstr "Период сбора данных"
 
+#: mod_FT3.cpp:448
 msgid "Gather task priority"
 msgstr "Уровень приоритета задачи"
 
+#: mod_FT3.cpp:450
 msgid "Addres"
 msgstr "Адрес контроллера"
 
+#: mod_FT3.cpp:451
 msgid "Transport address"
-msgstr ""
+msgstr "Адрес транспорта"
 
+#: mod_FT3.cpp:452
+#: mod_FT3.cpp:462
+#: mod_FT3.cpp:467
+#: mod_FT3.cpp:474
+#: mod_FT3.cpp:480
+#: mod_FT3.cpp:485
+#: mod_FT3.cpp:490
+#: mod_FT3.cpp:495
 msgid "Channels count"
 msgstr "Число каналов"
 
+#: mod_FT3.cpp:455
 msgid "BUC"
 msgstr "БУЦ"
 
+#: mod_FT3.cpp:456
+#: mod_FT3.cpp:461
+#: mod_FT3.cpp:466
+#: mod_FT3.cpp:473
+#: mod_FT3.cpp:479
+#: mod_FT3.cpp:484
+#: mod_FT3.cpp:489
+#: mod_FT3.cpp:494
+#: mod_FT3.cpp:499
+#: mod_FT3.cpp:505
+#: mod_FT3.cpp:510
+#: mod_FT3.cpp:515
 msgid "Device address"
 msgstr "Адрес блока"
 
+#: mod_FT3.cpp:460
 msgid "BVTS"
 msgstr "БВТС"
 
+#: mod_FT3.cpp:463
+#: mod_FT3.cpp:468
+#: mod_FT3.cpp:475
+#: mod_FT3.cpp:481
+#: mod_FT3.cpp:486
+#: mod_FT3.cpp:491
+#: mod_FT3.cpp:496
+#: mod_FT3.cpp:502
+#: mod_FT3.cpp:507
+#: mod_FT3.cpp:512
+#: mod_FT3.cpp:517
 msgid "With parameters"
 msgstr "С параметрами"
 
+#: mod_FT3.cpp:465
 msgid "BVT"
 msgstr "БВТ"
 
+#: mod_FT3.cpp:469
 msgid "With correcting factor"
 msgstr "С корректирующим коэффициентом"
 
+#: mod_FT3.cpp:470
 msgid "With rate calculations"
-msgstr ""
+msgstr "С вычислением скорости"
 
+#: mod_FT3.cpp:472
 msgid "BVI"
 msgstr "БВИ"
 
+#: mod_FT3.cpp:476
 msgid "Ext period"
 msgstr ""
 
+#: mod_FT3.cpp:478
 msgid "BIP"
 msgstr "БИП"
 
+#: mod_FT3.cpp:483
 msgid "PAUK"
 msgstr "ПАУК"
 
+#: mod_FT3.cpp:488
 msgid "BTU"
 msgstr "БТУ"
 
+#: mod_FT3.cpp:493
 msgid "ACCOUNT"
 msgstr "Узел учета"
 
+#: mod_FT3.cpp:498
 msgid "BTR"
 msgstr "БТР"
 
+#: mod_FT3.cpp:500
 msgid "Channels count TU"
 msgstr "Число каналов ТУ"
 
+#: mod_FT3.cpp:501
 msgid "Channels count TR"
 msgstr "Число каналов ТР"
 
+#: mod_FT3.cpp:504
 msgid "BTE"
 msgstr "БТЭ"
 
+#: mod_FT3.cpp:506
 msgid "Channels count TE"
 msgstr "Число каналов ТЭ"
 
+#: mod_FT3.cpp:509
 msgid "GZD"
-msgstr ""
+msgstr "ГЗД"
 
+#: mod_FT3.cpp:511
 msgid "Channels count ZD"
 msgstr "Число задвижек"
 
+#: mod_FT3.cpp:514
 msgid "GNS"
-msgstr ""
+msgstr "ГНС"
 
+#: mod_FT3.cpp:516
 msgid "Channels count NS"
 msgstr "Число насосов"
 
+#: mod_FT3.cpp:519
 msgid "Parameter ID"
 msgstr "ID параметра"
 
+#: mod_FT3.cpp:520
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
+#: mod_FT3.cpp:521
 msgid "Value"
 msgstr "Значение"
 
+#: mod_FT3.cpp:637
 msgid "bad header found!"
-msgstr ""
+msgstr "неверный заголовок"
 
+#: mod_FT3.cpp:638
+#: mod_FT3.cpp:666
 #, c-format
 msgid "l %d"
-msgstr ""
+msgstr "l %d"
 
+#: mod_FT3.cpp:642
+#: mod_FT3.cpp:665
 #, c-format
 msgid "io_buf: %s"
-msgstr ""
+msgstr "io_buf: %s"
 
+#: mod_FT3.cpp:643
 #, c-format
 msgid "CRC %04X"
 msgstr "CRC %04X"
 
+#: mod_FT3.cpp:653
 #, c-format
 msgid "Parse error %d"
 msgstr "Ошибка разбора %d"
 
+#: mod_FT3.cpp:660
 #, c-format
 msgid "Verify error %d"
-msgstr ""
+msgstr "Ошибка при проверке %d"
 
+#: mod_FT3.cpp:671
 #, c-format
 msgid "Receive error %d"
-msgstr ""
+msgstr "Ошибка приема %d"
 
+#: mod_FT3.cpp:692
 msgid "messIO error"
-msgstr ""
+msgstr "Ошибка messIO"
 
+#: mod_FT3.cpp:769
 msgid "good header"
-msgstr ""
+msgstr "Правильный заголовок"
 
+#: mod_FT3.cpp:771
 msgid "bad packet"
-msgstr ""
+msgstr "Плохой пакет"
 
+#: mod_FT3.cpp:774
 msgid "cutting packet"
-msgstr ""
+msgstr "Обрезание пакета"
 
+#: mod_FT3.cpp:863
 #, c-format
 msgid "Gather data time %.6g ms. "
 msgstr "Время сбора данных %.6g мс. "
 
+#: mod_FT3.cpp:951
 #, c-format
 msgid "new event %d"
-msgstr ""
+msgstr "событие %d"
 
+#: mod_FT3.cpp:956
+#: mod_FT3.cpp:980
 #, c-format
 msgid "%d, %s"
-msgstr ""
+msgstr "%d, %s"
 
+#: mod_FT3.cpp:975
 #, c-format
 msgid "Unhandled event  %04X at %d"
-msgstr ""
+msgstr "Необработанное событие %04X в %d"
 
+#: mod_FT3.cpp:1119
 msgid "No one device selected."
-msgstr ""
+msgstr "Ничего не выбрано"
 
+#: mod_FT3.cpp:1191
 #, c-format
 msgid "TMdPrm::vlSet name %s "
 msgstr ""
 
+#: mod_FT3.cpp:1252
 msgid "Parameters configuration"
-msgstr ""
+msgstr "Конфигурация параметров"
 
-#, fuzzy
+#: mod_FT3.cpp:1253
 msgid "Parameters"
 msgstr "Параметры"
 
-msgid "TMdPrm::vlArchMake"
-msgstr ""
-
-#, c-format
-msgid "%s"
-msgstr ""
-
+#: PAUK.cpp:36
 msgid "Valve select"
 msgstr "Выбор крана"
 
+#: PAUK.cpp:40
 msgid "Control"
 msgstr "Управление"
 
+#: PAUK.cpp:42
 msgid "Errors"
 msgstr "Ошибки"
 
+#: PAUK.cpp:46
+#, c-format
 msgid "Valve state %d"
 msgstr "Состояние крана %d"
 
+#: UTHET.cpp:42
 #, c-format
 msgid "Current flow %d"
 msgstr "Расход (Q) %d"
 
+#: UTHET.cpp:60
 #, c-format
 msgid "Sensor 1 %d"
 msgstr "Номер датчика 1 %d"
 
+#: UTHET.cpp:63
 #, c-format
 msgid "Sensor 2 %d"
 msgstr "Номер датчика 2 %d"
 
+#: UTHET.cpp:66
 #, c-format
 msgid "Sensor T %d"
 msgstr "Номер датчика t %d"
 
+#: UTHET.cpp:69
 #, c-format
 msgid "Sensor P %d"
 msgstr "Номер датчика P %d"
 
+#: UTHET.cpp:72
 #, c-format
 msgid "Service flow %d"
 msgstr "Расход при нештатных ситуациях %d"
 
+#: UTHET.cpp:75
 #, c-format
 msgid "Contract hour %d"
 msgstr "Контрактный час %d"
 
+#: UTHET.cpp:77
 #, c-format
 msgid "Hourly flow %d"
 msgstr "Объем текущего часа %d"
 
+#: UTHET.cpp:79
 #, c-format
 msgid "Counter Q %d"
 msgstr "Счетчик объема %d"
 
+#: UTHET.cpp:81
 #, c-format
 msgid "Hour Q %d"
 msgstr "Среднее Q за предыдущий час %d"
 
+#: UTHET.cpp:83
 #, c-format
 msgid "Hour dP %d"
 msgstr "Среднее dP за предыдущий час %d"
 
+#: UTHET.cpp:85
 #, c-format
 msgid "Hour t %d"
 msgstr "Среднее t за предыдущий час %d"
 
+#: UTHET.cpp:87
 #, c-format
 msgid "Hour P %d"
 msgstr "Среднее P за предыдущий час %d"
 
+#: UTHET.cpp:89
 #, c-format
 msgid "Hour E %d"
 msgstr "Среднее E за предыдущий час %d"
 
+#: UTHET.cpp:91
 #, c-format
 msgid "Datetime %d"
 msgstr "Период %d"
 
+#: UTHET.cpp:94
+#, c-format
 msgid "Period %d"
 msgstr "Период %d"
 
+#: UTHET.cpp:96
 #, c-format
 msgid "Avg Q %d"
 msgstr "Среднее Q за период %d"
 
+#: UTHET.cpp:98
 #, c-format
 msgid "Avg dP %d"
 msgstr "Среднее dP за период %d"
 
+#: UTHET.cpp:100
 #, c-format
 msgid "Avg t %d"
 msgstr "Среднее t за период %d"
 
+#: UTHET.cpp:102
 #, c-format
 msgid "Avg P %d"
 msgstr "Среднее P за период %d"
 
+#: UTHET.cpp:104
 #, c-format
 msgid "Avg E %d"
 msgstr "Среднее E за период %d"
 
+#: UTHET.cpp:107
 #, c-format
 msgid "Periodicly Q %d"
 msgstr "Объем за период %d"
 
+#: UTHET.cpp:109
 #, c-format
 msgid "Density %d"
 msgstr "Плотность газа в НУ %d"
 
+#: UTHET.cpp:112
 #, c-format
 msgid "Equivalence asperity %d"
 msgstr "Эквивалентная шероховатость %d"
 
+#: UTHET.cpp:116
 #, c-format
 msgid "N concentration %d"
 msgstr "Молярная концентрация азота %d"
 
+#: UTHET.cpp:119
 #, c-format
 msgid "CO concentration %d"
 msgstr "Молярная концентрация углекислого газа %d"
 
+#: UTHET.cpp:122
 #, c-format
 msgid "Membrane diameter %d"
 msgstr "Диаметр диафрагмы %d"
 
+#: UTHET.cpp:125
 #, c-format
 msgid "Membrane factor %d"
 msgstr "Коэфф. телового расширения диафрагмы %d"
 
+#: UTHET.cpp:128
 #, c-format
 msgid "Pipe diameter %d"
 msgstr "Диаметр трубопровода %d"
 
+#: UTHET.cpp:131
 #, c-format
 msgid "Pipe factor %d"
 msgstr "Коэфф. телового расширения трубопровода %d"
 
+#: UTHET.cpp:134
 #, c-format
 msgid "Measure method %d"
 msgstr "Метод измерения %d"
 
+#: UTHET.cpp:136
 #, c-format
 msgid "Test dP/TI %d"
 msgstr "Тестовые значения dP/TI %d"
 
+#: UTHET.cpp:138
 #, c-format
 msgid "Test t %d"
 msgstr "Тестовые значения t %d"
 
+#: UTHET.cpp:140
 #, c-format
 msgid "Test P %d"
 msgstr "Тестовые значения P %d"
 
+#: UTHET.cpp:142
 #, c-format
 msgid "Test rate %d"
 msgstr "Тестовый расход %d"
 
+#: UTHET.cpp:145
 #, c-format
 msgid "Membrane radius %d"
 msgstr "Ср. радиус закругления кромки диаф. %d"
 
+#: UTHET.cpp:148
 #, c-format
 msgid "Atmospheric pressure %d"
 msgstr "Атмосферное давление %d"
 
+#: UTHET.cpp:151
 #, fuzzy
 msgid "dP %d"
 msgstr "Среднее dP за период %d"
 
+#: UTHET.cpp:153
 #, fuzzy
 msgid "t %d"
 msgstr "Среднее t за период %d"
 
+#: UTHET.cpp:155
 #, fuzzy
 msgid "P %d"
 msgstr "Среднее P за период %d"
 
+#: UTHET.cpp:157
 #, fuzzy
 msgid "E %d"
 msgstr "Среднее E за период %d"
 
-msgid "Abuyz"
-msgstr ""
-
-msgid "set date"
-msgstr ""
-
-msgid "strptime"
-msgstr ""
-
-msgid "Time_tToDateTime"
-msgstr ""
-
+#: BTR.h:52
 #, c-format
 msgid "Line %d"
-msgstr ""
+msgstr "Линия %d"
 
+#: BTR.h:55
 #, c-format
 msgid "Time #%d %d"
-msgstr ""
+msgstr "Время #%d %d"
 
+#: BTR.h:159
+#: GKR.h:54
 #, c-format
 msgid "On %d"
-msgstr ""
+msgstr "Вкл %d"
 
+#: BTR.h:160
+#: GKR.h:55
 #, c-format
 msgid "Off %d"
-msgstr ""
+msgstr "Выкл %d"
 
+#: BTR.h:161
+#: GKR.h:56
 #, c-format
 msgid "Run %d"
-msgstr ""
+msgstr "Исполнить %d"
 
-#, fuzzy
+#: BTR.h:162
+#: GKR.h:57
 msgid "Reset %d"
-msgstr "Тестовые значения t %d"
+msgstr "Сброс %d"
 
-#, fuzzy
+#: BTR.h:163
+#: GKR.h:61
 msgid "Time %d"
-msgstr "Период %d"
+msgstr "Время %d"
 
+#: BTR.h:164
+#: BVTC.h:51
+#: BVTC.h:128
 #, c-format
 msgid "TC %d"
-msgstr ""
+msgstr "ТС %d"
 
-#, fuzzy
+#: BTR.h:165
+#: GKR.h:62
 msgid "ExTime %d"
-msgstr "Период %d"
+msgstr "Доп. время %d"
 
-#, fuzzy
+#: BVI.h:51
 msgid "Count %d"
-msgstr "Счетчик объема %d"
+msgstr "Счетчик %d"
 
+#: BVI.h:52
+#: BVT.h:60
+#: BVT.h:198
 #, c-format
 msgid "Range factor %d"
 msgstr "Коэффициент расширения диапазона %d"
 
-#, fuzzy
+#: BVTC.h:52
 msgid "Period TC %d"
 msgstr "Период TC %d"
 
-#, fuzzy
+#: BVTC.h:53
 msgid "Count TC %d"
-msgstr "Счетчик объема %d"
+msgstr "Количество срабатываний %d"
 
+#: BVTC.h:129
 #, c-format
 msgid "Mask %d"
 msgstr "Маска %d"
 
+#: BVT.h:52
+#: BVT.h:190
 #, c-format
 msgid "Sensor minimum %d"
 msgstr "Мин. датчика %d"
 
+#: BVT.h:53
+#: BVT.h:191
 #, c-format
 msgid "Sensor maximum %d"
 msgstr "Макс. датчика %d"
 
+#: BVT.h:61
 #, c-format
 msgid "Adjustment %d"
-msgstr ""
+msgstr "Смещение %d"
 
+#: BVT.h:200
 #, c-format
 msgid "Correcting factor %d"
 msgstr "Корректирующий коэффициент %d"
 
+#: BVT.h:201
 #, c-format
 msgid "Rate of change %d"
 msgstr "Средняя скорость изм. %d"
 
+#: BVT.h:202
 #, c-format
 msgid "Calcs count %d"
 msgstr "Количество вычислений %d"
 
+#: BVT.h:203
 #, c-format
 msgid "Rate sensitivity %d"
 msgstr "Чувствительность скорости %d"
 
+#: BVT.h:204
 #, c-format
 msgid "Rate limit %d"
 msgstr "Предельная скорость %d"
 
-#, fuzzy
+#: FT3_prt.h:42
 msgid "FT3"
 msgstr "АПСТМ (FT3)"
 
+#: FT3_prt.h:46
 msgid "Maxim Kochetkov"
-msgstr ""
+msgstr "Максим Кочетков"
 
+#: FT3_prt.h:47
 msgid "Allow realisation of FT3 protocols."
 msgstr "Предоставляет реализацию протокола FT3 для контроллеров АПСТМ"
 
+#: GKR.h:58
 #, c-format
 msgid "Ban_MC %d"
 msgstr ""
 
+#: GKR.h:59
 #, c-format
 msgid "Lubrication %d"
-msgstr ""
+msgstr "Смазка %d"
 
+#: GKR.h:63
 #, c-format
 msgid "Time_Lub %d"
-msgstr ""
+msgstr "Время смазки %d"
 
+#: GKR.h:64
 #, c-format
 msgid "Timeout_PO %d"
-msgstr ""
+msgstr "Таймаут предв. операции %d"
 
+#: GNS.h:49
+#: GZD.h:58
+#, c-format
 msgid "Function %d"
 msgstr "Функция %d"
 
+#: GNS.h:50
 #, c-format
 msgid "TU on %d"
-msgstr ""
+msgstr "ТУ вкл %d"
 
+#: GNS.h:51
 #, c-format
 msgid "TU off %d"
-msgstr ""
+msgstr "ТУ выкл %d"
 
+#: GNS.h:52
+#: GZD.h:61
 #, c-format
 msgid "TU stop %d"
-msgstr ""
+msgstr "ТУ стоп %d"
 
+#: GNS.h:53
+#: GZD.h:62
+#, c-format
 msgid "TU remote %d"
 msgstr "ТУ дистанционный %d"
 
+#: GNS.h:54
+#: GZD.h:63
 #, c-format
 msgid "TU manual %d"
-msgstr ""
+msgstr "ТУ ручной %d"
 
+#: GNS.h:55
+#, c-format
 msgid "On time %d"
 msgstr "Время вкл. %d"
 
-#, fuzzy
+#: GNS.h:56
 msgid "Off time %d"
-msgstr " %d"
+msgstr "Время выкл %d"
 
-#, fuzzy
+#: GNS.h:57
+#: GZD.h:66
 msgid "Stop time %d"
-msgstr "Дата-время последнего останова"
+msgstr "Время стоп %d"
 
-#, fuzzy
+#: GNS.h:58
+#: GZD.h:67
 msgid "Remote time %d"
-msgstr "Период %d"
+msgstr "Время дист.  %d"
 
-#, fuzzy
+#: GNS.h:59
+#: GZD.h:68
 msgid "Manual time %d"
-msgstr "Период %d"
+msgstr "Время ручн. %d"
 
+#: GNS.h:60
 #, c-format
 msgid "On TC %d"
-msgstr ""
+msgstr "ТС вкл %d"
 
+#: GNS.h:61
 #, c-format
 msgid "Off TC %d"
-msgstr ""
+msgstr "ТС выкл %d"
 
+#: GNS.h:62
+#: GZD.h:71
 #, c-format
 msgid "Mode TC %d"
-msgstr ""
+msgstr "ТС режим %d"
 
-#, fuzzy
+#: GNS.h:63
 msgid "Work time %d"
-msgstr "Период %d"
+msgstr "Время работы %d"
 
+#: GZD.h:59
 #, c-format
 msgid "TU open %d"
-msgstr ""
+msgstr "ТУ открыть %d"
 
+#: GZD.h:60
 #, c-format
 msgid "TU close %d"
-msgstr ""
+msgstr "ТУ закрыть %d"
 
-#, fuzzy
+#: GZD.h:64
 msgid "Open time %d"
-msgstr "Период %d"
+msgstr "Время открыть %d"
 
+#: GZD.h:65
+#, c-format
 msgid "Close time %d"
 msgstr "Время закрытия %d"
 
+#: GZD.h:69
 #, c-format
 msgid "Open TC %d"
-msgstr ""
+msgstr "ТС открыть %d"
 
+#: GZD.h:70
 #, c-format
 msgid "Close TC %d"
 msgstr "ТС закрытия %d"
 
-#, fuzzy
+#: GZD.h:72
 msgid "Open error TC %d"
-msgstr "Номер датчика t %d"
+msgstr "ТС ошибка открытия %d"
 
+#: GZD.h:73
 #, c-format
 msgid "Close error TC %d"
 msgstr "ТС ошибка закрытия"
 
+#: mod_FT3.h:43
 msgid "DAQ FT3"
 msgstr "АПСТМ (FT3)"
 
+#: mod_FT3.h:47
 msgid "Maxim Kothetkov, Olga Avdeyeva, Olga Kuzmickaya"
 msgstr "Максим Кочетков, Ольга Авдеева, Ольга Кузьмицкая"
 
-#, fuzzy
+#: mod_FT3.h:48
 msgid "Allow realization of FT3 master/slave service"
-msgstr "Предоставляет реализацию клиентского сервиса протокола FT3 для контроллеров "
+msgstr "Предоставляет реализацию протокола FT3 для контроллеров "
 "АПСТМ"
 

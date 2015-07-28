@@ -1290,9 +1290,7 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
 
 void TMdPrm::vlArchMake(TVal &val)
 {
-    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("TMdPrm::vlArchMake"));
     if(val.arch().freeStat()) return;
-    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("%s"), val.arch().at().srcData().c_str());
     val.arch().at().setSrcMode(TVArchive::PassiveAttr, val.arch().at().srcData());
     val.arch().at().setPeriod((long long) (owner().period() * 1000000));
     val.arch().at().setHardGrid(true);
