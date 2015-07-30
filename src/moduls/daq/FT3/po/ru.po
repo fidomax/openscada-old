@@ -1097,7 +1097,7 @@ msgstr "Время открыть %d"
 #: GZD.h:65
 #, c-format
 msgid "Close time %d"
-msgstr "Время закрытия %d"
+msgstr "Время закрыть %d"
 
 #: GZD.h:69
 #, c-format

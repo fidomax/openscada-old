@@ -135,7 +135,7 @@ uint8_t KA_GZD::SKAZDchannel::SetNewState(uint8_t addr, uint16_t prmID, uint8_t 
     if(State.lnk.Connected()) {
 	if(Function.vl == 0) {
 	    State.s = addr;
-	    State.Set((State.vl & 0x80) | *val);
+	    State.Set((uint8_t)((State.vl & 0x80) | *val));
 	    uint8_t E[2] = { addr, State.vl };
 	    da->PushInBE(1, sizeof(E), prmID, E);
 	    rc = 2 + 1;
@@ -147,15 +147,16 @@ uint8_t KA_GZD::SKAZDchannel::SetNewState(uint8_t addr, uint16_t prmID, uint8_t 
 uint8_t KA_GZD::SKAZDchannel::SetNewFunction(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
     uint8_t rc = 0;
+    uint32_t newF = *val;
     if(Function.lnk.Connected() && State.lnk.Connected()) {
 	if(((State.vl & 0x0F) == vs_06) || Function.vl) {
-	    if(Function.vl == *val) {
+	    if(Function.vl == newF) {
 		rc = 3;
 	    } else {
-		if(*val > 2) {
+		if(newF > 2) {
 		    Function.s = addr;
-		    Function.Set(*val);
-		    State.Set(State.vl & 0x8F);
+		    Function.Set(newF<<16|newF);
+		    State.Set((uint8_t)(State.vl & 0x8F));
 		    uint8_t E[2] = { addr, Function.vl };
 		    da->PushInBE(1, sizeof(E), prmID, E);
 		    rc = 3;
@@ -163,8 +164,8 @@ uint8_t KA_GZD::SKAZDchannel::SetNewFunction(uint8_t addr, uint16_t prmID, uint8
 	    }
 	} else {
 	    Function.s = addr;
-	    Function.Set(*val);
-	    State.Set(State.vl & 0x8F);
+	    Function.Set(newF<<16|newF);
+	    State.Set((uint8_t)(State.vl & 0x8F));
 	    uint8_t E[2] = { addr, Function.vl };
 	    da->PushInBE(1, sizeof(E), prmID, E);
 	    rc = 3;

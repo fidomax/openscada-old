@@ -479,7 +479,7 @@ uint8_t B_BVTC::cmdSet(uint8_t * req, uint8_t addr)
 
 		data[i].Mask.s = addr;
 		if(data[i].Mask.lnk.Connected()) {
-		    data[i].Mask.Set(newMask & 0x01);
+		    data[i].Mask.Set((uint8_t)(newMask & 0x01));
 		    newMask = newMask >> 1;
 		    l = 3;
 		} else {

@@ -188,6 +188,12 @@ namespace FT3
 		lnk.aprm.at().setI(vl);
 	    }
 	    ;
+	    void Set(uint32_t d)
+	    {
+		Update(d);
+		lnk.aprm.at().setI(d);
+	    }
+	    ;
 	    uint8_t Get()
 	    {
 		if(lnk.Connected()) {
