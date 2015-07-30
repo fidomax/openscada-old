@@ -42,8 +42,8 @@ void KA_GZD::SKAZDchannel::UpdateTUParam(uint16_t ID, uint8_t cl)
     tmp[4][1].w = TimeManual.Get();
 
     if(tmp[0][0].w != TUOpen.vl || tmp[0][1].w != TimeOpen.vl || tmp[1][0].w != TUClose.vl || tmp[1][1].w != TimeClose.vl || tmp[2][0].w != TUStop.vl
-	    || tmp[2][1].w != TimeStop.vl || tmp[3][0].w != TUManual.vl || tmp[3][1].w != TimeManual.vl || tmp[4][0].w != TURemote.vl
-	    || tmp[4][1].w != TimeRemote.vl) {
+	    || tmp[2][1].w != TimeStop.vl || tmp[3][0].w != TURemote.vl || tmp[3][1].w != TimeRemote.vl || tmp[4][0].w != TUManual.vl
+	    || tmp[4][1].w != TimeManual.vl) {
 	TUOpen.s = 0;
 	TUOpen.Update(tmp[0][0].w);
 	TimeOpen.Update(tmp[0][1].w);
@@ -71,7 +71,7 @@ void KA_GZD::SKAZDchannel::UpdateTCParam(uint16_t ID, uint8_t cl)
     tmp[3].w = TCOpenErr.Get();
     tmp[4].w = TCCloseErr.Get();
 
-    if(tmp[0].w != TCOpen.vl || tmp[1].w != TCClose.vl || tmp[2].w != TCMode.vl || tmp[3].w != TCCloseErr.vl || tmp[4].w != TCOpenErr.vl) {
+    if(tmp[0].w != TCOpen.vl || tmp[1].w != TCClose.vl || tmp[2].w != TCMode.vl || tmp[3].w != TCOpenErr.vl || tmp[4].w != TCCloseErr.vl) {
 	TCOpen.s = 0;
 	TCOpen.Update(tmp[0].w);
 	TCClose.Update(tmp[1].w);
@@ -86,7 +86,7 @@ void KA_GZD::SKAZDchannel::UpdateTCParam(uint16_t ID, uint8_t cl)
 uint8_t KA_GZD::SKAZDchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
     if(TUOpen.lnk.Check() || TimeOpen.lnk.Check() || TUClose.lnk.Check() || TimeClose.lnk.Check() || TUStop.lnk.Check() || TimeOpen.lnk.Check()
-	    || TUManual.lnk.Check() || TimeManual.lnk.Check() || TURemote.lnk.Check() || TimeRemote.lnk.Check()) {
+	    || TURemote.lnk.Check() || TimeRemote.lnk.Check() || TUManual.lnk.Check() || TimeManual.lnk.Check()) {
 	return 0;
     } else {
 	TUOpen.s = addr;
@@ -111,7 +111,7 @@ uint8_t KA_GZD::SKAZDchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_
 
 uint8_t KA_GZD::SKAZDchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
-    if(TCOpen.lnk.Check() || TCClose.lnk.Check() || TCMode.lnk.Check() || TCCloseErr.lnk.Check() || TCOpenErr.lnk.Check()) {
+    if(TCOpen.lnk.Check() || TCClose.lnk.Check() || TCMode.lnk.Check() || TCOpenErr.lnk.Check() || TCCloseErr.lnk.Check()) {
 	return 0;
     } else {
 	TCOpen.s = addr;
