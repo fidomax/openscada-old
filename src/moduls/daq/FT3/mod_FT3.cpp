@@ -120,7 +120,7 @@ void FT3::Time_tToKADateTime(uint8_t * D, time_t time)
     struct tm * timeinfo;
     timeinfo = localtime(&time);
     D[0] = timeinfo->tm_mday | ((timeinfo->tm_mon + 1) << 5);
-    D[1] = (timeinfo->tm_year - 100 << 1) | ((timeinfo->tm_mon + 1) >> 4);
+    D[1] = (timeinfo->tm_year - 100 << 1) | ((timeinfo->tm_mon + 1) >> 3);
     D[2] = timeinfo->tm_hour;
     D[3] = timeinfo->tm_sec << 4;
     D[4] = (timeinfo->tm_sec >> 4) | (timeinfo->tm_min << 2);
