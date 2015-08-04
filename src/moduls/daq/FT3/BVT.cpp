@@ -37,14 +37,14 @@ void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
     tmpfl[2].f = MaxS.Get();
     tmpfl[3].f = MinPV.Get();
     tmpfl[4].f = MaxPV.Get();
-    tmpfl[5].f = MinW.Get();
-    tmpfl[6].f = MaxW.Get();
-    tmpfl[7].f = MinA.Get();
-    tmpfl[8].f = MaxA.Get();
+    tmpfl[5].f = MinA.Get();
+    tmpfl[6].f = MaxA.Get();
+    tmpfl[7].f = MinW.Get();
+    tmpfl[8].f = MaxW.Get();
     tmpfl[9].f = Factor.Get();
     tmpfl[10].f = Adjust.Get();
     if(tmp != Period.vl || tmpfl[0].f != Sens.vl || tmpfl[1].f != MinS.vl || tmpfl[2].f != MaxS.vl || tmpfl[3].f != MinPV.vl || tmpfl[4].f != MaxPV.vl
-	    || tmpfl[5].f != MinW.vl || tmpfl[6].f != MaxW.vl || tmpfl[7].f != MinA.vl || tmpfl[8].f != MaxA.vl || tmpfl[9].f != Factor.vl
+	    || tmpfl[5].f != MinA.vl || tmpfl[6].f != MaxA.vl || tmpfl[7].f != MinW.vl || tmpfl[8].f != MaxW.vl || tmpfl[9].f != Factor.vl
 	    || tmpfl[10].f != Adjust.vl) {
 	Period.s = 0;
 	Period.Update(tmp);
@@ -70,10 +70,8 @@ void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
 
 uint8_t KA_BVT::SKATTchannel::SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
-    if(Period.lnk.Check() || Sens.lnk.Check() || MinS.lnk.Check() || MaxS.lnk.Check() || MinPV.lnk.Check() || MaxPV.lnk.Check() || MinW.lnk.Check()
-	    || MaxW.lnk.Check() || MinA.lnk.Check() || MaxA.lnk.Check() || Factor.lnk.Check() || Adjust.lnk.Check()) {
-	return 0;
-    } else {
+    if(Period.lnk.Connected() && Sens.lnk.Connected() && MinS.lnk.Connected() && MaxS.lnk.Connected() && MinPV.lnk.Connected() && MaxPV.lnk.Connected() && MinA.lnk.Connected()
+	    && MaxA.lnk.Connected() && MinW.lnk.Connected() && MaxW.lnk.Connected() && Factor.lnk.Connected() && Adjust.lnk.Connected()) {
 	Period.s = addr;
 	Period.Set(val[0]);
 	Sens.Set(TSYS::getUnalignFloat(val + 1));
@@ -92,6 +90,8 @@ uint8_t KA_BVT::SKATTchannel::SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_
 	memcpy(E + 1, val, 45);
 	da->PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 45;
+    } else {
+	return 0;
     }
 }
 
