@@ -191,7 +191,7 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
     return l;
 }
 
-uint8_t KA_BTU::runTU(uint8_t addr, uint8_t tu)
+uint8_t KA_BTU::runTU(uint8_t tu)
 {
     uint8_t rc = 0;
     if(tu == 0x55) {
@@ -212,10 +212,6 @@ uint8_t KA_BTU::runTU(uint8_t addr, uint8_t tu)
 	    rc = 3;
 	}
     }
-    if(rc) {
-	uint8_t E[2] = { addr, tu };
-	mPrm.owner().PushInBE(1, sizeof(E), ID, E);
-    }
     return rc;
 }
 
@@ -230,9 +226,10 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 2:
-	    l = runTU(addr, req[2]);
+	    l = runTU(req[2]);
 	    if(l) {
-
+		uint8_t E[2] = { addr, req[2]};
+		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 	    }
 	    break;
 	}
@@ -246,7 +243,7 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 		l = 3;
 		E[0] = addr;
 		E[1] = req[2];
-		mPrm.owner().PushInBE(1, sizeof(E), ID, E);
+		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 		break;
 	    case 1:
 	    case 2:
@@ -273,7 +270,7 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 		l = 3;
 		E[0] = addr;
 		E[1] = req[2];
-		mPrm.owner().PushInBE(1, sizeof(E), ID, E);
+		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 		break;
 	    }
 	}
