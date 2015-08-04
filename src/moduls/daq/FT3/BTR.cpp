@@ -191,14 +191,16 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
     return l;
 }
 
-void KA_BTU::runTU(uint8_t tu)
+uint8_t KA_BTU::runTU(uint8_t tu)
 {
+    uint8_t rc = 0;
     if(tu == 0x55) {
 	for(int i = 0; i < count_nu; i++) {
 	    if(TUdata[i].iTY) {
 		TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
 		TUdata[i].Line.vl = 0;
 		TUdata[i].iTY = 0;
+		rc = 3;
 	    }
 	}
     }
@@ -207,9 +209,10 @@ void KA_BTU::runTU(uint8_t tu)
 	    TUdata[i].Line.vl = 0;
 	    TUdata[i].iTY = 0;
 	    TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
-
+	    rc = 3;
 	}
     }
+    return rc;
 }
 
 uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
@@ -222,8 +225,11 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 2:
-	    runTU(req[2]);
-	    l = 3;
+	    l = runTU(req[2]);
+	    if (l) {
+		uint8_t E[2] = { addr, req[2] };
+		mPrm.owner().PushInBE(1, sizeof(E), ID, E);
+	    }
 	    break;
 	}
     } else {
@@ -234,6 +240,8 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 		TUdata[ft3ID.k - 1].iTY = req[2];
 		TUdata[ft3ID.k - 1].Line.vl = 1 << TUdata[ft3ID.k - 1].iTY - 1;
 		l = 3;
+		uint8_t E[2] = { addr, req[2] };
+		mPrm.owner().PushInBE(1, sizeof(E), ID, E);
 		break;
 	    case 1:
 	    case 2:
@@ -258,6 +266,8 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 		TUdata[ft3ID.k - 1].iTY = 1;
 		TUdata[ft3ID.k - 1].Line.vl = TSYS::getUnalign16(req + 2);
 		l = 3;
+		uint8_t E[2] = { addr, req[2] };
+		mPrm.owner().PushInBE(1, sizeof(E), ID, E);
 		break;
 	    }
 	}
