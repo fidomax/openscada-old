@@ -42,7 +42,7 @@ namespace FT3
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
 	uint16_t setVal(TVal &val);
 	void setTU(uint8_t);
-	uint8_t runTU(uint8_t);
+	uint8_t runTU(uint8_t, uint8_t);
 	string getStatus(void);
 	void tmHandler(void);
 	class SKATUchannel

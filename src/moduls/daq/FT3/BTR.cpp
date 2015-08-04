@@ -191,7 +191,7 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
     return l;
 }
 
-uint8_t KA_BTU::runTU(uint8_t tu)
+uint8_t KA_BTU::runTU(uint8_t addr, uint8_t tu)
 {
     uint8_t rc = 0;
     if(tu == 0x55) {
@@ -212,6 +212,10 @@ uint8_t KA_BTU::runTU(uint8_t tu)
 	    rc = 3;
 	}
     }
+    if(rc) {
+	uint8_t E[2] = { addr, tu };
+	mPrm.owner().PushInBE(1, sizeof(E), ID, E);
+    }
     return rc;
 }
 
@@ -221,14 +225,14 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
     FT3ID ft3ID = UnpackID(prmID);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
+    uint8_t E[2];
     mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 2:
-	    l = runTU(req[2]);
-	    if (l) {
-		uint8_t E[2] = { addr, req[2] };
-		mPrm.owner().PushInBE(1, sizeof(E), ID, E);
+	    l = runTU(addr, req[2]);
+	    if(l) {
+
 	    }
 	    break;
 	}
@@ -240,7 +244,8 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 		TUdata[ft3ID.k - 1].iTY = req[2];
 		TUdata[ft3ID.k - 1].Line.vl = 1 << TUdata[ft3ID.k - 1].iTY - 1;
 		l = 3;
-		uint8_t E[2] = { addr, req[2] };
+		E[0] = addr;
+		E[1] = req[2];
 		mPrm.owner().PushInBE(1, sizeof(E), ID, E);
 		break;
 	    case 1:
@@ -266,7 +271,8 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 		TUdata[ft3ID.k - 1].iTY = 1;
 		TUdata[ft3ID.k - 1].Line.vl = TSYS::getUnalign16(req + 2);
 		l = 3;
-		uint8_t E[2] = { addr, req[2] };
+		E[0] = addr;
+		E[1] = req[2];
 		mPrm.owner().PushInBE(1, sizeof(E), ID, E);
 		break;
 	    }
@@ -432,7 +438,7 @@ uint16_t B_BTR::Task(uint16_t uc)
 				if(Msg.C == GOOD3) {
 				    mPrm.vlAt(TSYS::strMess("time_%d", i).c_str()).at().setR(TSYS::getUnalign16(Msg.D + 8), 0, true);
 				    mPrm.vlAt(TSYS::strMess("tc_%d", i).c_str()).at().setI(TSYS::getUnalign16(Msg.D + 15), 0, true);
-				    mPrm.vlAt(TSYS::strMess("extime_%d", i).c_str()).at().setR(Msg.D[22] , 0, true);
+				    mPrm.vlAt(TSYS::strMess("extime_%d", i).c_str()).at().setR(Msg.D[22], 0, true);
 				    rc = 1;
 				} else {
 				    rc = 0;
