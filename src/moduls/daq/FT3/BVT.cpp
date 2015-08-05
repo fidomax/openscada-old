@@ -70,27 +70,34 @@ void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
 
 uint8_t KA_BVT::SKATTchannel::SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
-    if(Period.lnk.Connected() && Sens.lnk.Connected() && MinS.lnk.Connected() && MaxS.lnk.Connected() && MinPV.lnk.Connected() && MaxPV.lnk.Connected()
-	    && MinA.lnk.Connected() && MaxA.lnk.Connected() && MinW.lnk.Connected() && MaxW.lnk.Connected() && Factor.lnk.Connected()
-	    && Adjust.lnk.Connected()) {
-	Period.s = addr;
-	Period.Set(val[0]);
-	Sens.Set(TSYS::getUnalignFloat(val + 1));
-	MinS.Set(TSYS::getUnalignFloat(val + 5));
-	MaxS.Set(TSYS::getUnalignFloat(val + 9));
-	MinPV.Set(TSYS::getUnalignFloat(val + 13));
-	MaxPV.Set(TSYS::getUnalignFloat(val + 17));
-	MinA.Set(TSYS::getUnalignFloat(val + 21));
-	MaxA.Set(TSYS::getUnalignFloat(val + 25));
-	MinW.Set(TSYS::getUnalignFloat(val + 29));
-	MaxW.Set(TSYS::getUnalignFloat(val + 33));
-	Factor.Set(TSYS::getUnalignFloat(val + 37));
-	Adjust.Set(TSYS::getUnalignFloat(val + 41));
-	uint8_t E[46];
-	E[0] = addr;
-	memcpy(E + 1, val, 45);
-	da->PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 45;
+    if((State.vl == 4) && (TSYS::getUnalignFloat(val + 9) > TSYS::getUnalignFloat(val + 5))
+	    && (TSYS::getUnalignFloat(val + 17) > TSYS::getUnalignFloat(val + 13)) && (TSYS::getUnalignFloat(val + 25) > TSYS::getUnalignFloat(val + 21))
+	    && (TSYS::getUnalignFloat(val + 33) > TSYS::getUnalignFloat(val + 29)) && (TSYS::getUnalignFloat(val + 37) >= 0)
+	    && (0.02 > TSYS::getUnalignFloat(val + 37))) {
+	if(Period.lnk.Connected() && Sens.lnk.Connected() && MinS.lnk.Connected() && MaxS.lnk.Connected() && MinPV.lnk.Connected() && MaxPV.lnk.Connected()
+		&& MinA.lnk.Connected() && MaxA.lnk.Connected() && MinW.lnk.Connected() && MaxW.lnk.Connected() && Factor.lnk.Connected()
+		&& Adjust.lnk.Connected()) {
+	    Period.s = addr;
+	    Period.Set(val[0]);
+	    Sens.Set(TSYS::getUnalignFloat(val + 1));
+	    MinS.Set(TSYS::getUnalignFloat(val + 5));
+	    MaxS.Set(TSYS::getUnalignFloat(val + 9));
+	    MinPV.Set(TSYS::getUnalignFloat(val + 13));
+	    MaxPV.Set(TSYS::getUnalignFloat(val + 17));
+	    MinA.Set(TSYS::getUnalignFloat(val + 21));
+	    MaxA.Set(TSYS::getUnalignFloat(val + 25));
+	    MinW.Set(TSYS::getUnalignFloat(val + 29));
+	    MaxW.Set(TSYS::getUnalignFloat(val + 33));
+	    Factor.Set(TSYS::getUnalignFloat(val + 37));
+	    Adjust.Set(TSYS::getUnalignFloat(val + 41));
+	    uint8_t E[46];
+	    E[0] = addr;
+	    memcpy(E + 1, val, 45);
+	    da->PushInBE(1, sizeof(E), prmID, E);
+	    return 2 + 45;
+	} else {
+	    return 0;
+	}
     } else {
 	return 0;
     }
@@ -319,6 +326,11 @@ uint8_t KA_BVT::cmdSet(uint8_t * req, uint8_t addr)
     mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     if(ft3ID.k <= count_n) {
 	switch(ft3ID.n) {
+	case 0:
+	    if((data[ft3ID.k - 1].State.vl == 4)) {
+		l = SetNewflVal(data[ft3ID.k - 1].Value, data[ft3ID.k - 1].State.vl, prmID, TSYS::getUnalignFloat(req + 2));
+	    }
+	    break;
 	case 1:
 	    l = SetNew8Val(data[ft3ID.k - 1].State, addr, prmID, req[2]);
 	    break;
