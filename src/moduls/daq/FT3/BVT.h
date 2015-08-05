@@ -31,6 +31,8 @@ namespace FT3
 	~KA_BVT();
 	uint16_t ID;
 	uint16_t count_n;
+ 	uint16_t config;
+	void AddChannel(uint8_t iid);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
@@ -40,7 +42,6 @@ namespace FT3
 	void saveIO(void);
 	void loadIO(bool force = false);
 	void tmHandler(void);
- 	uint16_t config;
 	class SKATTchannel
 	{
 	public:
@@ -71,11 +72,6 @@ namespace FT3
 	    uint8_t SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_t *val);
 	};
 	vector<SKATTchannel> data;
-	void AddTTChannel(uint8_t iid){
-	    //new SKATTchannel(iid, *this);
-	    SKATTchannel* t =new SKATTchannel(iid, this);
-	    data.push_back(*t);
-	}
 	int lnkSize()
 	{
 	    if(with_params) {
@@ -170,6 +166,7 @@ namespace FT3
 	~B_BVT();
 	uint16_t ID;
 	uint16_t count_n;
+	void AddChannel(uint8_t iid);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
@@ -182,7 +179,7 @@ namespace FT3
 	class STTchannel
 	{
 	public:
-	    STTchannel(uint8_t iid) :
+	    STTchannel(uint8_t iid, DA* owner) : da(owner),
 		    id(iid), State(TSYS::strMess("state_%d", id + 1).c_str(), TSYS::strMess(_("State %d"), id + 1).c_str()),
 		    Value(TSYS::strMess("value_%d", id + 1).c_str(), TSYS::strMess(_("Value %d"), id + 1).c_str()),
 		    Period(TSYS::strMess("period_%d", id + 1).c_str(), TSYS::strMess(_("Measure period %d"), id + 1).c_str()),
@@ -204,6 +201,7 @@ namespace FT3
 		    RateLimit(TSYS::strMess("ratelimit_%d", id + 1).c_str(), TSYS::strMess(_("Rate limit %d"), id + 1).c_str())
 	    {
 	    }
+	    DA* da;
 	    uint8_t id;
 
 	    ui8Data State, Period, Dimension, Calcs;

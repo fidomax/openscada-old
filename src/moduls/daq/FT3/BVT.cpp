@@ -70,8 +70,9 @@ void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
 
 uint8_t KA_BVT::SKATTchannel::SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
-    if(Period.lnk.Connected() && Sens.lnk.Connected() && MinS.lnk.Connected() && MaxS.lnk.Connected() && MinPV.lnk.Connected() && MaxPV.lnk.Connected() && MinA.lnk.Connected()
-	    && MaxA.lnk.Connected() && MinW.lnk.Connected() && MaxW.lnk.Connected() && Factor.lnk.Connected() && Adjust.lnk.Connected()) {
+    if(Period.lnk.Connected() && Sens.lnk.Connected() && MinS.lnk.Connected() && MaxS.lnk.Connected() && MinPV.lnk.Connected() && MaxPV.lnk.Connected()
+	    && MinA.lnk.Connected() && MaxA.lnk.Connected() && MinW.lnk.Connected() && MaxW.lnk.Connected() && Factor.lnk.Connected()
+	    && Adjust.lnk.Connected()) {
 	Period.s = addr;
 	Period.Set(val[0]);
 	Sens.Set(TSYS::getUnalignFloat(val + 1));
@@ -103,55 +104,8 @@ KA_BVT::KA_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
-
     for(int i = 0; i < count_n; i++) {
-	chan_err.insert(chan_err.end(), SDataRec());
-	AddTTChannel(i);
-//	data.push_back(SKATTchannel(1,*this));
-	mPrm.p_el.fldAdd(fld = new TFld(data[i].State.lnk.prmName.c_str(), data[i].State.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	data[i].State.lnk.vlattr = mPrm.vlAt(data[i].State.lnk.prmName.c_str());
-	fld->setReserve(TSYS::strMess("%d:1", i + 1));
-	mPrm.p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-	data[i].Value.lnk.vlattr = mPrm.vlAt(data[i].Value.lnk.prmName.c_str());
-	fld->setReserve(TSYS::strMess("%d:0", i + 1));
-	if(with_params) {
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Period.lnk.prmName.c_str(), data[i].Period.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    data[i].Period.lnk.vlattr = mPrm.vlAt(data[i].Period.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Sens.lnk.prmName.c_str(), data[i].Sens.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].Sens.lnk.vlattr = mPrm.vlAt(data[i].Sens.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinS.lnk.prmName.c_str(), data[i].MinS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MinS.lnk.vlattr = mPrm.vlAt(data[i].MinS.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxS.lnk.prmName.c_str(), data[i].MaxS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MaxS.lnk.vlattr = mPrm.vlAt(data[i].MaxS.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinPV.lnk.prmName.c_str(), data[i].MinPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MinPV.lnk.vlattr = mPrm.vlAt(data[i].MinPV.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxPV.lnk.prmName.c_str(), data[i].MaxPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MaxPV.lnk.vlattr = mPrm.vlAt(data[i].MaxPV.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinW.lnk.prmName.c_str(), data[i].MinW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MinW.lnk.vlattr = mPrm.vlAt(data[i].MinW.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxW.lnk.prmName.c_str(), data[i].MaxW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MaxW.lnk.vlattr = mPrm.vlAt(data[i].MaxW.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinA.lnk.prmName.c_str(), data[i].MinA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MinA.lnk.vlattr = mPrm.vlAt(data[i].MinA.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxA.lnk.prmName.c_str(), data[i].MaxA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].MaxA.lnk.vlattr = mPrm.vlAt(data[i].MaxA.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Factor.lnk.prmName.c_str(), data[i].Factor.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].Factor.lnk.vlattr = mPrm.vlAt(data[i].Factor.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Adjust.lnk.prmName.c_str(), data[i].Adjust.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    data[i].Adjust.lnk.vlattr = mPrm.vlAt(data[i].Adjust.lnk.prmName.c_str());
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	}
+	AddChannel(i);
     }
     loadIO(true);
 }
@@ -159,6 +113,27 @@ KA_BVT::KA_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 KA_BVT::~KA_BVT()
 {
 
+}
+
+void KA_BVT::AddChannel(uint8_t iid)
+{
+    data.push_back(SKATTchannel(iid, this));
+    AddAttr(data.back().State.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+    AddAttr(data.back().Value.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
+    if(with_params) {
+	AddAttr(data.back().Period.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().Sens.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().MinS.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().MaxS.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().MinPV.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().MaxPV.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().MinW.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().MaxW.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().MinA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().MaxA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().Factor.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().Adjust.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+    }
 }
 
 string KA_BVT::getStatus(void)
@@ -184,8 +159,6 @@ string KA_BVT::getStatus(void)
 
 void KA_BVT::loadIO(bool force)
 {
-//Load links
-//    mess_info("B_BVT::loadIO", "");
     if(mPrm.owner().startStat() && !force) {
 	mPrm.modif(true);
 	return;
@@ -211,12 +184,10 @@ void KA_BVT::loadIO(bool force)
 	loadLnk(data[i].Factor.lnk, io_bd, io_table, cfg);
 	loadLnk(data[i].Adjust.lnk, io_bd, io_table, cfg);
     }
-
 }
 
 void KA_BVT::saveIO()
 {
-//Save links
     TConfig cfg(&mPrm.prmIOE());
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
@@ -246,7 +217,7 @@ void KA_BVT::tmHandler(void)
 	if(with_params) {
 	    data[i].UpdateTTParam(PackID(ID, (i + 1), 2), 1);
 	}
-	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 0);
+	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 0), 0);
     }
 }
 
@@ -254,90 +225,6 @@ uint16_t KA_BVT::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
-    case TaskRefresh:
-	NeedInit = false;
-	Msg.L = 5;
-	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
-	if(mPrm.owner().Transact(&Msg)) {
-	    if(Msg.C == GOOD3) {
-		mPrm.vlAt("state").at().setI(Msg.D[7], 0, true);
-		/*		if(with_params) {
-		 for(int i = 1; i <= count_n; i++) {
-		 if(chan_err[i].state == 1) continue;
-		 mess_info(mPrm.nodePath().c_str(), "Refreshing channel %d", i);
-		 Msg.L = 21;
-		 Msg.C = AddrReq;
-		 *((uint16_t *) Msg.D) = PackID(ID, i, 1); //Значение ТT
-		 *((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 2); //Период измерений
-		 *((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 3); //Чувствительность
-		 *((uint16_t *) (Msg.D + 6)) = PackID(ID, i, 4); //min max датчика
-		 *((uint16_t *) (Msg.D + 8)) = PackID(ID, i, 5); //min max ФВ
-		 *((uint16_t *) (Msg.D + 10)) = PackID(ID, i, 6); //min max предупредительный
-		 *((uint16_t *) (Msg.D + 12)) = PackID(ID, i, 7); //min max аварийный
-		 *((uint16_t *) (Msg.D + 14)) = PackID(ID, i, 8); //Коэффициент расширения
-		 *((uint16_t *) (Msg.D + 16)) = PackID(ID, i, 9); //Размерность
-		 if(with_k) {
-		 *((uint16_t *) (Msg.D + 18)) = PackID(ID, i, 10); //Корректирующий коэффициент
-		 Msg.L += 2;
-		 if(with_rate) {
-		 *((uint16_t *) (Msg.D + 20)) = PackID(ID, i, 11); //Средняя скорость
-		 *((uint16_t *) (Msg.D + 22)) = PackID(ID, i, 12); //Количество вычислений
-		 *((uint16_t *) (Msg.D + 24)) = PackID(ID, i, 13); //Чувствительность
-		 *((uint16_t *) (Msg.D + 26)) = PackID(ID, i, 14); //Предельная скорость
-		 Msg.L += 8;
-		 }
-		 }
-
-		 if(mPrm.owner().Transact(&Msg)) {
-		 if(Msg.C == GOOD3) {
-		 mPrm.vlAt(TSYS::strMess("state_%d", i).c_str()).at().setI(Msg.D[7], 0, true);
-		 mPrm.vlAt(TSYS::strMess("value_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 8), 0, true);
-		 mPrm.vlAt(TSYS::strMess("period_%d", i).c_str()).at().setI(Msg.D[17], 0, true);
-		 mPrm.vlAt(TSYS::strMess("sens_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 23), 0, true);
-		 mPrm.vlAt(TSYS::strMess("minS_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 32), 0, true);
-		 mPrm.vlAt(TSYS::strMess("maxS_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 36), 0, true);
-		 mPrm.vlAt(TSYS::strMess("minPV_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 45), 0, true);
-		 mPrm.vlAt(TSYS::strMess("maxPV_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 49), 0, true);
-		 mPrm.vlAt(TSYS::strMess("minW_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 58), 0, true);
-		 mPrm.vlAt(TSYS::strMess("maxW_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 62), 0, true);
-		 mPrm.vlAt(TSYS::strMess("minA_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 71), 0, true);
-		 mPrm.vlAt(TSYS::strMess("maxA_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 75), 0, true);
-		 mPrm.vlAt(TSYS::strMess("factor_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 84), 0, true);
-		 mPrm.vlAt(TSYS::strMess("dimens_%d", i).c_str()).at().setI(Msg.D[93], 0, true);
-		 if(with_k) {
-		 mPrm.vlAt(TSYS::strMess("corfactor_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 99), 0, true);
-		 if(with_rate) {
-		 mPrm.vlAt(TSYS::strMess("rate_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 108), 0, true);
-		 mPrm.vlAt(TSYS::strMess("calcs_%d", i).c_str()).at().setI(Msg.D[117], 0, true);
-		 mPrm.vlAt(TSYS::strMess("ratesens_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 123), 0, true);
-		 mPrm.vlAt(TSYS::strMess("ratelimit_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 132), 0, true);
-		 }
-		 }
-		 chan_err[i].state = 1;
-		 rc = 1;
-		 } else {
-		 rc = 0;
-		 chan_err[i].state = 2;
-		 NeedInit = true;
-		 //	break;
-		 }
-		 } else {
-		 rc = 0;
-		 chan_err[i].state = 3;
-		 NeedInit = true;
-		 //break;
-		 }
-
-		 }
-		 } else {
-		 rc = 1;
-		 }*/
-	    }
-	}
-	break;
-    }
     return rc;
 }
 uint16_t KA_BVT::HandleEvent(uint8_t * D)
@@ -345,139 +232,14 @@ uint16_t KA_BVT::HandleEvent(uint8_t * D)
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
     if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
-    /*switch(ft3ID.k) {
-     case 0:
-     switch(ft3ID.n) {
-     case 0:
-     mPrm.vlAt("state").at().setI(D[2], 0, true);
-     l = 3;
-     break;
-     case 1:
-     mPrm.vlAt("state").at().setI(D[2], 0, true);
-     l = 3 + count_n * 5;
-     for(int j = 1; j <= count_n; j++) {
-     mPrm.vlAt(TSYS::strMess("state_%d", j).c_str()).at().setI(D[(j - 1) * 5 + 3], 0, true);
-     mPrm.vlAt(TSYS::strMess("value_%d", j).c_str()).at().setR(TSYS::getUnalignFloat(D + (j - 1) * 5 + 4), 0, true);
-     }
-     break;
-     case 2:
-     mPrm.vlAt("state").at().setI(D[2], 0, true);
-     l = 3 + count_n * 5;
-     for(int j = 1; j <= count_n; j++) {
-     mPrm.vlAt(TSYS::strMess("state_%d", j).c_str()).at().setI(D[(j - 1) * 5 + 3], 0, true);
-     mPrm.vlAt(TSYS::strMess("ratelimit_%d", j).c_str()).at().setR(TSYS::getUnalignFloat(D + (j - 1) * 5 + 4), 0, true);
-     }
-     break;
-
-     }
-     break;
-     default:
-     if(ft3ID.k && (ft3ID.k <= count_n)) {
-     switch(ft3ID.n) {
-     case 0:
-     mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().setI(D[2], 0, true);
-     l = 3;
-     break;
-     case 1:
-     mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().setI(D[2], 0, true);
-     mPrm.vlAt(TSYS::strMess("value_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-
-     l = 7;
-     break;
-     case 2:
-     if(with_params) {
-     mPrm.vlAt(TSYS::strMess("period_%d", ft3ID.k).c_str()).at().setI(D[3], 0, true);
-     }
-     l = 4;
-     break;
-     case 3:
-     if(with_params) {
-     mPrm.vlAt(TSYS::strMess("sens_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     }
-     l = 7;
-     break;
-     case 4:
-     if(with_params) {
-     mPrm.vlAt(TSYS::strMess("minS_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     mPrm.vlAt(TSYS::strMess("maxS_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 7), 0, true);
-     }
-     l = 11;
-     break;
-     case 5:
-     if(with_params) {
-     mPrm.vlAt(TSYS::strMess("minPV_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     mPrm.vlAt(TSYS::strMess("maxPV_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 7), 0, true);
-     }
-     l = 11;
-     break;
-     case 6:
-     if(with_params) {
-     mPrm.vlAt(TSYS::strMess("minW_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     mPrm.vlAt(TSYS::strMess("maxW_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 7), 0, true);
-     }
-     l = 11;
-     break;
-     case 7:
-     if(with_params) {
-     mPrm.vlAt(TSYS::strMess("minA_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     mPrm.vlAt(TSYS::strMess("maxA_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 7), 0, true);
-     }
-     l = 11;
-     break;
-     case 8:
-     if(with_params) {
-     mPrm.vlAt(TSYS::strMess("factor_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     }
-     l = 7;
-     break;
-     case 9:
-     if(with_params) {
-     mPrm.vlAt(TSYS::strMess("dimens_%d", ft3ID.k).c_str()).at().setI(D[3], 0, true);
-     }
-     l = 4;
-     break;
-     case 10:
-     if(with_params && with_k) {
-     mPrm.vlAt(TSYS::strMess("corfactor_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     }
-     l = 7;
-     break;
-     case 11:
-     if(with_params && with_rate) {
-     mPrm.vlAt(TSYS::strMess("rate_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     }
-     l = 7;
-     break;
-     case 12:
-     if(with_params && with_rate) {
-     mPrm.vlAt(TSYS::strMess("calcs_%d", ft3ID.k).c_str()).at().setI(D[3], 0, true);
-     }
-     l = 4;
-     break;
-     case 13:
-     if(with_params && with_rate) {
-     mPrm.vlAt(TSYS::strMess("ratesens_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     }
-     l = 7;
-     break;
-     case 14:
-     if(with_params && with_rate) {
-     mPrm.vlAt(TSYS::strMess("ratelimit_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), 0, true);
-     }
-     l = 7;
-     break;
-     }
-     }
-     break;
-     }*/
     return l;
 }
 
 uint8_t KA_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 {
-    mess_info("KA_BVT", "cmdGet %04X",prmID);
+    mess_info("KA_BVT", "cmdGet %04X", prmID);
     FT3ID ft3ID = UnpackID(prmID);
-    mess_info("KA_BVT", "ID %d ft3ID g%d k%d n%d ",ID, ft3ID.g,ft3ID.k,ft3ID.n);
+    mess_info("KA_BVT", "ID %d ft3ID g%d k%d n%d ", ID, ft3ID.g, ft3ID.k, ft3ID.n);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
     if(ft3ID.k == 0) {
@@ -496,7 +258,7 @@ uint8_t KA_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 	    for(uint8_t i = 0; i < count_n; i++) {
 		out[i * 5] = data[i].State.vl;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[i * 5 +j + 1] = data[i].Value.b_vl[j];
+		    out[i * 5 + j + 1] = data[i].Value.b_vl[j];
 		l += 5;
 	    }
 	    break;
@@ -571,52 +333,6 @@ uint8_t KA_BVT::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_BVT::setVal(TVal &val)
 {
-/*    int off = 0;
-    FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
-    ft3ID.g = ID;
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = SetData;
-    *((uint16_t *) Msg.D) = PackID(ft3ID);
-    switch(ft3ID.n) {
-    case 2:
-    case 9:
-    case 12:
-	Msg.L = 6;
-	Msg.D[2] = val.get(NULL, true).getI();
-	break;
-    case 3:
-    case 8:
-    case 10:
-    case 13:
-    case 14:
-	Msg.L = 9;
-	*(float *) (Msg.D + 2) = (float) val.get(NULL, true).getR();
-	break;
-    case 4:
-	Msg.L = 13;
-	*(float *) (Msg.D + 2) = (float) mPrm.vlAt(TSYS::strMess("minS_%d", ft3ID.k).c_str()).at().getR(0, true);
-	*(float *) (Msg.D + 6) = (float) mPrm.vlAt(TSYS::strMess("maxS_%d", ft3ID.k).c_str()).at().getR(0, true);
-	break;
-    case 5:
-	Msg.L = 13;
-	*(float *) (Msg.D + 2) = (float) mPrm.vlAt(TSYS::strMess("minPV_%d", ft3ID.k).c_str()).at().getR(0, true);
-	*(float *) (Msg.D + 6) = (float) mPrm.vlAt(TSYS::strMess("maxPV_%d", ft3ID.k).c_str()).at().getR(0, true);
-	break;
-    case 6:
-	Msg.L = 13;
-	*(float *) (Msg.D + 2) = (float) mPrm.vlAt(TSYS::strMess("minW_%d", ft3ID.k).c_str()).at().getR(0, true);
-	*(float *) (Msg.D + 6) = (float) mPrm.vlAt(TSYS::strMess("maxW_%d", ft3ID.k).c_str()).at().getR(0, true);
-	break;
-    case 7:
-	Msg.L = 13;
-	*(float *) (Msg.D + 2) = (float) mPrm.vlAt(TSYS::strMess("minA_%d", ft3ID.k).c_str()).at().getR(0, true);
-	*(float *) (Msg.D + 6) = (float) mPrm.vlAt(TSYS::strMess("maxA_%d", ft3ID.k).c_str()).at().getR(0, true);
-	break;
-    }
-    if(Msg.L) mPrm.owner().Transact(&Msg);*/
     return 0;
 }
 
@@ -627,55 +343,8 @@ B_BVT::B_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_k, 
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
-
     for(int i = 0; i < count_n; i++) {
-	chan_err.insert(chan_err.end(), SDataRec());
-	data.push_back(STTchannel(i));
-	mPrm.p_el.fldAdd(fld = new TFld(data[i].State.lnk.prmName.c_str(), data[i].State.lnk.prmDesc.c_str(), TFld::Integer, TFld::NoWrite));
-	fld->setReserve(TSYS::strMess("%d:0", i + 1));
-	mPrm.p_el.fldAdd(fld = new TFld(data[i].Value.lnk.prmName.c_str(), data[i].Value.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-	fld->setReserve(TSYS::strMess("%d:1", i + 1));
-	if(with_params) {
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Period.lnk.prmName.c_str(), data[i].Period.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Sens.lnk.prmName.c_str(), data[i].Sens.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:3", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinS.lnk.prmName.c_str(), data[i].MinS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:4", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxS.lnk.prmName.c_str(), data[i].MaxS.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:4", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinPV.lnk.prmName.c_str(), data[i].MinPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:5", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxPV.lnk.prmName.c_str(), data[i].MaxPV.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:5", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinW.lnk.prmName.c_str(), data[i].MinW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:6", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxW.lnk.prmName.c_str(), data[i].MaxW.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:6", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MinA.lnk.prmName.c_str(), data[i].MinA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:7", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].MaxA.lnk.prmName.c_str(), data[i].MaxA.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:7", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Factor.lnk.prmName.c_str(), data[i].Factor.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:8", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(data[i].Dimension.lnk.prmName.c_str(), data[i].Dimension.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:9", i + 1));
-	    if(with_k) {
-		mPrm.p_el.fldAdd(fld = new TFld(data[i].CorFactor.lnk.prmName.c_str(), data[i].CorFactor.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-		fld->setReserve(TSYS::strMess("%d:10", i + 1));
-		if(with_rate) {
-		    mPrm.p_el.fldAdd(fld = new TFld(data[i].Rate.lnk.prmName.c_str(), data[i].Rate.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-		    fld->setReserve(TSYS::strMess("%d:11", i + 1));
-		    mPrm.p_el.fldAdd(fld = new TFld(data[i].Calcs.lnk.prmName.c_str(), data[i].Calcs.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-		    fld->setReserve(TSYS::strMess("%d:12", i + 1));
-		    mPrm.p_el.fldAdd(fld = new TFld(data[i].RateSens.lnk.prmName.c_str(), data[i].RateSens.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-		    fld->setReserve(TSYS::strMess("%d:13", i + 1));
-		    mPrm.p_el.fldAdd(fld = new TFld(data[i].RateLimit.lnk.prmName.c_str(), data[i].RateLimit.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-		    fld->setReserve(TSYS::strMess("%d:14", i + 1));
-		}
-	    }
-
-	}
+	AddChannel(i);
     }
     loadIO(true);
 }
@@ -683,6 +352,37 @@ B_BVT::B_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_k, 
 B_BVT::~B_BVT()
 {
 
+}
+
+void B_BVT::AddChannel(uint8_t iid)
+{
+    data.push_back(STTchannel(iid, this));
+    AddAttr(data.back().State.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
+    AddAttr(data.back().Value.lnk, TFld::Real, TFld::NoWrite, TSYS::strMess("%d:1", iid + 1));
+    if(with_params) {
+	AddAttr(data.back().Period.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+	AddAttr(data.back().Sens.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:3", iid + 1));
+	AddAttr(data.back().MinS.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:4", iid + 1));
+	AddAttr(data.back().MaxS.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:4", iid + 1));
+	AddAttr(data.back().MinPV.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:5", iid + 1));
+	AddAttr(data.back().MaxPV.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:5", iid + 1));
+	AddAttr(data.back().MinW.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:6", iid + 1));
+	AddAttr(data.back().MaxW.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:6", iid + 1));
+	AddAttr(data.back().MinA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:7", iid + 1));
+	AddAttr(data.back().MaxA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:7", iid + 1));
+	AddAttr(data.back().Factor.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:8", iid + 1));
+	AddAttr(data.back().Dimension.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:9", iid + 1));
+	if(with_k) {
+	    AddAttr(data.back().CorFactor.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:10", iid + 1));
+	    if(with_rate) {
+		AddAttr(data.back().Rate.lnk, TFld::Real, TFld::NoWrite, TSYS::strMess("%d:11", iid + 1));
+		AddAttr(data.back().Calcs.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:12", iid + 1));
+		AddAttr(data.back().RateSens.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:13", iid + 1));
+		AddAttr(data.back().RateLimit.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:14", iid + 1));
+
+	    }
+	}
+    }
 }
 
 string B_BVT::getStatus(void)
