@@ -308,7 +308,7 @@ namespace FT3
 	    float Get()
 	    {
 		if(lnk.Connected()) {
-		    return lnk.aprm.at().getI();
+		    return lnk.aprm.at().getR();
 		} else {
 		    return err;
 		}
