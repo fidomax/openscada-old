@@ -141,15 +141,6 @@ namespace FT3
 	    string prmDesc;
 	    AutoHD<TVal> aprm;
 	    AutoHD<TVal> vlattr;
-	    bool Check()
-	    {
-		if(aprm.freeStat()) {
-		    aprm = SYS->daq().at().attrAt(prmAttr, '.', true);
-		    return true;
-		} else {
-		    return false;
-		}
-	    }
 	    bool Connected()
 	    {
 		if(aprm.freeStat()) {

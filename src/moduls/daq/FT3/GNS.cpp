@@ -81,8 +81,8 @@ void KA_GNS::SKANSchannel::UpdateTCParam(uint16_t ID, uint8_t cl)
 
 uint8_t KA_GNS::SKANSchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
-    if(TUOn.lnk.Check() || TimeOn.lnk.Check() || TUOff.lnk.Check() || TimeOff.lnk.Check() || TUStop.lnk.Check() || TimeOn.lnk.Check() || TUManual.lnk.Check()
-	    || TimeManual.lnk.Check() || TURemote.lnk.Check() || TimeRemote.lnk.Check()) {
+    if(TUOn.lnk.Connected() || TimeOn.lnk.Connected() || TUOff.lnk.Connected() || TimeOff.lnk.Connected() || TUStop.lnk.Connected() || TimeOn.lnk.Connected() || TUManual.lnk.Connected()
+	    || TimeManual.lnk.Connected() || TURemote.lnk.Connected() || TimeRemote.lnk.Connected()) {
 	return 0;
     } else {
 	TUOn.s = addr;
@@ -107,7 +107,7 @@ uint8_t KA_GNS::SKANSchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_
 
 uint8_t KA_GNS::SKANSchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
-    if(TCOn.lnk.Check() || TCOff.lnk.Check() || TCMode.lnk.Check()) {
+    if(TCOn.lnk.Connected() || TCOff.lnk.Connected() || TCMode.lnk.Connected()) {
 	return 0;
     } else {
 	TCOn.s = addr;

@@ -272,7 +272,7 @@ void B_GKR::setTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
     if((k > 0) && (k < count_kr)) {
 	SKRchannel & TU = KRdata[k - 1];
 	if(val) {
-	    if(!TU.On.lnk.Check()) {
+	    if(TU.On.lnk.Connected()) {
 		//on
 		TU.On.lnk.aprm.at().setI(1);
 		mPrm.vlAt(TU.On.lnk.prmName.c_str()).at().setI(k, 0, true);
@@ -280,7 +280,7 @@ void B_GKR::setTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 	    }
 	} else {
-	    if(!TU.Off.lnk.Check()) {
+	    if(TU.Off.lnk.Connected()) {
 		//off
 		TU.Off.lnk.aprm.at().setI(1);
 		mPrm.vlAt(TU.Off.lnk.prmName.c_str()).at().setI(k, 0, true);
@@ -296,7 +296,7 @@ void B_GKR::runTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 {
     if((k > 0) && (k < count_kr)) {
 	SKRchannel & TU = KRdata[k - 1];
-	if((val == 0x55) && (!TU.Run.lnk.Check())) {
+	if((val == 0x55) && (TU.Run.lnk.Connected())) {
 	    TU.Run.s = addr;
 	    TU.Run.lnk.aprm.at().setI(1);
 	    mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(0, 0, true);
@@ -304,7 +304,7 @@ void B_GKR::runTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 	    mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 	    TU.On.vl = TU.Off.vl = 0;
 	}
-	if((!val) && (!TU.Reset.lnk.aprm.freeStat())) {
+	if((!val) && (TU.Reset.lnk.Connected())) {
 	    TU.Reset.s = addr;
 	    TU.Reset.lnk.aprm.at().setI(1);
 	    mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);

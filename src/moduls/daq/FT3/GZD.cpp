@@ -85,10 +85,8 @@ void KA_GZD::SKAZDchannel::UpdateTCParam(uint16_t ID, uint8_t cl)
 
 uint8_t KA_GZD::SKAZDchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
-    if(TUOpen.lnk.Check() || TimeOpen.lnk.Check() || TUClose.lnk.Check() || TimeClose.lnk.Check() || TUStop.lnk.Check() || TimeOpen.lnk.Check()
-	    || TURemote.lnk.Check() || TimeRemote.lnk.Check() || TUManual.lnk.Check() || TimeManual.lnk.Check()) {
-	return 0;
-    } else {
+    if(TUOpen.lnk.Connected() || TimeOpen.lnk.Connected() || TUClose.lnk.Connected() || TimeClose.lnk.Connected() || TUStop.lnk.Connected() || TimeOpen.lnk.Connected()
+	    || TURemote.lnk.Connected() || TimeRemote.lnk.Connected() || TUManual.lnk.Connected() || TimeManual.lnk.Connected()) {
 	TUOpen.s = addr;
 	TUOpen.Set(TSYS::getUnalign16(val));
 	TimeOpen.Set(TSYS::getUnalign16(val + 2));
@@ -106,14 +104,14 @@ uint8_t KA_GZD::SKAZDchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_
 	memcpy(E + 1, val, 20);
 	da->PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 20;
+    } else {
+	return 0;
     }
 }
 
 uint8_t KA_GZD::SKAZDchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
-    if(TCOpen.lnk.Check() || TCClose.lnk.Check() || TCMode.lnk.Check() || TCOpenErr.lnk.Check() || TCCloseErr.lnk.Check()) {
-	return 0;
-    } else {
+    if(TCOpen.lnk.Connected() || TCClose.lnk.Connected() || TCMode.lnk.Connected() || TCOpenErr.lnk.Connected() || TCCloseErr.lnk.Connected()) {
 	TCOpen.s = addr;
 	TCOpen.Set(TSYS::getUnalign16(val));
 	TCClose.Set(TSYS::getUnalign16(val + 2));
@@ -126,6 +124,8 @@ uint8_t KA_GZD::SKAZDchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_
 	memcpy(E + 1, val, 10);
 	da->PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 10;
+    } else {
+	return 0;
     }
 }
 
