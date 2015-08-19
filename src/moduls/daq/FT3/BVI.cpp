@@ -77,19 +77,14 @@ void B_BVI::loadIO(bool force)
 	mPrm.modif(true);
 	return;
     }	//Load/reload IO context only allow for stopped controllers for prevent throws
-
-    TConfig cfg(&mPrm.prmIOE());
-    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
-    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
-    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_n; i++) {
-	loadLnk(data[i].State.lnk, io_bd, io_table, cfg);
-	loadLnk(data[i].Value.lnk, io_bd, io_table, cfg);
-	loadLnk(data[i].Period.lnk, io_bd, io_table, cfg);
-	loadLnk(data[i].Sens.lnk, io_bd, io_table, cfg);
-	loadLnk(data[i].Count.lnk, io_bd, io_table, cfg);
-	loadLnk(data[i].Factor.lnk, io_bd, io_table, cfg);
-	loadLnk(data[i].Dimension.lnk, io_bd, io_table, cfg);
+	loadLnk(data[i].State.lnk);
+	loadLnk(data[i].Value.lnk);
+	loadLnk(data[i].Period.lnk);
+	loadLnk(data[i].Sens.lnk);
+	loadLnk(data[i].Count.lnk);
+	loadLnk(data[i].Factor.lnk);
+	loadLnk(data[i].Dimension.lnk);
     }
 
 }
@@ -97,18 +92,14 @@ void B_BVI::loadIO(bool force)
 void B_BVI::saveIO()
 {
     //Save links
-    TConfig cfg(&mPrm.prmIOE());
-    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
-    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
-    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_n; i++) {
-	saveLnk(data[i].State.lnk, io_bd, io_table, cfg);
-	saveLnk(data[i].Value.lnk, io_bd, io_table, cfg);
-	saveLnk(data[i].Period.lnk, io_bd, io_table, cfg);
-	saveLnk(data[i].Sens.lnk, io_bd, io_table, cfg);
-	saveLnk(data[i].Count.lnk, io_bd, io_table, cfg);
-	saveLnk(data[i].Factor.lnk, io_bd, io_table, cfg);
-	saveLnk(data[i].Dimension.lnk, io_bd, io_table, cfg);
+	saveLnk(data[i].State.lnk);
+	saveLnk(data[i].Value.lnk);
+	saveLnk(data[i].Period.lnk);
+	saveLnk(data[i].Sens.lnk);
+	saveLnk(data[i].Count.lnk);
+	saveLnk(data[i].Factor.lnk);
+	saveLnk(data[i].Dimension.lnk);
     }
 }
 

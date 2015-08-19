@@ -32,13 +32,175 @@ namespace FT3
 	uint16_t ID;
 	uint16_t count_n;
 	bool with_params;
+	void AddChannel(uint8_t iid);
+	void saveIO(void);
+	void loadIO(bool force = false);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
+	class SACchannel
+	{
+	public:
+	    SACchannel(uint8_t iid, DA* owner) :
+		    da(owner), id(iid), State(TSYS::strMess("state_%d", id + 1).c_str(), TSYS::strMess(_("State %d"), id + 1).c_str()),
+		    Value(TSYS::strMess("value_%d", id + 1).c_str(), TSYS::strMess(_("Value %d"), id + 1).c_str()),
+		    Period(TSYS::strMess("period_%d", id + 1).c_str(), TSYS::strMess(_("Measure period %d"), id + 1).c_str()),
+		    Sens(TSYS::strMess("sens_%d", id + 1).c_str(), TSYS::strMess(_("Sensitivity %d"), id + 1).c_str()),
+		    MinW(TSYS::strMess("minW_%d", id + 1).c_str(), TSYS::strMess(_("Warning minimum %d"), id + 1).c_str()),
+		    MaxW(TSYS::strMess("maxW_%d", id + 1).c_str(), TSYS::strMess(_("Warning maximum %d"), id + 1).c_str()),
+		    MinA(TSYS::strMess("minA_%d", id + 1).c_str(), TSYS::strMess(_("Alarm minimum %d"), id + 1).c_str()),
+		    MaxA(TSYS::strMess("maxA_%d", id + 1).c_str(), TSYS::strMess(_("Alarm maximum %d"), id + 1).c_str()),
+		    Sensor1(TSYS::strMess("sensor1_%d", id + 1).c_str(), TSYS::strMess(_("Sensor 1 %d"), id + 1).c_str()),
+		    Sensor2(TSYS::strMess("sensor2_%d", id + 1).c_str(), TSYS::strMess(_("Sensor 2 %d"), id + 1).c_str()),
+		    SensorT(TSYS::strMess("sensorT_%d", id + 1).c_str(), TSYS::strMess(_("Sensor T %d"), id + 1).c_str()),
+		    SensorP(TSYS::strMess("sensorP_%d", id + 1).c_str(), TSYS::strMess(_("Sensor P %d"), id + 1).c_str()),
+		    SeviceQ(TSYS::strMess("serviceQ_%d", id + 1).c_str(), TSYS::strMess(_("Service flow %d"), id + 1).c_str()),
+		    Hour(TSYS::strMess("hour_%d", id + 1).c_str(), TSYS::strMess(_("Contract hour %d"), id + 1).c_str()),
+		    HourlyQ(TSYS::strMess("hourlyQ_%d", id + 1).c_str(), TSYS::strMess(_("Hourly flow %d"), id + 1).c_str()),
+		    Counter(TSYS::strMess("counter_%d", id + 1).c_str(), TSYS::strMess(_("Counter Q %d"), id + 1).c_str()),
+		    HourQ(TSYS::strMess("hourQ_%d", id + 1).c_str(), TSYS::strMess(_("Hour Q %d"), id + 1).c_str()),
+		    HourdP(TSYS::strMess("hourdP_%d", id + 1).c_str(), TSYS::strMess(_("Hour dP %d"), id + 1).c_str()),
+		    HourT(TSYS::strMess("hourT_%d", id + 1).c_str(), TSYS::strMess(_("Hour T %d"), id + 1).c_str()),
+		    HourP(TSYS::strMess("hourP_%d", id + 1).c_str(), TSYS::strMess(_("Hour P %d"), id + 1).c_str()),
+		    HourE(TSYS::strMess("hourE_%d", id + 1).c_str(), TSYS::strMess(_("Hour E %d"), id + 1).c_str()),
+		    StartDate(TSYS::strMess("startDate_%d", id + 1).c_str(), TSYS::strMess(_("StartDate %d"), id + 1).c_str()),
+		    EndDate(TSYS::strMess("endDate_%d", id + 1).c_str(), TSYS::strMess(_("EndDate %d"), id + 1).c_str()),
+		    AvgQ(TSYS::strMess("avgQ_%d", id + 1).c_str(), TSYS::strMess(_("Avg Q %d"), id + 1).c_str()),
+		    AvgdP(TSYS::strMess("avgdP_%d", id + 1).c_str(), TSYS::strMess(_("Avg dP %d"), id + 1).c_str()),
+		    AvgT(TSYS::strMess("avgT_%d", id + 1).c_str(), TSYS::strMess(_("Avg T %d"), id + 1).c_str()),
+		    AvgP(TSYS::strMess("avgP_%d", id + 1).c_str(), TSYS::strMess(_("Avg P %d"), id + 1).c_str()),
+		    AvgE(TSYS::strMess("avgE_%d", id + 1).c_str(), TSYS::strMess(_("Avg E %d"), id + 1).c_str()),
+		    PeriodQ(TSYS::strMess("periodQ_%d", id + 1).c_str(), TSYS::strMess(_("Periodically Q %d"), id + 1).c_str()),
+		    Density(TSYS::strMess("density_%d", id + 1).c_str(), TSYS::strMess(_("Density %d"), id + 1).c_str()),
+		    Asperity(TSYS::strMess("asperity_%d", id + 1).c_str(), TSYS::strMess(_("Equivalence asperity %d"), id + 1).c_str()),
+		    ConcentrN(TSYS::strMess("concentrN_%d", id + 1).c_str(), TSYS::strMess(_("N concentration %d"), id + 1).c_str()),
+		    ConcentrCO(TSYS::strMess("concentrCO_%d", id + 1).c_str(), TSYS::strMess(_("CO concentration %d"), id + 1).c_str()),
+		    DiameterM(TSYS::strMess("diameterM_%d", id + 1).c_str(), TSYS::strMess(_("Membrane diameter %d"), id + 1).c_str()),
+		    FactorM(TSYS::strMess("factorM_%d", id + 1).c_str(), TSYS::strMess(_("Membrane factor %d"), id + 1).c_str()),
+		    DiameterP(TSYS::strMess("diameterP_%d", id + 1).c_str(), TSYS::strMess(_("Pipe diameter %d"), id + 1).c_str()),
+		    FactorP(TSYS::strMess("factorP_%d", id + 1).c_str(), TSYS::strMess(_("Pipe factor %d"), id + 1).c_str()),
+		    MethodM(TSYS::strMess("methodM_%d", id + 1).c_str(), TSYS::strMess(_("Measure method %d"), id + 1).c_str()),
+		    TestdP(TSYS::strMess("testdP_%d", id + 1).c_str(), TSYS::strMess(_("Test dP/TI %d"), id + 1).c_str()),
+		    TestT(TSYS::strMess("testT_%d", id + 1).c_str(), TSYS::strMess(_("Test T %d"), id + 1).c_str()),
+		    TestP(TSYS::strMess("testP_%d", id + 1).c_str(), TSYS::strMess(_("Test P %d"), id + 1).c_str()),
+		    TestQ(TSYS::strMess("testQ_%d", id + 1).c_str(), TSYS::strMess(_("Test Q %d"), id + 1).c_str()),
+		    RadiusM(TSYS::strMess("radiusM_%d", id + 1).c_str(), TSYS::strMess(_("Membrane radius %d"), id + 1).c_str()),
+		    PressureA(TSYS::strMess("pressureA_%d", id + 1).c_str(), TSYS::strMess(_("Atmospheric pressure %d"), id + 1).c_str()),
+		    dP(TSYS::strMess("dP_%d", id + 1).c_str(), TSYS::strMess(_("dP %d"), id + 1).c_str()),
+		    T(TSYS::strMess("T_%d", id + 1).c_str(), TSYS::strMess(_("T %d"), id + 1).c_str()),
+		    P(TSYS::strMess("P_%d", id + 1).c_str(), TSYS::strMess(_("P %d"), id + 1).c_str()),
+		    E(TSYS::strMess("E_%d", id + 1).c_str(), TSYS::strMess(_("E %d"), id + 1).c_str())
+	    {
+	    }
+	    DA* da;
+	    uint8_t id;
 
-	uint8_t months[12];
+	    ui8Data State, Period, Sensor1, Sensor2, SensorT, SensorP, Hour, MethodM;
+	    ui32Data StartDate, EndDate;
 
+	    flData Value, Sens, MinW, MaxW, MinA, MaxA, SeviceQ, HourlyQ, Counter, HourQ, HourdP, HourT, HourP, HourE, AvgQ, AvgdP, AvgT, AvgP, AvgE, PeriodQ,
+		    Density, Asperity, ConcentrN, ConcentrCO, DiameterM, FactorM, DiameterP, FactorP, TestdP, TestT, TestP, TestQ, RadiusM, PressureA, dP, T, P,
+		    E;
+	};
+	vector<SACchannel> data;
+	int lnkSize()
+	{
+	    if(with_params) {
+		return data.size() * 46;
+	    } else {
+		return data.size() * 2;
+	    }
+	}
+	int lnkId(const string &id)
+	{
+	    if(with_params) {
+		for(int i_l = 0; i_l < data.size(); i_l++) {
+		    if(data[i_l].State.lnk.prmName == id) return i_l * 46;
+		    if(data[i_l].Value.lnk.prmName == id) return i_l * 46 + 1;
+		    if(data[i_l].Period.lnk.prmName == id) return i_l * 46 + 2;
+		    if(data[i_l].Sens.lnk.prmName == id) return i_l * 46 + 3;
+		    if(data[i_l].MinW.lnk.prmName == id) return i_l * 46 + 4;
+		    if(data[i_l].MaxW.lnk.prmName == id) return i_l * 46 + 5;
+		    if(data[i_l].MinA.lnk.prmName == id) return i_l * 46 + 6;
+		    if(data[i_l].MaxA.lnk.prmName == id) return i_l * 46 + 7;
+		    if(data[i_l].Sensor1.lnk.prmName == id) return i_l * 46 + 8;
+		    if(data[i_l].Sensor2.lnk.prmName == id) return i_l * 46 + 9;
+		    if(data[i_l].SensorP.lnk.prmName == id) return i_l * 46 + 10;
+		    if(data[i_l].SensorT.lnk.prmName == id) return i_l * 46 + 11;
+		    if(data[i_l].SeviceQ.lnk.prmName == id) return i_l * 46 + 12;
+		    if(data[i_l].Hour.lnk.prmName == id) return i_l * 46 + 13;
+		    if(data[i_l].HourlyQ.lnk.prmName == id) return i_l * 46 + 14;
+		    if(data[i_l].Counter.lnk.prmName == id) return i_l * 46 + 15;
+		    if(data[i_l].HourQ.lnk.prmName == id) return i_l * 46 + 16;
+		    if(data[i_l].HourdP.lnk.prmName == id) return i_l * 46 + 17;
+		    if(data[i_l].HourT.lnk.prmName == id) return i_l * 46 + 18;
+		    if(data[i_l].HourP.lnk.prmName == id) return i_l * 46 + 19;
+		    if(data[i_l].HourE.lnk.prmName == id) return i_l * 46 + 20;
+		    if(data[i_l].AvgQ.lnk.prmName == id) return i_l * 46 + 21;
+		    if(data[i_l].AvgdP.lnk.prmName == id) return i_l * 46 + 22;
+		    if(data[i_l].AvgT.lnk.prmName == id) return i_l * 46 + 23;
+		    if(data[i_l].AvgP.lnk.prmName == id) return i_l * 46 + 24;
+		    if(data[i_l].AvgE.lnk.prmName == id) return i_l * 46 + 25;
+		    if(data[i_l].PeriodQ.lnk.prmName == id) return i_l * 46 + 26;
+		    if(data[i_l].Density.lnk.prmName == id) return i_l * 46 + 27;
+		    if(data[i_l].Asperity.lnk.prmName == id) return i_l * 46 + 28;
+		    if(data[i_l].ConcentrN.lnk.prmName == id) return i_l * 46 + 29;
+		    if(data[i_l].ConcentrCO.lnk.prmName == id) return i_l * 46 + 30;
+		    if(data[i_l].DiameterM.lnk.prmName == id) return i_l * 46 + 31;
+		    if(data[i_l].FactorM.lnk.prmName == id) return i_l * 46 + 32;
+		    if(data[i_l].DiameterP.lnk.prmName == id) return i_l * 46 + 33;
+		    if(data[i_l].FactorP.lnk.prmName == id) return i_l * 46 + 34;
+		    if(data[i_l].MethodM.lnk.prmName == id) return i_l * 46 + 35;
+		    if(data[i_l].TestdP.lnk.prmName == id) return i_l * 46 + 36;
+		    if(data[i_l].TestT.lnk.prmName == id) return i_l * 46 + 37;
+		    if(data[i_l].TestP.lnk.prmName == id) return i_l * 46 + 38;
+		    if(data[i_l].TestQ.lnk.prmName == id) return i_l * 46 + 39;
+		    if(data[i_l].RadiusM.lnk.prmName == id) return i_l * 46 + 40;
+		    if(data[i_l].PressureA.lnk.prmName == id) return i_l * 46 + 41;
+		    if(data[i_l].dP.lnk.prmName == id) return i_l * 46 + 42;
+		    if(data[i_l].T.lnk.prmName == id) return i_l * 46 + 43;
+		    if(data[i_l].P.lnk.prmName == id) return i_l * 46 + 44;
+		    if(data[i_l].E.lnk.prmName == id) return i_l * 46 + 45;
+		}
+	    } else {
+		for(int i_l = 0; i_l < data.size(); i_l++) {
+		    if(data[i_l].State.lnk.prmName == id) return i_l * 2;
+		    if(data[i_l].Value.lnk.prmName == id) return i_l * 2 + 1;
+		}
+	    }
+	    return -1;
+	}
+	SLnk &lnk(int num)
+	{
+	    int k;
+	    if(with_params) {
+		k = 17;
+	    } else {
+		k = 1;
+	    }
+	    switch(num % k) {
+	    case 0:
+		return TUdata[num / k].Line.lnk;
+	    case 1:
+	    case 2:
+	    case 3:
+	    case 4:
+	    case 5:
+	    case 6:
+	    case 7:
+	    case 8:
+	    case 9:
+	    case 10:
+	    case 11:
+	    case 12:
+	    case 13:
+	    case 14:
+	    case 15:
+	    case 16:
+		return TUdata[num / k].Time[num % k - 1].lnk;
+	    }
+	}
     };
 
 } //End namespace

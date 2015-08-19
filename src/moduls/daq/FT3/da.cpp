@@ -35,8 +35,13 @@ void DA::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
     fld->setReserve(ex);
 }
 
-void DA::loadLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg)
+void DA::loadLnk(SLnk& lnk)
 {
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
+
     cfg.cfg("ID").setS(lnk.prmName);
     if(SYS->db().at().dataGet(io_bd, io_table, cfg, false, true)) {
 	lnk.prmAttr = cfg.cfg("VALUE").getS();
@@ -44,8 +49,12 @@ void DA::loadLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig
     }
 }
 
-void DA::saveLnk(SLnk& lnk, const string& io_bd, const string& io_table, TConfig& cfg)
+void DA::saveLnk(SLnk& lnk)
 {
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     cfg.cfg("ID").setS(lnk.prmName);
     cfg.cfg("VALUE").setS(lnk.prmAttr);
     SYS->db().at().dataSet(io_bd, io_table, cfg);

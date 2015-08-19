@@ -75,15 +75,10 @@ void KA_BTU::loadIO(bool force)
 	mPrm.modif(true);
 	return;
     }	//Load/reload IO context only allow for stopped controllers for prevent throws
-
-    TConfig cfg(&mPrm.prmIOE());
-    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
-    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
-    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_nu; i++) {
-	loadLnk(TUdata[i].Line.lnk, io_bd, io_table, cfg);
+	loadLnk(TUdata[i].Line.lnk);
 	for(int j = 0; j < 16; j++) {
-	    loadLnk(TUdata[i].Time[j].lnk, io_bd, io_table, cfg);
+	    loadLnk(TUdata[i].Time[j].lnk);
 	}
     }
 
@@ -92,14 +87,10 @@ void KA_BTU::loadIO(bool force)
 void KA_BTU::saveIO()
 {
     //Save links
-    TConfig cfg(&mPrm.prmIOE());
-    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
-    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
-    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_nu; i++) {
-	saveLnk(TUdata[i].Line.lnk, io_bd, io_table, cfg);
+	saveLnk(TUdata[i].Line.lnk);
 	for(int j = 0; j < 16; j++) {
-	    saveLnk(TUdata[i].Time[j].lnk, io_bd, io_table, cfg);
+	    saveLnk(TUdata[i].Time[j].lnk);
 	}
     }
 }
@@ -345,42 +336,34 @@ void B_BTR::loadIO(bool force)
 	return;
     }	//Load/reload IO context only allow for stopped controllers for prevent throws
 
-    TConfig cfg(&mPrm.prmIOE());
-    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
-    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
-    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     for(int i = 0; i < count_nu; i++) {
-	loadLnk(TUdata[i].On.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].Off.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].Run.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].Reset.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].Time.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].TC.lnk, io_bd, io_table, cfg);
-	loadLnk(TUdata[i].ExTime.lnk, io_bd, io_table, cfg);
+	loadLnk(TUdata[i].On.lnk);
+	loadLnk(TUdata[i].Off.lnk);
+	loadLnk(TUdata[i].Run.lnk);
+	loadLnk(TUdata[i].Reset.lnk);
+	loadLnk(TUdata[i].Time.lnk);
+	loadLnk(TUdata[i].TC.lnk);
+	loadLnk(TUdata[i].ExTime.lnk);
     }
     for(int i = 0; i < count_nr; i++) {
-	loadLnk(TRdata[i].Value.lnk, io_bd, io_table, cfg);
+	loadLnk(TRdata[i].Value.lnk);
     }
 }
 
 void B_BTR::saveIO()
 {
 //Save links
-    TConfig cfg(&mPrm.prmIOE());
-    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
-    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
-    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
-    for(int i = 0; i < count_nu; i++) {
-	saveLnk(TUdata[i].On.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].Off.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].Run.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].Reset.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].Time.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].TC.lnk, io_bd, io_table, cfg);
-	saveLnk(TUdata[i].ExTime.lnk, io_bd, io_table, cfg);
+     for(int i = 0; i < count_nu; i++) {
+	saveLnk(TUdata[i].On.lnk);
+	saveLnk(TUdata[i].Off.lnk);
+	saveLnk(TUdata[i].Run.lnk);
+	saveLnk(TUdata[i].Reset.lnk);
+	saveLnk(TUdata[i].Time.lnk);
+	saveLnk(TUdata[i].TC.lnk);
+	saveLnk(TUdata[i].ExTime.lnk);
     }
     for(int i = 0; i < count_nr; i++) {
-	saveLnk(TRdata[i].Value.lnk, io_bd, io_table, cfg);
+	saveLnk(TRdata[i].Value.lnk);
     }
 }
 
