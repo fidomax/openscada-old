@@ -173,7 +173,8 @@ namespace FT3
 	}
 	SLnk &lnk(int num)
 	{
-	    int k;
+	    return data[0].State.lnk;
+/*	    int k;
 	    if(with_params) {
 		k = 17;
 	    } else {
@@ -199,7 +200,7 @@ namespace FT3
 	    case 15:
 	    case 16:
 		return TUdata[num / k].Time[num % k - 1].lnk;
-	    }
+	    }*/
 	}
     };
 
