@@ -30,6 +30,7 @@ using namespace FT3;
 B_BVI::B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_ext_period) :
 	DA(prm), ID(id), count_n(n), with_params(has_params), ext_period(has_ext_period)
 {
+    mTypeFT3 = GRS;
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");

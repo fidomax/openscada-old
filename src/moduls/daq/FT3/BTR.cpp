@@ -278,6 +278,7 @@ B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params
 	DA(prm), ID(id), count_nu(nu), count_nr(nr), with_params(has_params)
 
 {
+    mTypeFT3 = GRS;
     TFld * fld;
 
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));

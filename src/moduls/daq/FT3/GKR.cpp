@@ -31,6 +31,7 @@ B_GKR::B_GKR(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), ID(id), count_n(n), with_params(has_params)
 
 {
+    mTypeFT3 = GRS;
     TFld * fld;
     state = 0;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
