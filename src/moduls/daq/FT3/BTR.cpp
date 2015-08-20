@@ -219,7 +219,7 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 	case 2:
 	    l = runTU(req[2]);
 	    if(l) {
-		uint8_t E[2] = { addr, req[2]};
+		uint8_t E[2] = { addr, req[2] };
 		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
 	    }
 	    break;
@@ -304,7 +304,6 @@ B_BTR::~B_BTR()
 
 }
 
-
 void B_BTR::AddTUChannel(uint8_t iid)
 {
     TUdata.push_back(STUchannel(iid, this));
@@ -361,7 +360,7 @@ void B_BTR::loadIO(bool force)
 void B_BTR::saveIO()
 {
 //Save links
-     for(int i = 0; i < count_nu; i++) {
+    for(int i = 0; i < count_nu; i++) {
 	saveLnk(TUdata[i].On.lnk);
 	saveLnk(TUdata[i].Off.lnk);
 	saveLnk(TUdata[i].Run.lnk);
@@ -600,7 +599,8 @@ uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
 		l = SetNewWVal(TUdata[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 1:
-		l = SetNewWVal(TUdata[ft3ID.k - 1].TC, addr, prmID, TSYS::getUnalign16(req + 2));;
+		l = SetNewWVal(TUdata[ft3ID.k - 1].TC, addr, prmID, TSYS::getUnalign16(req + 2));
+		;
 	    case 2:
 		l = SetNew8Val(TUdata[ft3ID.k - 1].ExTime, addr, prmID, req[2]);
 	    }
@@ -618,7 +618,7 @@ void B_BTR::setTU(uint8_t tu)
     uint8_t vl = tu >> 7;
     uint8_t n = tu & 0x7F;
     if((n > 0) && (n < count_nu)) {
-	STUchannel & TU = TUdata[n - 1];
+	STUchannel &TU = TUdata[n - 1];
 	currTU = n;
 	if(vl) {
 	    if(TU.On.lnk.Connected()) {
@@ -639,24 +639,22 @@ void B_BTR::setTU(uint8_t tu)
 void B_BTR::runTU(uint8_t tu)
 {
     if(currTU) {
-	STUchannel & TU = TUdata[currTU - 1];
-	if(tu == 0x55) {
-	    if((!TU.Run.lnk.Connected())) {
-		TU.Run.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(1, 0, true);
-		currTU = 0;
-	    }
+	STUchannel &TU = TUdata[currTU - 1];
+	if((tu == 0x55) && (TU.Run.lnk.Connected())) {
+	    TU.Run.lnk.aprm.at().setI(1);
+	    mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(1, 0, true);
+	    currTU = 0;
 	}
     }
     if(tu == 0x0) {
 	for(int i = 0; i < count_nu; i++) {
 	    STUchannel & TU = TUdata[i];
-	    if((!TU.Reset.lnk.Connected())) {
+	    if((TU.Reset.lnk.Connected())) {
 		TU.Reset.lnk.aprm.at().setI(1);
 		mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
-		currTU = 0;
 	    }
 	}
+	currTU = 0;
     }
 }
 
