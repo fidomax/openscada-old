@@ -339,31 +339,30 @@ uint8_t B_BVI::cmdGet(uint16_t prmID, uint8_t * out)
 uint8_t B_BVI::cmdSet(uint8_t * req, uint8_t addr)
 {
     uint16_t prmID = TSYS::getUnalign16(req);
-    if((prmID & 0xF000) != ID) return 0;
-    uint16_t k = (prmID >> 6) & 0x3F; // object
-    uint16_t n = prmID & 0x3F;  // param
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != ID) return 0;
     uint l = 0;
 //    mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", k, n);
-    if((k > 0) && (k <= count_n)) {
-	switch(n) {
+    if((ft3ID.k > 0) && (ft3ID.k <= count_n)) {
+	switch(ft3ID.n) {
 	case 2:
 	    if(ext_period) {
-		l = SetNewWVal(data[k - 1].Period, addr, prmID, req[2]);
+		l = SetNewWVal(data[ft3ID.k - 1].Period, addr, prmID, req[2]);
 	    } else {
-		l = SetNew8Val(data[k - 1].Period, addr, prmID, req[2]);
+		l = SetNew8Val(data[ft3ID.k - 1].Period, addr, prmID, req[2]);
 	    }
 	    break;
 	case 3:
-	    l = SetNewflVal(data[k - 1].Sens, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    l = SetNewflVal(data[ft3ID.k - 1].Sens, addr, prmID, TSYS::getUnalignFloat(req + 2));
 	    break;
 	case 4:
-	    l = SetNew32Val(data[k - 1].Count, addr, prmID, TSYS::getUnalign32(req + 2));
+	    l = SetNew32Val(data[ft3ID.k - 1].Count, addr, prmID, TSYS::getUnalign32(req + 2));
 	    break;
 	case 5:
-	    l = SetNewflVal(data[k - 1].Factor, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    l = SetNewflVal(data[ft3ID.k - 1].Factor, addr, prmID, TSYS::getUnalignFloat(req + 2));
 	    break;
 	case 6:
-	    l = SetNew8Val(data[k - 1].Dimension, addr, prmID, req[2]);
+	    l = SetNew8Val(data[ft3ID.k - 1].Dimension, addr, prmID, req[2]);
 	    break;
 	}
     }
