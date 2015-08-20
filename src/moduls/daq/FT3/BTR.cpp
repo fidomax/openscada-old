@@ -291,24 +291,10 @@ B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params
     }
 
     for(int i = 0; i < count_nu; i++) {
-	TUdata.push_back(STUchannel(i));
-	mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].On.lnk.prmName.c_str(), TUdata[i].On.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-	mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].Off.lnk.prmName.c_str(), TUdata[i].Off.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-	mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].Run.lnk.prmName.c_str(), TUdata[i].Run.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-	mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].Reset.lnk.prmName.c_str(), TUdata[i].Reset.lnk.prmDesc.c_str(), TFld::Real, TFld::NoWrite));
-	if(with_params) {
-	    mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].Time.lnk.prmName.c_str(), TUdata[i].Time.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:0", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].TC.lnk.prmName.c_str(), TUdata[i].TC.lnk.prmDesc.c_str(), TFld::Integer, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:1", i + 1));
-	    mPrm.p_el.fldAdd(fld = new TFld(TUdata[i].ExTime.lnk.prmName.c_str(), TUdata[i].ExTime.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	    fld->setReserve(TSYS::strMess("%d:2", i + 1));
-	}
+	AddTUChannel(i);
     }
     for(int i = 0; i < count_nr; i++) {
-	TRdata.push_back(STRchannel(i));
-	mPrm.p_el.fldAdd(fld = new TFld(TRdata[i].Value.lnk.prmName.c_str(), TRdata[i].Value.lnk.prmDesc.c_str(), TFld::Real, TVal::DirWrite));
-	fld->setReserve(TSYS::strMess("%d:0", i + 1 + count_nu));
+	AddTRChannel(i);
     }
     loadIO(true);
 }
@@ -316,6 +302,27 @@ B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params
 B_BTR::~B_BTR()
 {
 
+}
+
+
+void B_BTR::AddTUChannel(uint8_t iid)
+{
+    TUdata.push_back(STUchannel(iid, this));
+    AddAttr(TUdata.back().On.lnk, TFld::Boolean, TVal::DirWrite, "0:1");
+    AddAttr(TUdata.back().Off.lnk, TFld::Boolean, TVal::DirWrite, "0:1");
+    AddAttr(TUdata.back().Run.lnk, TFld::Boolean, TVal::DirWrite, "0:2");
+    AddAttr(TUdata.back().Reset.lnk, TFld::Boolean, TVal::DirWrite, "0:2");
+    if(with_params) {
+	AddAttr(TUdata.back().Time.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
+	AddAttr(TUdata.back().TC.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+	AddAttr(TUdata.back().ExTime.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+    }
+}
+
+void B_BTR::AddTRChannel(uint8_t iid)
+{
+    TRdata.push_back(STRchannel(iid, this));
+    AddAttr(TRdata.back().Value.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1 + count_nu));
 }
 
 string B_BTR::getStatus(void)
@@ -541,8 +548,8 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
 	    switch(ft3ID.n) {
 	    case 0:
 		out[0] = TUdata[ft3ID.k - 1].Time.s;
-		out[1] = ((uint16_t) TUdata[ft3ID.k - 1].Time.vl);
-		out[2] = ((uint16_t) TUdata[ft3ID.k - 1].Time.vl) >> 8;
+		out[1] = TUdata[ft3ID.k - 1].Time.vl;
+		out[2] = TUdata[ft3ID.k - 1].Time.vl >> 8;
 		l = 3;
 		break;
 	    case 1:
@@ -553,7 +560,7 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
 		break;
 	    case 2:
 		out[0] = TUdata[ft3ID.k - 1].ExTime.s;
-		out[1] = ((uint16_t) TUdata[ft3ID.k - 1].ExTime.vl);
+		out[1] = TUdata[ft3ID.k - 1].ExTime.vl;
 		l = 2;
 		break;
 	    }
@@ -593,7 +600,7 @@ uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
 		l = SetNewWVal(TUdata[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 1:
-		l = 3;
+		l = SetNewWVal(TUdata[ft3ID.k - 1].TC, addr, prmID, TSYS::getUnalign16(req + 2));;
 	    case 2:
 		l = SetNew8Val(TUdata[ft3ID.k - 1].ExTime, addr, prmID, req[2]);
 	    }
