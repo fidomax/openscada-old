@@ -173,34 +173,107 @@ namespace FT3
 	}
 	SLnk &lnk(int num)
 	{
-	    return data[0].State.lnk;
-/*	    int k;
+	    int k;
 	    if(with_params) {
-		k = 17;
+		k = 46;
 	    } else {
-		k = 1;
+		k = 2;
 	    }
 	    switch(num % k) {
 	    case 0:
-		return TUdata[num / k].Line.lnk;
+		return data[num / k].State.lnk;
 	    case 1:
+		return data[num / k].Value.lnk;
 	    case 2:
+		return data[num / k].Period.lnk;
 	    case 3:
+		return data[num / k].Sens.lnk;
 	    case 4:
+		return data[num / k].MinW.lnk;
 	    case 5:
+		return data[num / k].MaxW.lnk;
 	    case 6:
+		return data[num / k].MinA.lnk;
 	    case 7:
+		return data[num / k].MaxA.lnk;
 	    case 8:
+		return data[num / k].Sensor1.lnk;
 	    case 9:
+		return data[num / k].Sensor2.lnk;
 	    case 10:
+		return data[num / k].SensorP.lnk;
 	    case 11:
+		return data[num / k].SensorT.lnk;
 	    case 12:
+		return data[num / k].SeviceQ.lnk;
 	    case 13:
+		return data[num / k].Hour.lnk;
 	    case 14:
+		return data[num / k].HourlyQ.lnk;
 	    case 15:
+		return data[num / k].Counter.lnk;
 	    case 16:
-		return TUdata[num / k].Time[num % k - 1].lnk;
-	    }*/
+		return data[num / k].HourQ.lnk;
+	    case 17:
+		return data[num / k].HourdP.lnk;
+	    case 18:
+		return data[num / k].HourT.lnk;
+	    case 19:
+		return data[num / k].HourP.lnk;
+	    case 20:
+		return data[num / k].HourE.lnk;
+	    case 21:
+		return data[num / k].AvgQ.lnk;
+	    case 22:
+		return data[num / k].AvgdP.lnk;
+	    case 23:
+		return data[num / k].AvgT.lnk;
+	    case 24:
+		return data[num / k].AvgP.lnk;
+	    case 25:
+		return data[num / k].AvgE.lnk;
+	    case 26:
+		return data[num / k].PeriodQ.lnk;
+	    case 27:
+		return data[num / k].Density.lnk;
+	    case 28:
+		return data[num / k].Asperity.lnk;
+	    case 29:
+		return data[num / k].ConcentrN.lnk;
+	    case 30:
+		return data[num / k].ConcentrCO.lnk;
+	    case 31:
+		return data[num / k].DiameterM.lnk;
+	    case 32:
+		return data[num / k].FactorM.lnk;
+	    case 33:
+		return data[num / k].DiameterP.lnk;
+	    case 34:
+		return data[num / k].FactorP.lnk;
+	    case 35:
+		return data[num / k].MethodM.lnk;
+	    case 36:
+		return data[num / k].TestdP.lnk;
+	    case 37:
+		return data[num / k].TestT.lnk;
+	    case 38:
+		return data[num / k].TestP.lnk;
+	    case 39:
+		return data[num / k].TestQ.lnk;
+	    case 40:
+		return data[num / k].RadiusM.lnk;
+	    case 41:
+		return data[num / k].PressureA.lnk;
+	    case 42:
+		return data[num / k].dP.lnk;
+	    case 43:
+		return data[num / k].T.lnk;
+	    case 44:
+		return data[num / k].P.lnk;
+	    case 45:
+		return data[num / k].E.lnk;
+
+	    }
 	}
     };
 
