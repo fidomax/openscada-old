@@ -161,6 +161,7 @@ void B_ACCOUNT::loadIO(bool force)
 	loadLnk(data[i].dP.lnk);
 	loadLnk(data[i].T.lnk);
 	loadLnk(data[i].P.lnk);
+	saveLnk(data[i].E.lnk);
     }
 }
 
@@ -211,6 +212,7 @@ void B_ACCOUNT::saveIO()
 	saveLnk(data[i].dP.lnk);
 	saveLnk(data[i].T.lnk);
 	saveLnk(data[i].P.lnk);
+	saveLnk(data[i].E.lnk);
     }
 }
 
