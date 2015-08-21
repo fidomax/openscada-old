@@ -57,10 +57,7 @@ void B_ACCOUNT::AddChannel(uint8_t iid)
 	AddAttr(data.back().MaxW.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:4", iid + 1));
 	AddAttr(data.back().MinA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:5", iid + 1));
 	AddAttr(data.back().MaxA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:5", iid + 1));
-	AddAttr(data.back().Sensor1.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:6", iid + 1));
-	AddAttr(data.back().Sensor2.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:6", iid + 1));
-	AddAttr(data.back().SensorP.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:6", iid + 1));
-	AddAttr(data.back().SensorT.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:6", iid + 1));
+	AddAttr(data.back().Sensors.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:6", iid + 1));
 	AddAttr(data.back().SeviceQ.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:7", iid + 1));
 	AddAttr(data.back().Hour.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:8", iid + 1));
 	AddAttr(data.back().HourlyQ.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:9", iid + 1));
@@ -128,10 +125,7 @@ void B_ACCOUNT::loadIO(bool force)
 	loadLnk(data[i].MaxW.lnk);
 	loadLnk(data[i].MinA.lnk);
 	loadLnk(data[i].MaxA.lnk);
-	loadLnk(data[i].Sensor1.lnk);
-	loadLnk(data[i].Sensor2.lnk);
-	loadLnk(data[i].SensorP.lnk);
-	loadLnk(data[i].SensorT.lnk);
+	loadLnk(data[i].Sensors.lnk);
 	loadLnk(data[i].SeviceQ.lnk);
 	loadLnk(data[i].Hour.lnk);
 	loadLnk(data[i].HourlyQ.lnk);
@@ -181,10 +175,7 @@ void B_ACCOUNT::saveIO()
 	saveLnk(data[i].MaxW.lnk);
 	saveLnk(data[i].MinA.lnk);
 	saveLnk(data[i].MaxA.lnk);
-	saveLnk(data[i].Sensor1.lnk);
-	saveLnk(data[i].Sensor2.lnk);
-	saveLnk(data[i].SensorP.lnk);
-	saveLnk(data[i].SensorT.lnk);
+	saveLnk(data[i].Sensors.lnk);
 	saveLnk(data[i].SeviceQ.lnk);
 	saveLnk(data[i].Hour.lnk);
 	saveLnk(data[i].HourlyQ.lnk);
@@ -272,10 +263,7 @@ uint16_t B_ACCOUNT::Task(uint16_t uc)
 				mPrm.vlAt(TSYS::strMess("maxW_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 36), 0, true);
 				mPrm.vlAt(TSYS::strMess("minA_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 45), 0, true);
 				mPrm.vlAt(TSYS::strMess("maxA_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 49), 0, true);
-				mPrm.vlAt(TSYS::strMess("sensor1_%d", i).c_str()).at().setI(Msg.D[58], 0, true);
-				mPrm.vlAt(TSYS::strMess("sensor2_%d", i).c_str()).at().setI(Msg.D[59], 0, true);
-				mPrm.vlAt(TSYS::strMess("sensorT_%d", i).c_str()).at().setI(Msg.D[60], 0, true);
-				mPrm.vlAt(TSYS::strMess("sensorP_%d", i).c_str()).at().setI(Msg.D[61], 0, true);
+				mPrm.vlAt(TSYS::strMess("sensors_%d", i).c_str()).at().setI(TSYS::getUnalign32(Msg.D + 58), 0, true);
 				mPrm.vlAt(TSYS::strMess("serviceQ_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 67), 0, true);
 				mPrm.vlAt(TSYS::strMess("hour_%d", i).c_str()).at().setI(Msg.D[76], 0, true);
 				mPrm.vlAt(TSYS::strMess("hourlyQ_%d", i).c_str()).at().setR(TSYS::getUnalignFloat(Msg.D + 82), 0, true);
@@ -423,10 +411,7 @@ uint16_t B_ACCOUNT::HandleEvent(uint8_t * D)
 	    break;
 	case 6:
 	    if(with_params) {
-		mPrm.vlAt(TSYS::strMess("sensor1_%d", k).c_str()).at().setI(D[3], 0, true);
-		mPrm.vlAt(TSYS::strMess("sensor2_%d", k).c_str()).at().setI(D[3], 0, true);
-		mPrm.vlAt(TSYS::strMess("sensorT_%d", k).c_str()).at().setI(D[3], 0, true);
-		mPrm.vlAt(TSYS::strMess("sensorP_%d", k).c_str()).at().setI(D[3], 0, true);
+		mPrm.vlAt(TSYS::strMess("sensors_%d", k).c_str()).at().setI(TSYS::getUnalign32(D + 3), 0, true);
 	    }
 	    l = 7;
 	    break;
@@ -640,6 +625,7 @@ uint16_t B_ACCOUNT::setVal(TVal &val)
 	Msg.C = SetData;
 	Msg.D[0] = addr & 0xFF;
 	Msg.D[1] = (addr >> 8) & 0xFF;
+	//TODO
 	Msg.D[2] = (uint8_t) mPrm.vlAt(TSYS::strMess("sensor1_%d", k).c_str()).at().getI(0, true);
 	Msg.D[3] = (uint8_t) mPrm.vlAt(TSYS::strMess("sensor2_%d", k).c_str()).at().getI(0, true);
 	Msg.D[4] = (uint8_t) mPrm.vlAt(TSYS::strMess("sensorT_%d", k).c_str()).at().getI(0, true);

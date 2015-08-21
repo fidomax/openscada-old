@@ -43,7 +43,9 @@ namespace FT3
 	{
 	public:
 	    SACchannel(uint8_t iid, DA* owner) :
-		    da(owner), id(iid), State(TSYS::strMess("state_%d", id + 1).c_str(), TSYS::strMess(_("State %d"), id + 1).c_str()),
+		    da(owner),
+		    id(iid),
+		    State(TSYS::strMess("state_%d", id + 1).c_str(), TSYS::strMess(_("State %d"), id + 1).c_str()),
 		    Value(TSYS::strMess("value_%d", id + 1).c_str(), TSYS::strMess(_("Value %d"), id + 1).c_str()),
 		    Period(TSYS::strMess("period_%d", id + 1).c_str(), TSYS::strMess(_("Measure period %d"), id + 1).c_str()),
 		    Sens(TSYS::strMess("sens_%d", id + 1).c_str(), TSYS::strMess(_("Sensitivity %d"), id + 1).c_str()),
@@ -51,10 +53,7 @@ namespace FT3
 		    MaxW(TSYS::strMess("maxW_%d", id + 1).c_str(), TSYS::strMess(_("Warning maximum %d"), id + 1).c_str()),
 		    MinA(TSYS::strMess("minA_%d", id + 1).c_str(), TSYS::strMess(_("Alarm minimum %d"), id + 1).c_str()),
 		    MaxA(TSYS::strMess("maxA_%d", id + 1).c_str(), TSYS::strMess(_("Alarm maximum %d"), id + 1).c_str()),
-		    Sensor1(TSYS::strMess("sensor1_%d", id + 1).c_str(), TSYS::strMess(_("Sensor 1 %d"), id + 1).c_str()),
-		    Sensor2(TSYS::strMess("sensor2_%d", id + 1).c_str(), TSYS::strMess(_("Sensor 2 %d"), id + 1).c_str()),
-		    SensorT(TSYS::strMess("sensorT_%d", id + 1).c_str(), TSYS::strMess(_("Sensor T %d"), id + 1).c_str()),
-		    SensorP(TSYS::strMess("sensorP_%d", id + 1).c_str(), TSYS::strMess(_("Sensor P %d"), id + 1).c_str()),
+		    Sensors(TSYS::strMess("sensors_%d", id + 1).c_str(), TSYS::strMess(_("Sensors ID %d"), id + 1).c_str()),
 		    SeviceQ(TSYS::strMess("serviceQ_%d", id + 1).c_str(), TSYS::strMess(_("Service flow %d"), id + 1).c_str()),
 		    Hour(TSYS::strMess("hour_%d", id + 1).c_str(), TSYS::strMess(_("Contract hour %d"), id + 1).c_str()),
 		    HourlyQ(TSYS::strMess("hourlyQ_%d", id + 1).c_str(), TSYS::strMess(_("Hourly flow %d"), id + 1).c_str()),
@@ -96,18 +95,18 @@ namespace FT3
 	    DA* da;
 	    uint8_t id;
 
-	    ui8Data State, Period, Sensor1, Sensor2, SensorT, SensorP, Hour, MethodM;
+	    ui8Data State, Period, Hour, MethodM;
 	    ui32Data StartDate, EndDate;
 
-	    flData Value, Sens, MinW, MaxW, MinA, MaxA, SeviceQ, HourlyQ, Counter, HourQ, HourdP, HourT, HourP, HourE, AvgQ, AvgdP, AvgT, AvgP, AvgE, PeriodQ,
-		    Density, Asperity, ConcentrN, ConcentrCO, DiameterM, FactorM, DiameterP, FactorP, TestdP, TestT, TestP, TestQ, RadiusM, PressureA, dP, T, P,
-		    E;
+	    flData Value, Sens, MinW, MaxW, MinA, MaxA, Sensors, SeviceQ, HourlyQ, Counter, HourQ, HourdP, HourT, HourP, HourE, AvgQ, AvgdP, AvgT, AvgP, AvgE,
+		    PeriodQ, Density, Asperity, ConcentrN, ConcentrCO, DiameterM, FactorM, DiameterP, FactorP, TestdP, TestT, TestP, TestQ, RadiusM, PressureA,
+		    dP, T, P, E;
 	};
 	vector<SACchannel> data;
 	int lnkSize()
 	{
 	    if(with_params) {
-		return data.size() * 46;
+		return data.size() * 43;
 	    } else {
 		return data.size() * 2;
 	    }
@@ -116,52 +115,49 @@ namespace FT3
 	{
 	    if(with_params) {
 		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].State.lnk.prmName == id) return i_l * 46;
-		    if(data[i_l].Value.lnk.prmName == id) return i_l * 46 + 1;
-		    if(data[i_l].Period.lnk.prmName == id) return i_l * 46 + 2;
-		    if(data[i_l].Sens.lnk.prmName == id) return i_l * 46 + 3;
-		    if(data[i_l].MinW.lnk.prmName == id) return i_l * 46 + 4;
-		    if(data[i_l].MaxW.lnk.prmName == id) return i_l * 46 + 5;
-		    if(data[i_l].MinA.lnk.prmName == id) return i_l * 46 + 6;
-		    if(data[i_l].MaxA.lnk.prmName == id) return i_l * 46 + 7;
-		    if(data[i_l].Sensor1.lnk.prmName == id) return i_l * 46 + 8;
-		    if(data[i_l].Sensor2.lnk.prmName == id) return i_l * 46 + 9;
-		    if(data[i_l].SensorP.lnk.prmName == id) return i_l * 46 + 10;
-		    if(data[i_l].SensorT.lnk.prmName == id) return i_l * 46 + 11;
-		    if(data[i_l].SeviceQ.lnk.prmName == id) return i_l * 46 + 12;
-		    if(data[i_l].Hour.lnk.prmName == id) return i_l * 46 + 13;
-		    if(data[i_l].HourlyQ.lnk.prmName == id) return i_l * 46 + 14;
-		    if(data[i_l].Counter.lnk.prmName == id) return i_l * 46 + 15;
-		    if(data[i_l].HourQ.lnk.prmName == id) return i_l * 46 + 16;
-		    if(data[i_l].HourdP.lnk.prmName == id) return i_l * 46 + 17;
-		    if(data[i_l].HourT.lnk.prmName == id) return i_l * 46 + 18;
-		    if(data[i_l].HourP.lnk.prmName == id) return i_l * 46 + 19;
-		    if(data[i_l].HourE.lnk.prmName == id) return i_l * 46 + 20;
-		    if(data[i_l].AvgQ.lnk.prmName == id) return i_l * 46 + 21;
-		    if(data[i_l].AvgdP.lnk.prmName == id) return i_l * 46 + 22;
-		    if(data[i_l].AvgT.lnk.prmName == id) return i_l * 46 + 23;
-		    if(data[i_l].AvgP.lnk.prmName == id) return i_l * 46 + 24;
-		    if(data[i_l].AvgE.lnk.prmName == id) return i_l * 46 + 25;
-		    if(data[i_l].PeriodQ.lnk.prmName == id) return i_l * 46 + 26;
-		    if(data[i_l].Density.lnk.prmName == id) return i_l * 46 + 27;
-		    if(data[i_l].Asperity.lnk.prmName == id) return i_l * 46 + 28;
-		    if(data[i_l].ConcentrN.lnk.prmName == id) return i_l * 46 + 29;
-		    if(data[i_l].ConcentrCO.lnk.prmName == id) return i_l * 46 + 30;
-		    if(data[i_l].DiameterM.lnk.prmName == id) return i_l * 46 + 31;
-		    if(data[i_l].FactorM.lnk.prmName == id) return i_l * 46 + 32;
-		    if(data[i_l].DiameterP.lnk.prmName == id) return i_l * 46 + 33;
-		    if(data[i_l].FactorP.lnk.prmName == id) return i_l * 46 + 34;
-		    if(data[i_l].MethodM.lnk.prmName == id) return i_l * 46 + 35;
-		    if(data[i_l].TestdP.lnk.prmName == id) return i_l * 46 + 36;
-		    if(data[i_l].TestT.lnk.prmName == id) return i_l * 46 + 37;
-		    if(data[i_l].TestP.lnk.prmName == id) return i_l * 46 + 38;
-		    if(data[i_l].TestQ.lnk.prmName == id) return i_l * 46 + 39;
-		    if(data[i_l].RadiusM.lnk.prmName == id) return i_l * 46 + 40;
-		    if(data[i_l].PressureA.lnk.prmName == id) return i_l * 46 + 41;
-		    if(data[i_l].dP.lnk.prmName == id) return i_l * 46 + 42;
-		    if(data[i_l].T.lnk.prmName == id) return i_l * 46 + 43;
-		    if(data[i_l].P.lnk.prmName == id) return i_l * 46 + 44;
-		    if(data[i_l].E.lnk.prmName == id) return i_l * 46 + 45;
+		    if(data[i_l].State.lnk.prmName == id) return i_l * 43;
+		    if(data[i_l].Value.lnk.prmName == id) return i_l * 43 + 1;
+		    if(data[i_l].Period.lnk.prmName == id) return i_l * 43 + 2;
+		    if(data[i_l].Sens.lnk.prmName == id) return i_l * 43 + 3;
+		    if(data[i_l].MinW.lnk.prmName == id) return i_l * 43 + 4;
+		    if(data[i_l].MaxW.lnk.prmName == id) return i_l * 43 + 5;
+		    if(data[i_l].MinA.lnk.prmName == id) return i_l * 43 + 6;
+		    if(data[i_l].MaxA.lnk.prmName == id) return i_l * 43 + 7;
+		    if(data[i_l].Sensors.lnk.prmName == id) return i_l * 43 + 8;
+		    if(data[i_l].SeviceQ.lnk.prmName == id) return i_l * 43 + 9;
+		    if(data[i_l].Hour.lnk.prmName == id) return i_l * 43 + 10;
+		    if(data[i_l].HourlyQ.lnk.prmName == id) return i_l * 43 + 11;
+		    if(data[i_l].Counter.lnk.prmName == id) return i_l * 43 + 12;
+		    if(data[i_l].HourQ.lnk.prmName == id) return i_l * 43 + 13;
+		    if(data[i_l].HourdP.lnk.prmName == id) return i_l * 43 + 14;
+		    if(data[i_l].HourT.lnk.prmName == id) return i_l * 43 + 15;
+		    if(data[i_l].HourP.lnk.prmName == id) return i_l * 43 + 16;
+		    if(data[i_l].HourE.lnk.prmName == id) return i_l * 43 + 17;
+		    if(data[i_l].AvgQ.lnk.prmName == id) return i_l * 43 + 18;
+		    if(data[i_l].AvgdP.lnk.prmName == id) return i_l * 43 + 19;
+		    if(data[i_l].AvgT.lnk.prmName == id) return i_l * 43 + 20;
+		    if(data[i_l].AvgP.lnk.prmName == id) return i_l * 43 + 21;
+		    if(data[i_l].AvgE.lnk.prmName == id) return i_l * 43 + 22;
+		    if(data[i_l].PeriodQ.lnk.prmName == id) return i_l * 43 + 23;
+		    if(data[i_l].Density.lnk.prmName == id) return i_l * 43 + 24;
+		    if(data[i_l].Asperity.lnk.prmName == id) return i_l * 43 + 25;
+		    if(data[i_l].ConcentrN.lnk.prmName == id) return i_l * 43 + 26;
+		    if(data[i_l].ConcentrCO.lnk.prmName == id) return i_l * 43 + 27;
+		    if(data[i_l].DiameterM.lnk.prmName == id) return i_l * 43 + 28;
+		    if(data[i_l].FactorM.lnk.prmName == id) return i_l * 43 + 29;
+		    if(data[i_l].DiameterP.lnk.prmName == id) return i_l * 43 + 30;
+		    if(data[i_l].FactorP.lnk.prmName == id) return i_l * 43 + 31;
+		    if(data[i_l].MethodM.lnk.prmName == id) return i_l * 43 + 32;
+		    if(data[i_l].TestdP.lnk.prmName == id) return i_l * 43 + 33;
+		    if(data[i_l].TestT.lnk.prmName == id) return i_l * 43 + 34;
+		    if(data[i_l].TestP.lnk.prmName == id) return i_l * 43 + 35;
+		    if(data[i_l].TestQ.lnk.prmName == id) return i_l * 43 + 36;
+		    if(data[i_l].RadiusM.lnk.prmName == id) return i_l * 43 + 37;
+		    if(data[i_l].PressureA.lnk.prmName == id) return i_l * 43 + 38;
+		    if(data[i_l].dP.lnk.prmName == id) return i_l * 43 + 39;
+		    if(data[i_l].T.lnk.prmName == id) return i_l * 43 + 40;
+		    if(data[i_l].P.lnk.prmName == id) return i_l * 43 + 41;
+		    if(data[i_l].E.lnk.prmName == id) return i_l * 43 + 42;
 		}
 	    } else {
 		for(int i_l = 0; i_l < data.size(); i_l++) {
@@ -175,7 +171,7 @@ namespace FT3
 	{
 	    int k;
 	    if(with_params) {
-		k = 46;
+		k = 43;
 	    } else {
 		k = 2;
 	    }
@@ -197,80 +193,74 @@ namespace FT3
 	    case 7:
 		return data[num / k].MaxA.lnk;
 	    case 8:
-		return data[num / k].Sensor1.lnk;
+		return data[num / k].Sensors.lnk;
 	    case 9:
-		return data[num / k].Sensor2.lnk;
-	    case 10:
-		return data[num / k].SensorP.lnk;
-	    case 11:
-		return data[num / k].SensorT.lnk;
-	    case 12:
 		return data[num / k].SeviceQ.lnk;
-	    case 13:
+	    case 10:
 		return data[num / k].Hour.lnk;
-	    case 14:
+	    case 11:
 		return data[num / k].HourlyQ.lnk;
-	    case 15:
+	    case 12:
 		return data[num / k].Counter.lnk;
-	    case 16:
+	    case 13:
 		return data[num / k].HourQ.lnk;
-	    case 17:
+	    case 14:
 		return data[num / k].HourdP.lnk;
-	    case 18:
+	    case 15:
 		return data[num / k].HourT.lnk;
-	    case 19:
+	    case 16:
 		return data[num / k].HourP.lnk;
-	    case 20:
+	    case 17:
 		return data[num / k].HourE.lnk;
-	    case 21:
+	    case 18:
 		return data[num / k].AvgQ.lnk;
-	    case 22:
+	    case 19:
 		return data[num / k].AvgdP.lnk;
-	    case 23:
+	    case 20:
 		return data[num / k].AvgT.lnk;
-	    case 24:
+	    case 21:
 		return data[num / k].AvgP.lnk;
-	    case 25:
+	    case 22:
 		return data[num / k].AvgE.lnk;
-	    case 26:
+	    case 23:
 		return data[num / k].PeriodQ.lnk;
-	    case 27:
+	    case 24:
 		return data[num / k].Density.lnk;
-	    case 28:
+	    case 25:
 		return data[num / k].Asperity.lnk;
-	    case 29:
+	    case 26:
 		return data[num / k].ConcentrN.lnk;
-	    case 30:
+	    case 27:
 		return data[num / k].ConcentrCO.lnk;
-	    case 31:
+	    case 28:
 		return data[num / k].DiameterM.lnk;
-	    case 32:
+	    case 29:
 		return data[num / k].FactorM.lnk;
-	    case 33:
+	    case 30:
 		return data[num / k].DiameterP.lnk;
-	    case 34:
+	    case 31:
 		return data[num / k].FactorP.lnk;
-	    case 35:
+	    case 32:
 		return data[num / k].MethodM.lnk;
-	    case 36:
+	    case 33:
 		return data[num / k].TestdP.lnk;
-	    case 37:
+	    case 34:
 		return data[num / k].TestT.lnk;
-	    case 38:
+	    case 35:
 		return data[num / k].TestP.lnk;
-	    case 39:
+	    case 36:
 		return data[num / k].TestQ.lnk;
-	    case 40:
+	    case 37:
 		return data[num / k].RadiusM.lnk;
-	    case 41:
+	    case 38:
 		return data[num / k].PressureA.lnk;
-	    case 42:
+	    case 39:
 		return data[num / k].dP.lnk;
-	    case 43:
+	    case 40:
 		return data[num / k].T.lnk;
-	    case 44:
+	    case 41:
 		return data[num / k].P.lnk;
-	    case 45:
+	    case 42:
 		return data[num / k].E.lnk;
 
 	    }
