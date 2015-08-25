@@ -28,7 +28,7 @@
 using namespace FT3;
 
 B_ACCOUNT::B_ACCOUNT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), ID(id << 12), count_n(n), with_params(has_params)
+	DA(prm), ID(id), count_n(n), with_params(has_params)
 {
     mTypeFT3 = GRS;
     TFld * fld;
