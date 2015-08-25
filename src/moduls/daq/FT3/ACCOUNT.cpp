@@ -822,7 +822,7 @@ uint8_t B_ACCOUNT::cmdGet(uint16_t prmID, uint8_t * out)
 	    case 25:
 		//out[0] = data[ft3ID.k - 1].State.vl;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[ft3ID.k - 1].TestQ.b_vl[j];
+		    out[j] = data[ft3ID.k - 1].TestQ.b_vl[j];
 		l = 4;
 		break;
 	    case 26:
@@ -834,7 +834,7 @@ uint8_t B_ACCOUNT::cmdGet(uint16_t prmID, uint8_t * out)
 	    case 27:
 		out[0] = data[ft3ID.k - 1].PressureA.s;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[ft3ID.k - 1].RadiusM.b_vl[j];
+		    out[1 + j] = data[ft3ID.k - 1].PressureA.b_vl[j];
 		l = 5;
 		break;
 	    case 28:
