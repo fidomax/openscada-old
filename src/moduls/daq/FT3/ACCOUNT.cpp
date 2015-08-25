@@ -783,7 +783,7 @@ uint8_t B_ACCOUNT::cmdGet(uint16_t prmID, uint8_t * out)
 	    case 19:
 		out[0] = data[ft3ID.k - 1].DiameterM.s;
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[ft3ID.k - 1].ConcentrN.b_vl[j];
+		    out[1 + j] = data[ft3ID.k - 1].DiameterM.b_vl[j];
 		l = 5;
 		break;
 	    case 20:
