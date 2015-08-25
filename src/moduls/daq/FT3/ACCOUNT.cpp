@@ -58,7 +58,7 @@ void B_ACCOUNT::AddChannel(uint8_t iid)
 	AddAttr(data.back().MinA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:5", iid + 1));
 	AddAttr(data.back().MaxA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:5", iid + 1));
 	AddAttr(data.back().Sensors.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:6", iid + 1));
-	AddAttr(data.back().SeviceQ.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:7", iid + 1));
+	AddAttr(data.back().ServiceQ.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:7", iid + 1));
 	AddAttr(data.back().Hour.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:8", iid + 1));
 	AddAttr(data.back().HourlyQ.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:9", iid + 1));
 	AddAttr(data.back().Counter.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:10", iid + 1));
@@ -126,7 +126,7 @@ void B_ACCOUNT::loadIO(bool force)
 	loadLnk(data[i].MinA.lnk);
 	loadLnk(data[i].MaxA.lnk);
 	loadLnk(data[i].Sensors.lnk);
-	loadLnk(data[i].SeviceQ.lnk);
+	loadLnk(data[i].ServiceQ.lnk);
 	loadLnk(data[i].Hour.lnk);
 	loadLnk(data[i].HourlyQ.lnk);
 	loadLnk(data[i].Counter.lnk);
@@ -177,7 +177,7 @@ void B_ACCOUNT::saveIO()
 	saveLnk(data[i].MinA.lnk);
 	saveLnk(data[i].MaxA.lnk);
 	saveLnk(data[i].Sensors.lnk);
-	saveLnk(data[i].SeviceQ.lnk);
+	saveLnk(data[i].ServiceQ.lnk);
 	saveLnk(data[i].Hour.lnk);
 	saveLnk(data[i].HourlyQ.lnk);
 	saveLnk(data[i].Counter.lnk);
@@ -215,6 +215,43 @@ void B_ACCOUNT::saveIO()
 	saveLnk(data[i].E.lnk);
     }
 }
+
+void B_ACCOUNT::tmHandler(void)
+{
+    NeedInit = false;
+    for(int i = 0; i < count_n; i++) {
+	if(with_params) {
+	    UpdateParam8(data[i].Period, PackID(ID, (i + 1), 2), 1);
+	    UpdateParamFl(data[i].Sens, PackID(ID, (i + 1), 3), 1);
+	    UpdateParam2Fl(data[i].MinW, data[i].MaxW, PackID(ID, (i + 1), 4), 1);
+	    UpdateParam2Fl(data[i].MinA, data[i].MaxA, PackID(ID, (i + 1), 5), 1);
+	    UpdateParam32(data[i].Sensors, PackID(ID, (i + 1), 6), 1);
+	    UpdateParamFl(data[i].ServiceQ, PackID(ID, (i + 1), 7), 1);
+	    UpdateParam8(data[i].Hour, PackID(ID, (i + 1), 2), 8);
+	    UpdateParamFl(data[i].HourlyQ, PackID(ID, (i + 1), 9), 1);
+	    UpdateParamFl(data[i].Counter, PackID(ID, (i + 1), 10), 1);
+/*	    UpdateParamFl(data[i].HourQ, PackID(ID, (i + 1), 11), 1);
+	    UpdateParamFl(data[i].HourdP, PackID(ID, (i + 1), 3), 1);
+	    UpdateParamFl(data[i].HourT, PackID(ID, (i + 1), 3), 1);
+	    UpdateParamFl(data[i].HourP, PackID(ID, (i + 1), 3), 1);
+	    UpdateParamFl(data[i].HourE, PackID(ID, (i + 1), 3), 1);*/
+	    UpdateParamFl(data[i].Density, PackID(ID, (i + 1), 15), 1);
+	    UpdateParamFl(data[i].Asperity, PackID(ID, (i + 1), 16), 1);
+	    UpdateParamFl(data[i].ConcentrN, PackID(ID, (i + 1), 17), 1);
+	    UpdateParamFl(data[i].ConcentrCO, PackID(ID, (i + 1), 18), 1);
+	    UpdateParamFl(data[i].DiameterM, PackID(ID, (i + 1), 19), 1);
+	    UpdateParamFl(data[i].FactorM, PackID(ID, (i + 1), 20), 1);
+	    UpdateParamFl(data[i].DiameterP, PackID(ID, (i + 1), 21), 1);
+	    UpdateParamFl(data[i].FactorP, PackID(ID, (i + 1), 22), 1);
+	    UpdateParam8(data[i].MethodM, PackID(ID, (i + 1), 23), 1);
+	    UpdateParamFl(data[i].TestQ, PackID(ID, (i + 1), 25), 1);
+	    UpdateParamFl(data[i].RadiusM, PackID(ID, (i + 1), 26), 1);
+	    UpdateParamFl(data[i].PressureA, PackID(ID, (i + 1), 27), 1);
+	}
+	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 0), 0);
+    }
+}
+
 
 uint16_t B_ACCOUNT::Task(uint16_t uc)
 {
@@ -579,6 +616,323 @@ uint16_t B_ACCOUNT::HandleEvent(uint8_t * D)
     }
     return l;
 }
+
+uint8_t B_ACCOUNT::cmdGet(uint16_t prmID, uint8_t * out)
+{
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != ID) return 0;
+    uint l = 0;
+    if(ft3ID.k == 0) {
+	switch(ft3ID.n) {
+	case 0:
+	    //state
+	    out[0] = 0;
+	    l = 1;
+	    break;
+	case 1:
+
+	    out[0] = 0;
+	    l = 1;
+	    //value
+	    for(uint8_t i = 0; i < count_n; i++) {
+		out[i * 5 + 1] = data[i].State.vl;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[i * 5 + 2 + j] = data[i].Value.b_vl[j];
+		l += 5;
+	    }
+	    break;
+	case 2:
+	    out[0] = count_n;
+	    l = 1;
+	    break;
+	}
+    } else {
+	if(ft3ID.k <= count_n) {
+	    switch(ft3ID.n) {
+	    case 0:
+		out[0] = data[ft3ID.k - 1].State.vl;
+		l = 1;
+		break;
+	    case 1:
+		out[0] = data[ft3ID.k - 1].State.vl;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].Value.b_vl[j];
+		l = 5;
+		break;
+	    case 2:
+		out[0] = data[ft3ID.k - 1].Period.s;
+		out[1] = data[ft3ID.k - 1].Period.vl;
+		l = 2;
+		break;
+	    case 3:
+		out[0] = data[ft3ID.k - 1].Sens.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].Sens.b_vl[j];
+		l = 5;
+		break;
+	    case 4:
+		out[0] = data[ft3ID.k - 1].MinW.s;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[ft3ID.k - 1].MinW.b_vl[j];
+		    out[5 + j] = data[ft3ID.k - 1].MaxW.b_vl[j];
+		}
+		l = 9;
+		break;
+	    case 5:
+		out[0] = data[ft3ID.k - 1].MinA.s;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[ft3ID.k - 1].MinA.b_vl[j];
+		    out[5 + j] = data[ft3ID.k - 1].MaxA.b_vl[j];
+		}
+		l = 9;
+		break;
+	    case 6:
+		out[0] = data[ft3ID.k - 1].Sensors.s;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[ft3ID.k - 1].Sensors.b_vl[j];
+		}
+		l = 5;
+		break;
+	    case 7:
+		out[0] = data[ft3ID.k - 1].ServiceQ.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].ServiceQ.b_vl[j];
+		l = 5;
+		break;
+	    case 8:
+		out[0] = data[ft3ID.k - 1].Hour.s;
+		out[1] = data[ft3ID.k - 1].Hour.vl;
+		l = 2;
+		break;
+	    case 9:
+		out[0] = data[ft3ID.k - 1].HourlyQ.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].HourlyQ.b_vl[j];
+		l = 5;
+		break;
+	    case 10:
+		out[0] = data[ft3ID.k - 1].Counter.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].Counter.b_vl[j];
+		l = 5;
+		break;
+	    case 11:
+		//TODO get
+		out[0] = data[ft3ID.k - 1].State.vl;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[ft3ID.k - 1].HourQ.b_vl[j];
+		    out[5 + j] = data[ft3ID.k - 1].HourdP.b_vl[j];
+		    out[9 + j] = data[ft3ID.k - 1].HourT.b_vl[j];
+		    out[13 + j] = data[ft3ID.k - 1].HourP.b_vl[j];
+		    out[17 + j] = data[ft3ID.k - 1].HourE.b_vl[j];
+		}
+		l = 21;
+		break;
+	    case 12: //TODO period
+		out[0] = 0;
+		out[1] = 0;
+		out[2] = 0;
+		out[3] = 0;
+		out[4] = 0;
+		out[5] = 0;
+		l = 6;
+		break;
+	    case 13:
+		//TODO get
+		out[0] = data[ft3ID.k - 1].State.vl;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[ft3ID.k - 1].AvgQ.b_vl[j];
+		    out[5 + j] = data[ft3ID.k - 1].AvgdP.b_vl[j];
+		    out[9 + j] = data[ft3ID.k - 1].AvgT.b_vl[j];
+		    out[13 + j] = data[ft3ID.k - 1].AvgP.b_vl[j];
+		    out[17 + j] = data[ft3ID.k - 1].AvgE.b_vl[j];
+		}
+		l = 21;
+		break;
+	    case 14:
+		//TODO get Q period
+		out[0] = data[ft3ID.k - 1].State.vl;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].Value.b_vl[j];
+		l = 5;
+		break;
+	    case 15:
+		out[0] = data[ft3ID.k - 1].Density.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].Density.b_vl[j];
+		l = 5;
+		break;
+	    case 16:
+		out[0] = data[ft3ID.k - 1].Asperity.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].Asperity.b_vl[j];
+		l = 5;
+		break;
+	    case 17:
+		out[0] = data[ft3ID.k - 1].ConcentrN.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].ConcentrN.b_vl[j];
+		l = 5;
+		break;
+	    case 18:
+		out[0] = data[ft3ID.k - 1].ConcentrCO.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].ConcentrCO.b_vl[j];
+		l = 5;
+		break;
+	    case 19:
+		out[0] = data[ft3ID.k - 1].DiameterM.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].ConcentrN.b_vl[j];
+		l = 5;
+		break;
+	    case 20:
+		out[0] = data[ft3ID.k - 1].FactorM.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].FactorM.b_vl[j];
+		l = 5;
+		break;
+	    case 21:
+		out[0] = data[ft3ID.k - 1].DiameterP.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].DiameterP.b_vl[j];
+		l = 5;
+		break;
+	    case 22:
+		out[0] = data[ft3ID.k - 1].FactorP.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].FactorP.b_vl[j];
+		l = 5;
+		break;
+	    case 23:
+		out[0] = data[ft3ID.k - 1].MethodM.s;
+		out[1] = data[ft3ID.k - 1].MethodM.vl;
+		l = 2;
+		break;
+	    case 24:
+		//TODO get test
+		out[0] = data[ft3ID.k - 1].State.vl;
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[ft3ID.k - 1].TestdP.b_vl[j];
+		    out[5 + j] = data[ft3ID.k - 1].TestT.b_vl[j];
+		    out[9 + j] = data[ft3ID.k - 1].TestP.b_vl[j];
+		}
+		l = 13;
+		break;
+	    case 25:
+		//out[0] = data[ft3ID.k - 1].State.vl;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].TestQ.b_vl[j];
+		l = 4;
+		break;
+	    case 26:
+		out[0] = data[ft3ID.k - 1].RadiusM.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].RadiusM.b_vl[j];
+		l = 5;
+		break;
+	    case 27:
+		out[0] = data[ft3ID.k - 1].PressureA.s;
+		for(uint8_t j = 0; j < 4; j++)
+		    out[1 + j] = data[ft3ID.k - 1].RadiusM.b_vl[j];
+		l = 5;
+		break;
+	    case 28:
+		//TODO get
+		for(uint8_t j = 0; j < 4; j++) {
+		    out[1 + j] = data[ft3ID.k - 1].dP.b_vl[j];
+		    out[5 + j] = data[ft3ID.k - 1].T.b_vl[j];
+		    out[9 + j] = data[ft3ID.k - 1].P.b_vl[j];
+		    out[13 + j] = data[ft3ID.k - 1].E.b_vl[j];
+		}
+		l = 16;
+		break;
+
+	    }
+
+	}
+    }
+    return l;
+}
+
+uint8_t B_ACCOUNT::cmdSet(uint8_t * req, uint8_t addr)
+{
+    uint16_t prmID = TSYS::getUnalign16(req);
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != ID) return 0;
+    uint l = 0;
+//    mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
+    if((ft3ID.k > 0) && (ft3ID.k <= count_n)) {
+	switch(ft3ID.n) {
+	case 2:
+	    l = SetNew8Val(data[ft3ID.k - 1].Period, addr, prmID, req[2]);
+	    break;
+	case 3:
+	    l = SetNewflVal(data[ft3ID.k - 1].Sens, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 4:
+	    l = SetNew2flVal(data[ft3ID.k - 1].MinW, data[ft3ID.k - 1].MaxW, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    break;
+	case 5:
+	    l = SetNew2flVal(data[ft3ID.k - 1].MinA, data[ft3ID.k - 1].MaxA, addr, prmID, TSYS::getUnalignFloat(req + 2), TSYS::getUnalignFloat(req + 6));
+	    break;
+	case 6:
+	    l = SetNew32Val(data[ft3ID.k - 1].Sensors, addr, prmID, TSYS::getUnalign32(req + 2));
+	    break;
+	case 7:
+	    l = SetNewflVal(data[ft3ID.k - 1].ServiceQ, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 8:
+	    l = SetNew8Val(data[ft3ID.k - 1].Hour, addr, prmID, req[2]);
+	    break;
+	case 10:
+	    l = SetNewflVal(data[ft3ID.k - 1].Counter, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 12:
+	    l = 5 + 2; //TODO period
+	    break;
+	case 15:
+	    l = SetNewflVal(data[ft3ID.k - 1].Density, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 16:
+	    l = SetNewflVal(data[ft3ID.k - 1].Asperity, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 17:
+	    l = SetNewflVal(data[ft3ID.k - 1].ConcentrN, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 18:
+	    l = SetNewflVal(data[ft3ID.k - 1].ConcentrCO, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 19:
+	    l = SetNewflVal(data[ft3ID.k - 1].DiameterM, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 20:
+	    l = SetNewflVal(data[ft3ID.k - 1].FactorM, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 21:
+	    l = SetNewflVal(data[ft3ID.k - 1].DiameterP, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 22:
+	    l = SetNewflVal(data[ft3ID.k - 1].FactorP, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 23:
+	    l = SetNew8Val(data[ft3ID.k - 1].MethodM, addr, prmID, req[2]);
+	    break;
+	case 24:
+	    l = 12+2; //TODO test values
+	    break;
+	case 26:
+	    l = SetNewflVal(data[ft3ID.k - 1].RadiusM, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+	case 27:
+	    l = SetNewflVal(data[ft3ID.k - 1].PressureA, addr, prmID, TSYS::getUnalignFloat(req + 2));
+	    break;
+
+	}
+    }
+    return l;
+}
+
 
 uint16_t B_ACCOUNT::setVal(TVal &val)
 {

@@ -35,8 +35,11 @@ namespace FT3
 	void AddChannel(uint8_t iid);
 	void saveIO(void);
 	void loadIO(bool force = false);
+	void tmHandler(void);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(uint8_t *);
+	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
+	uint8_t cmdSet(uint8_t * req, uint8_t addr);
 	uint16_t setVal(TVal &val);
 	string getStatus(void);
 	class SACchannel
@@ -54,7 +57,7 @@ namespace FT3
 		    MinA(TSYS::strMess("minA_%d", id + 1).c_str(), TSYS::strMess(_("Alarm minimum %d"), id + 1).c_str()),
 		    MaxA(TSYS::strMess("maxA_%d", id + 1).c_str(), TSYS::strMess(_("Alarm maximum %d"), id + 1).c_str()),
 		    Sensors(TSYS::strMess("sensors_%d", id + 1).c_str(), TSYS::strMess(_("Sensors ID %d"), id + 1).c_str()),
-		    SeviceQ(TSYS::strMess("serviceQ_%d", id + 1).c_str(), TSYS::strMess(_("Service flow %d"), id + 1).c_str()),
+		    ServiceQ(TSYS::strMess("serviceQ_%d", id + 1).c_str(), TSYS::strMess(_("Service flow %d"), id + 1).c_str()),
 		    Hour(TSYS::strMess("hour_%d", id + 1).c_str(), TSYS::strMess(_("Contract hour %d"), id + 1).c_str()),
 		    HourlyQ(TSYS::strMess("hourlyQ_%d", id + 1).c_str(), TSYS::strMess(_("Hourly flow %d"), id + 1).c_str()),
 		    Counter(TSYS::strMess("counter_%d", id + 1).c_str(), TSYS::strMess(_("Counter Q %d"), id + 1).c_str()),
@@ -96,9 +99,9 @@ namespace FT3
 	    uint8_t id;
 
 	    ui8Data State, Period, Hour, MethodM;
-	    ui32Data StartDate, EndDate;
+	    ui32Data StartDate, EndDate, Sensors;
 
-	    flData Value, Sens, MinW, MaxW, MinA, MaxA, Sensors, SeviceQ, HourlyQ, Counter, HourQ, HourdP, HourT, HourP, HourE, AvgQ, AvgdP, AvgT, AvgP, AvgE,
+	    flData Value, Sens, MinW, MaxW, MinA, MaxA,  ServiceQ, HourlyQ, Counter, HourQ, HourdP, HourT, HourP, HourE, AvgQ, AvgdP, AvgT, AvgP, AvgE,
 		    PeriodQ, Density, Asperity, ConcentrN, ConcentrCO, DiameterM, FactorM, DiameterP, FactorP, TestdP, TestT, TestP, TestQ, RadiusM, PressureA,
 		    dP, T, P, E;
 	};
@@ -124,7 +127,7 @@ namespace FT3
 		    if(data[i_l].MinA.lnk.prmName == id) return i_l * 43 + 6;
 		    if(data[i_l].MaxA.lnk.prmName == id) return i_l * 43 + 7;
 		    if(data[i_l].Sensors.lnk.prmName == id) return i_l * 43 + 8;
-		    if(data[i_l].SeviceQ.lnk.prmName == id) return i_l * 43 + 9;
+		    if(data[i_l].ServiceQ.lnk.prmName == id) return i_l * 43 + 9;
 		    if(data[i_l].Hour.lnk.prmName == id) return i_l * 43 + 10;
 		    if(data[i_l].HourlyQ.lnk.prmName == id) return i_l * 43 + 11;
 		    if(data[i_l].Counter.lnk.prmName == id) return i_l * 43 + 12;
@@ -195,7 +198,7 @@ namespace FT3
 	    case 8:
 		return data[num / k].Sensors.lnk;
 	    case 9:
-		return data[num / k].SeviceQ.lnk;
+		return data[num / k].ServiceQ.lnk;
 	    case 10:
 		return data[num / k].Hour.lnk;
 	    case 11:
