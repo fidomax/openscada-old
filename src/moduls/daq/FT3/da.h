@@ -343,6 +343,8 @@ namespace FT3
 
     public:
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
+	time_t DateTimeToTime_t(uint8_t *d);
+
 	virtual int lnkSize()
 	{
 	}

@@ -302,3 +302,8 @@ void DA::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 {
     mPrm.owner().PushInBE(type, length, id, E);
 }
+
+time_t DA::DateTimeToTime_t(uint8_t *d)
+{
+    return mPrm.owner().DateTimeToTime_t(d);
+}

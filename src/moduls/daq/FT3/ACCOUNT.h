@@ -104,6 +104,7 @@ namespace FT3
 	    flData Value, Sens, MinW, MaxW, MinA, MaxA,  ServiceQ, HourlyQ, Counter, HourQ, HourdP, HourT, HourP, HourE, AvgQ, AvgdP, AvgT, AvgP, AvgE,
 		    PeriodQ, Density, Asperity, ConcentrN, ConcentrCO, DiameterM, FactorM, DiameterP, FactorP, TestdP, TestT, TestP, TestQ, RadiusM, PressureA,
 		    dP, T, P, E;
+	    uint8_t SetNewPeriod(uint8_t addr, uint16_t prmID, uint8_t *val);
 	};
 	vector<SACchannel> data;
 	int lnkSize()
