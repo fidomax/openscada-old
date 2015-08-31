@@ -188,19 +188,23 @@ uint8_t KA_BTU::runTU(uint8_t tu)
     if(tu == 0x55) {
 	for(int i = 0; i < count_nu; i++) {
 	    if(TUdata[i].iTY) {
-		TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
-		TUdata[i].Line.vl = 0;
-		TUdata[i].iTY = 0;
-		rc = 3;
+		if(TUdata[i].Line.lnk.Connected()) {
+		    TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
+		    TUdata[i].Line.vl = 0;
+		    TUdata[i].iTY = 0;
+		    rc = 3;
+		}
 	    }
 	}
     }
     if(tu == 0x0) {
 	for(int i = 0; i < count_nu; i++) {
-	    TUdata[i].Line.vl = 0;
-	    TUdata[i].iTY = 0;
-	    TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
-	    rc = 3;
+	    if(TUdata[i].Line.lnk.Connected()) {
+		TUdata[i].Line.vl = 0;
+		TUdata[i].iTY = 0;
+		TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
+		rc = 3;
+	    }
 	}
     }
     return rc;
