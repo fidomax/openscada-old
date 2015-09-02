@@ -31,8 +31,8 @@ uint8_t B_ACCOUNT::SACchannel::SetNewPeriod(uint8_t addr, uint16_t prmID, uint8_
 {
     uint8_t start[5] = { val[0], val[1], val[2], 0, 0 };
     StartDate.Update(da->DateTimeToTime_t(start));
-    EndDate.Update(StartDate.vl + TSYS::getUnalign16(val + 3));
-    uint8_t E[6] = { addr, val[0],val[1], val[2], val[3], val[4] };
+    EndDate.Update(StartDate.vl + TSYS::getUnalign16(val + 3) * 3600);
+    uint8_t E[6] = { addr, val[0], val[1], val[2], val[3], val[4] };
     da->PushInBE(1, sizeof(E), prmID, E);
     return 5 + 2;
 }
@@ -631,6 +631,8 @@ uint8_t B_ACCOUNT::cmdGet(uint16_t prmID, uint8_t * out)
     FT3ID ft3ID = UnpackID(prmID);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
+    int64_t tm;
+    ui8fl V;
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 0:
@@ -741,7 +743,7 @@ uint8_t B_ACCOUNT::cmdGet(uint16_t prmID, uint8_t * out)
 		out[0] = data[ft3ID.k - 1].StartDate.s;
 		mPrm.owner().Time_tToDateTime(out + 1, data[ft3ID.k - 1].StartDate.vl);
 		ui8w hours;
-		hours.w =data[ft3ID.k - 1].EndDate.vl - data[ft3ID.k - 1].StartDate.vl;
+		hours.w = (data[ft3ID.k - 1].EndDate.vl - data[ft3ID.k - 1].StartDate.vl) / 3600;
 		l = 6;
 		out[4] = hours.b[0];
 		out[5] = hours.b[1];
@@ -760,10 +762,16 @@ uint8_t B_ACCOUNT::cmdGet(uint16_t prmID, uint8_t * out)
 		l = 21;
 		break;
 	    case 14:
-		//TODO get Q period
+		//TODO get V period
 		out[0] = data[ft3ID.k - 1].State.vl;
+		tm = data[ft3ID.k - 1].EndDate.vl;
+		tm *= 1000000;
+		V.f = data[ft3ID.k - 1].Counter.lnk.aprm.at().getR(&tm, true);
+		tm = data[ft3ID.k - 1].StartDate.vl;
+		tm *= 1000000;
+		V.f -= data[ft3ID.k - 1].Counter.lnk.aprm.at().getR(&tm, true);
 		for(uint8_t j = 0; j < 4; j++)
-		    out[1 + j] = data[ft3ID.k - 1].Value.b_vl[j];
+		    out[1 + j] = V.b[j];
 		l = 5;
 		break;
 	    case 15:
