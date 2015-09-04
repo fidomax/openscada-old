@@ -855,7 +855,6 @@ TMdContr::~TMdContr()
 
 //    delete[] BE;
     pthread_mutex_destroy(&enRes);
-    pthread_mutex_destroy(&eventRes);
 }
 
 string TMdContr::getStatus()
