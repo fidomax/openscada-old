@@ -58,6 +58,7 @@ AC_CHECK_HEADERS([string vector map exception typeinfo deque],[],
     [AC_MSG_ERROR([Some standard template libs' STL headers not found. Install or check STL-StdC++ developing package!])])
 AC_CHECK_HEADERS([iconv.h],[ ],[AC_MSG_NOTICE(iconv.h header not found. Using is disabled!)])
 AC_CHECK_HEADERS([libintl.h],[ ],[AC_MSG_NOTICE(libintl.h header not found. Using is disabled!)])
+AC_CHECK_HEADERS([linux/can.h],[ ],[AC_MSG_NOTICE(linux/can.h header not found. Using is disabled!)])
 
 #Gettext utilites check
 if test $ac_cv_header_libintl_h = yes; then
@@ -273,6 +274,7 @@ AX_MOD_DAQ_EN(OneWire,[enable build module DAQ.OneWire],enable,incl,[
 AX_MOD_DAQ_EN(MMS,[enable build module DAQ.MMS],enable,[],[],
     [AC_CONFIG_FILES(src/moduls/daq/MMS/libMMS/Makefile)])
 AX_MOD_DAQ_EN(EPICS,[enable build module DAQ.EPICS],enable,[],[],[])
+AX_MOD_DAQ_EN(FT3,[enable build module DAQ.FT3],enable,[],[],[])
 if test $ix86 != yes -a $target_cpu != "ix86"; then enable_Fastwel=no; fi
 AX_MOD_DAQ_EN(Fastwel,[enable build module DAQ.Fastwel],enable,[],[],[])
 # Archive modules

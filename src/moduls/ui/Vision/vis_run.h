@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_run.h
 /***************************************************************************
- *   Copyright (C) 2007-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -51,6 +51,58 @@ class VisRun : public QMainWindow
     friend class RunPageView;
     Q_OBJECT
     public:
+	//Data
+	//* Notify: Generic notifying object.					*
+	//***********************************************************************
+	class Notify {
+	    public:
+		//Data
+		enum IntFuncAttrIdxs { IFA_en = 0, IFA_doNtf, IFA_doRes, IFA_res, IFA_mess, IFA_lang };
+
+		//Methods
+		explicit Notify( ) : tp(-1), comIsExtScript(false),
+		    f_notify(false), f_resource(false), f_queue(false), f_quittanceRet(false), mOwner(NULL)	{ }
+		Notify( uint8_t tp, const string &props, VisRun *own );
+		~Notify( );
+
+		bool hasQueue( )	{ return f_queue; }
+		bool hasQuittanceRet( )	{ return f_quittanceRet; }
+		string curQueueWdg( );
+
+		void ntf( int alrmSt );	//Same notify for the alarm status
+		string ntfRes( string &mess, string &lang );	//The notification resource request
+
+	    private:
+		//Methods
+		void commCall( string &res, const string &mess = "", const string &lang = "" );
+
+		VisRun *owner( )	{ return mOwner; }
+
+		static void *Task( void *ntf );
+
+		//Attributes
+		int8_t	tp;			//Type
+		unsigned alSt;			//Alarm state
+		int	repDelay;		//Repeate delay, in seconds. -1 by default for disabled repeating
+		unsigned comIsExtScript	:1;	//The command detected and used as some intepretator's script like BASH, Perl, PHP and so on.
+		// Flags
+		unsigned f_notify	:1;	//Notification enabled
+		unsigned f_resource	:1;	//Request the resource for notification: sound file, text or other data
+		unsigned f_queue	:1;	//Use queue of notifications by the priority-level
+		unsigned f_quittanceRet	:1;	//Return quittance mode - enable/disable the notification
+
+		unsigned toDo		:1;	//Need to do some notification doings
+		unsigned alEn		:1;	//Alarm enabled
+		string	comText, comProc;	//Command text and the procedure name
+
+		unsigned mQueueCurTm;
+		string	mQueueCurPath;
+
+		pthread_mutex_t	dataM;
+		pthread_cond_t	callCV;
+		VisRun	*mOwner;
+	};
+
 	//Public methods
 	VisRun( const string &prjSes_it, const string &open_user, const string &user_pass,
 	    const string &VCAstat, bool crSessForce = false, unsigned screen = 0 );
@@ -95,15 +147,18 @@ class VisRun : public QMainWindow
 
 	QString getFileName(const QString &caption, const QString &dir, const QString &filter, QFileDialog::AcceptMode mode = QFileDialog::AcceptOpen);
 
+	void usrStatus( const string &val, RunPageView *pg = NULL );
+
 	// Resource cache commands
 	string cacheResGet( const string &res );
 	void cacheResSet( const string &res, const string &val );
 
-	// Alarms commands
+	// Alarms-notification processing
 	unsigned alarmSt( )					{ return mAlrmSt; }
 	char alarmTp( char tmpl, bool quittance = false )	{ return (mAlrmSt>>(quittance?16:8)) & tmpl; }
 	int  alarmLev( )					{ return mAlrmSt & 0xFF; }
 	void alarmSet( unsigned alarm );
+	void ntfReg( uint8_t tp, const string &props );
 
     protected:
 	//Protected methods
@@ -151,10 +206,10 @@ class VisRun : public QMainWindow
 	};
 	//Private attributes
 	// Menu root items
-	QMenu	*mn_file,			//Menu "File"
-		*mn_alarm,			//Menu "Alarm"
-		*mn_view,			//Menu "View"
-		*mn_help;			//Menu "Help"
+	QMenu	*menuFile,			//Menu "File"
+		*menuAlarm,			//Menu "Alarm"
+		*menuView,			//Menu "View"
+		*menuHelp;			//Menu "Help"
 
 	// Tool bars
 	QToolBar	*toolBarStatus;		//Status toolbar
@@ -162,10 +217,7 @@ class VisRun : public QMainWindow
 	// Actions
 	QAction *actFullScr,			//Full screen action
 	//  Alarms actions
-		*actAlrmLev,			//Alarm level
-		*actAlrmLight,			//Alarm by Light
-		*actAlrmAlarm,			//Alarm by mono sound (PC speaker)
-		*actAlrmSound;			//Alarm by sound or synthesis of speech
+		*actAlrmLev;			//Alarm level
 
 	// Main components
 	QTimer		*endRunTimer, *updateTimer;
@@ -192,8 +244,9 @@ class VisRun : public QMainWindow
 
 	// Alarm attributes
 	unsigned	mAlrmSt;		//Alarm status
-	SndPlay		*alrmPlay;		//Alarm play widget
-	bool		alrLevSet;		//Use for no quittance lamp blinking
+	bool		alrLevSet;		//For no quittance lamp blinking
+	unsigned	ntfSet;			//Allowed notificators set mask
+	map<uint8_t, Notify*>	mNotify;	//Notificators
 
 	vector<string>	pgList;			//Pages list
 

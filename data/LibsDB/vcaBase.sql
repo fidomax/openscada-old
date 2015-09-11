@@ -448,6 +448,10 @@ INSERT INTO "prj_archBrowser_incl" VALUES('/prj_archBrowser/pg_control/pg_grph_p
 INSERT INTO "prj_archBrowser_incl" VALUES('/prj_archBrowser/pg_control/pg_grph_panel','xZoomOffRight','/wlb_Main/wdg_grph_panel/wdg_xZoomOffRight','');
 INSERT INTO "prj_archBrowser_incl" VALUES('/prj_archBrowser/pg_control/pg_ElCadr','com_text','/wlb_Main/wdg_ElCadr/wdg_com_text','');
 INSERT INTO "prj_archBrowser_incl" VALUES('/prj_archBrowser/pg_control/pg_ElCadr','st_text','/wlb_Main/wdg_ElCadr/wdg_st_text','');
+INSERT INTO "prj_archBrowser_incl" VALUES('/prj_archBrowser/pg_so','so17','/wlb_Main/wdg_RootPgSo/wdg_so17','');
+INSERT INTO "prj_archBrowser_incl" VALUES('/prj_archBrowser/pg_so','so18','/wlb_Main/wdg_RootPgSo/wdg_so18','');
+INSERT INTO "prj_archBrowser_incl" VALUES('/prj_archBrowser/pg_so','so19','/wlb_Main/wdg_RootPgSo/wdg_so19','');
+INSERT INTO "prj_archBrowser_incl" VALUES('/prj_archBrowser/pg_so','so20','/wlb_Main/wdg_RootPgSo/wdg_so20','');
 CREATE TABLE 'prj_archBrowser_io' ("IDW" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"IDC" TEXT DEFAULT '' ,"IO_VAL" TEXT DEFAULT '' ,"SELF_FLG" INTEGER DEFAULT '' ,"CFG_TMPL" TEXT DEFAULT '' ,"CFG_VAL" TEXT DEFAULT '' ,"ru#IO_VAL" TEXT DEFAULT '' ,"ru#CFG_TMPL" TEXT DEFAULT '' ,"ru#CFG_VAL" TEXT DEFAULT '' ,"uk#IO_VAL" TEXT DEFAULT '' ,"uk#CFG_TMPL" TEXT DEFAULT '' ,"uk#CFG_VAL" TEXT DEFAULT '' , PRIMARY KEY ("IDW","ID","IDC"));
 INSERT INTO "prj_archBrowser_io" VALUES('/prj_archBrowser/pg_control','name','','Control panels',0,'','','Панели управления','','','Панелі керування','','');
 INSERT INTO "prj_archBrowser_io" VALUES('/prj_archBrowser/pg_control/pg_graphSelPrm','value','color','',8,'','','','','','','','');
@@ -924,6 +928,10 @@ INSERT INTO "prj_tmplSO_incl" VALUES('/prj_tmplSO/pg_control/pg_grph_panel','xZo
 INSERT INTO "prj_tmplSO_incl" VALUES('/prj_tmplSO/pg_control/pg_grph_panel','xZoomOffRight','/wlb_Main/wdg_grph_panel/wdg_xZoomOffRight','','');
 INSERT INTO "prj_tmplSO_incl" VALUES('/prj_tmplSO/pg_control/pg_ElCadr','com_text','/wlb_Main/wdg_ElCadr/wdg_com_text','','');
 INSERT INTO "prj_tmplSO_incl" VALUES('/prj_tmplSO/pg_control/pg_ElCadr','st_text','/wlb_Main/wdg_ElCadr/wdg_st_text','','');
+INSERT INTO "prj_tmplSO_incl" VALUES('/prj_tmplSO/pg_so','so17','/wlb_Main/wdg_RootPgSo/wdg_so17','','');
+INSERT INTO "prj_tmplSO_incl" VALUES('/prj_tmplSO/pg_so','so18','/wlb_Main/wdg_RootPgSo/wdg_so18','','');
+INSERT INTO "prj_tmplSO_incl" VALUES('/prj_tmplSO/pg_so','so19','/wlb_Main/wdg_RootPgSo/wdg_so19','','');
+INSERT INTO "prj_tmplSO_incl" VALUES('/prj_tmplSO/pg_so','so20','/wlb_Main/wdg_RootPgSo/wdg_so20','','');
 CREATE TABLE 'prj_tmplSO_io' ("IDW" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"IO_VAL" TEXT DEFAULT '' ,"SELF_FLG" INTEGER DEFAULT '' ,"CFG_TMPL" TEXT DEFAULT '' ,"CFG_VAL" TEXT DEFAULT '' ,"IDC" TEXT DEFAULT '' ,"uk#IO_VAL" TEXT DEFAULT '' ,"uk#CFG_TMPL" TEXT DEFAULT '' ,"uk#CFG_VAL" TEXT DEFAULT '' ,"ru#IO_VAL" TEXT DEFAULT '' ,"ru#CFG_TMPL" TEXT DEFAULT '' ,"ru#CFG_VAL" TEXT DEFAULT '' , PRIMARY KEY ("IDW","ID","IDC"));
 INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_so','evProc','ws_BtPress:/prev:prev:/pg_so/*/*/$
 ws_BtPress:/next:next:/pg_so/*/*/$
@@ -1214,7 +1222,7 @@ INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_so/pg_rg/pg_rg/pg_1','p2_addr
 INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_so/pg_rg/pg_rg/pg_1','p1_name','<EVAL>',34,'Parameter 1|NAME','prm:/LogicLev/experiment/Pi/NAME','e1','','','','','','');
 INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_so/pg_rg/pg_rg/pg_1','p1_min','<EVAL>',34,'Parameter 1|min','prm:/LogicLev/experiment/Pi/min','e1','','','','','','');
 INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_so/pg_rg/pg_rg/pg_1','p1_max','<EVAL>',34,'Parameter 1|max','prm:/LogicLev/experiment/Pi/max','e1','','','','','','');
-INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_so/pg_rg/pg_rg/pg_1','p1_clr','#b000b0',33,'Parameter 1','#b000b0','e1','','Параметр 1','','','Параметр 1','');
+INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_so/pg_rg/pg_rg/pg_1','p1_clr','#b000b0',33,'Parameter 1','#b000b0','e1','','','','','','');
 INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_so/pg_rg/pg_rg/pg_1','p1_addr','<EVAL>',34,'Parameter 1|var','prm:/LogicLev/experiment/Pi/var','e1','','','','','','');
 INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_control','name','Control panels',0,'','','','Панелі керування','','','Панели управления','','');
 INSERT INTO "prj_tmplSO_io" VALUES('/prj_tmplSO/pg_control/pg_ElCadr','pgGrp','cntr',32,'','','','','','','','','');
@@ -1925,6 +1933,10 @@ INSERT INTO "wlb_Main_incl" VALUES('calendar','w5_4','/wlb_originals/wdg_Text','
 INSERT INTO "wlb_Main_incl" VALUES('calendar','w5_5','/wlb_originals/wdg_Text','name;active;geomX;geomY;geomW;geomH;geomZ;font;color;wordWrap;alignment;text;','');
 INSERT INTO "wlb_Main_incl" VALUES('calendar','w5_6','/wlb_originals/wdg_Text','name;active;geomX;geomY;geomW;geomH;geomZ;font;color;wordWrap;alignment;text;','');
 INSERT INTO "wlb_Main_incl" VALUES('calendar','year','/wlb_originals/wdg_FormEl','name;active;geomX;geomY;geomW;geomH;geomZ;elType;value;items;font;','');
+INSERT INTO "wlb_Main_incl" VALUES('RootPgSo','so17','/wlb_originals/wdg_FormEl','perm;name;en;active;geomX;geomY;geomW;geomH;geomZ;tipTool;tipStatus;elType;color;colorText;font;','');
+INSERT INTO "wlb_Main_incl" VALUES('RootPgSo','so18','/wlb_originals/wdg_FormEl','perm;name;en;active;geomX;geomY;geomW;geomH;geomZ;tipTool;tipStatus;elType;color;colorText;font;','');
+INSERT INTO "wlb_Main_incl" VALUES('RootPgSo','so19','/wlb_originals/wdg_FormEl','perm;name;en;active;geomX;geomY;geomW;geomH;geomZ;tipTool;tipStatus;elType;color;colorText;font;','');
+INSERT INTO "wlb_Main_incl" VALUES('RootPgSo','so20','/wlb_originals/wdg_FormEl','perm;name;en;active;geomX;geomY;geomW;geomH;geomZ;tipTool;tipStatus;elType;color;colorText;font;','');
 CREATE TABLE 'wlb_Main_io' ("IDW" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"IO_VAL" TEXT DEFAULT '' ,"SELF_FLG" INTEGER DEFAULT '' ,"CFG_TMPL" TEXT DEFAULT '' ,"CFG_VAL" TEXT DEFAULT '' ,"IDC" TEXT DEFAULT '' ,"uk#IO_VAL" TEXT DEFAULT '' ,"uk#CFG_TMPL" TEXT DEFAULT '' ,"ru#IO_VAL" TEXT DEFAULT '' ,"ru#CFG_TMPL" TEXT DEFAULT '' ,"ru#CFG_VAL" TEXT DEFAULT '' ,"uk#CFG_VAL" TEXT DEFAULT '' , PRIMARY KEY ("IDW","ID","IDC"));
 INSERT INTO "wlb_Main_io" VALUES('ElCadr','name','Element cadr',32,'','','','Елемент кадр','','Элемент кадр','','','');
 INSERT INTO "wlb_Main_io" VALUES('ElCadr','geomW','110',32,'','','','','','','','','');
@@ -2116,26 +2128,26 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','backColor','gray',96,'','','','','b
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','img','mn',0,'','','go_mn','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','',32,'','','cvt_sound','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','1',40,'','','cvt_sound','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','982',32,'','','cvt_sound','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','4',32,'','','so9','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so9','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','985',32,'','','cvt_sound','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','730',32,'','','so9','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so9','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so9','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so9','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so9','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','8',32,'','','so8','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipStatus','Press for select signal object 8 (Ctrl+8)',32,'','','so8','Натисніть для вибору об''єкту сигналізації 8 (Ctrl+8)','','Нажмите для выбора объекта сигнализации 8 (Ctrl+8)','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 8 (Ctrl+8)',32,'','','so8','Об''єкт сигналізації 8 (Ctrl+8)','','Объект сигнализации 8 (Ctrl+8)','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','795',32,'','','so16','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','457',32,'','','so16','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so16','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so16','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so16','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so16','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO16',32,'','','so16','СО16','','СО16','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',32,'','','so7','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','so6','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so6','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO7',32,'','','so7','СО7','','СО7','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so6','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','569',32,'','','so6','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so6','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','457',32,'','','so6','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so6','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so6','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so6','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 5 (Ctrl+5)',32,'','','so5','Об''єкт сигналізації 5 (Ctrl+5)','','Объект сигнализации 5 (Ctrl+5)','','','');
@@ -2179,7 +2191,7 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elLst','line:(1|4):(77|4):::::
 ',32,'','','h_line','line:(1|4):(77|4):::::
 ','','line:(1|4):(77|4):::::
 ','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','343',32,'','','so12','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','93',32,'','','so12','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO12',32,'','','so12','СО12','','СО12','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so12','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so11','','','','','','');
@@ -2188,9 +2200,9 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so10','',
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so10','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO11',32,'','','so11','СО11','','СО11','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so11','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','230',32,'','','so11','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','2',32,'','','so11','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so11','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so11','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so11','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so11','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','11',32,'','','so11','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 11',32,'','','so11','Об''єкт сигналізації 11','','Объект сигнализации 11','','','');
@@ -2880,19 +2892,19 @@ INSERT INTO "wlb_Main_io" VALUES('ElCadr','geomW','20',32,'','','lev_sp','','','
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','path','/wlb_Main/wdg_RootPgSo',40,'','','','/wlb_Main/wdg_RootPgSo','','/wlb_Main/wdg_RootPgSo','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so7','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so7','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so4','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','111',32,'','','go_mn','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','Result graphics',32,'','','go_rg','Зведені графіки','','Сводные графики','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','908',32,'','','go_rg','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','911',32,'','','go_rg','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','202',32,'','','go_rg','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipStatus','Press for documents switching',32,'','','go_doc','Натиснути для переключення на документи','','Нажать для переключения на документы','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','982',32,'','','go_doc','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','985',32,'','','go_doc','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','9',32,'','','so9','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so7','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','6',32,'','','so6','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','img','pg_next',0,'','','next','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','908',32,'','','go_mn','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','911',32,'','','go_mn','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','go_doc','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Documents (Ctrl+D)',32,'','','go_doc','Документи (Ctrl+D)','','Документы (Ctrl+D)','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',32,'','','so9','','','','','','');
@@ -2901,13 +2913,13 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so9','','
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 9 (Ctrl+9)',32,'','','so9','Об''єкт сигналізації 9 (Ctrl+9)','','Объект сигнализации 9 (Ctrl+9)','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so7','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','so7','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','682',32,'','','so7','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','548',32,'','','so7','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 6 (Ctrl+6)',32,'','','so6','Об''єкт сигналізації 6 (Ctrl+6)','','Объект сигнализации 6 (Ctrl+6)','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO4',32,'','','so4','СО4','','СО4','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so4','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','343',32,'','','so4','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','275',32,'','','so4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','img','doc',0,'','','go_doc','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','',32,'','','go_doc','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so9','','','','','','');
@@ -2922,7 +2934,7 @@ INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomH','142',32,'','','','',''
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','bordWidth','1',32,'','','','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','bordColor','black',32,'','','','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','bordStyle','3',32,'','','','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 5',40,'','','p5','Параметр 5','','Параметр 5','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 5',40,'','','p5','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomX','61',32,'','','trnd','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomH','17',32,'','','title','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomW','223',32,'','','title','','','','','','');
@@ -2932,8 +2944,8 @@ INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomY','18',32,'','','trnd',''
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomW','162',32,'','','trnd','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomH','122',32,'','','trnd','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomZ','2',32,'','','trnd','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 1',40,'','','p1','Параметр 1','','Параметр 1','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 2',32,'','','p2','Параметр 2','','Параметр 2','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 1',40,'','','p1','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 2',32,'','','p2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomX','1',32,'','','p2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomY','42',32,'','','p2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomW','60',32,'','','p2','','','','','','');
@@ -2943,8 +2955,8 @@ INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomMargin','1',32,'','','p2',
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','font','Arial 10',32,'','','p2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','color','#c75300',40,'','','p2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','alignment','8',32,'','','p2','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 2',40,'','','p2','Параметр 2','','Параметр 2','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 3',32,'','','p3','Параметр 3','','Параметр 3','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 2',40,'','','p2','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 3',32,'','','p3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomX','1',32,'','','p3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomY','66',32,'','','p3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomW','60',32,'','','p3','','','','','','');
@@ -2954,8 +2966,8 @@ INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomMargin','1',32,'','','p3',
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','font','Arial 10',32,'','','p3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','color','blue',40,'','','p3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','alignment','8',32,'','','p3','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 3',40,'','','p3','Параметр 3','','Параметр 3','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 4',32,'','','p4','Параметр 4','','Параметр 4','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 3',40,'','','p3','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 4',32,'','','p4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomX','1',32,'','','p4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomY','90',32,'','','p4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomW','60',32,'','','p4','','','','','','');
@@ -2965,8 +2977,8 @@ INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomMargin','1',32,'','','p4',
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','font','Arial 10',32,'','','p4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','color','#00ff00',40,'','','p4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','alignment','8',32,'','','p4','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 4',40,'','','p4','Параметр 4','','Параметр 4','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 5',32,'','','p5','Параметр 5','','Параметр 5','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Parameter 4',40,'','','p4','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 5',32,'','','p5','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomX','1',32,'','','p5','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomY','114',32,'','','p5','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomW','60',32,'','','p5','','','','','','');
@@ -2986,7 +2998,7 @@ INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomH','24',32,'','','p1','','
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomW','60',32,'','','p1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomY','18',32,'','','p1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','geomX','1',32,'','','p1','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 1',32,'','','p1','Параметр 1','','Параметр 1','','','');
+INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','name','Parameter 1',32,'','','p1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','text','Tittle',40,'','','title','Заголовок','','Заголовок','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','alignment','8',32,'','','title','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraphEl','font','Arial 15',32,'','','title','','','','','','');
@@ -3035,7 +3047,7 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',32,'','','so16','','','
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','so16','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so16','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so16','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','909',32,'','','h_line','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','912',32,'','','h_line','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',32,'','','so15','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','so15','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so15','','','','','','');
@@ -3043,7 +3055,7 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so15'
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',40,'','','cvt_sound','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','cvt_sound','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','img','aSound',0,'','','cvt_sound','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','4',32,'','','pgCont','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','6',32,'','','pgCont','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','62',32,'','','pgCont','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','900',32,'','','pgCont','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','600',32,'','','pgCont','','','','','','');
@@ -3055,9 +3067,9 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','bordWidth','1',32,'','','pgCont',''
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','bordColor','black',32,'','','pgCont','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO10',32,'','','so10','СО10','','СО10','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so10','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','117',32,'','','so10','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so10','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so10','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','821',32,'','','so10','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so10','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so10','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so10','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','10',32,'','','so10','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 10 (Ctrl+0)',32,'','','so10','Об''єкт сигналізації 10 (Ctrl+0)','','Объект сигнализации 10 (Ctrl+0)','','','');
@@ -3107,7 +3119,7 @@ ws_BtPress:/so14:open:/pg_so/14/*/*
 ws_BtPress:/so15:open:/pg_so/15/*/*
 ws_BtPress:/so16:open:/pg_so/16/*/*
 ws_BtPress:*:open:/pg_control/pg_terminator',32,'','','','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so12','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so12','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so12','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','12',32,'','','so12','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 12',32,'','','so12','Об''єкт сигналізації 12','','Объект сигнализации 12','','','');
@@ -3118,9 +3130,9 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so12','',
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so12','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO13',32,'','','so13','СО13','','СО13','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so13','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','456',32,'','','so13','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','184',32,'','','so13','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so13','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so13','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so13','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so13','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','13',32,'','','so13','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 13',32,'','','so13','Об''єкт сигналізації 13','','Объект сигнализации 13','','','');
@@ -3131,9 +3143,9 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so13','',
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so13','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO14',32,'','','so14','СО14','','СО14','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so14','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','569',32,'','','so14','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','275',32,'','','so14','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so14','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so14','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so14','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so14','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','14',32,'','','so14','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 14',32,'','','so14','Об''єкт сигналізації 14','','Объект сигнализации 14','','','');
@@ -3144,9 +3156,9 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so14','',
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so14','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO15',32,'','','so15','СО15','','СО15','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so15','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','682',32,'','','so15','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','366',32,'','','so15','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so15','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so15','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so15','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so15','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','15',32,'','','so15','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 15',32,'','','so15','Об''єкт сигналізації 15','','Объект сигнализации 15','','','');
@@ -3354,11 +3366,11 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO9',32,'','','so9','СО9',
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so9','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO8',32,'','','so8','СО8','','СО8','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so8','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','795',32,'','','so8','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','639',32,'','','so8','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so8','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so8','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so8','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so8','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so7','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so7','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so7','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','7',32,'','','so7','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 7 (Ctrl+7)',32,'','','so7','Об''єкт сигналізації 7 (Ctrl+7)','','Объект сигнализации 7 (Ctrl+7)','','','');
@@ -3373,9 +3385,9 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO6',32,'','','so6','СО6',
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so6','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO5',32,'','','so5','СО5','','СО5','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so5','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','456',32,'','','so5','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','366',32,'','','so5','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so5','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so5','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so5','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so5','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','5',32,'','','so5','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so4','','','','','','');
@@ -3384,9 +3396,9 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 4 (Ctrl+4)'
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipStatus','Press for select signal object 4 (Ctrl+4)',32,'','','so4','Натисніть для вибору об''єкту сигналізації 4 (Ctrl+4)','','Нажмите для выбора объекта сигнализации 4 (Ctrl+4)','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO1',32,'','','so1','СО1','','СО1','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so1','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','4',32,'','','so1','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','2',32,'','','so1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so1','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so1','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 1 (Ctrl+1)',32,'','','so1','Об''єкт сигналізації 1 (Ctrl+1)','','Объект сигнализации 1 (Ctrl+1)','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipStatus','Press for select signal object 1 (Ctrl+1)',32,'','','so1','Натисніть для вибору об''єкту сигналізації 1 (Ctrl+1)','','Нажмите для выбора объекта сигнализации 1 (Ctrl+1)','','','');
@@ -3396,9 +3408,9 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so1','','
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO2',32,'','','so2','СО2','','СО2','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so2','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','117',32,'','','so2','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','93',32,'','','so2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so2','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so2','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','2',32,'','','so2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 2 (Ctrl+2)',32,'','','so2','Об''єкт сигналізації 2 (Ctrl+2)','','Объект сигнализации 2 (Ctrl+2)','','','');
@@ -3409,9 +3421,9 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so2','','
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so2','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO3',32,'','','so3','СО3','','СО3','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so3','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','230',32,'','','so3','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','184',32,'','','so3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','so3','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','so3','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','3',32,'','','so3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 3 (Ctrl+3)',32,'','','so3','Об''єкт сигналізації 3 (Ctrl+3)','','Объект сигнализации 3 (Ctrl+3)','','','');
@@ -3420,7 +3432,7 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',32,'','','so3','','',''
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','so3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so3','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so3','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','973',32,'','','next','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','976',32,'','','next','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','62',32,'','','next','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','45',32,'','','next','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','40',32,'','','next','','','','','','');
@@ -3788,7 +3800,7 @@ INSERT INTO "wlb_Main_io" VALUES('grpGraph','prm7color','yellow',0,'','','trnd1'
 INSERT INTO "wlb_Main_io" VALUES('grpGraph','prm7val','<EVAL>',0,'','','trnd1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','',32,'','','cvt_alarm','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','1',40,'','','cvt_alarm','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','945',32,'','','cvt_alarm','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','948',32,'','','cvt_alarm','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','241',32,'','','cvt_alarm','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','36',32,'','','cvt_alarm','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','36',32,'','','cvt_alarm','','','','','','');
@@ -3800,13 +3812,13 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','cvt_alarm',''
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','img','aAlarm',0,'','','cvt_alarm','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipStatus','Press for contours switching',32,'','','go_gcadr','Натиснути для переключення на контура','','Нажать для переключения на контура','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','',32,'','','go_gcadr','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','908',32,'','','go_gcadr','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','911',32,'','','go_gcadr','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','163',32,'','','go_gcadr','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','36',32,'','','go_gcadr','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','36',32,'','','go_gcadr','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','21',32,'','','go_gcadr','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Contours (Ctrl+C)',32,'','','go_gcadr','Контури (Ctrl+C)','','Контура (Ctrl+C)','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','908',32,'','','prev','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','911',32,'','','prev','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','62',32,'','','prev','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','45',32,'','','prev','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','40',32,'','','prev','','','','','','');
@@ -3825,11 +3837,11 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','go_gcadr','',
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','img','cadr',0,'','','go_gcadr','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',40,'','','go_rg','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','',32,'','','go_gview','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','945',32,'','','go_gview','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','948',32,'','','go_gview','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','163',32,'','','go_gview','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','',32,'','','cvt_light','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','1',40,'','','cvt_light','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','908',32,'','','cvt_light','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','911',32,'','','cvt_light','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','241',32,'','','cvt_light','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','36',32,'','','cvt_light','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','36',32,'','','cvt_light','','','','','','');
@@ -3840,14 +3852,14 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',40,'','','cvt_light',''
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','cvt_light','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','img','aLight',0,'','','cvt_light','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','',32,'','','h_line1','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','909',32,'','','h_line1','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','912',32,'','','h_line1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','233',32,'','','h_line1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','10',32,'','','h_line1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomXsc','1.37',32,'','','h_line1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','6',32,'','','h_line1','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elLst','line:(1|4):(77|4):::::
 ',32,'','','h_line1','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','908',32,'','','infoW','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','911',32,'','','infoW','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','280',32,'','','infoW','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','110',32,'','','infoW','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','365',32,'','','infoW','','','','','','');
@@ -3863,7 +3875,7 @@ INSERT INTO "wlb_Main_io" VALUES('RootPgSo','bordWidth','1',32,'','','pgCntr',''
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','go_rg','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','img','rezG',0,'','','go_rg','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','1',32,'','','so1','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','952',32,'','','pgCntr','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','955',32,'','','pgCntr','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','62',32,'','','pgCntr','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','22',32,'','','pgCntr','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','40',32,'','','pgCntr','','','','','','');
@@ -4103,7 +4115,7 @@ INSERT INTO "wlb_Main_io" VALUES('anShow1','arg0cfg',';f;3',8,'','','val','','',
 INSERT INTO "wlb_Main_io" VALUES('ElCadr','path','/wlb_Main/wdg_ElCadr',40,'','','','/wlb_Main/wdg_ElCadr','','/wlb_Main/wdg_ElCadr','','','');
 INSERT INTO "wlb_Main_io" VALUES('ElCadr','name','Auto',32,'','','modAuto','Авт.','','Авт.','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','',32,'','','go_ggraph','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','964',32,'','','go_ggraph','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','967',32,'','','go_ggraph','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','111',32,'','','go_ggraph','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','54',32,'','','go_ggraph','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','50',32,'','','go_ggraph','','','','','','');
@@ -5348,7 +5360,7 @@ By default the document''s archive configured to 10 documents depth.',32,'','','
 время сеанса. Для просмотра истории отчётов исполнения программ можно нажать на поле
 документа и полистать на появившейся справа панели навигации по архивному документу.
 По умолчанию архив документов настроен на глубину 10 документов.','','','');
-INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','910',32,'','','logo','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','913',32,'','','logo','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','3',32,'','','logo','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','107',32,'','','logo','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','55',32,'','','logo','','','','','','');
@@ -6073,7 +6085,7 @@ INSERT INTO "wlb_Main_io" VALUES('ResultGraph','en','0',32,'','','e6','','','','
 INSERT INTO "wlb_Main_io" VALUES('ResultGraph','en','0',32,'','','e7','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraph','en','0',32,'','','e8','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('ResultGraph','en','0',32,'','','e9','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('prescrEdit','name','Add >',32,'','','comInAdd','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('prescrEdit','name','Add >',32,'','','comInAdd','Додати >','','Добавить >','','','');
 INSERT INTO "wlb_Main_io" VALUES('prescrEdit','geomX','299.889',32,'','','comInAdd','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('prescrEdit','geomY','511',32,'','','comInAdd','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('prescrEdit','geomW','71.548',32,'','','comInAdd','','','','','','');
@@ -6863,7 +6875,67 @@ INSERT INTO "wlb_Main_io" VALUES('calendar','active','1',32,'','','w5_3','','','
 INSERT INTO "wlb_Main_io" VALUES('calendar','active','1',32,'','','w5_4','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('calendar','active','1',32,'','','w5_5','','','','','','');
 INSERT INTO "wlb_Main_io" VALUES('calendar','active','1',32,'','','w5_6','','','','','','');
-INSERT INTO "wlb_Main_io" VALUES('calendar','name','Calendar',32,'','','','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('calendar','name','Calendar',32,'','','','Календар','','Календарь','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','perm','438',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO17',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','548',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','34',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 17',32,'','','so17','Об''єкт сигналізації 17','','Объект сигнализации 17','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipStatus','Press for select signal object 17',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','font','Arial 12 1 0 0 0',0,'','','so17','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','perm','438',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO18',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','639',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','35',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 18',32,'','','so18','Об''єкт сигналізації 18','','Объект сигнализации 18','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipStatus','Press for select signal object 18',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','font','Arial 12 1 0 0 0',0,'','','so18','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','perm','438',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO19',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','730',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','36',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 19',32,'','','so19','Об''єкт сигналізації 19','','Объект сигнализации 19','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipStatus','Press for select signal object 19',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','font','Arial 12 1 0 0 0',0,'','','so19','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','perm','438',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','name','SO20',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','en','0',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomX','821',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomY','32',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomW','90',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomH','26',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','geomZ','37',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipTool','Signal object 20',32,'','','so20','Об''єкт сигналізації 20','','Объект сигнализации 20','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','tipStatus','Press for select signal object 20',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','active','1',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','elType','3',32,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','color','#555555',0,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','colorText','#00ff00',0,'','','so20','','','','','','');
+INSERT INTO "wlb_Main_io" VALUES('RootPgSo','font','Arial 12 1 0 0 0',0,'','','so20','','','','','','');
 CREATE TABLE 'wlb_Main_mime' ("ID" TEXT DEFAULT '' ,"MIME" TEXT DEFAULT '' ,"DATA" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "wlb_Main_mime" VALUES('cadr','image/png;8.83301','iVBORw0KGgoAAAANSUhEUgAAAGQAAABaCAYAAABOkvOJAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A
 /wD/oL2nkwAAAAlwSFlzAAAMdQAADHUBLXiUdQAAAAd0SU1FB9kCGxAwD1fi7KsAAAAZdEVYdENv
@@ -9118,8 +9190,8 @@ INSERT INTO "wlb_Main_uio" VALUES('grpGraph','grpName','Group name',131077,'||',
 INSERT INTO "wlb_Main_uio" VALUES('grpGraph','min','Minimum',131076,'0|0;0|',10,'Parameter|min','','el8','Мінімум','','','Минимум','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('grpGraph','max','Maximum',131076,'0|0;0|',10,'Parameter|max','','el8','Максимум','','','Максимум','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('grpGraph','ed','Dimension',131077,'||',10,'Parameter|ed','','el8','Од. виміру','','','Ед. измерения','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('grph_panel','sclVer','Vertical scale',131076,'<EVAL>||',14,'<page>|sclVerScl','','','Вертикальний масштаб','','<page>|sclVerScl','Вертикальный масштаб','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('grph_panel','sclVerOff','Vertical scale offset',131076,'<EVAL>||',14,'<page>|sclVerSclOff','','','Зміщення вертикального масштабу','','<page>|sclVerSclOff','Смещение вертикального масштаба','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('grph_panel','sclVer','Vertical scale',131076,'<EVAL>||',14,'<page>|sclVerScl','','','Вертикальний масштаб','','','Вертикальный масштаб','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('grph_panel','sclVerOff','Vertical scale offset',131076,'<EVAL>||',14,'<page>|sclVerSclOff','','','Зміщення вертикального масштабу','','','Смещение вертикального масштаба','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('grpGraph','addr','Address',196613,'||',10,'Parameter|var','','el8','Адреса','','','Адрес','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('grpGraph','min','Minimum',131076,'0|0;0|',10,'Parameter|min','','el7','Мінімум','','','Минимум','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('grpGraph','max','Maximum',131076,'0|0;0|',10,'Parameter|max','','el7','Максимум','','','Максимум','','','','');
@@ -9160,15 +9232,15 @@ INSERT INTO "wlb_Main_uio" VALUES('grpCadr','prmAddr','Parameter:address',196613
 INSERT INTO "wlb_Main_uio" VALUES('grpCadr','prmAddr','Parameter:address',196613,'<EVAL>||',10,'Parameter|var','','el3','Параметр:адреса','','','Параметр:адрес','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('grpCadr','prmAddr','Parameter:address',196613,'<EVAL>||',10,'Parameter|var','','el2','Параметр:адреса','','','Параметр:адрес','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('grpCadr','prmAddr','Parameter:address',196613,'<EVAL>||',10,'Parameter|var','','el1','Параметр:адреса','','','Параметр:адрес','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow','pErr','Error',131077,'<EVAL>||',10,'Parameter|err','','','Помилка','<EVAL>||','Parameter|err','Ошибка','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow','pErrCode','Error code',131073,'1||',8,'','','','Код помилки','','','Код ошибки','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow','pName','Parameter name',131077,'||',10,'Parameter|NAME','','','Ім''я параметру','||','Parameter|NAME','Имя параметра','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow','pVal','Parameter value',131076,'0||',10,'Parameter|var','','','Значення парметру','','Parameter|var','Значение парметра','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow1','pName','Short name',131077,'||',9,'','','','Ім''я параметра','||','','Имя параметра','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow1','pVal','Parameter:value',131076,'0||',10,'Parameter|var','','','Значення параметра','','Parameter|var','Значение парметра','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow','pErr','Error',131077,'<EVAL>',10,'Parameter|err','','','Помилка','<EVAL>||','Parameter|err','Ошибка','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow','pErrCode','Error code',131073,'1|',8,'','','','Код помилки','','','Код ошибки','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow','pName','Parameter name',131077,'',10,'Parameter|NAME','','','Ім''я параметру','||','Parameter|NAME','Имя параметра','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow','pVal','Parameter value',131076,'0|',10,'Parameter|var','','','Значення парметру','','Parameter|var','Значение парметра','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow1','pName','Short name',131077,'',9,'','','','Ім''я параметра','||','','Имя параметра','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow1','pVal','Parameter:value',131076,'0|',10,'Parameter|var','','','Значення параметра','','Parameter|var','Значение парметра','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p1_max','Parameter1:maximum',131076,'<EVAL>||',10,'Parameter 1|max','','','Параметр1:максимум','','','Параметр1:максимум','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p1_name','Parameter1:name',131077,'<EVAL>||',10,'Parameter 1|NAME','','','Параметр1:ім''я','','','Параметр1:имя','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','calcCnt','Calc counter',131073,'1||',8,'','','','Лічильник обчислень','','','Счётчик вычислений','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','calcCnt','Calc counter',131073,'1|',8,'','','','Лічильник обчислень','','','Счётчик вычислений','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p1_addr','Parameter1:address',196613,'<EVAL>||',10,'Parameter 1|var','','','Параметр1:адреса','','','Параметр1:адрес','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('doc_panel','aCur','Archive cursor',131073,'0||',10,'<page>|aCur','','','Курсор архіву','','','Курсор архива','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElCadr','prmCloseSt','Parameter:state - "Closed"',131072,'<EVAL>||',10,'Parameter|st_close','','','Параметр:стан - "Закрито"','','Parameter|st_close','Параметр:состояние - "Закрыто"','','','','');
@@ -9217,30 +9289,30 @@ INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p5_name','Parameter5:name',13
 INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p5_max','Parameter5:maximum',131076,'<EVAL>||',10,'Parameter 5|max','','','Параметр5:максимум','','','Параметр5:максимум','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p5_min','Parameter5:minimum',131076,'<EVAL>||',10,'Parameter 5|min','','','Параметр5:мінімум','','','Параметр5:минимум','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','title','Tittle',131077,'<EVAL>||',9,'','','','Заголовок','','','Заголовок','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p1_clr','Parameter1:color',147461,'#b000b0||',9,'Parameter 1','','','Параметр1:колір','','Параметр 1','Параметр1:цвет','','Параметр 1','','');
-INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p2_clr','Parameter2:color',147461,'#c75300||',9,'Parameter 2','','','Параметр2:колір','','Параметр 2','Параметр2:цвет','','Параметр 2','','');
-INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p3_clr','Parameter3:color',147461,'blue||',9,'Parameter 3','','','Параметр3:колір','','Параметр 3','Параметр3:цвет','','Параметр 3','','');
-INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p4_clr','Parameter4:color',147461,'#00ff00||',9,'Parameter 4','','','Параметр4:колір','','Параметр 4','Параметр4:цвет','','Параметр 4','','');
-INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p5_clr','Parameter5:color',147461,'#06fbff||',9,'Parameter 5','','','Параметр5:колір','','Параметр 5','Параметр5:цвет','','Параметр 5','','');
+INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p1_clr','Parameter1:color',147461,'#b000b0||',9,'Parameter 1','','','Параметр1:колір','','','Параметр1:цвет','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p2_clr','Parameter2:color',147461,'#c75300||',9,'Parameter 2','','','Параметр2:колір','','','Параметр2:цвет','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p3_clr','Parameter3:color',147461,'blue||',9,'Parameter 3','','','Параметр3:колір','','','Параметр3:цвет','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p4_clr','Parameter4:color',147461,'#00ff00||',9,'Parameter 4','','','Параметр4:колір','','','Параметр4:цвет','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('ResultGraphEl','p5_clr','Parameter5:color',147461,'#06fbff||',9,'Parameter 5','','','Параметр5:колір','','','Параметр5:цвет','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('doc_panel','bTime','Document begin',139265,'0||',14,'<page>|bTime','','','Початок документа','','','Начало документа','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('doc_panel','doc','Document',131077,'<EVAL>||',14,'<page>|doc','','','Документ','','','Документ','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('doc_panel','n','Archive size',131073,'<EVAL>||',10,'<page>|n','','','Розмір архіву','','','Размер архива','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('doc_panel','time','Document time',139265,'0||',14,'<page>|time','','','Час документа','','','Время документа','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('doc_panel','vCur','View cursor',131073,'<EVAL>||',14,'<page>|vCur','','','Курсор відображення','','','Курсор отображения','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('grph_panel','trcPer','Trace period',131073,'0||',14,'<page>|trcPer','','','Період слідкування','','<page>|trcPer','Период слежения','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('grph_panel','tSek','Trend time',139265,'0||',14,'<page>|tSek','','','Час тренду','','<page>|tSek','Время тренда','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('grph_panel','tSize','Trend size',131076,'0||',14,'<page>|tSize','','','Розмір тренду','','<page>|tSize','Размер тренда','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('grph_panel','valArch','Archiver',131077,'<EVAL>||',14,'<page>|valArch','','','Архіватор','<EVAL>||','<page>|valArch','Архиватор','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('grph_panel','curSek','Cursor',139265,'<EVAL>||',14,'<page>|curSek','','','Курсор','','<page>|curSek','Курсор','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('grph_panel','type','Type',131073,'<EVAL>||',14,'<page>|type','','','Тип','<EVAL>||','<page>|type','Тип','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('grph_panel','curUSek','Cursor, usec',131073,'<EVAL>||',14,'<page>|curUSek','','','Курсор, мкс','','<page>|curUSek','Курсор, мкс','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','lastView','Last view',131077,'<EVAL>||',8,'','','','Останній вигляд','','','Последний вид','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('grph_panel','trcPer','Trace period',131073,'0||',14,'<page>|trcPer','','','Період слідкування','','','Период слежения','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('grph_panel','tSek','Trend time',139265,'0||',14,'<page>|tSek','','','Час тренду','','','Время тренда','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('grph_panel','tSize','Trend size',131076,'0||',14,'<page>|tSize','','','Розмір тренду','','','Размер тренда','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('grph_panel','valArch','Archiver',131077,'<EVAL>||',14,'<page>|valArch','','','Архіватор','<EVAL>||','','Архиватор','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('grph_panel','curSek','Cursor',139265,'<EVAL>||',14,'<page>|curSek','','','Курсор','','','Курсор','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('grph_panel','type','Type',131073,'<EVAL>||',14,'<page>|type','','','Тип','<EVAL>||','','Тип','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('grph_panel','curUSek','Cursor, usec',131073,'<EVAL>||',14,'<page>|curUSek','','','Курсор, мкс','','','Курсор, мкс','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','lastView','Last view',131077,'<EVAL>',8,'','','','Останній вигляд','','','Последний вид','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElCadr','prmManIn','Parameter:manual input',131076,'<EVAL>||',14,'Parameter|manIn','','','Параметр:ручний ввід','','Parameter|manIn','Параметр:ручной ввод','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow','pModeA','Regulator mode (auto)',131072,'<EVAL>||',10,'Parameter|auto','','','Режим регулятору (автомат)','','Parameter|auto','Режим регулятора (автомат)','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow','pModeC','Regulator mode (cascad)',131072,'<EVAL>||',10,'Parameter|casc','','','Режим регулятору (каскад)','','Parameter|casc','Режим регулятора (каскад)','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow','pPrec','Precision',131073,'1||',10,'Parameter|prec','','','Точність','','Parameter|prec','Точность','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow','redEVAL','Speech message generation on reject',131072,'<EVAL>||',9,'','','','Генерація мовного повідомлення у разі відмови','','','Генерация речевого сообщения при отказе','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow','spName','Speech name',131077,'<EVAL>||',9,'','','','Ім’я для синтезу','<EVAL>||','','Имя для синтеза','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow','pModeA','Regulator mode (auto)',131072,'<EVAL>',10,'Parameter|auto','','','Режим регулятору (автомат)','','Parameter|auto','Режим регулятора (автомат)','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow','pModeC','Regulator mode (cascad)',131072,'<EVAL>',10,'Parameter|casc','','','Режим регулятору (каскад)','','Parameter|casc','Режим регулятора (каскад)','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow','pPrec','Precision',131073,'1|',10,'Parameter|prec','','','Точність','','Parameter|prec','Точность','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow','redEVAL','Speech message generation on reject',131072,'<EVAL>',9,'','','','Генерація мовного повідомлення у разі відмови','','','Генерация речевого сообщения при отказе','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow','spName','Speech name',131077,'<EVAL>',9,'','','','Ім’я для синтезу','<EVAL>||','','Имя для синтеза','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('cntrPasp','pName','Parameter name',196613,'<EVAL>||',10,'Parameter|NAME','','','Ім''я параметру','','','Имя параметра','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElCadr','digComs','Parameter:digital commands',131077,'OPEN;CLOSE;STOP||',10,'Parameter|digComs','','','Параметр:дискр. команди','ВІДКР;ЗАКР;СТОП||','Parameter|digComs','Параметр:дискр. команды','ОТКР;ЗАКР;СТОП||','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElCadr','digStts','Parameter:digital stats',131077,'<EVAL>||',10,'Parameter|digStts','','','Параметр:дискр. стани','ВІДКР;ЗАКР;СТОП||','Parameter|digStts','Параметр:дискр. состояния','','','','');
@@ -9297,7 +9369,7 @@ INSERT INTO "wlb_Main_uio" VALUES('ElViewGraph','prec','Precision',131073,'1||',
 INSERT INTO "wlb_Main_uio" VALUES('ElViewGraph','varEl','Value',131076,'<EVAL>||',8,'','','','Значення','','','Значение','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElViewGraph','wMax','Border up warning',131076,'<EVAL>||',10,'Parameter|wMax','','','Границя верхня попереджув.','','Parameter|wMax','Граница верхняя пред.','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElViewGraph','wMin','Border down warning',131076,'<EVAL>||',10,'Parameter|wMin','','','Границя нижня попереджув.','','Parameter|wMin','Граница нижняя пред.','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow1','prec','Precision',131073,'1||',10,'Parameter|prec','','','Точність','','Parameter|prec','Точность','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow1','prec','Precision',131073,'1|',10,'Parameter|prec','','','Точність','','Parameter|prec','Точность','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElCadr','prmVarIn','Parameter:variable input',131076,'<EVAL>||',14,'Parameter|varIn','','','Параметр:ввід змінної','','Parameter|varIn','Параметр:ввод переменной','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElCadr','clearCnt','Clear counter',131073,'<EVAL>||',8,'','','info_var','Лічильник очищень','','','Счётчик очистки','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('prescrRun','prCnt','Cycles counter',131073,'0||',8,'','','','Лічильник циклів','','','Счётчик циклов','','','','');
@@ -9308,9 +9380,9 @@ INSERT INTO "wlb_Main_uio" VALUES('prescrEdit','dbProgs','DB:Programms',131077,'
 INSERT INTO "wlb_Main_uio" VALUES('prescrRun','dbDB','DB:Data base',131077,'SQLite.vcaBase||',9,'DB','','','БД:База даних','','','БД:База данных','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('prescrRun','dbProgs','DB:Programms',131077,'PrescrProgs||',9,'DB','','','БД:Програми','','','БД:Программы','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('prescrEdit','fileExpImp','File export/import',131077,'PrescrExport.xml||',9,'File','','','Файл експорту/імпорту','','Файл','Файл экспорта/импорта','','Файл','','');
-INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','stepCur','Step:current',131073,'0||',8,'','','','Крок:поточний','','','Шаг:текущий','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','stepTm','Step:time',131076,'0||',8,'','','','Крок:час','','','Шаг:час','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','demoPlayProc','Procedure play demo',131205,'||',8,'','','','Проц. програвання демо','','','Проц. проигрывания демо','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','stepCur','Step:current',131073,'0|',8,'','','','Крок:поточний','','','Шаг:текущий','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','stepTm','Step:time',131076,'0|',8,'','','','Крок:час','','','Шаг:час','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','demoPlayProc','Procedure play demo',131205,'',8,'','','','Проц. програвання демо','','','Проц. проигрывания демо','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('accept','elEvent','Element:event',131077,'||',14,'<page>|event','','','Елемент:подія','','','Элемент:событие','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('accept','elMess','Element:message',131077,'||',10,'<page>|mess','','','Елемент:повідомлення','','','Элемент:сообщение','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('prescrEdit','mess','Dialog message',131077,'Are you really want to delete this program?||',0,'','','progDel','Повідомлення діалогу','Ви дійсно бажаєте видалити обрану програму?||','','Сообщение диалога','Вы действительно желаете удалить выбранную программу?||','','','');
@@ -9352,11 +9424,11 @@ INSERT INTO "wlb_Main_uio" VALUES('TextLab','st_close','Parameter:status-close',
 INSERT INTO "wlb_Main_uio" VALUES('TextLab','st_open','Parameter:status-open',131072,'0||',10,'Parameter|st_open','','','Параметр:статус-відкрито','','','Параметр:статус-открыто','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('TextLab','st_text','Parameter:status (text)',131077,'||',10,'Parameter|st_text','','','Параметр:статус (текст)','','','Параметр:статус (текст)','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('TextLab','stop','Parameter:stop',131072,'0||',14,'Parameter|stop','','','Параметр:стоп','','','Параметр:стоп','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow1','pNAME','Parameter:name',131077,'||',10,'Parameter|NAME','','','Параметр:ім''я','||','Parameter|NAME','Параметр:имя','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow1','pNameSz','Short name size',131073,'15||',9,'','','','Розмір короткого ім''я','','','Размер короткого имени','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow1','pErr','Error',131077,'||',10,'Parameter|err','','','Error','||','Parameter|err','Ошибка','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow1','pErrCode','Error code',131073,'0||',8,'','','','Error code','','','Код ошибки','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('anShow1','spName','Speech message generation on reject',131077,'||',9,'','','','Генерація мовного повідомлення у разі відмови','||','','Генерация речевого сообщения при отказе','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow1','pNAME','Parameter:name',131077,'',10,'Parameter|NAME','','','Параметр:ім''я','||','Parameter|NAME','Параметр:имя','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow1','pNameSz','Short name size',131073,'15|',9,'','','','Розмір короткого ім''я','','','Размер короткого имени','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow1','pErr','Error',131077,'',10,'Parameter|err','','','Error','||','Parameter|err','Ошибка','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow1','pErrCode','Error code',131073,'0|',8,'','','','Error code','','','Код ошибки','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('anShow1','spName','Speech message generation on reject',131077,'',9,'','','','Генерація мовного повідомлення у разі відмови','||','','Генерация речевого сообщения при отказе','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('cntrPaspExt','pName','Parameter name',196613,'<EVAL>||',10,'Parameter|NAME','','','Ім''я параметру','','Parameter|NAME','Имя параметра','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('objProps','objDescr','Object:description',131205,'||',10,'Object|DESCR','','','Об''єкт:опис','','','Объект:описание','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('objProps','objErr','Object:error',131077,'||',10,'Object|err','','','Об''єкт:помилка','','','Объект:ошибка','','','','');
@@ -9371,9 +9443,104 @@ INSERT INTO "wlb_Main_uio" VALUES('TextLab','ntf','Notification "{st}:{modes}:{S
 INSERT INTO "wlb_Main_uio" VALUES('ElViewGraph','log','Logarithmic scale',131072,'0||',10,'Parameter|log','','','Логарифмічна шкала','','','Логарифмическая шкала','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('grph_panel','sclHor','Horizontal scale',131076,'0||',14,'<page>|sclHorScl','','','','','','','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('grph_panel','sclHorOff','Horizontal scale offset',131076,'0||',14,'<page>|sclHorSclOff','','','','','','','','','','');
-INSERT INTO "wlb_Main_uio" VALUES('TextLab','com_text','Command text (from digComs)',131077,'||',14,'Parameter|com_text','','','','','','','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('TextLab','com_text','Command text (from digComs)',131077,'||',14,'Parameter|com_text','','','Текст команди (із digComs)','','','Текст команды (из digComs)','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElCadr','prmStText','Parameter:status text',131077,'||',10,'Parameter|st_text','','','','','','','','','','');
 INSERT INTO "wlb_Main_uio" VALUES('ElCadr','prmComText','Parameter:command text',131077,'||',14,'Parameter|com_text','','','','','','','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','notify2','Notification:type 2 (TextSpeech)',131205,'#!/bin/sh
+#flags=queue
+if test $doRes = 1 -a "x" != "x$mess"; then
+ #Specific TTS
+ case $lang in
+  ru_*)
+   iconv=$(which iconv)
+   ru_tts=$(which ru_tts)
+   sox=$(which sox)
+   if test "x$ru_tts" != "x" -a "x$iconv" != "x" -a "x$sox" != "x"; then
+    echo "$mess" | $iconv -f $(echo $lang | sed -n "/^[^.]*\.\(.*\)/s//\1/p") -t KOI8-R | $ru_tts -p 0.05 -r 0.4 -s /usr/share/ru_tts/lexicon | $sox -t raw -e signed-integer -b 8 -r 10k -c 1 -v 0.8 - -t wav $res.wav
+   fi
+   ;;
+  *) > $res.wav; ;;
+ esac
+
+ #Generic TTS for mostly all
+ if test ! -s $res.wav; then
+  espeak=$(which espeak)
+  text2wave=$(which text2wave)
+  if test "x$espeak" != "x"; then
+   echo "$mess" | $espeak --stdin -s 130 -v $(echo $lang | sed -n "/\(^[^_]*\).*/s//\1/p") -w $res.wav
+  elif test "x$text2wave" != "x"; then
+   case $lang in
+    uk_*) langFull="ukrainian"; ;;
+    ru_*) langFull="russian"; ;;
+    en_*) langFull="english"; ;;
+    #!!!! Append here needs
+   esac
+   echo $mess > $res.text; text2wave $res.text -o $res.wav -eval "(language_$langFull)"
+  fi
+ fi
+
+ #Encode before for that less to transfer
+ if test -s $res.wav; then
+  oggenc=$(which oggenc)
+  if test "x$oggenc" != "x"; then oggenc -Q $res.wav -o $res;
+  else mv -f $res.wav $res; fi
+  rm -f $res.wav $res.text
+ fi
+fi',0,'','','','','','','','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','notifyVisVision0','Notification:Vision type 0 (Light)',131205,'//name=Light
+//ico=aLight',0,'','','','','','','','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','notifyVisVision1','Notification:Vision type 1 (Buzzer)',131205,'//flags=notify
+//name=Buzzer
+//ico=aAlarm
+if(en) {
+	if((beep=SYS.system("which beep")).length)
+		SYS.system(beep.parse(0,"\n")+" -f 1000 -l 1000000 &\necho $! > aAlarm.pid", true);
+	else if((play=SYS.system("which play")).length)
+		SYS.system(play.parse(0,"\n")+" -q -n synth 1000000 sin 1000 &\necho $! > aAlarm.pid", true);
+}
+else SYS.system("if test -s aAlarm.pid; then kill $(cat aAlarm.pid); rm aAlarm.pid; fi");',0,'','','','','','','','','','','');
+INSERT INTO "wlb_Main_uio" VALUES('RootPgSo','notifyVisVision2','Notification:Vision type 2 (TextSpeech)',131205,'#!/bin/sh
+#flags=notify2|queue
+#name=Text speech
+#ico=aSound
+play=$(which play)
+if test $en = 1 -a "x$play" != "x"; then
+ #Try the resource create here by no that provide by VCAEngine
+ if test ! -s $res -a "x$mess" != "x" -a "x$lang" != "x"; then
+  #Specific TTS
+  case $lang in
+   ru_*)
+    iconv=$(which iconv)
+    ru_tts=$(which ru_tts)
+    sox=$(which sox)
+    if test "x$ru_tts" != "x" -a "x$iconv" != "x" -a "x$sox" != "x"; then
+     echo "$mess" | $iconv -f UTF-8 -t $(echo $lang | sed -n "/^[^.]*\.\(.*\)/s//\1/p") | $ru_tts -p 0.05 -r 0.4 -s /usr/share/ru_tts/lexicon | $sox -t raw -e signed-integer -b 8 -r 10k -c 1 -v 0.8 - -t wav $res
+    fi
+    ;;
+  esac
+
+  #Generic TTS for mostly all
+  if test ! -s $res; then
+   espeak=$(which espeak)
+   text2wave=$(which text2wave)
+   if test "x$espeak" != "x"; then
+    echo "$mess" | $espeak --stdin -s 130 -v $(echo $lang | sed -n "/\(^[^_]*\).*/s//\1/p") -w $res
+   elif test "x$text2wave" != "x"; then
+    case $lang in
+     uk_*) langFull="ukrainian"; ;;
+     ru_*) langFull="russian"; ;;
+     en_*) langFull="english"; ;;
+     #!!!! Append here needs
+    esac
+    echo $mess > $res.text; text2wave $res.text -o $res -eval "(language_$langFull)"
+   fi
+  fi
+ fi
+
+ #Same play for the allowed resource
+ if test -s $res; then play -q $res; fi
+ rm -f $res
+fi',0,'','','','','','','','','','','');
 CREATE TABLE 'wlb_doc_incl' ("IDW" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"PARENT" TEXT DEFAULT '' ,"ATTRS" TEXT DEFAULT '' ,"DBV" INTEGER DEFAULT '' , PRIMARY KEY ("IDW","ID"));
 INSERT INTO "wlb_doc_incl" VALUES('docGasNodeDayA','doc','/wlb_doc/wdg_doc/wdg_doc','perm;geomZ;style;tmpl;bTime;time;process;n;aCur;',2);
 INSERT INTO "wlb_doc_incl" VALUES('docGasNodeMonthA','doc','/wlb_doc/wdg_doc/wdg_doc','perm;geomZ;style;tmpl;bTime;time;process;n;aCur;',2);
@@ -17570,30 +17737,30 @@ if(f_start) {
 	for(i = 0; i < soLst.length; i++) {
 		if(!(curSO=soLst[i].slice(3).toInt()))	continue;
 		soW = this["wdg_so"+curSO];
-		soW.attrSet("name",this["pg_"+curSO].attr("name"));
+		soW.attrSet("name", this["pg_"+curSO].attr("name"));
 		soDscr = this["pg_"+curSO].attr("dscr");
-		if(soDscr.length) soW.attrSet("tipTool",soDscr);
-		soW.attrSet("en",1);
+		if(soDscr.length) soW.attrSet("tipTool", soDscr);
+		soW.attrSet("en", 1);
 	}
 	//Check for disable all SO and expand for need
 	var firstRow = 0; var secondRow = 0;
-	for(i = 0; i < 16; i++)
+	for(i = 0; i < 20; i++)
 		if(this["wdg_so"+(i+1)].attr("en"))
-		{ if(i < 8)	firstRow++;	else secondRow++; }
+		{ if(i < 10)	firstRow++;	else secondRow++; }
 	if(firstRow <= 1 && !secondRow) {
 		soOff = this["wdg_so1"].attr("geomY");
 		soSize = this["pgCont"].attr("geomY")-soOff;
 		this["pgCont"].attrSet("geomY",soOff).attrSet("geomH",this["pgCont"].attr("geomH")+soSize);
 	}
 	else if(!secondRow) {
-		soOff = this["wdg_so9"].attr("geomY");
+		soOff = this["wdg_so11"].attr("geomY");
 		soSize = this["pgCont"].attr("geomY")-soOff;
 		this["pgCont"].attrSet("geomY",soOff).attrSet("geomH",this["pgCont"].attr("geomH")+soSize);
-		if(firstRow < 8) {
+		if(firstRow < 10) {
 			soOff = this["wdg_so1"].attr("geomX");
-			soWdth = this["wdg_so8"].attr("geomX")+this["wdg_so8"].attr("geomW");
+			soWdth = this["wdg_so10"].attr("geomX")+this["wdg_so10"].attr("geomW");
 			soSize = soWdth/firstRow;
-			for(i = 0; i < 7; i++) {
+			for(i = 0; i < 9; i++) {
 				if(!this["wdg_so"+(i+1)].attr("en"))	continue;
 				this["wdg_so"+(i+1)].attrSet("geomX",soOff).attrSet("geomW",soSize-3);
 				soOff += soSize;
@@ -17688,7 +17855,7 @@ if(play_value) {
 		stepTm = args.stepTm;
 		stepCur = args.stepCur;
 	}
-}','','',200,'path;name;dscr;active;geomW;geomH;evProc;backColor;',1430400681);
+}','','',200,'path;name;dscr;active;geomW;geomH;evProc;backColor;',1440416509);
 INSERT INTO "wlb_Main" VALUES('ElViewCadr','iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAACXBIWXMAAAx1AAAMdQEteJR1AAAC
 xUlEQVRoge2W0Y4URRSG///06eqZRQYkqCuBSQDNSEJcHsBrXsInID6P4Y32QhZ3DKLZENZ1iRPR
 XZmNLHZXV53yYokX63IBw1Crqe+yulPn/6r6dBU3Nu5vbk7x32Q0Oqubm9O7d78ej8e5w7w2u7u7
@@ -17828,11 +17995,12 @@ if(pVal.isEVal()) {
 //Notification create
 if(!pErr.isEVal() && pErrCode != pErr) {
 	pErrCode = pErr;
+	alTp = (!spName.isEVal() && spName.length) ? 7 : 3;
 	if(pErrCode == 1 || pErrCode == 2)	alarm = (redEVAL == true) ? "100|"+pName+"|"+spName+" - "+tr("reject")+".|7" : "100|"+pName+"||1";
-	else if(pErrCode == 3)	alarm = "50|"+pName+"|"+spName+" "+tr("above alarm border")+".|7";
-	else if(pErrCode == 4)	alarm = "50|"+pName+"|"+spName+" "+tr("bellow alarm border")+".|7";
-	else if(pErrCode == 5)	alarm = "10|"+pName+"|"+spName+" "+tr("above warning border")+".|7";
-	else if(pErrCode == 6)	alarm = "10|"+pName+"|"+spName+" "+tr("bellow warning border")+".|7";
+	else if(pErrCode == 3)	alarm = "50|"+pName+"|"+spName+" "+tr("above alarm border")+".|"+alTp;
+	else if(pErrCode == 4)	alarm = "50|"+pName+"|"+spName+" "+tr("bellow alarm border")+".|"+alTp;
+	else if(pErrCode == 5)	alarm = "10|"+pName+"|"+spName+" "+tr("above warning border")+".|"+alTp;
+	else if(pErrCode == 6)	alarm = "10|"+pName+"|"+spName+" "+tr("bellow warning border")+".|"+alTp;
 	else if(alarmSt&0x100)	alarm = "1|"+pName+"||1";
 }
 if(!pErrCode && alarmSt&0x100 && !(alarmSt&0x10000)) alarm = "";
@@ -17864,7 +18032,7 @@ else { bordColor = "grey"; bordWidth = 1; }
 
 //Check the regulator mode
 if(pModeC == true) mode_text = tr("C");
-else mode_text = pModeA.isEVal() ? "" : ((pModeA) ? tr("A") : tr("M"));','','',500,'path;name;active;geomH;contextMenu;evProc;backColor;bordWidth;bordColor;',1423559579);
+else mode_text = pModeA.isEVal() ? "" : ((pModeA) ? tr("A") : tr("M"));','','',500,'path;name;active;geomH;contextMenu;evProc;backColor;bordWidth;bordColor;',1435130642);
 INSERT INTO "wlb_Main" VALUES('ViewCadr','iVBORw0KGgoAAAANSUhEUgAAAEAAAAAqCAIAAACMZMq1AAAACXBIWXMAAAx1AAAMdQEteJR1AAAE
 CElEQVRYhe2YW2/bRhCFz9kLL5JpuE3ctA996T9t/mpRpC7SWrRFmuLuzPSBshTZsgPUIewAOk9a
 7szHHVLS2R1+/P2jc24cN8OwUdOUkpktF8uu74qiAABgvV7nnPH2tFgswjDckTSzpjkjMKbUNE3f
@@ -17967,11 +18135,12 @@ if(pVal.isEVal()) {
 //Notification create
 if(!pErr.isEVal() && pErrCode != pErr) {
 	pErrCode = pErr;
+	alTp = (!spName.isEVal() && spName.length) ? 7 : 3;
 	if(pErrCode == 1 || pErrCode == 2)	alarm = "100|"+pNAME+"||1";
-	else if(pErrCode == 3)	alarm = "50|"+pNAME+"|"+spName+" "+tr("above alarm border")+".|7";
-	else if(pErrCode == 4)	alarm = "50|"+pNAME+"|"+spName+" "+tr("bellow alarm border")+".|7";
-	else if(pErrCode == 5)	alarm = "10|"+pNAME+"|"+spName+" "+tr("above warning border")+".|7";
-	else if(pErrCode == 6)	alarm = "10|"+pNAME+"|"+spName+" "+tr("bellow warning border")+".|7";
+	else if(pErrCode == 3)	alarm = "50|"+pNAME+"|"+spName+" "+tr("above alarm border")+".|"+alTp;
+	else if(pErrCode == 4)	alarm = "50|"+pNAME+"|"+spName+" "+tr("bellow alarm border")+".|"+alTp;
+	else if(pErrCode == 5)	alarm = "10|"+pNAME+"|"+spName+" "+tr("above warning border")+".|"+alTp;
+	else if(pErrCode == 6)	alarm = "10|"+pNAME+"|"+spName+" "+tr("bellow warning border")+".|"+alTp;
 	else if(alarmSt&0x100) alarm = "1|"+pNAME+"||1";
 }
 if(!pErrCode && alarmSt&0x100 && !(alarmSt&0x10000)) alarm = "";
@@ -17999,7 +18168,7 @@ if(this.attr("focus") ||
   bordColor = (bordColor == "white") ? "grey" : "white";
   bordWidth = 2;
 }
-else { bordColor = "grey"; bordWidth = 1; }','','',500,'name;active;geomH;evProc;backColor;bordWidth;bordColor;',1419427413);
+else { bordColor = "grey"; bordWidth = 1; }','','',500,'name;active;geomH;evProc;backColor;bordWidth;bordColor;',1435130642);
 INSERT INTO "wlb_Main" VALUES('cntrRegul','iVBORw0KGgoAAAANSUhEUgAAAEAAAAArCAIAAABHOBkQAAAACXBIWXMAAA06AAANOgEDIh6FAAAE
 DklEQVRoge2ZTU8bRxjHn9mZ2fF4d/2CDREJcUFVLRRLHHyAK+LGAT4INz5Cc04lLqmUxgfU9oCE
 OPEFoK2VVEhcoKQcqFog3lC7NsZv+zrTgwtBKAmDkmhVyb/TzjP7n/3/V8/MWjJ69uy7VqsF0eE6
@@ -21218,7 +21387,7 @@ if(lastView != pgCont_pgOpenSrc)
 	}
 	else { pgCntr_text = "-"; prev_active = next_active = false; }
 	lastView = pgCont_pgOpenSrc;
-}','','',-1,1,'geomH;pgOpen;',1417969139);
+}','','',-1,1,'geomH;pgOpen;',1440410448);
 INSERT INTO "prj_archBrowser" VALUES('/archBrowser/so/1/ggraph','5','','..',1,'','','',-1,0,'name;grpName;',1417969139);
 INSERT INTO "prj_archBrowser" VALUES('/archBrowser/so','1','','root',1,'
 ','
@@ -21231,7 +21400,7 @@ INSERT INTO "prj_archBrowser" VALUES('/archBrowser/so/1/ggraph','3','','..',1,''
 INSERT INTO "prj_archBrowser" VALUES('/archBrowser/so/1/ggraph','4','','..',1,'','','',-1,0,'name;grpName;',1417969139);
 INSERT INTO "prj_archBrowser" VALUES('/archBrowser/control','cntrPaspExt','','/wlb_Main/wdg_cntrPaspExt',1,'','','',-1,0,'geomZ;pName;',1404219070);
 CREATE TABLE 'prj_tmplSO' ("OWNER" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"ICO" TEXT DEFAULT '' ,"PARENT" TEXT DEFAULT '' ,"PR_TR" INTEGER DEFAULT '1' ,"PROC" TEXT DEFAULT '' ,"uk#PROC" TEXT DEFAULT '' ,"ru#PROC" TEXT DEFAULT '' ,"PROC_PER" INTEGER DEFAULT '-1' ,"FLGS" INTEGER DEFAULT '0' ,"ATTRS" TEXT DEFAULT '*' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("OWNER","ID"));
-INSERT INTO "prj_tmplSO" VALUES('/tmplSO','so','','/wlb_Main/wdg_RootPgSo',1,'','','',-1,1,'pgOpen;',1425638474);
+INSERT INTO "prj_tmplSO" VALUES('/tmplSO','so','','/wlb_Main/wdg_RootPgSo',1,'','','',-1,1,'pgOpen;',1440410448);
 INSERT INTO "prj_tmplSO" VALUES('/tmplSO/so','1','','root',1,'
 ','
 ','

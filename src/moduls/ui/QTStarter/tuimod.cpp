@@ -47,7 +47,7 @@
 #define MOD_NAME	_("Qt GUI starter")
 #define MOD_TYPE	SUI_ID
 #define VER_TYPE	SUI_VER
-#define MOD_VER		"1.7.0"
+#define MOD_VER		"1.8.0"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides the Qt GUI starter. Qt-starter is the only and compulsory component for all GUI modules based on the Qt library.")
 #define LICENSE		"GPL2"
@@ -221,7 +221,7 @@ string TUIMod::optDescr( )
 	"    --session=<nm>         Restores from an earlier session <nm>.\n"
 	"    --reverse              Sets layout direction to Qt::RightToLeft.\n"
 	"    --graphicssystem=<nm>  Sets the backend to be used for on-screen widgets and QPixmaps (raster, opengl).\n"
-	"    --display=<nm>         Sets the X display (default is $DISPLAY).\n"
+	"    --display=<nm>         Sets the X display name (default it is $DISPLAY).\n"
 	"    --geometry=<geom>      Sets the client geometry of the first window that is shown.\n"
 	"---------- Parameters of the module section '%s' in config-file ----------\n"
 	"StartMod  <moduls>    Start modules list (sep - ';').\n\n"),

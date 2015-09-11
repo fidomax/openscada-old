@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-04 18:36+0300\n"
+"POT-Creation-Date: 2015-08-31 07:52+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,7 +45,6 @@ msgid ""
 "CachePgLife <hours>   Cached pages lifetime.\n"
 "VCAstation  <id>      VCA station id ('.' - local).\n"
 "RestoreTime <seconds> Restore connection time.\n"
-"PlayCom     <cmd>     Audio alarms' files play command.\n"
 "\n"
 msgstr ""
 
@@ -115,18 +114,6 @@ msgid "Windows position control and save"
 msgstr ""
 
 msgid "Exit on last run project close"
-msgstr ""
-
-msgid "Alarms"
-msgstr ""
-
-msgid "Play command"
-msgstr ""
-
-#, c-format
-msgid ""
-"Command line for call sounds play.\n"
-"Use %f for source file name inserting. If source file is not used play sample is sent to pipe."
 msgstr ""
 
 #, c-format
@@ -1038,6 +1025,9 @@ msgstr ""
 msgid "No one row is selected."
 msgstr ""
 
+msgid "Are you sure of loading a mime to selected item '%1'?"
+msgstr ""
+
 msgid "All files (*.*)"
 msgstr ""
 
@@ -1428,43 +1418,10 @@ msgstr ""
 msgid "Press for all alarms quittance."
 msgstr ""
 
-msgid "Blink alarm"
-msgstr ""
-
-msgid "The button for all blink alarms quittance"
-msgstr ""
-
-msgid "Press for all blink alarms quittance."
-msgstr ""
-
-msgid "Speaker alarm"
-msgstr ""
-
-msgid "PC speaker alarm"
-msgstr ""
-
-msgid "The button for all PC speaker alarms quittance"
-msgstr ""
-
-msgid "Press for all PC speaker alarms quittance."
-msgstr ""
-
-msgid "Sound/speech alarm"
-msgstr ""
-
-msgid "Sound or speech alarm"
-msgstr ""
-
-msgid "The button for all sound or speech alarms quittance"
-msgstr ""
-
-msgid "Press for all sound or speech alarms quittance."
-msgstr ""
-
 msgid "&Alarm"
 msgstr ""
 
-msgid "Alarms (status)"
+msgid "Generic (status)"
 msgstr ""
 
 msgid "This label displays current system's time."
@@ -1658,12 +1615,7 @@ msgstr ""
 msgid "Running project: %1"
 msgstr ""
 
-#, c-format
-msgid "Error open: %s"
-msgstr ""
-
-#, c-format
-msgid "Error write to: %s"
+msgid "Status line items"
 msgstr ""
 
 msgid "Alarm level: %1"
@@ -1675,6 +1627,44 @@ msgstr ""
 
 #, c-format
 msgid "Session '%s' update time %f ms."
+msgstr ""
+
+#, c-format
+msgid "Function of the notificator '%s' error: %s"
+msgstr ""
+
+msgid "Enabled notification"
+msgstr ""
+
+msgid "Doing notification, always 1"
+msgstr ""
+
+msgid "Doing resource, always 0"
+msgstr ""
+
+msgid "Resource stream"
+msgstr ""
+
+msgid "Notification message"
+msgstr ""
+
+msgid "Notification message's language"
+msgstr ""
+
+#, c-format
+msgid "Notyfier %d"
+msgstr ""
+
+msgid "The button for current \"%1\" quittance"
+msgstr ""
+
+msgid "Press for current \"%1\" quittance."
+msgstr ""
+
+msgid "The button for all \"%1\" quittance"
+msgstr ""
+
+msgid "Press for all \"%1\" quittance."
 msgstr ""
 
 msgid ""

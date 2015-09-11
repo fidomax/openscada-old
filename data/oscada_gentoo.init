@@ -14,7 +14,7 @@ DNAME="OpenSCADA"
 NAME=openscada
 PIDFILE=/var/run/$NAME.pid
 DAEMON=/usr/bin/$NAME
-DAEMON_ARGS="--demon --pid-file=$PIDFILE"
+DAEMON_ARGS="--demon --pidFile=$PIDFILE"
 
 depend() {
     use logger net
@@ -22,7 +22,7 @@ depend() {
 
 start() {
     ebegin "Starting $DNAME"
-    LANG=en_US.UTF-8
+    export LANG=en_US.UTF-8
     start-stop-daemon --start --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS
     eend $? "Failed to start $DNAME"
 }

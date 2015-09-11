@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.VCAEngine file: session.h
 /***************************************************************************
- *   Copyright (C) 2007-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -94,10 +94,11 @@ class Session : public TCntrNode
 	string sessAttr( const string &idw, const string &id, bool onlyAllow = false );
 	void sessAttrSet( const string &idw, const string &id, const string &val );
 
-	// Alarms process
+	// Alarms-notification processing
 	void alarmSet( const string &wpath, const string &alrm );	//Alarm set
 	int  alarmStat( );						//Alarm status
-	void alarmQuittance( const string &wpath, uint8_t quit_tmpl );	//Alarm quittance send
+	void alarmQuittance( const string &wpath, uint8_t quit_tmpl, bool ret = false );	//Alarm quittance send
+	void ntfReg( uint8_t tp, const string &props );
 
 	// Style
 	string stlPropGet( const string &pid, const string &def = "" );
@@ -118,24 +119,73 @@ class Session : public TCntrNode
 
     private:
 	//Data
-	class Alarm {
+	//* Notify: Generic notifying object.					*
+	//***********************************************************************
+	class Notify {
 	    public:
+		//Data
+		enum IntFuncAttrIdxs { IFA_en = 0, IFA_doNtf, IFA_doRes, IFA_res, IFA_mess, IFA_lang };
+
+		class QueueIt {
+		    public:
+			//Methods
+			QueueIt( const string &ipath, uint8_t ilev, const string &icat, const string &imess,
+				const string &itpArg = "", unsigned iclc = 0 ) :
+			    lev(ilev), quittance(false), path(ipath), cat(icat), mess(imess), tpArg(itpArg), clc(iclc)	{ }
+			QueueIt( ) : lev(0), quittance(false)	{ }
+
+			//Attributes
+			uint8_t	lev;		//Level
+			bool	quittance;	//Quitance
+			string	path,		//Widget path
+				cat,		//Category
+				mess,		//Message
+				tpArg;		//Type argument
+			unsigned clc;		//Clock
+		};
+
 		//Methods
-		Alarm(const string &ipath, uint8_t ilev, uint8_t itp, const string &icat, const string &imess,
-			    const string &itpArg = "", unsigned iclc = 0 ) :
-		    lev(ilev), tp(itp), path(ipath), cat(icat), mess(imess), tpArg(itpArg), clc(iclc)	{ }
-		Alarm(const string &path, const string &alrm, unsigned clc);
-		Alarm( ) : lev(0), tp(0), qtp(0)	{ }
+		explicit Notify( ) : tp(-1), comIsExtScript(false), f_notify(false), f_resource(false), f_queue(false),
+		    mQueueCurNtf(-1), mOwner(NULL) 	{ }
+		Notify( uint8_t tp, const string &props, Session *own );
+		~Notify( );
+
+		void ntf( int alrmSt );	//Same notify for the alarm status
+		string ntfRes( unsigned &tm, string &wpath, string &mess, string &lang );	//The notification resource request
+
+		void queueSet( const string &wpath, const string &alrm );
+		void queueQuittance( const string &wpath, uint8_t quitTmpl, bool ret = false );	//Notification quittance send
+
+	    private:
+		//Methods
+		void commCall( bool doNtf, bool doRes, string &res, const string &mess = "", const string &lang = "" );
+
+		Session *owner( )	{ return mOwner; }
+
+		static void *Task( void *ntf );
 
 		//Attributes
-		uint8_t	lev,	//Level
-			tp,	//Type
-			qtp;	//Quittance type
-		string	path,	//Widget path
-			cat,	//Category
-			mess,	//Message
-			tpArg;	//Type argument
-		unsigned clc;	//Clock
+		int8_t	tp;			//Type
+		unsigned alSt;			//Alarm state
+		int	repDelay;		//Repeate delay, in seconds. -1 by default for disabled repeating
+		unsigned comIsExtScript	:1;	//The command detected and used as some intepretator's script like BASH, Perl, PHP and so on.
+		// Flags
+		unsigned f_notify	:1;	//Notification enabled
+		unsigned f_resource	:1;	//Form/request the resource for notification: sound file, text or other data
+		unsigned f_queue	:1;	//Form/use queue of notifications by the priority-level
+
+		unsigned toDo		:1;	//Need to do some notification doings
+		unsigned alEn		:1;	//Alarm enabled
+		string	comText, comProc;	//Command text and the procedure name
+
+		vector<QueueIt>	mQueue;
+		int	mQueueCurNtf;
+		unsigned mQueueCurTm;
+		string	mQueueCurPath;
+
+		pthread_mutex_t	dataM;
+		pthread_cond_t	callCV;
+		Session	*mOwner;
 	};
 
 	//Methods
@@ -143,6 +193,7 @@ class Session : public TCntrNode
 
 	//Attributes
 	pthread_mutex_t	dataM,
+			mAlrmRes,		//Alarms resource
 			mCalcRes;		//Calc resource
 	int	mPage;
 	const string mId;
@@ -159,9 +210,7 @@ class Session : public TCntrNode
 
 	vector<string>	mOpen;
 
-	Res		mAlrmRes;		//Alarms resource
-	vector<Alarm>	mAlrm;			//Alarms queue
-	int		mAlrmSndPlay;		//Now played sound alarm
+	map<uint8_t, Notify*>	mNotify;	//Notificators
 
 	// Styles
 	int		mStyleIdW;
@@ -200,7 +249,7 @@ class SessWdg : public Widget, public TValFunc
 	void getUpdtWdg( const string &path, unsigned int tm, vector<string> &els );
 
 	// Include widgets
-	void wdgAdd( const string &wid, const string &name, const string &parent, bool force = false );	//Implicit widget's creating on inherit
+	void wdgAdd( const string &wid, const string &name, const string &parent, bool force = false );	//Implicit widget's creating on the inherit
 	AutoHD<Widget> wdgAt( const string &wdg, int lev = -1, int off = 0 );
 	void pgClose( );
 
@@ -213,7 +262,7 @@ class SessWdg : public Widget, public TValFunc
 
 	// Alarms process
 	virtual void alarmSet( bool isSet = false );
-	virtual void alarmQuittance( uint8_t quit_tmpl, bool isSet = false );
+	virtual void alarmQuittance( uint8_t quit_tmpl, bool isSet = false, bool ret = false );
 
 	// Access to mime resource
 	string resourceGet( const string &id, string *mime = NULL );
@@ -292,7 +341,7 @@ class SessPage : public SessWdg
 
 	// Alarms process
 	void alarmSet( bool isSet = false );
-	void alarmQuittance( uint8_t quit_tmpl, bool isSet = false );
+	void alarmQuittance( uint8_t quit_tmpl, bool isSet = false, bool ret = false );
 
 	bool attrPresent( const string &attr );
 	AutoHD<Attr> attrAt( const string &attr, int lev = -1 );

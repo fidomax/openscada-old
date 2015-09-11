@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.VCAEngine file: vcaengine.h
 /***************************************************************************
- *   Copyright (C) 2006-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2006-2015 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -42,7 +42,7 @@ class Engine : public TUI
 {
     public:
 	//Data
-	enum Alarm	{ Light = 0x01, Alarm = 0x02, Sound = 0x04 };
+	//enum Alarm	{ Light = 0x01, Alarm = 0x02, Sound = 0x04 };
 
 	//Methods
 	Engine( string name );
@@ -54,48 +54,48 @@ class Engine : public TUI
 	void modStart( );
 	void modStop( );
 
-	string synthCom( )	{ return mSynthCom; }
-	string synthCode( )	{ return mSynthCode; }
+	//string synthCom( )	{ return mSynthCom; }
+	//string synthCode( )	{ return mSynthCode; }
 
 	string wlbTable( )	{ return "VCALibs"; }
 	string prjTable( )	{ return "VCAPrjs"; }
 
-	void setSynthCom( const string &vl )	{ mSynthCom = vl; modif(); }
-	void setSynthCode( const string &vl )	{ mSynthCode = vl; modif(); }
+	//void setSynthCom( const string &vl )	{ mSynthCom = vl; modif(); }
+	//void setSynthCode( const string &vl )	{ mSynthCode = vl; modif(); }
 
-	string callSynth( const string &txt );
+	//string callSynth( const string &txt );
 
-	//> Widgets libraries
+	// Widgets libraries
 	void wlbList( vector<string> &ls )			{ chldList( idWlb, ls ); }
 	bool wlbPresent( const string &id )			{ return chldPresent( idWlb, id ); }
 	void wlbAdd( const string &iid, const string &inm = "", const string &idb = "*.*" );
 	void wlbDel( const string &iid, bool full = false )	{ chldDel( idWlb, iid, -1, full ); }
 	AutoHD<WidgetLib> wlbAt( const string &id );
 
-	//> Projects
+	// Projects
 	void prjList( vector<string> &ls )			{ chldList( idPrj, ls ); }
 	bool prjPresent( const string &id )			{ return chldPresent( idPrj, id ); }
 	void prjAdd( const string &iid, const string &inm = "", const string &idb = "*.*" );
 	void prjDel( const string &iid, bool full = false )	{ chldDel( idPrj, iid, -1, full ); }
 	AutoHD<Project> prjAt( const string &id );
 
-	//> Sessions
+	// Sessions
 	void sesList( vector<string> &ls )			{ chldList( idSes, ls ); }
 	bool sesPresent( const string &id )			{ return chldPresent( idSes, id ); }
 	void sesAdd( const string &id, const string &proj = "" );
 	void sesDel( const string &iid, bool full = false )	{ chldDel( idSes, iid, -1, full ); }
 	AutoHD<Session> sesAt( const string &id );
 
-	//> User functions
+	// User functions
 	void fList( vector<string> &ls )			{ chldList( idFnc, ls ); }
 	bool fPresent( const string &id )			{ return chldPresent( idFnc, id ); }
 	AutoHD<TFunction> fAt( const string &id );
 
-	//> Attributes process functions
+	// Attributes process functions
 	void attrsLoad( Widget &w, const string &fullDB, const string &idw, const string &idc, const string &attrs, bool ldGen = false );
 	string attrsSave( Widget &w, const string &fullDB, const string &idw, const string &idc, bool ldGen = false );
 
-	//> DB structures
+	// DB structures
 	TElem &elWdgLib( )	{ return lbwdg_el; }
 	TElem &elWdgData( )	{ return wdgdata_el; }
 	TElem &elWdg( )		{ return wdg_el; }
@@ -133,9 +133,10 @@ class Engine : public TUI
 		page_el,	//The table structure of project's pages
 		prj_ses_el,	//The table structure of session's IO of project
 		prjStl_el;	//The table structure of styles of project
-	string	mSynthCom, mSynthCode;	//Synth parameters
+	//string	mSynthCom, mSynthCode;	//Synth parameters
 
-	Res	mSynthRes, mSesRes;	//Synth, and sessions resource
+	Res	//mSynthRes,	//Synth resource
+		mSesRes;	//Sessions resource
 
 	map<string,string>	mSessAuto;
 };

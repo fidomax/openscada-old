@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.VCAEngine file: session.cpp
 /***************************************************************************
- *   Copyright (C) 2007-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,6 +18,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <fcntl.h>
+#include <errno.h>
 #include <pthread.h>
 #include <signal.h>
 
@@ -33,12 +35,13 @@ using namespace VCA;
 //************************************************
 Session::Session( const string &iid, const string &iproj ) :
     mId(iid), mPrjnm(iproj), mOwner("root"), mGrp("UI"), mUser(dataM), mPer(100), mPermit(RWRWR_), mEnable(false), mStart(false),
-    endrun_req(false), mBackgrnd(false), mConnects(0), mCalcClk(1), mAlrmSndPlay(-1), mStyleIdW(-1)
+    endrun_req(false), mBackgrnd(false), mConnects(0), mCalcClk(1), mStyleIdW(-1)
 {
     pthread_mutexattr_t attrM;
     pthread_mutexattr_init(&attrM);
     pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&dataM, &attrM);
+    pthread_mutex_init(&mAlrmRes, &attrM);
     pthread_mutex_init(&mCalcRes, &attrM);
     pthread_mutexattr_destroy(&attrM);
 
@@ -50,7 +53,10 @@ Session::Session( const string &iid, const string &iproj ) :
 
 Session::~Session( )
 {
+    for(map<uint8_t,Notify*>::iterator iN = mNotify.begin(); iN != mNotify.end(); ++iN) delete iN->second;
+
     pthread_mutex_destroy(&dataM);
+    pthread_mutex_destroy(&mAlrmRes);
     pthread_mutex_destroy(&mCalcRes);
 }
 
@@ -176,7 +182,7 @@ void Session::setStart( bool val )
 	    d_tm = TSYS::curTime();
 	}
 
-	//Process all pages is on
+	//Process all pages to on
 	list(pg_ls);
 	for(unsigned i_ls = 0; i_ls < pg_ls.size(); i_ls++)
 	    at(pg_ls[i_ls]).at().setProcess(true);
@@ -185,6 +191,11 @@ void Session::setStart( bool val )
 	    mess_debug(nodePath().c_str(), _("Process on for all root pages time: %f ms."), 1e-3*(TSYS::curTime()-d_tm));
 	    d_tm = TSYS::curTime();
 	}
+
+	//VCA server's force off
+	MtxAlloc resAl(mAlrmRes, true);
+	for(map<uint8_t,Notify*>::iterator iN = mNotify.begin(); iN != mNotify.end(); ++iN) iN->second->ntf(0);
+	resAl.unlock();
 
 	//Start process task
 	if(!mStart) SYS->taskCreate(nodePath('.',true), 0, Session::Task, this);
@@ -197,7 +208,12 @@ void Session::setStart( bool val )
 	//Stop process task
 	if(mStart) SYS->taskDestroy(nodePath('.',true), &endrun_req);
 
-	//Process all pages is off
+	//VCA server's force off
+	MtxAlloc resAl(mAlrmRes, true);
+	for(map<uint8_t,Notify*>::iterator iN = mNotify.begin(); iN != mNotify.end(); ++iN) iN->second->ntf(0);
+	resAl.unlock();
+
+	//Process all pages to off
 	list(pg_ls);
 	for(unsigned i_ls = 0; i_ls < pg_ls.size(); i_ls++)
 	    at(pg_ls[i_ls]).at().setProcess(false);
@@ -343,32 +359,9 @@ void Session::alarmSet( const string &wpath, const string &alrm )
 {
     if(wpath.empty()) return;
 
-    //Alarms queue process
-    ResAlloc res(mAlrmRes, true);
-
-    Alarm aobj(wpath, alrm, calcClk());
-
-    unsigned i_q = 0;
-    while(i_q < mAlrm.size() && mAlrm[i_q].path != aobj.path) i_q++;
-    if(!aobj.lev) {
-	if(i_q < mAlrm.size()) mAlrm.erase(mAlrm.begin()+i_q);
-	return;
-    }
-    if(i_q < mAlrm.size() && aobj.lev == mAlrm[i_q].lev) mAlrm[i_q] = aobj;
-    else {
-	if(i_q < mAlrm.size()) {
-	    mAlrm.erase(mAlrm.begin()+i_q);
-	    if((int)i_q == mAlrmSndPlay) mAlrmSndPlay = -1;
-	    if((int)i_q < mAlrmSndPlay && mAlrmSndPlay >= 0) mAlrmSndPlay--;
-	}
-	unsigned i_q1 = 0;
-	while(i_q1 < mAlrm.size() && aobj.lev >= mAlrm[i_q].lev) i_q1++;
-	if(i_q1 < mAlrm.size()) {
-	    mAlrm.insert(mAlrm.begin()+i_q1, aobj);
-	    if((int)i_q <= mAlrmSndPlay && mAlrmSndPlay >= 0) mAlrmSndPlay++;
-	}
-	else mAlrm.push_back(aobj);
-    }
+    //Notifications queue update
+    MtxAlloc resAl(mAlrmRes, true);
+    for(map<uint8_t,Notify*>::iterator iN = mNotify.begin(); iN != mNotify.end(); ++iN) iN->second->queueSet(wpath, alrm);
 }
 
 int Session::alarmStat( )
@@ -386,21 +379,28 @@ int Session::alarmStat( )
     return (aqtp<<16)|(atp<<8)|alev;
 }
 
-void Session::alarmQuittance( const string &wpath, uint8_t quit_tmpl )
+void Session::alarmQuittance( const string &wpath, uint8_t quit_tmpl, bool ret )
 {
-    if(!wpath.empty()) ((AutoHD<SessWdg>)mod->nodeAt(wpath)).at().alarmQuittance(quit_tmpl, true);
+    if(!wpath.empty()) ((AutoHD<SessWdg>)mod->nodeAt(wpath)).at().alarmQuittance(quit_tmpl, true, ret);
     else {
 	vector<string> ls;
 	list(ls);
 	for(unsigned i_p = 0; i_p < ls.size(); i_p++)
-	    at(ls[i_p]).at().alarmQuittance(quit_tmpl, true);
+	    at(ls[i_p]).at().alarmQuittance(quit_tmpl, true, ret);
     }
 
-    //Queue alarms quittance
-    ResAlloc res(mAlrmRes, false);
-    for(unsigned i_q = 0; i_q < mAlrm.size(); i_q++)
-	if(mAlrm[i_q].path.substr(0,wpath.size()) == wpath)
-	    mAlrm[i_q].qtp &= quit_tmpl;
+    //The notifications queue quittance
+    MtxAlloc resAl(mAlrmRes, true);
+    for(map<uint8_t,Notify*>::iterator iN = mNotify.begin(); iN != mNotify.end(); ++iN)
+	iN->second->queueQuittance(wpath, quit_tmpl, ret);
+}
+
+void Session::ntfReg( uint8_t tp, const string &props )
+{
+    MtxAlloc res(mAlrmRes, true);
+    map<uint8_t,Notify*>::iterator iN = mNotify.find(tp);
+    if(iN != mNotify.end()) return;
+    mNotify[tp] = new Notify(tp, props, this);
 }
 
 void *Session::Task( void *icontr )
@@ -421,6 +421,13 @@ void *Session::Task( void *icontr )
 		mess_err(ses.nodePath().c_str(),_("Session '%s' calculate error."),pls[i_l].c_str());
 	    }
 
+	//VCA server's notifications processing
+	MtxAlloc resAl(ses.mAlrmRes, true);
+	int aSt = ses.alarmStat();
+	for(map<uint8_t,Notify*>::iterator iN = ses.mNotify.begin(); iN != ses.mNotify.end(); ++iN) iN->second->ntf(aSt);
+	resAl.unlock();
+
+	//Sleep to next cycle
 	TSYS::taskSleep((int64_t)ses.period()*1000000);
 	if((ses.mCalcClk++) == 0) ses.mCalcClk = 1;
     }
@@ -482,18 +489,13 @@ TVariant Session::objFuncCall( const string &iid, vector<TVariant> &prms, const 
 {
     // string user( ) - the session user
     if(iid == "user")	return user();
-    // string alrmSndPlay( ) - the widget's path for that on this time played the alarm message.
-    else if(iid == "alrmSndPlay") {
-	ResAlloc res(mAlrmRes, false);
-	if(mAlrmSndPlay < 0 || mAlrmSndPlay >= (int)mAlrm.size()) return string("");
-	return mAlrm[mAlrmSndPlay].path;
-    }
-    // int alrmQuittance(int quit_tmpl, string wpath = "") - alarm quittance <wpath> with template <quit_tmpl>. If <wpath> is empty
-    //        string then make global quittance.
+    // int alrmQuittance( int quit_tmpl, string wpath = "", bool ret = false ) -
+    //        alarm quittance, or return for <ret>, <wpath> with template <quit_tmpl>. If <wpath> is empty string then make global quittance.
     //  quit_tmpl - quittance template
     //  wpath - path to widget
+    //  ret - return the quittance
     else if(iid == "alrmQuittance" && prms.size() >= 1) {
-	alarmQuittance((prms.size()>=2) ? prms[1].getS() : "", ~prms[0].getI());
+	alarmQuittance((prms.size()>=2) ? prms[1].getS() : "", ~prms[0].getI(), (prms.size()>=3) ? prms[2].getB() : false);
 	return 0;
     }
 
@@ -506,7 +508,7 @@ void Session::cntrCmdProc( XMLNode *opt )
     //Service commands process
     if(a_path == "/serv/pg") {	//Pages operations
 	if(ctrChkNode(opt,"openlist",permit(),owner().c_str(),grp().c_str(),SEC_RD)) {	//Open pages list
-	    unsigned tm = strtoul(opt->attr("tm").c_str(),NULL,10);
+	    unsigned tm = strtoul(opt->attr("tm").c_str(), NULL, 10);
 	    unsigned ntm = calcClk();
 	    vector<string> lst = openList();
 	    for(unsigned i_f = 0; i_f < lst.size(); i_f++) {
@@ -540,33 +542,18 @@ void Session::cntrCmdProc( XMLNode *opt )
 	    int aSt = alarmStat();
 	    opt->setAttr("alarmSt", i2s(aSt));
 
-	    // Get alarm from sound queue
-	    if(opt->attr("mode") == "sound") {
-		unsigned a_tm  = strtoul(opt->attr("tm").c_str(),NULL,10);
-		opt->setAttr("tm", u2s(calcClk()));
-
-		// Find event, return it and alarm resource
-		ResAlloc res(mAlrmRes, false);
-		string wdg = opt->attr("wdg");
-		int i_q, i_first = -1, i_next = -1;
-		for(i_q = mAlrm.size()-1; i_q >= 0; i_q--) {
-		    if(!(mAlrm[i_q].qtp & Engine::Sound)) continue;
-		    if(wdg.empty() || modifChk(a_tm,mAlrm[i_q].clc) || i_next > 0)	break;	//First, new and next alarms break
-		    if(i_first < 0) i_first = i_q;
-		    if(wdg == mAlrm[i_q].path) i_next = i_q;
-		}
-		if(i_q < 0 && i_first >= 0) i_q = i_first;
-		if(i_q >= 0) {
-		    opt->setAttr("wdg", mAlrm[i_q].path);
-		    if(!mAlrm[i_q].tpArg.empty())
-			opt->setText(((AutoHD<SessWdg>)mod->nodeAt(mAlrm[i_q].path)).at().resourceGet(mAlrm[i_q].tpArg));
-		    else opt->setText(mod->callSynth(mAlrm[i_q].mess));
-		    mAlrmSndPlay = i_q;
-		} else mAlrmSndPlay = -1;
-	    } else if(!((aSt>>16) & Engine::Sound)) mAlrmSndPlay = -1;
+	    // Get visualiser side notification's resource
+	    if(opt->attr("mode") == "resource") {
+		MtxAlloc resAl(mAlrmRes, true);
+		map<uint8_t,Notify*>::iterator iN = mNotify.find(s2i(opt->attr("tp")));
+		unsigned tm = strtoul(opt->attr("tm").c_str(), NULL, 10);
+		string res, mess, lang, wdg = opt->attr("wdg");
+		if(iN != mNotify.end()) res = TSYS::strEncode(iN->second->ntfRes(tm,wdg,mess,lang), TSYS::base64);
+		opt->setAttr("tm", u2s(tm))->setAttr("wdg", wdg)->setAttr("mess", mess)->setAttr("lang", lang)->setText(res);
+	    }
 	}
 	else if(ctrChkNode(opt,"quittance",permit(),owner().c_str(),grp().c_str(),SEC_WR))
-	    alarmQuittance(opt->attr("wdg"),~s2i(opt->attr("tmpl")));
+	    alarmQuittance(opt->attr("wdg"), ~s2i(opt->attr("tmpl")), s2i(opt->attr("ret")));
 	return;
     }
 
@@ -609,20 +596,10 @@ void Session::cntrCmdProc( XMLNode *opt )
 	}
 	if(ctrMkNode("area",opt,-1,"/page",_("Pages")))
 	    ctrMkNode("list",opt,-1,"/page/page",_("Pages"),R_R_R_,"root",SUI_ID,3,"tp","br","idm","1","br_pref","pg_");
-	if(ctrMkNode("area",opt,-1,"/alarm",_("Alarms")))
-	    if(ctrMkNode("table",opt,-1,"/alarm/alarm",_("Alarms list"),R_R_R_,"root",SUI_ID)) {
-		ctrMkNode("list",opt,-1,"/alarm/alarm/wdg",_("Widget"),R_R_R_,"root",SUI_ID,1,"tp","str");
-		ctrMkNode("list",opt,-1,"/alarm/alarm/lev",_("Level"),R_R_R_,"root",SUI_ID,1,"tp","dec");
-		ctrMkNode("list",opt,-1,"/alarm/alarm/cat",_("Category"),R_R_R_,"root",SUI_ID,1,"tp","str");
-		ctrMkNode("list",opt,-1,"/alarm/alarm/mess",_("Messages"),R_R_R_,"root",SUI_ID,1,"tp","str");
-		ctrMkNode("list",opt,-1,"/alarm/alarm/tp",_("Type"),R_R_R_,"root",SUI_ID,1,"tp","hex");
-		ctrMkNode("list",opt,-1,"/alarm/alarm/qtp",_("Quittance"),R_R_R_,"root",SUI_ID,1,"tp","hex");
-		ctrMkNode("list",opt,-1,"/alarm/alarm/tpArg",_("Type argument"),R_R_R_,"root",SUI_ID,1,"tp","str");
-	    }
 	return;
     }
 
-    //> Process command to page
+    //Process command to page
     if(a_path == "/ico" && ctrChkNode(opt))	opt->setText(ico());
     else if(a_path == "/obj/st/en") {
 	if(ctrChkNode(opt,"get",permit(),owner().c_str(),grp().c_str(),SEC_RD))	opt->setText(i2s(enable()));
@@ -681,40 +658,281 @@ void Session::cntrCmdProc( XMLNode *opt )
 	for(unsigned i_f=0; i_f < lst.size(); i_f++)
 	    opt->childAdd("el")->setAttr("id",lst[i_f])->setText(at(lst[i_f]).at().name());
     }
-    else if(a_path == "/alarm/alarm" && ctrChkNode(opt)) {
-	//Fill Archivators table
-	XMLNode *n_wdg	= ctrMkNode("list", opt, -1, "/alarm/alarm/wdg", "", R_R_R_);
-	XMLNode *n_lev	= ctrMkNode("list", opt, -1, "/alarm/alarm/lev", "", R_R_R_);
-	XMLNode *n_cat	= ctrMkNode("list", opt, -1, "/alarm/alarm/cat", "", R_R_R_);
-	XMLNode *n_mess	= ctrMkNode("list", opt, -1, "/alarm/alarm/mess", "", R_R_R_);
-	XMLNode *n_tp	= ctrMkNode("list", opt, -1, "/alarm/alarm/tp", "", R_R_R_);
-	XMLNode *n_qtp	= ctrMkNode("list", opt, -1, "/alarm/alarm/qtp", "", R_R_R_);
-	XMLNode *n_tpArg= ctrMkNode("list", opt, -1, "/alarm/alarm/tpArg", "", R_R_R_);
-
-	ResAlloc res(mAlrmRes, false);
-	for(int i_q = mAlrm.size()-1; i_q >= 0; i_q--) {
-	    if(n_wdg)	n_wdg->childAdd("el")->setText(mAlrm[i_q].path);
-	    if(n_lev)	n_lev->childAdd("el")->setText(i2s(mAlrm[i_q].lev));
-	    if(n_cat)	n_cat->childAdd("el")->setText(mAlrm[i_q].cat);
-	    if(n_mess)	n_mess->childAdd("el")->setText(mAlrm[i_q].mess);
-	    if(n_tp)	n_tp->childAdd("el")->setText(i2s(mAlrm[i_q].tp));
-	    if(n_qtp)	n_qtp->childAdd("el")->setText(i2s(mAlrm[i_q].qtp));
-	    if(n_tpArg)	n_tpArg->childAdd("el")->setText(mAlrm[i_q].tpArg);
-	}
-    }
     else TCntrNode::cntrCmdProc(opt);
 }
 
-//* Alarm: Alarm object				 *
+//* Notify: Generic notifying object.		 *
 //************************************************
-Session::Alarm::Alarm( const string &ipath, const string &alrm, unsigned iclc ) : path(ipath), clc(iclc)
+Session::Notify::Notify( uint8_t itp, const string &props, Session *iown ) :
+    tp(itp), alSt(0xFFFFFFFF), repDelay(-1), comIsExtScript(false), f_notify(false), f_resource(false), f_queue(false),
+    toDo(false), alEn(false), comText(props), mQueueCurNtf(-1), mQueueCurTm(0), mOwner(iown)
 {
-    int a_off = 0;
-    lev   = s2i(TSYS::strSepParse(alrm,0,'|',&a_off));
-    cat   = TSYS::strSepParse(alrm,0,'|',&a_off);
-    mess  = TSYS::strSepParse(alrm,0,'|',&a_off);
-    qtp   = tp = s2i(TSYS::strSepParse(alrm,0,'|',&a_off));
-    tpArg = TSYS::strSepParse(alrm,0,'|',&a_off);
+    //The resource allocation object init
+    pthread_mutexattr_t attrM;
+    pthread_mutexattr_init(&attrM);
+    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&dataM, &attrM);
+    pthread_mutexattr_destroy(&attrM);
+
+    //Parse properties
+    string iLn, iOpt;
+    bool hasLang  = false, hasFlags = false;
+    for(int off = 0, lCnt = 0, fPos; (!hasLang || !hasFlags) && (iLn=TSYS::strLine(props,0,&off)).size(); lCnt++)
+	if(!hasLang && !lCnt && iLn.find("#!") == 0) { hasLang = comIsExtScript = true; continue; }
+	else if(!hasFlags && (fPos=iLn.find("flags=")) != string::npos)
+	    for(fPos += 6; (iOpt=TSYS::strParse(iLn,0,"|",&fPos)).size(); )
+		if(iOpt.compare(0,6,"notify") == 0) {
+		    f_notify = true;
+		    repDelay = (iOpt.size() > 6) ? vmax(0,vmin(100,atoi(iOpt.c_str()+6))) : -1;
+		}
+		else if(iOpt == "resource")	f_resource = true;
+		else if(iOpt == "queue")	{ f_queue = true; if(repDelay < 0) repDelay = 0; }
+
+    //The command procedure prepare
+    if(comIsExtScript) {
+	// Prepare the external script
+	comProc = "ses_"+owner()->id()+"_ntf"+i2s(tp);
+	bool fOK = false;
+	int hd = open(comProc.c_str(), O_CREAT|O_TRUNC|O_WRONLY, 0775);
+	if(hd >= 0) {
+	    fOK = write(hd, comText.data(), comText.size()) == comText.size();
+	    close(hd);
+	}
+	if(!fOK) {
+	    mess_err(owner()->nodePath().c_str(), _("Function of the notificator '%s' error: %s"), comProc.c_str(), strerror(errno));
+	    comProc = "";
+	}
+    }
+    else {
+	// Prepare internal procedure
+	TFunction funcIO("ses_"+owner()->id()+"_ntf"+i2s(tp));
+	//funcIO.setStor(DB());
+	funcIO.ioIns(new IO("en",_("Enabled notification"),IO::Boolean,IO::Default), IFA_en);
+	funcIO.ioIns(new IO("doNtf",_("Doing notification"),IO::Boolean,IO::Default), IFA_doNtf);
+	funcIO.ioIns(new IO("doRes",_("Doing resource"),IO::Boolean,IO::Default), IFA_doRes);
+	funcIO.ioIns(new IO("res",_("Resource stream"),IO::String,IO::Output), IFA_res);
+	funcIO.ioIns(new IO("mess",_("Notification message"),IO::String,IO::Default), IFA_mess);
+	funcIO.ioIns(new IO("lang",_("Notification message's language"),IO::String,IO::Default), IFA_lang);
+	try { comProc = SYS->daq().at().at("JavaLikeCalc").at().compileFunc("JavaScript", funcIO, comText); }
+	catch(TError er) {
+	    mess_err(owner()->nodePath().c_str(), _("Function of the notificator '%s' error: %s"), funcIO.id().c_str(), er.mess.c_str());
+	}
+    }
+
+    if(f_notify) {
+	//Call conditional variable init
+	pthread_cond_init(&callCV, NULL);
+
+	//Notification task create
+	SYS->taskCreate(owner()->nodePath('.',true)+".ntf"+i2s(tp), 0, Session::Notify::Task, this);
+    }
+}
+
+Session::Notify::~Notify( )
+{
+    if(f_notify) {
+	SYS->taskDestroy(owner()->nodePath('.',true)+".ntf"+i2s(tp), NULL, 10, false, &callCV);
+	pthread_cond_destroy(&callCV);
+    }
+
+    //The command procedure remove
+    if(comIsExtScript && comProc.size()) remove(comProc.c_str());
+
+    pthread_mutex_destroy(&dataM);
+}
+
+void Session::Notify::ntf( int ialSt )
+{
+    //Check for the alarm state change
+    if(!f_notify || !(((ialSt^alSt)>>16)&(1<<tp)))	return;
+
+    alEn = (bool)((ialSt>>16)&(1<<tp));
+    pthread_mutex_lock(&dataM);
+    toDo = true;
+    pthread_cond_signal(&callCV);
+    pthread_mutex_unlock(&dataM);
+
+    alSt = ialSt;
+}
+
+string Session::Notify::ntfRes( unsigned &itm, string &wpath, string &mess, string &lang )
+{
+    string rez;
+
+    if((lang=SYS->security().at().usrAt(owner()->user()).at().lang()).empty()) lang = Mess->lang();
+
+    // Just the resource doing request
+    if(!f_queue && f_resource) commCall(false, true, rez, "", lang);
+
+    if(f_queue) {
+	unsigned tm = itm;
+	itm = owner()->calcClk();
+
+	// Find entry, return it and the resource
+	MtxAlloc res(dataM, true);
+	int iQ, iFirst = -1, iNext = -1;
+	for(iQ = mQueue.size()-1; iQ >= 0; iQ--) {
+	    if(mQueue[iQ].quittance) continue;
+	    if(wpath.empty() || owner()->modifChk(tm,mQueue[iQ].clc) || iNext > 0)	break;	//First, new and next entries break
+	    if(iFirst < 0) iFirst = iQ;
+	    if(wpath == mQueue[iQ].path) iNext = iQ;
+	}
+	if(iQ < 0 && iFirst >= 0) iQ = iFirst;	//Return to first entry
+	if(iQ >= 0) {
+	    wpath = mQueue[iQ].path;
+	    mess = mQueue[iQ].mess;
+	    //  Get the resource direct
+	    if(!mQueue[iQ].tpArg.empty())
+		rez = TSYS::strDecode(((AutoHD<SessWdg>)mod->nodeAt(mQueue[iQ].path)).at().resourceGet(mQueue[iQ].tpArg), TSYS::base64);
+	    //  Call the resource producing procedure
+	    else commCall(false, true, rez, mQueue[iQ].mess, lang);
+	    mQueueCurNtf = iQ;
+	} else { mQueueCurNtf = -1; wpath = mess = ""; }
+    }
+
+    return rez;
+}
+
+void Session::Notify::queueSet( const string &wpath, const string &alrm )
+{
+    //Calls to the queue update from alarmSet()
+    if(!f_queue) return;
+
+    int aOff = 0;
+    uint8_t	aLev = s2i(TSYS::strParse(alrm,0,"|",&aOff));
+    string	aCat = TSYS::strParse(alrm, 0, "|", &aOff),
+		aMess= TSYS::strParse(alrm, 0, "|", &aOff);
+    uint8_t	aTp  = s2i(TSYS::strParse(alrm,0,"|",&aOff));
+    string	aArg = TSYS::strParse(alrm,0,"|",&aOff);
+
+    //if(!(aTp&(1<<tp)))	return;
+
+    QueueIt qIt(wpath, aLev, aCat, aMess, aArg, owner()->calcClk());
+
+    MtxAlloc res(dataM, true);
+
+    unsigned iQ = 0;
+    // Check for the entry to present
+    while(iQ < mQueue.size() && mQueue[iQ].path != qIt.path) iQ++;
+
+    // Clean up the entry from queue
+    if(!qIt.lev || !(aTp&(1<<tp))) {
+	if(iQ < mQueue.size()) mQueue.erase(mQueue.begin()+iQ);
+	return;
+    }
+    // Update presented and same level entry
+    if(iQ < mQueue.size() && qIt.lev == mQueue[iQ].lev) mQueue[iQ] = qIt;
+    else {
+	// Remove presented by different level entry
+	if(iQ < mQueue.size()) {
+	    mQueue.erase(mQueue.begin()+iQ);
+	    //  Entry into the notification update
+	    if((int)iQ == mQueueCurNtf) mQueueCurNtf = -1;
+	    if((int)iQ < mQueueCurNtf && mQueueCurNtf >= 0) mQueueCurNtf--;
+	}
+	//  Place the entry to the queue
+	unsigned iQ1 = 0;
+	while(iQ1 < mQueue.size() && qIt.lev >= mQueue[iQ].lev) iQ1++;
+	if(iQ1 < mQueue.size()) {
+	    mQueue.insert(mQueue.begin()+iQ1, qIt);
+	    if((int)iQ <= mQueueCurNtf && mQueueCurNtf >= 0) mQueueCurNtf++;
+	}
+	else mQueue.push_back(qIt);
+    }
+}
+
+void Session::Notify::queueQuittance( const string &wpath, uint8_t quitTmpl, bool ret )
+{
+    //Calls to the queue update from alarmQuittance()
+    if(!f_queue) return;
+
+    pthread_mutex_lock(&dataM);
+    for(unsigned iQ = 0; iQ < mQueue.size(); iQ++)
+	if(mQueue[iQ].path.substr(0,wpath.size()) == wpath)
+	    mQueue[iQ].quittance = !(quitTmpl&(1<<tp)) && !ret;
+    pthread_mutex_unlock(&dataM);
+}
+
+void Session::Notify::commCall( bool doNtf, bool doRes, string &res, const string &mess, const string &lang )
+{
+    if(comProc.empty()) return;
+
+    //Shared data obtain
+    pthread_mutex_lock(&dataM);
+    string wcomProc = comProc;
+    pthread_mutex_unlock(&dataM);
+
+    if(comIsExtScript) {
+	string resFile = "ses_"+owner()->id()+"_res"+i2s(tp);
+	int hdRes = res.size() ? open(resFile.c_str(), O_CREAT|O_TRUNC|O_WRONLY, 0664) : -1;
+	if(hdRes >= 0) { write(hdRes, res.data(), res.size()); close(hdRes); }
+	// Prepare environment and execute the external script
+	system(("en="+i2s(alEn)+" doNtf="+i2s(doNtf)+" doRes="+i2s(doRes)+" res="+resFile+
+		" mess=\""+TSYS::strEncode(mess,TSYS::SQL)+"\" lang=\""+TSYS::strEncode(lang,TSYS::SQL)+"\" ./"+wcomProc).c_str());
+	if(doRes) {
+	    hdRes = open(resFile.c_str(), O_RDONLY);
+	    if(hdRes >= 0) {
+		char buf[STR_BUF_LEN];
+		res.clear();
+		if(lseek(hdRes,0,SEEK_END) < 100*1024*1024) {
+		    lseek(hdRes, 0, SEEK_SET);
+		    for(int len; (len=read(hdRes,buf,sizeof(buf))) > 0; ) res.append(buf, len);
+		}
+		close(hdRes);
+	    }
+	}
+	if(hdRes >= 0) remove(resFile.c_str());
+    }
+    else {
+	// Prepare and execute internal procedure
+	TValFunc funcV;
+	funcV.setFunc(&((AutoHD<TFunction>)SYS->nodeAt(wcomProc)).at());
+
+	//  Load inputs
+	funcV.setB(IFA_en, alEn);
+	funcV.setB(IFA_doNtf, doNtf);
+	funcV.setB(IFA_doRes, doRes);
+	funcV.setS(IFA_res, res);
+	funcV.setS(IFA_mess, mess);
+	funcV.setS(IFA_lang, lang);
+
+	//  Call to processing
+	funcV.calc();
+
+	//  Get outputs
+	if(doRes) res = funcV.getS(IFA_res);
+    }
+}
+
+void *Session::Notify::Task( void *intf )
+{
+    Session::Notify &ntf = *(Session::Notify*)intf;
+
+    pthread_mutex_lock(&ntf.dataM);
+    while(!TSYS::taskEndRun() || ntf.toDo) {
+	if(!ntf.toDo) pthread_cond_wait(&ntf.callCV, &ntf.dataM);
+	if(!ntf.toDo || ntf.comProc.empty()) { ntf.toDo = false; continue; }
+	ntf.toDo = false;
+	pthread_mutex_unlock(&ntf.dataM);
+
+	string ntfRes, ntfMess, ntfLang;
+	unsigned delayCnt = 0;
+	do {
+	    if(delayCnt) { TSYS::sysSleep(1); delayCnt--; continue; }
+
+	    //  Get the resources for the notification
+	    if((ntf.f_queue || ntf.f_resource) && ntf.alEn)
+		ntfRes = ntf.ntfRes(ntf.mQueueCurTm, ntf.mQueueCurPath, ntfMess, ntfLang);
+
+	    //  Same notification
+	    ntf.commCall(true, false, ntfRes, ntfMess, ntfLang);
+
+	    delayCnt = ntf.repDelay;
+	} while((ntf.repDelay >= 0 || ntf.f_queue) && ntf.alEn && !TSYS::taskEndRun());
+
+	pthread_mutex_lock(&ntf.dataM);
+    }
+    pthread_mutex_unlock(&ntf.dataM);
 }
 
 //************************************************
@@ -745,6 +963,12 @@ void SessPage::setEnable( bool val, bool force )
 	if((pgOpen || force || parent().at().attrAt("pgNoOpenProc").at().getB()) && !enable()) {
 	    SessWdg::setEnable(true);
 	    if(pgOpen) ownerSess()->openReg(path());
+
+	    //  Check for notifiers register
+	    for(unsigned iNtf = 0; iNtf < 7; iNtf++) {
+		string aNtf = TSYS::strMess("notify%d", iNtf);
+		if(attrPresent(aNtf)) ownerSess()->ntfReg(iNtf, attrAt(aNtf).at().getS());
+	    }
 	}
 	// Child pages process
 	if(!force) {
@@ -966,24 +1190,26 @@ void SessPage::alarmSet( bool isSet )
     if(isSet) ownerSess()->alarmSet(path(), aCur);
 }
 
-void SessPage::alarmQuittance( uint8_t quit_tmpl, bool isSet )
+void SessPage::alarmQuittance( uint8_t quit_tmpl, bool isSet, bool ret )
 {
     int alarmSt = attrAt("alarmSt").at().getI();
-    if(!((((alarmSt>>16)&0xFF)^quit_tmpl)&((alarmSt>>16)&0xFF))) return;
+    if(!ret && !((((alarmSt>>16)&0xFF)^quit_tmpl)&((alarmSt>>16)&0xFF)))return;
+    if(ret && !(((~(alarmSt>>16)&0xFF)^quit_tmpl)&((alarmSt>>8)&0xFF)))	return;
 
     //Self quittance
-    attrAt("alarmSt").at().setI(alarmSt & (quit_tmpl<<16|0xFFFF));
+    if(!ret) attrAt("alarmSt").at().setI(alarmSt & (quit_tmpl<<16|0xFFFF));
+    else attrAt("alarmSt").at().setI(alarmSt | (((~quit_tmpl)<<16)&(alarmSt<<8)&0xFF0000));
 
     vector<string> lst;
     //Included pages quittance
     pageList(lst);
     for(unsigned i_p = 0; i_p < lst.size(); i_p++)
-	pageAt(lst[i_p]).at().alarmQuittance(quit_tmpl);
+	pageAt(lst[i_p]).at().alarmQuittance(quit_tmpl, false, ret);
 
     //Include widgets quittance
     wdgList( lst );
     for(unsigned i_w = 0; i_w < lst.size(); i_w++)
-	((AutoHD<SessWdg>)wdgAt(lst[i_w])).at().alarmQuittance(quit_tmpl);
+	((AutoHD<SessWdg>)wdgAt(lst[i_w])).at().alarmQuittance(quit_tmpl, false, ret);
 
     if(isSet && ownerSessWdg(true))	ownerSessWdg(true)->alarmSet();
 }
@@ -1037,8 +1263,7 @@ bool SessPage::cntrCmdGeneric( XMLNode *opt )
 	ctrMkNode("oscada_cntr",opt,-1,"/",_("Session page: ")+ownerFullId()+"/"+id());
 	if(enable() && !(parent().at().prjFlags( )&Page::Empty))
 	    ctrMkNode("fld",opt,1,"/wdg/st/open",_("Open"),RWRWR_,owner().c_str(),grp().c_str(),1,"tp","bool");
-	if(enable() && parent().at().prjFlags()&(Page::Template|Page::Container))
-	{
+	if(enable() && parent().at().prjFlags()&(Page::Template|Page::Container)) {
 	    if(ctrMkNode("area",opt,1,"/page",_("Pages")))
 		ctrMkNode("list",opt,-1,"/page/page",_("Pages"),R_R_R_,"root","UI",3,"tp","br","idm","1","br_pref","pg_");
 	    if(ctrMkNode("branches",opt,-1,"/br","",R_R_R_))
@@ -1049,15 +1274,13 @@ bool SessPage::cntrCmdGeneric( XMLNode *opt )
 
     //Process command to page
     string a_path = opt->attr("path");
-    if(a_path == "/wdg/st/open" && enable() && !(parent().at().prjFlags()&Page::Empty))
-    {
+    if(a_path == "/wdg/st/open" && enable() && !(parent().at().prjFlags()&Page::Empty)) {
 	if(ctrChkNode(opt,"get",RWRWR_,owner().c_str(),grp().c_str(),SEC_RD))
 	    opt->setText(i2s(attrAt("pgOpen").at().getB()));
 	if(ctrChkNode(opt,"set",RWRWR_,owner().c_str(),grp().c_str(),SEC_WR))
 	    attrAt("pgOpen").at().setB(s2i(opt->text()));
     }
-    else if((a_path == "/br/pg_" || a_path == "/page/page") && ctrChkNode(opt))
-    {
+    else if((a_path == "/br/pg_" || a_path == "/page/page") && ctrChkNode(opt)) {
 	vector<string> lst;
 	pageList(lst);
 	for(unsigned i_f=0; i_f < lst.size(); i_f++)
@@ -1301,7 +1524,7 @@ void SessWdg::inheritAttr( const string &aid )
 
     if(enable() && !aid.empty() && ownerSess()->start() && attrPresent(aid)) {
 	AutoHD<Attr> attr = attrAt(aid);
-	if(!(attr.at().flgGlob()&Attr::IsUser))
+	if(!(attr.at().flgGlob()&Attr::IsUser) || attr.at().flgSelf()&Attr::VizerSpec)
 	    attr.at().setFlgSelf((Attr::SelfAttrFlgs)(attr.at().flgSelf()|Attr::SessAttrInh));
     }
 }
@@ -1396,19 +1619,21 @@ void SessWdg::alarmSet( bool isSet )
     if(isSet) ownerSess()->alarmSet(path(), aCur);
 }
 
-void SessWdg::alarmQuittance( uint8_t quit_tmpl, bool isSet )
+void SessWdg::alarmQuittance( uint8_t quit_tmpl, bool isSet, bool ret )
 {
     int alarmSt = attrAt("alarmSt").at().getI();
-    if(!((((alarmSt>>16)&0xFF)^quit_tmpl)&((alarmSt>>16)&0xFF))) return;
+    if(!ret && !((((alarmSt>>16)&0xFF)^quit_tmpl)&((alarmSt>>16)&0xFF)))return;
+    if(ret && !(((~(alarmSt>>16)&0xFF)^quit_tmpl)&((alarmSt>>8)&0xFF)))	return;
 
     //Self quittance
-    attrAt("alarmSt").at().setI(alarmSt & (quit_tmpl<<16|0xFFFF));
+    if(!ret) attrAt("alarmSt").at().setI(alarmSt & (quit_tmpl<<16|0xFFFF));
+    else attrAt("alarmSt").at().setI(alarmSt | (((~quit_tmpl)<<16)&(alarmSt<<8)&0xFF0000));
 
     vector<string> lst;
     //Include widgets quittance
     wdgList( lst );
     for(unsigned i_w = 0; i_w < lst.size(); i_w++)
-	((AutoHD<SessWdg>)wdgAt(lst[i_w])).at().alarmQuittance(quit_tmpl);
+	((AutoHD<SessWdg>)wdgAt(lst[i_w])).at().alarmQuittance(quit_tmpl, false, ret);
 
     if(isSet && ownerSessWdg(true)) ownerSessWdg(true)->alarmSet();
 }
@@ -1452,7 +1677,7 @@ void SessWdg::getUpdtWdg( const string &ipath, unsigned int tm, vector<string> &
 
 unsigned int SessWdg::modifVal( Attr &cfg )
 {
-    if(s2i(cfg.fld().reserve())) mMdfClc = mCalcClk;
+    if(s2i(cfg.fld().reserve()) || cfg.flgSelf()&Attr::VizerSpec) mMdfClc = mCalcClk;
 
     return mCalcClk;
 }
@@ -1656,7 +1881,7 @@ bool SessWdg::attrChange( Attr &cfg, TVariant prev )
     else if(cfg.id() == "alarmSt" && cfg.getI()&0x1000000) {
 	int tmpl = ~(cfg.getI()&0xFF);
 	cfg.setI(prev.getI(), false, true);
-	ownerSess()->alarmQuittance(path(), tmpl);
+	ownerSess()->alarmQuittance(path(), tmpl, cfg.getI()&0x2000000);
     }
 
     //External link process
@@ -1715,14 +1940,14 @@ TVariant SessWdg::objFuncCall( const string &iid, vector<TVariant> &prms, const 
 	}
 	catch(TError err){ return false; }
     }
-    // bool wdgDel(string wid) - delete widget, return true for success
+    // bool wdgDel(string wid) - delete the widget, return true for success
     //  wid - widget identifier
     if(iid == "wdgDel" && prms.size()) {
 	try { wdgDel(prms[0].getS()); }
 	catch(TError err){ return false; }
 	return true;
     }
-    // TCntrNodeObj wdgAt(string wid, bool byPath = false) - attach to child widget or global by <path>
+    // TCntrNodeObj wdgAt(string wid, bool byPath = false) - attach to the child widget or global by <path>
     //  wid - widget identifier
     //  byPath - attach by absolute or relative path. First item of absolute path (session or project id) is passed.
     if(iid == "wdgAt" && prms.size()) {
@@ -1831,7 +2056,8 @@ bool SessWdg::cntrCmdServ( XMLNode *opt )
 		attrList(als);
 		for(unsigned i_l = 0; i_l < als.size(); i_l++) {
 		    attr = attrAt(als[i_l]);
-		    if(!(attr.at().flgGlob()&Attr::IsUser) && modifChk(tm,attr.at().modif()) && s2i(attr.at().fld().reserve()))
+		    if(((!(attr.at().flgGlob()&Attr::IsUser) && s2i(attr.at().fld().reserve())) || attr.at().flgSelf()|Attr::VizerSpec) &&
+			    modifChk(tm,attr.at().modif()))
 			opt->childAdd("el")->setAttr("id", als[i_l].c_str())->
 					     setAttr("p", attr.at().fld().reserve())->
 					     setText(attr.at().isTransl()?trU(attr.at().getS(),u):attr.at().getS());
@@ -1864,7 +2090,8 @@ bool SessWdg::cntrCmdServ( XMLNode *opt )
 	    attrList(als);
 	    for(unsigned i_l = 0; i_l < als.size(); i_l++) {
 		attr = attrAt(als[i_l]);
-		if(!(attr.at().flgGlob()&Attr::IsUser) && modifChk(tm,attr.at().modif()) && s2i(attr.at().fld().reserve()))
+		if(((!(attr.at().flgGlob()&Attr::IsUser) && s2i(attr.at().fld().reserve())) || attr.at().flgSelf()|Attr::VizerSpec) &&
+			modifChk(tm,attr.at().modif()))
 		    opt->childAdd("el")->setAttr("id", als[i_l].c_str())->
 				     setAttr("p", attr.at().fld().reserve())->
 				     setText(attr.at().isTransl()?trU(attr.at().getS(),u):attr.at().getS());
@@ -1939,15 +2166,28 @@ bool SessWdg::cntrCmdAttributes( XMLNode *opt, Widget *src )
     //Process command to page
     string a_path = opt->attr("path");
     if(a_path.compare(0,6,"/attr/") == 0) {
-	AutoHD<Attr> attr = attrAt(TSYS::pathLev(a_path,1));
-	if(ctrChkNode(opt,"get",((attr.at().fld().flg()&TFld::NoWrite)?(permit()&~0222):permit())|R_R_R_,owner().c_str(),grp().c_str(),SEC_RD))
-	    opt->setText(attr.at().isTransl()?trU(attr.at().getS(),opt->attr("user")):attr.at().getS());
-	else if(ctrChkNode(opt,"set",((attr.at().fld().flg()&TFld::NoWrite)?(permit()&~0222):permit())|R_R_R_,owner().c_str(),grp().c_str(),SEC_WR))
-	{
-	    if(attr.at().id() == "event")	eventAdd(opt->text()+"\n");
-	    else				attr.at().setS(opt->text());
+	string tStr = TSYS::pathLev(a_path, 1);
+	if(ctrChkNode(opt,"activate")) {
+	    //Visualizer specific attributes creation at the request
+	    if(!attrPresent(tStr) && opt->attr("aNm").size()) {
+		parent().at().attrAdd(new TFld(tStr.c_str(),opt->attr("aNm").c_str(),(TFld::Type)s2i(opt->attr("aTp")),s2i(opt->attr("aFlg"))|Attr::IsUser));
+		parent().at().attrAt(tStr).at().setModif(1);
+		parent().at().modif();
+	    }
+	    parent().at().attrAt(tStr).at().setFlgSelf((Attr::SelfAttrFlgs)(parent().at().attrAt(tStr).at().flgSelf()|Attr::VizerSpec));
+	    attrAt(tStr).at().setFlgSelf((Attr::SelfAttrFlgs)(attrAt(tStr).at().flgSelf()|Attr::VizerSpec));
 	}
-	else return Widget::cntrCmdAttributes(opt);
+	else {
+	    AutoHD<Attr> attr = attrAt(tStr);
+	    if(ctrChkNode(opt,"get",((attr.at().fld().flg()&TFld::NoWrite)?(permit()&~0222):permit())|R_R_R_,owner().c_str(),grp().c_str(),SEC_RD))
+		opt->setText(attr.at().isTransl()?trU(attr.at().getS(),opt->attr("user")):attr.at().getS());
+	    else if(ctrChkNode(opt,"set",((attr.at().fld().flg()&TFld::NoWrite)?(permit()&~0222):permit())|R_R_R_,owner().c_str(),grp().c_str(),SEC_WR))
+	    {
+		if(attr.at().id() == "event")	eventAdd(opt->text()+"\n");
+		else				attr.at().setS(opt->text());
+	    }
+	    else return Widget::cntrCmdAttributes(opt);
+	}
     }
     else return Widget::cntrCmdAttributes(opt);
 

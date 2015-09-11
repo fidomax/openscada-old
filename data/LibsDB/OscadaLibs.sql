@@ -1,39 +1,5 @@
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
-CREATE TABLE 'JavaLikePrm_prescr' ("SHIFR" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"EN" INTEGER DEFAULT '' ,"FLD" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' , PRIMARY KEY ("SHIFR"));
-INSERT INTO "JavaLikePrm_prescr" VALUES('cntr','Control','',1,'mode
-prog
-startTm
-curCom
-comLs
-work','Управление','','Контроль','');
-CREATE TABLE 'LogLevPrm_prescription_io' ("PRM_ID" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"VALUE" TEXT DEFAULT '' ,"ru#VALUE" TEXT DEFAULT '' ,"uk#VALUE" TEXT DEFAULT '' , PRIMARY KEY ("PRM_ID","ID"));
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','run','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','pause','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','error','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','abort','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','rez','1','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','arg1','20','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','tmp1','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','f_frq','5','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','f_start','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','f_stop','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','f_err','0','','0');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','run','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','pause','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','error','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','abort','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','rez','1','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','arg1','10','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','tmp1','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','f_frq','5','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','f_start','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','f_stop','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','f_err','0','','0');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','start','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('backTimer','stop','1','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','start','0','','');
-INSERT INTO "LogLevPrm_prescription_io" VALUES('timer','stop','1','','');
 CREATE TABLE 'ParamTemplLibs' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"DB" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "ParamTemplLibs" VALUES('S7','S7','','Templates library of parameters for PLC series S7 of firm Siemens.','Бібліотека шаблонів параметрів для контролерів фірми Siemens серії S7.','tmplib_S7','','Библиотека шаблонов параметров для контроллеров фирмы Siemens серии S7.');
 INSERT INTO "ParamTemplLibs" VALUES('base','Main templates','Базові шаблони','Allow realisation of the main templates.','Надає реалізацію базових шаблонів.','tmplib_base','Базовые шаблоны','Предоставляет реализацию базовых шаблонов.');
@@ -375,45 +341,6 @@ INSERT INTO "lib_servProc_io" VALUES('archPackFStests','per','Period, seconds',1
 INSERT INTO "lib_servProc_io" VALUES('archPackFStests','addr','Archive address',0,0,'test123',0,2,'','','','');
 INSERT INTO "lib_servProc_io" VALUES('archPackFStests','step','Step (0-8), -1 for all',1,0,'-1',0,4,'','','','');
 INSERT INTO "lib_servProc_io" VALUES('archPackFStests','archiver','Archiver address',0,0,'FSArch.1m',0,3,'','','','');
-CREATE TABLE 'prescr_val' ("ID" TEXT DEFAULT '' ,"VAL" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
-INSERT INTO "prescr_val" VALUES('dbDB','SQLite.vcaBase');
-INSERT INTO "prescr_val" VALUES('dbComs','PrescrComs');
-INSERT INTO "prescr_val" VALUES('dbProgs','PrescrProgs');
-INSERT INTO "prescr_val" VALUES('mode','-2');
-INSERT INTO "prescr_val" VALUES('curMode','-2');
-INSERT INTO "prescr_val" VALUES('prog','abcd');
-INSERT INTO "prescr_val" VALUES('startTm','1413479709');
-INSERT INTO "prescr_val" VALUES('curCom','3');
-INSERT INTO "prescr_val" VALUES('work','<XMLNodeObj:prg name="abcd" seekPos="1" wtm="52">
-<XMLNodeObj:com arg1="5" arg2="0" arg3="0" arg4="0" arg5="0" descr="Typical timer. Hold run up to time elapse." id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" proc="&lt;EVAL&gt;">
-</XMLNodeObj:com>
-<XMLNodeObj:com arg1="10" arg2="0" arg3="0" arg4="0" arg5="0" descr="Таймер уровень 1" id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" name="Таймер ур.1" proc="&lt;EVAL&gt;">
-<XMLNodeObj:com arg1="15" arg2="0" arg3="0" arg4="0" arg5="0" descr="Typical timer. Hold run up to time elapse." id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" name="Таймер ур.2" proc="&lt;EVAL&gt;">
-</XMLNodeObj:com>
-</XMLNodeObj:com>
-<XMLNodeObj:com arg1="20" arg2="0" arg3="0" arg4="0" arg5="0" descr="Typical timer. Hold run up to time elapse." id="Timer" labArg1="Time (s)" labArg2="&lt;EVAL&gt;" labArg3="&lt;EVAL&gt;" labArg4="&lt;EVAL&gt;" labArg5="&lt;EVAL&gt;" proc="&lt;EVAL&gt;">
-</XMLNodeObj:com>
-</XMLNodeObj:prg>
-');
-INSERT INTO "prescr_val" VALUES('comsCntr','LogicLev.prescription');
-INSERT INTO "prescr_val" VALUES('comLs','<TVarObj>
-<TVarObj p=''Background timer''>
-<str p=''arg1''>Time (s)</str>
-<str p=''descr''>Background timer. Updating parallel with current command.</str>
-<str p=''prmID''>backTimer</str>
-</TVarObj>
-<TVarObj p=''Timer''>
-<str p=''arg1''>Time (s)</str>
-<str p=''descr''>Typical timer. Hold run up to time elapse.</str>
-<str p=''prmID''>timer</str>
-</TVarObj>
-</TVarObj>
-');
-INSERT INTO "prescr_val" VALUES('clcCnt','10314183');
-INSERT INTO "prescr_val" VALUES('f_frq','5');
-INSERT INTO "prescr_val" VALUES('f_start','0');
-INSERT INTO "prescr_val" VALUES('f_stop','0');
-INSERT INTO "prescr_val" VALUES('this','<TCntrNodeObj path="/sub_DAQ/mod_JavaLikeCalc/cntr_prescr/"/>');
 CREATE TABLE 'techApp' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '' ,"FORMULA" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "techApp" VALUES('lag','Lag','Lag model. You can use this for sensors'' variables lag imitation.',10,'out-=(out-in)/(t_lg*f_frq);','Затримка','Модель затримки. Може використовуватися для імітації запізнення значень давачів.','Запаздывание','Модель задержки. Может использоваться для имитации запаздывания
 значений датчиков.
@@ -1100,16 +1027,16 @@ INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','G1_2','G1 (Tв2)',2,32,'',62,'',''
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','G2_2','G2 (Tв2)',2,32,'',63,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('VKT7','this','This parameter object',4,0,'',64,'Объект параметра','','Об''єкт параметру','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','transport','Transport',0,64,'SMDP',0,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','addr','Device address (16...254)',1,64,'16',1,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','addr','Device address (16...254)',1,64,'16',1,'Адрес устройства (16...254)','','Адреса пристрою (16...254)','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','perGet','Period data getting (s)',2,64,'10',2,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','version','Firmware Version',0,16,'',3,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','CfgPrmSSID','Configuration parameter session ID',1,16,'',4,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','version','Firmware version',0,16,'',3,'Версия прошивки','','Версія прошивки','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','CfgPrmSSID','Configuration parameter session ID',1,16,'',4,'Параметр конфигурации ID сеанса','','Параметр конфігурації ID сеансу','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Srlno','Measurement serial number',1,16,'',5,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','RawFreq','Channel freq.',2,16,'',6,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','RawFreq','Channel freq.',2,16,'',6,'Частота канала.','','Частота каналу.','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','GoodFreq','Last used, good channel freq. (Hz)',2,16,'',7,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','RawThick','Computed raw thickness, from frequency. (A)',2,16,'',8,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalThick','Computed material related thickness, can be zeroed. (A)',2,16,'',9,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalThick_F','Filtered computed material related thickness, can be zeroed. (A)',2,16,'',10,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','RawThick','Computed raw thickness, from frequency. (A)',2,16,'',8,'Вычисленная сырая толщина, с частоты. (А)','','Обчислена сира товщина, з частоти. (A)','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalThick','Computed material related thickness, can be zeroed. (A)',2,16,'',9,'Вычисленная относительная толщина материала, может быть нулевой. (A)','','Обчислена відносна товщина матеріалу, може бути нульовою. (A)','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalThick_F','Filtered computed material related thickness, can be zeroed. (A)',2,16,'',10,'Фильтрованная вычисленная относительная толщина материала, может быть нулевой. (A)','','Фільтрована обчислена відносна товщина матеріалу, може бути нульовою. (A)','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalRate','Rate, angstroms per second.',2,16,'',11,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalRate_F','Rate, angstroms per second, filtered.',2,16,'',12,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalLife','XtalLife (%)',2,16,'',13,'','','','');
@@ -1117,23 +1044,42 @@ INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalQual','Quality level (0-9).',1
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalQualPeak','Highest quality level seen (0-9).',1,16,'',15,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalStab','Stability level (0-9).',1,16,'',16,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalStabPeak','Highest stability level seen (0-9).',1,16,'',17,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalStat','Channel status.',0,16,'',18,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalStat','Channel status.',0,16,'',18,'Статус канала.','','Статус каналу.','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','XtalLife_C','XtalLife (%).',1,16,'',19,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','SessId','Session ID',1,32,'',20,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Fq','Xtal start freq. (Hz)',2,32,'',21,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Fm','Xtal min freq. (Hz)',2,32,'',22,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Density','Material density (gm/cc).',2,32,'',23,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Zratio','Material Z ratio. Not scaled or unitized.',2,32,'',24,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Tooling','1.000 is 100 % tooling (unity).',2,32,'',25,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','Tooling','1.000 is 100 % tooling (unity).',2,32,'',25,'1.000 есть 100 % настройка (объединение).','','1.000 є 100 % налаштування (об''єднання).','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','RateReq','Requested rate (A/S).',2,32,'',26,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','QlvlTrip','Quality threshold, if non 0 and exceeded, xtal fail occurs.',1,32,'',27,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('SMDP','SlvlTrip','Stability threshold, if non 0 and exceeded, xtal fail occurs.',1,32,'',28,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('IT3','transport','Transport',0,64,'IT3',4,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('IT3','addr','Device address',1,64,'1',5,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IT3','addr','Device address',1,64,'1',5,'Адрес устройства','','Адреса пристрою','');
 INSERT INTO "tmplib_DevLib_io" VALUES('IT3','T','Temperature',2,16,'',6,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('IT3','H','Upper border',3,16,'',7,'','','','');
-INSERT INTO "tmplib_DevLib_io" VALUES('IT3','L','Lower border',3,16,'',8,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IT3','H','Upper border',3,16,'',7,'Верхняя граница','','Верхня границя','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IT3','L','Lower border',3,16,'',8,'Нижняя граница','','Нижня границя','');
 INSERT INTO "tmplib_DevLib_io" VALUES('IT3','relSt','Relay state',3,16,'',9,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','transport','Transport',0,64,'Sockets.out_IVE',0,'','','Transport','Sockets.out_IVE');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','addr','Device address',1,64,'255',1,'Адрес устройства','','Адреса пристрою','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','COIA','Output current level set-point',1,33,'',2,'','','Output current level set-point','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','COUA','Output voltage level set-point',1,33,'',3,'','','Output voltage level set-point','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','COPA','Output power level set-point',1,33,'',4,'','','Output power level set-point','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','DIA','Output current',1,16,'',5,'','','Output current','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','DUA','Output voltage',1,16,'',6,'','','Output voltage','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','DPA','Output power',1,16,'',7,'','','Output power','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','DFA','Electric arcs frequency',1,16,'',8,'Частота появления "микродуг"','','Частота виникнення "мікродуг"','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','DAC','Electric arcs counter',1,16,'',9,'Счетчик возникновения дуги','','Лічильник виникнення дуги','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','COM_DEW','Command: Blocking by SC and XX',3,32,'',10,'Команда: Блокировка отключения выхода по "КЗ" и "ХХ"','','Команда: Блокування відключеня виходу по "КЗ" та "ХХ"','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','COM_OUT','Command: Display on UI out block''s params',3,32,'',11,'Команда: Отображение на «УИ» выходных/опорных параметров каналов блока','','Команда: Відображення на «УІ» вихідних/опорних параметрів каналів блоку','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','COM_DEP','Command: Enable MK',3,32,'',12,'Команда: Включение "МК"','','Команда: Включення "МК"','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','COM_DEL','Command: Blocks #1,2 to line',3,32,'',13,'Команда: Включение блока "по сети" - канал№1,2','','Команда: Включення блоку "по мережі" - канал№1,2','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','COM_UF','Command: Display on UI frequency and current',3,32,'',14,'Команда: Отображение на «УИ» напряжения и тока/частоты и мощности блока','','Команда: Відображення на «УІ» напруги та струму/частоти та потужності блоку','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','DKW','MUBR of the block overheated',3,16,'',15,'','','MUBR of the block overheated','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','DKZ','Short circuits on the block out',3,16,'',16,'','','Short circuits on the block out','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','DK','MK of the block overheated',3,16,'',17,'','','MK of the block overheated','');
+INSERT INTO "tmplib_DevLib_io" VALUES('IVE_452HS_02','DE','Power and voltage on out present',3,16,'',18,'','','Power and voltage on out present','');
 CREATE TABLE 'tmplib_PrescrTempl_io' ("TMPL_ID" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"TYPE" INTEGER DEFAULT '' ,"FLAGS" INTEGER DEFAULT '' ,"VALUE" TEXT DEFAULT '' ,"POS" INTEGER DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#VALUE" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#VALUE" TEXT DEFAULT '' , PRIMARY KEY ("TMPL_ID","ID"));
 INSERT INTO "tmplib_PrescrTempl_io" VALUES('timer','run','Command: run',3,32,'0',4,'Команда: исполнение','','Команда: виконання','');
 INSERT INTO "tmplib_PrescrTempl_io" VALUES('timer','pause','Command: pause',3,32,'0',5,'Команда: пауза','','Команда: пауза','');
@@ -1334,7 +1280,7 @@ INSERT INTO "tmplib_S7_io" VALUES('test','in2','Input2',1,160,'DB Test|8',6,'В�
 INSERT INTO "tmplib_S7_io" VALUES('test','in1','Input1',1,160,'DB Test|6',5,'Вхід1','DB Тест|6','Вход1','DB Тест|6');
 INSERT INTO "tmplib_S7_io" VALUES('test','in','Input',1,160,'DB Test|4',4,'Вхід','DB Тест|4','Вход','DB Тест|4');
 CREATE TABLE 'tmplib_base_io' ("TMPL_ID" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"TYPE" INTEGER DEFAULT '' ,"FLAGS" INTEGER DEFAULT '' ,"VALUE" TEXT DEFAULT '' ,"POS" INTEGER DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#VALUE" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#VALUE" TEXT DEFAULT '' , PRIMARY KEY ("TMPL_ID","ID"));
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','in','Input',3,144,'Input|in',1,'Вхід',' ','Вход','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','in','Input',3,144,'Input|in',2,'Вхід',' ','Вход','');
 INSERT INTO "tmplib_base_io" VALUES('simleBoard','in','Input',2,128,'Parameter|var',0,'Вхід','','Вход','');
 INSERT INTO "tmplib_base_io" VALUES('simleBoard','var','Variable',2,32,'0',1,'Змінна','','Переменная','');
 INSERT INTO "tmplib_base_io" VALUES('simleBoard','ed','Dimension',0,32,' ',2,'Од. виміру',' ','Ед. измерения','');
@@ -1504,7 +1450,7 @@ INSERT INTO "tmplib_base_io" VALUES('pidUnif','L','Border down warning violation
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','HH','Border up alarm violation',3,17,'0',20,'Порушення верхньої аварійної границі','','Нарушение верхней аварийной границы','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','LL','Border down alarm violation',3,17,'0',21,'Порушення нижньої аварійної границі','','Нарушение нижней аварийной границы','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','EVAL','Value is eval',3,17,'0',22,'Значення невірогідне','','Значение недостоверно','');
-INSERT INTO "tmplib_base_io" VALUES('pidUnif','Tf','Filter time (s)',2,32,'0',23,'Час фільтру (с)','','Время фильтрации (с)','');
+INSERT INTO "tmplib_base_io" VALUES('pidUnif','Tf','Filter time (ms)',2,32,'0',23,'Час фільтру (мс)','','Время фильтрации (мс)','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','Kp','Gain',2,160,'PID|Kp',24,'Kп','ПІД|Kp','Kп','ПИД|Kp');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','Ti','Ti (ms)',1,160,'PID|Ti',25,'Tі (мс)','ПІД|Ti','Tи (мс)','ПИД|Ti');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','Kd','Gain differential',2,160,'PID|Kd',26,'Кп диференціалу','ПІД|Kd','Кп производной','ПИД|Kd');
@@ -1565,20 +1511,18 @@ INSERT INTO "tmplib_base_io" VALUES('SNMP','this','The object',4,0,'',3,'Об''�
 INSERT INTO "tmplib_base_io" VALUES('SNMP','SHIFR','Code',0,0,'',4,'Шифр','','Шифр','');
 INSERT INTO "tmplib_base_io" VALUES('SNMP','NAME','Name',0,0,'',5,'Ім''я','','Имя','');
 INSERT INTO "tmplib_base_io" VALUES('SNMP','DESCR','Description',0,0,'',6,'Опис','','Описание','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','alrm','Alarm "{st}:{lev}:{mess}"',0,64,' ',0,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','SHIFR','Code',0,0,'',2,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','NAME','Name',0,0,'',3,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','DESCR','Description',0,0,'',4,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','this','The object',4,0,'',5,'','','','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','alrm','Alarm "{st}:{lev}:{mess}"',0,64,' ',0,'Сигнал "{st}:{lev}:{mess}"','','Сигнал "{st}:{lev}:{mess}"','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','SHIFR','Code',0,0,'',5,'','','','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','NAME','Name',0,0,'',6,'','','','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','DESCR','Description',0,0,'',7,'','','','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','this','The object',4,0,'',8,'','','','');
 INSERT INTO "tmplib_base_io" VALUES('anUnif','log','Logarithmic scale',3,32,'0',17,'Логарифмічна шкала','','Логарифмическая шкала','');
 INSERT INTO "tmplib_base_io" VALUES('manInUnif','log','Logarithmic scale',3,32,'0',15,'Логарифмічна шкала','','Логарифмическая шкала','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','stInv','State inverse',3,64,'',1,'','','','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','st_open','State "Opened"',3,16,'',3,'','','','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','st_close','State "Closed"',3,16,'',4,'','','','');
 CREATE TABLE 'DAQ_JavaLikeCalc' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ENABLE" INTEGER DEFAULT '0' ,"START" INTEGER DEFAULT '0' ,"MESS_LEV" INTEGER DEFAULT '3' ,"REDNT" INTEGER DEFAULT '0' ,"REDNT_RUN" TEXT DEFAULT '<high>' ,"PRM_BD" TEXT DEFAULT 'system' ,"FUNC" TEXT DEFAULT '' ,"SCHEDULE" TEXT DEFAULT '1' ,"PRIOR" INTEGER DEFAULT '0' ,"ITER" INTEGER DEFAULT '1' , PRIMARY KEY ("ID"));
-INSERT INTO "DAQ_JavaLikeCalc" VALUES('prescr','Prescriptions','Рецепты','Рецепти','','','',1,1,3,0,'<high>','JavaLikePrm_prescr','Controller.prescr','0.2',0,1);
-CREATE TABLE 'LogLevPrm_prescription' ("SHIFR" TEXT DEFAULT '' ,"OWNER" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"EN" INTEGER DEFAULT '0' ,"PRM" TEXT DEFAULT '' , PRIMARY KEY ("SHIFR","OWNER"));
-INSERT INTO "LogLevPrm_prescription" VALUES('timer','','Timer','Таймер','Таймер','Typical timer. Hold run up to time elapse.','Типовой таймер. Удерживает выполнение до завершения времени.','Типовий таймер. Утримує виконання до завершення часу.',1,'PrescrTempl.timer');
-INSERT INTO "LogLevPrm_prescription" VALUES('backTimer','','Background timer','Фоновый таймер','Фоновий таймер','Background timer. Updating parallel with current command.','Фоновый таймер. Обновляется параллельно с текущей командой.','Фоновий таймер. Оновлюється паралельно з поточною командою.',1,'PrescrTempl.backTimer');
 CREATE TABLE 'DAQ_LogicLev' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ENABLE" INTEGER DEFAULT '0' ,"START" INTEGER DEFAULT '0' ,"MESS_LEV" INTEGER DEFAULT '3' ,"REDNT" INTEGER DEFAULT '0' ,"REDNT_RUN" TEXT DEFAULT '<high>' ,"PRM_BD" TEXT DEFAULT '' ,"PRM_BD_REFL" TEXT DEFAULT '' ,"PERIOD" INTEGER DEFAULT '0' ,"SCHEDULE" TEXT DEFAULT '1' ,"PRIOR" INTEGER DEFAULT '0' , PRIMARY KEY ("ID"));
-INSERT INTO "DAQ_LogicLev" VALUES('prescription','Prescription commands','Команды рецепта','Команди рецепту','','','',1,1,3,0,'<high>','LogLevPrm_prescription','LogLevPrmRefl_prescription',0,'0.2',0);
 CREATE TABLE 'flb_web_io' ("F_ID" TEXT DEFAULT '''''''''''''' ,"ID" TEXT DEFAULT '''''''''''''' ,"NAME" TEXT DEFAULT '''''''''''''' ,"TYPE" INTEGER DEFAULT '''''''''''''' ,"MODE" INTEGER DEFAULT '''''''''''''' ,"DEF" TEXT DEFAULT '''''''''''''' ,"HIDE" INTEGER DEFAULT '''''''''''''' ,"POS" INTEGER DEFAULT '''''''''''''' ,"ru#NAME" TEXT DEFAULT '''''' ,"uk#NAME" TEXT DEFAULT '' , PRIMARY KEY ("F_ID","ID"));
 INSERT INTO "flb_web_io" VALUES('alarms','rules','Rules',0,1,'\n',0,0,'Правила','Правила');
 INSERT INTO "flb_web_io" VALUES('devMon','rez','Result',0,2,'',0,0,'Результат','Результат');
@@ -2670,20 +2614,12 @@ INSERT INTO "Trs" VALUES('Remote','Віддалено','Удалённо');
 INSERT INTO "Trs" VALUES('Start session.','Запуск сеансу.','Запуск сеанса.');
 INSERT INTO "Trs" VALUES('Request for values present list and size.','Запит наявних значень та розмірів','Запрос доступных значений и размеров');
 INSERT INTO "Trs" VALUES('Readed items list write.','Запис переліку элементів для читання.','Запись списка элементов для чтения.');
-INSERT INTO "Trs" VALUES('Request for curent values.','','');
-INSERT INTO "Trs" VALUES('Request for hour archive values.','','');
-INSERT INTO "Trs" VALUES('Request for set archive data.','','');
-INSERT INTO "Trs" VALUES('Request for day archive values.','','');
-INSERT INTO "Trs" VALUES('Request for results month archive values.','','');
-INSERT INTO "Trs" VALUES('Request for data read.','','');
-INSERT INTO "Trs" VALUES('Set current','','');
 INSERT INTO "Trs" VALUES('Write to hour archive for time','Запис до архіву годин на час','Запись в архив часов за время');
 INSERT INTO "Trs" VALUES('Write to day archive for time','Запис до архіву днів на час','Запись в архив дней за время');
 INSERT INTO "Trs" VALUES('Write to result month archive for time','Запис до результуючого архіву місяців на час','Запись в результирующий архив месяцев за время');
 INSERT INTO "Trs" VALUES('Error response','Помилка відповіді','Ошибка ответа');
 INSERT INTO "Trs" VALUES('Quality errors','Помилки якості','Ошибки качетсва');
-INSERT INTO "Trs" VALUES('Transport ''%1'' error.','','');
-INSERT INTO "Trs" VALUES('No connection','Нема підключення','Нет подключения');
+INSERT INTO "Trs" VALUES('No a connection','Нема підключення','Нет подключения');
 INSERT INTO "Trs" VALUES('Data list for request empty.','Перелік даних запиту порожній.','Список данных запроса пустой.');
 INSERT INTO "Trs" VALUES('Unknown','Невідомий','Неизвестный');
 INSERT INTO "Trs" VALUES('Deceleration','Гальмування','Торможение');
@@ -2691,62 +2627,82 @@ INSERT INTO "Trs" VALUES('Stop operation failure','Невдача операці
 INSERT INTO "Trs" VALUES('Idling failure','Невдача простою','Неудача простоя');
 INSERT INTO "Trs" VALUES('Regeneration breaking failure','Збій регенерації гальмування','Сбой регенерации торможения');
 INSERT INTO "Trs" VALUES('Deceleration failure','Помилка гальмування','Ошибка торможения');
-INSERT INTO "Trs" VALUES('Request for service info.','','');
-INSERT INTO "Trs" VALUES('Request for counter time and hour archive begin.','','');
-INSERT INTO "Trs" VALUES('Request for dimensions and precisions.','','');
-INSERT INTO "Trs" VALUES('No connect','','');
+INSERT INTO "Trs" VALUES('No connect','Не підключено','Не подключено');
+INSERT INTO "Trs" VALUES('Error or no response.','Помилка або немає відповіді','Ошибка или нет ответа');
+INSERT INTO "Trs" VALUES('CRC error.','Помилка CRC.','Ошибка CRC.');
+INSERT INTO "Trs" VALUES('DCON error.','Помилка DCON.','Ошибка DCON.');
+INSERT INTO "Trs" VALUES('No respond','Немає відповіді','Нет ответа');
+INSERT INTO "Trs" VALUES('No acknowledgment','Немає підтвердження','Нет подтверждения');
+INSERT INTO "Trs" VALUES('Data block short or error','Блок даних короткий або помилка','Блок данных короткий или ошибка');
+INSERT INTO "Trs" VALUES('Block sequence.','Блокувальна послідовність.','Блокирующая последовательность.');
+INSERT INTO "Trs" VALUES('Unknown block end.','Кінець невідомого блоку.','Конец неизвестного блока.');
+INSERT INTO "Trs" VALUES('Not full respond','Неповна відповідь','Неполный ответ');
+INSERT INTO "Trs" VALUES('Data range error.','Помилка діапазону даних','Ошибка диапазона данных');
+INSERT INTO "Trs" VALUES('Unknown error.','Невідома помилка.','Неизвестная ошибка.');
+INSERT INTO "Trs" VALUES('Error set PIN-code.','Помилка встановлення PIN-коду.','Ошибка установки PIN-кода.');
+INSERT INTO "Trs" VALUES('Error set PDU mode.','Помилка встановлення режиму PDU.','Ошибка установки режима PDU.');
+INSERT INTO "Trs" VALUES('Error sent SMS.','Помилка надсилання SMS.','Ошибка отправки SMS.');
+INSERT INTO "Trs" VALUES('Error sent SMS PDU','Помилка надсилання SMS PDU','Ошибка отправки SMS PDU');
+INSERT INTO "Trs" VALUES('Device address out of range 1...254','Адреса пристрою за межою 1...254','Адрес устройства за границей 1...254');
+INSERT INTO "Trs" VALUES('No or error respond','Немає або помилка відповіді','Нет или ошибка ответа');
+INSERT INTO "Trs" VALUES('Device address out of range 1...32','Адреса пристрою за межою 1...32','Адрес устройства за границей 1...32');
+INSERT INTO "Trs" VALUES('Device address out of range 0...254','Адреса пристрою за межою 0...254','Адрес устройства за границей 0...254');
+INSERT INTO "Trs" VALUES('Device address out of range 0...2047','Адреса пристрою за межою 0...2047','Адрес устройства за границей 0...2047');
+INSERT INTO "Trs" VALUES('No or short respond','Немає або коротка відповідь','Нет или короткий ответ');
+INSERT INTO "Trs" VALUES('Device address out of range 0...255','Адреса пристрою за межою 0...255','Адрес устройства за границей 0...255');
+INSERT INTO "Trs" VALUES('No a respond','Немає відповіді','Нет ответа');
+INSERT INTO "Trs" VALUES('CRC error','Помилка CRC','Ошибка CRC');
+INSERT INTO "Trs" VALUES('Signal exceed to upper hardware border','Вихід сигналу за нижню апаратну границю','Выход сигнала за нижнюю аппаратную границу');
+INSERT INTO "Trs" VALUES('Signal exceed to bottom hardware border','Вихід сигналу за верхню апаратну границю','Выход сигнала за верхнюю аппаратную границу');
+INSERT INTO "Trs" VALUES('Request','Запит','Запрос');
+INSERT INTO "Trs" VALUES('Header error','Помилка заголовку','Ошибка заголовка');
+INSERT INTO "Trs" VALUES('Header CRC error','Помилка контрольної суми заголовку','Ошибка контрольной суммы заголовка');
+INSERT INTO "Trs" VALUES('Info block size error','Помилка розміру інформаційного блоку','Ошибка размера информационного блока');
+INSERT INTO "Trs" VALUES('Info block CRC error.','Помилка контрольної суми інформаційного блоку','Ошибка контрольной суммы информационного блока');
+INSERT INTO "Trs" VALUES('Request error','Помилка запиту','Ошибка запроса');
+INSERT INTO "Trs" VALUES('Respond too short or wrong','Відповідь дуже коротка або помилкова','Ответ очень короткий или ошибочный');
+INSERT INTO "Trs" VALUES('Wrong or no a respond.','Помилка або немає відповіді.','Ошибка или нет ответа.');
+INSERT INTO "Trs" VALUES('Message''s length more 255*255','Розмір повідомлення більш за 255*255','Размер сообщения больше чем 255*255');
+INSERT INTO "Trs" VALUES('No data block get','Не отримано блоку даних','Не получено блока данных');
+INSERT INTO "Trs" VALUES('LRC error.','Помилка LRC.','Ошибка LRC.');
+INSERT INTO "Trs" VALUES('Message empty','Повідомлення порожне','Ответ пуст');
+INSERT INTO "Trs" VALUES('Request:','Запит:','Запрос:');
+INSERT INTO "Trs" VALUES('Wrong respond','Помилкова відповідь','Ошибочный ответ');
+INSERT INTO "Trs" VALUES('Respond:','Відповідь:','Ответ:');
+INSERT INTO "Trs" VALUES('Illegal command (CMD code not valid).','','');
+INSERT INTO "Trs" VALUES('Syntax error. (Too many bytes in data field, not enough bytes, etc).','','');
+INSERT INTO "Trs" VALUES('Inhibited.','','');
+INSERT INTO "Trs" VALUES('Obsolete command. No action taken, but not really an error.','','');
+INSERT INTO "Trs" VALUES('Telephone number error.','','');
+INSERT INTO "Trs" VALUES('Long length (%1) of the message.','','');
+INSERT INTO "Trs" VALUES('KS error.','','');
+INSERT INTO "Trs" VALUES('KS error','','');
+INSERT INTO "Trs" VALUES('Request error.','','');
+INSERT INTO "Trs" VALUES('Serial output transport ''%1'' error.','','');
+INSERT INTO "Trs" VALUES('Request: TRANSL_TEMP.','','');
+INSERT INTO "Trs" VALUES('No connection','','');
+INSERT INTO "Trs" VALUES('Output transport ''%1'' error.','','');
+INSERT INTO "Trs" VALUES('Read all data.','','');
+INSERT INTO "Trs" VALUES('Reply is not full','','');
 INSERT INTO "Trs" VALUES('No Problems. The rest below are prioritized.','','');
 INSERT INTO "Trs" VALUES('Frequency of xtal is > Fq or < Fm. Halts all other calculations.','','');
 INSERT INTO "Trs" VALUES('Frequency was bad (previous XtalStat was XPROB_FREQ) and frequency is now in range, but life is less than 3%.','','');
 INSERT INTO "Trs" VALUES('Stability level XtalStab of xtal >= SlvlTrip.','','');
 INSERT INTO "Trs" VALUES('Unable to determine rate because of a computation error, most likely caused by a parameter (density, z-ratio, etc) having a zero or otherwise invalid (non numeric or infinity) value.','','');
 INSERT INTO "Trs" VALUES('XtalQual of xtal >= QlvlTrip.','','');
-INSERT INTO "Trs" VALUES('Error or no response.','','');
-INSERT INTO "Trs" VALUES('CRC error.','','');
-INSERT INTO "Trs" VALUES('DCON error.','','');
-INSERT INTO "Trs" VALUES('Message''s length more 255*255','','');
-INSERT INTO "Trs" VALUES('No respond','','');
-INSERT INTO "Trs" VALUES('No acknowledgment','','');
-INSERT INTO "Trs" VALUES('No data block get','','');
-INSERT INTO "Trs" VALUES('Data block short or error','','');
-INSERT INTO "Trs" VALUES('LRC error.','','');
-INSERT INTO "Trs" VALUES('Block sequence.','','');
-INSERT INTO "Trs" VALUES('Unknown block end.','','');
-INSERT INTO "Trs" VALUES('Message empty','','');
-INSERT INTO "Trs" VALUES('Request:','','');
-INSERT INTO "Trs" VALUES('Not full respond','','');
-INSERT INTO "Trs" VALUES('Wrong respond','','');
-INSERT INTO "Trs" VALUES('Respond:','','');
-INSERT INTO "Trs" VALUES('Illegal command (CMD code not valid).','','');
-INSERT INTO "Trs" VALUES('Syntax error. (Too many bytes in data field, not enough bytes, etc).','','');
-INSERT INTO "Trs" VALUES('Data range error.','','');
-INSERT INTO "Trs" VALUES('Inhibited.','','');
-INSERT INTO "Trs" VALUES('Obsolete command. No action taken, but not really an error.','','');
-INSERT INTO "Trs" VALUES('Unknown error.','','');
-INSERT INTO "Trs" VALUES('Telephone number error.','','');
-INSERT INTO "Trs" VALUES('Long length (%1) of the message.','','');
-INSERT INTO "Trs" VALUES('Error set PIN-code.','','');
-INSERT INTO "Trs" VALUES('Error set PDU mode.','','');
-INSERT INTO "Trs" VALUES('Error sent SMS.','','');
-INSERT INTO "Trs" VALUES('Error sent SMS PDU','','');
-INSERT INTO "Trs" VALUES('Device address out of range 1...254','','');
-INSERT INTO "Trs" VALUES('No or error respond','','');
-INSERT INTO "Trs" VALUES('KS error.','','');
-INSERT INTO "Trs" VALUES('Device address out of range 1...32','','');
-INSERT INTO "Trs" VALUES('Device address out of range 0...254','','');
-INSERT INTO "Trs" VALUES('KS error','','');
-INSERT INTO "Trs" VALUES('Request error.','','');
-INSERT INTO "Trs" VALUES('Device address out of range 0...2047','','');
-INSERT INTO "Trs" VALUES('Wrong or no a respond.','','');
-INSERT INTO "Trs" VALUES('Request','','');
-INSERT INTO "Trs" VALUES('No or short respond','','');
-INSERT INTO "Trs" VALUES('Header error','','');
-INSERT INTO "Trs" VALUES('Header CRC error','','');
-INSERT INTO "Trs" VALUES('Info block size error','','');
-INSERT INTO "Trs" VALUES('Info block CRC error.','','');
-INSERT INTO "Trs" VALUES('Request error','','');
-INSERT INTO "Trs" VALUES('Serial output transport ''%1'' error.','','');
-INSERT INTO "Trs" VALUES('Request: TRANSL_TEMP.','','');
+INSERT INTO "Trs" VALUES('Transport ''%1'' error.','','');
+INSERT INTO "Trs" VALUES('Request for service info.','','');
+INSERT INTO "Trs" VALUES('Request for counter time and hour archive begin.','','');
+INSERT INTO "Trs" VALUES('Request for dimensions and precisions.','','');
+INSERT INTO "Trs" VALUES('Request for curent values.','','');
+INSERT INTO "Trs" VALUES('Request for hour archive values.','','');
+INSERT INTO "Trs" VALUES('Request for set archive data.','','');
+INSERT INTO "Trs" VALUES('Request for day archive values.','','');
+INSERT INTO "Trs" VALUES('Request for results month archive values.','','');
+INSERT INTO "Trs" VALUES('Request for data read.','','');
+INSERT INTO "Trs" VALUES('Set current','','');
+INSERT INTO "Trs" VALUES('Nether alarm border error','','');
+INSERT INTO "Trs" VALUES('Nether warning border error','','');
 CREATE TABLE 'tmplib_DevLib' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"PROGRAM" TEXT DEFAULT '' ,"uk#PROGRAM" TEXT DEFAULT '' ,"ru#PROGRAM" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "tmplib_DevLib" VALUES('SCU750','EDWARDS TURBOMOLECULAR PUMPS','','','Typical EDWARDS TURBOMOLECULAR PUMPS (http://edwardsvacuum.com) data request by SCU750 Cotrol Unit protocol.
 Author: Roman Savochenko <rom_as@oscada.org>
@@ -3847,6 +3803,107 @@ else {
 
 if(t_err.length) { SYS.messDebug("/IT3/TMPL",tr("Error response")+": "+t_err); f_err = t_err; }
 else f_err = "0";','','',1427533354);
+INSERT INTO "tmplib_DevLib" VALUES('IVE_452HS_02','IVE-452HS-02','IVE-452HS-02','','Power supply of beam-electrons evaporator of "Plasma Tech" Ltd, from Moskov.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vasiliy Grigoriev from "Vacuum technologies laboratory (http://e-beam.ru)".','Power supply of beam-electrons evaporator of "Plasma Tech" Ltd, from Moskov.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vasiliy Grigoriev from "Vacuum technologies laboratory (http://e-beam.ru)".','',10,0,'JavaLikeCalc.JavaScript
+//Set transport
+if(f_start) {
+	addr_ = addr;
+	transport_ = transport;
+	COIA = COIA_ = COUA = COUA_ = COPA = COPA_ = DIA = DUA = DPA = DFA = EVAL_INT;
+	COM_DEW = COM_DEW_ = COM_OUT = COM_OUT_ = COM_DEP	= COM_DEP_ = COM_DEL = COM_DEL_ = COM_UF = COM_UF_ =
+					DKW = DKZ = DK = DE = EVAL_BOOL;
+	tr = SYS.Transport.nodeAt(transport,".");
+}
+
+//Check for the transport change and connect
+if(!tr || transport != transport_)	{
+	tr = SYS.Transport.nodeAt(transport,".");
+	transport_ = transport;
+}
+if(!tr)	t_err = "1:"+tr("Output transport ''%1'' error.").replace("%1",transport);
+else {
+	req = SYS.XMLNode("mess").setAttr("ProtIt","IVE_452HS_02").setAttr("addr",addr);
+
+	//Check for the address need to change
+	if(addr != addr_) {
+		hwReg = 0x00;
+		req.setAttr("err","2:"+tr("No connection")).setAttr("addr",addr_)
+			.setText(SYS.strFromCharCode(0x57,0x04,0x00,hwReg,hwReg,0x06,addr));
+		tr.messIO(req, "UserProtocol");
+		req.setText(SYS.strFromCharCode(0x57,0x04,0x00,hwReg,hwReg,0x08,0x00));
+		tr.messIO(req, "UserProtocol");
+		req.setAttr("addr", addr);
+		addr_ = addr;
+	}
+
+	//Check and write commands
+	if(COIA != COIA_ && !(t_err=req.attr("err")).length)	{
+		hwReg = 0x01;
+		req.setAttr("err","2:"+tr("No connection")).setText(SYS.strFromCharCode(0x57,0x04,0x00,hwReg,hwReg,COIA&0xFF,(COIA>>8)&0xFF));
+		tr.messIO(req, "UserProtocol");
+	}
+	if(COUA != COUA_ && !(t_err=req.attr("err")).length) {
+		hwReg = 0x02;
+		req.setAttr("err","2:"+tr("No connection")).setText(SYS.strFromCharCode(0x57,0x04,0x00,hwReg,hwReg,COUA&0xFF,(COUA>>8)&0xFF));
+		tr.messIO(req, "UserProtocol");
+	}
+	if(COPA != COPA_ && !(t_err=req.attr("err")).length) {
+		hwReg = 0x03;
+		req.setAttr("err","2:"+tr("No connection")).setText(SYS.strFromCharCode(0x57,0x04,0x00,hwReg,hwReg,COPA&0xFF,(COPA>>8)&0xFF));
+		tr.messIO(req, "UserProtocol");
+	}
+	if((COM_DEW != COM_DEW_ || COM_OUT != COM_OUT_ || COM_DEP != COM_DEP_ || COM_DEL != COM_DEL_ || COM_UF != COM_UF_) && !(t_err=req.attr("err")).length) {
+		tmp = 0;
+		if(COM_DEW)	tmp = tmp | 0x8000;
+		if(COM_OUT)	tmp = tmp | 0x4000;
+		if(COM_DEP)	tmp = tmp | 0x1000;
+		if(COM_DEL)	tmp = tmp | 0x0800;
+		if(COM_UF)	tmp = tmp | 0x0004;
+		hwReg = 0x15;
+		req.setAttr("err","2:"+tr("No connection")).setText(SYS.strFromCharCode(0x57,0x04,0x00,hwReg,hwReg,tmp&0xFF,(tmp>>8)&0xFF));
+		tr.messIO(req, "UserProtocol");
+	}
+
+	//Read data
+	if(!(t_err=req.attr("err")).length) {
+		SYS.messDebug("/IVE452HS02/TMPL",tr("Read all data."));
+		req.setAttr("err","2:"+tr("No connection")).setText(SYS.strFromCharCode(0x52,0x02,0x00,0x01,0x16));
+		tr.messIO(req, "UserProtocol");
+		if(!(t_err=req.attr("err")).length) {
+			if(req.text().length < (0x16*2+5))	req.setAttr("err", "10:"+tr("Reply is not full"));
+			else {
+				hwReg = 0x01; COIA = COIA_ = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				hwReg = 0x02; COUA = COUA_ = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				hwReg = 0x03; COPA = COPA_ = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				hwReg = 0x07; DIA = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				hwReg = 0x08; DUA = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				hwReg = 0x0E; DAC = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				hwReg = 0x10; DPA = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				hwReg = 0x11; DFA = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				hwReg = 0x15; tmp = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				COM_DEW = COM_DEW_ = tmp&0x8000;
+				COM_OUT = COM_OUT_ = tmp&0x4000;
+				COM_DEP = COM_DEP_ = tmp&0x1000;
+				COM_DEL = COM_DEL_ = tmp&0x0800;
+				COM_UF = COM_UF_ = tmp&0x0004;
+				hwReg = 0x16; tmp = (req.text().charCodeAt((hwReg-1)*2+6)<<8)+req.text().charCodeAt((hwReg-1)*2+5);
+				DKW = !(tmp&0x8); DKZ = !(tmp&0x4); DK = !(tmp&0x2); DE = tmp&0x1;
+			}
+		}
+	}
+}
+
+if(t_err.length) {
+	COIA = COIA_ = COUA = COUA_ = COPA = COPA_ = DIA = DUA = DAC = DPA = DFA = EVAL_INT;
+	COM_DEW = COM_DEW_ = COM_OUT = COM_OUT_ = COM_DEP	= COM_DEP_ = COM_DEL = COM_DEL_ = COM_UF = COM_UF_ = 
+					DKW = DKZ = DK = DE = EVAL_BOOL;
+	SYS.messDebug("/IVE452HS02/TMPL",tr("Error response")+": "+t_err);
+	f_err = t_err;
+}
+else f_err = "0";','','',1440089815);
 CREATE TABLE 'tmplib_PrescrTempl' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"PROGRAM" TEXT DEFAULT '' ,"uk#PROGRAM" TEXT DEFAULT '' ,"ru#PROGRAM" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "tmplib_PrescrTempl" VALUES('timer','Timer','Таймер','Таймер','Typical timer. Hold run up to time elapse.','Типовий таймер. Утримує виконання до завершення часу.','Типовой таймер. Удерживает выполнение до завершения времени.',10,0,'JavaLikeCalc.JavaScript
 //Reset to default
@@ -3858,7 +3915,7 @@ if(run && !pause) {
 	if(tmp1 <= 0) { rez = "1:"+tr("Waiting %1s expired").replace("%1",arg1.toPrecision(3)); run = false; }
 	else rez = "0:"+tr("Waiting %1s").replace("%1",tmp1.toPrecision(3));
 }','','',1416656093);
-INSERT INTO "tmplib_PrescrTempl" VALUES('backTimer','Background timer','Фоновий таймер','Фоновый таймер','Background timer. Updating parallel with current command.','Фоновий таймер. Оновлюється паралельно з поточною командою.','Фоновый таймер. Обновляется параллельно с текущей командой.',10,0,'JavaLikeCalc.JavaScript
+INSERT INTO "tmplib_PrescrTempl" VALUES('backTimer','Background timer','Фоновий таймер','Фоновый таймер','Background timer. Updating parallel with current command.','Фоновий таймер. Оновлення паралельно із поточною командой.','Фоновый таймер. Обновление параллельно с текущей командой.',10,0,'JavaLikeCalc.JavaScript
 //Reset to default
 if(f_start || (!run && tmp1)) { run = pause = error = abort = false; tmp1 = 0; rez = 1; }
 //Run
@@ -3875,15 +3932,23 @@ if(f_start)	f_err = "0", prevVar = EVAL_REAL;
 
 //State set
 tErr = "0", levErr = 0;
-if(in.isEVal())	tErr = "1:"+tr("No data or connection with source"), levErr = -5;
-else if(in == alrm.toInt())	tErr = "3:"+alrm.parse(2,":"), levErr = -alrm.parse(1,":").toInt();
+if(in.isEVal()) {
+	tErr = "1:"+tr("No data or connection with source");
+	levErr = -5;
+	st_open = st_close = in;
+}
+else {
+	if(in == alrm.toInt())	tErr = "3:"+alrm.parse(2,":"), levErr = -alrm.parse(1,":").toInt();
+	st_open = stInv ? !in : in;
+	st_close = !st_open;
+}
 
 //Alarms forming
 if(tErr.toInt() && tErr.toInt() != f_err.toInt())
 	this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tErr.parse(1,":"), levErr, SHIFR);
 else if(f_err.toInt() && !tErr.toInt())
 	this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tr("NORMA"), 1, SHIFR);
-f_err = tErr;','','',1416765738);
+f_err = tErr;','','',1440508854);
 INSERT INTO "tmplib_base" VALUES('simleBoard','Analog alarm by borders','Сигн. аналог. за границями','Сигн. аналог. по границам','The template of simple parameter included boders and dimension variable.','Шаблон простого параметру з перевіркою границь та одиницею виміру.','Шаблон простого параметра с проверкой границ и единицей измерения.',10,1,'JavaLikeCalc.JavaScript
 var=iMult*(in+iAdd);
 if(var>max)			f_err="1:Upper work border violation";
@@ -4356,106 +4421,12 @@ else {
 		this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tr("NORMA"), 1, SHIFR);
 	f_err = tErr;
 }','','',1416765681);
-INSERT INTO "tmplib_base" VALUES('pidUnif','PID sign. (Unif, stats)','ПІД сигнал (Уніф, стани)','ПИД сигн. (Униф, состояния)','The unified template for process analog signals with properties PID.','Уніфікований шаблон для обробки аналогового сигналу з властивостями ПІД.','Унифицированный шаблон обработки аналогового сигнала со свойствами ПИД.',10,1,'JavaLikeCalc.JavaScript
+INSERT INTO "tmplib_base" VALUES('pidUnif','PID sign. (Unif, stats)','ПІД сигнал (Уніф, стани)','ПИД сигн. (Униф, состояния)','The unified template for process analog signals with properties PID.','Уніфікований шаблон для обробки аналогового сигналу з властивостями ПІД.','Унифицированный шаблон обработки аналогового сигнала со свойствами ПИД.',10,0,'JavaLikeCalc.JavaScript
 if(f_start) f_err = "0";
 
-if(plcImit)
-{
+if(plcImit) {
 	if(plcImitIn != EVAL_REAL) in = plcImitIn;
-	else
-	{
-		plcDif = plcMax-plcMin;
-		in = plcMin + plcDif/2 + rand(plcDif/10)-plcDif/20;
-	}
-}
-
-tErr = "0";
-if( in > (plcMax+plcExcess*(plcMax-plcMin)/100) )
-{ tErr = "1:The signal exceed to upper hardware border"; var = max+plcExcess*(max-min)/100;}
-else if( in < (plcMin-plcExcess*(plcMax-plcMin)/100) )
-{ tErr = "2:The signal exceed to bottom hardware border"; var = min-plcExcess*(max-min)/100;}
-if( tErr ) 
-{
-  //var = dmsk ? max+plcExcess*(max-min)/100 : min-plcExcess*(max-min)/100;
-  EVAL = true;
-}
-else
-{
-	vCalibr = iMult*(in+iAdd);
-
-	vCalibr = (vCalibr-plcMin)/(plcMax-plcMin);
-	varDt = min+(max-min)*(scSqr?pow(vCalibr,0.5):vCalibr)-var;
-	var += varDt/max(1,Tf/1000*f_frq);
-
-	bndVarHyst = (aMax-aMin)*HystBnd/100;
-	if( aMax>aMin && (var>=aMax || (HH && var>=(aMax-bndVarHyst))) )
-	{ tErr="3:Upper alarm border error"; HH=true; EVAL=H=LL=L=false; }
-	else if( aMax>aMin && (var<=aMin || (LL && var<=(aMin+bndVarHyst))) )
-	{ tErr="4:Nether alarm border error"; LL=true; EVAL=HH=H=L=false; }
-	else if( wMax>wMin && (var>=wMax || (H && var>=(wMax-bndVarHyst))) )
-	{ tErr="5:Upper warning border error"; H=true; EVAL=HH=LL=L=false; }
-	else if( wMax>wMin && (var<=wMin || (L && var<=(wMin+bndVarHyst))) )
-	{ tErr="6:Nether warning border error"; L=true; EVAL=HH=H=LL=false; }
-	else if( speed && varDt > speed ) { tErr="7:Too big parameter''s motion speed";   EVAL=true; HH=H=LL=L=false; }
-	else EVAL=HH=H=LL=L=false;
-}
-
-if(!f_err.toInt() && tErr.toInt()) this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tErr.parse(1,":"), -4, SHIFR);
-else if(f_err.toInt() && !tErr.toInt()) this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": NORMA", 1, SHIFR);
-f_err = tErr;','JavaLikeCalc.JavaScript
-if(f_start) f_err = "0";
-
-if(plcImit)
-{
-	if(plcImitIn != EVAL_REAL) in = plcImitIn;
-	else
-	{
-		plcDif = plcMax-plcMin;
-		in = plcMin + plcDif/2 + rand(plcDif/10)-plcDif/20;
-	}
-}
-
-tErr = "0";
-if( in > (plcMax+plcExcess*(plcMax-plcMin)/100) )
-{ tErr = "1:Сигнал перевищив верхню апаратну границю"; var = max+plcExcess*(max-min)/100;}
-else if( in < (plcMin-plcExcess*(plcMax-plcMin)/100) )
-{ tErr = "2:Сигнал перевищив нижню апаратну границю"; var = min-plcExcess*(max-min)/100;}
-if( tErr ) 
-{
-  //var = dmsk ? max+plcExcess*(max-min)/100 : min-plcExcess*(max-min)/100;
-  EVAL = true;
-}
-else
-{
-	vCalibr = iMult*(in+iAdd);
-
-	vCalibr = (vCalibr-plcMin)/(plcMax-plcMin);
-	varDt = min+(max-min)*(scSqr?pow(vCalibr,0.5):vCalibr)-var;
-	var += varDt/max(1,Tf/1000*f_frq);
-
-	bndVarHyst = (aMax-aMin)*HystBnd/100;
-	if( aMax>aMin && (var>=aMax || (HH && var>=(aMax-bndVarHyst))) )
-	{ tErr="3:Помилка верхньої границі аварії"; HH=true; EVAL=H=LL=L=false; }
-	else if( aMax>aMin && (var<=aMin || (LL && var<=(aMin+bndVarHyst))) )
-	{ tErr="4:Помилка нижньої границі аварії"; LL=true; EVAL=HH=H=L=false; }
-	else if( wMax>wMin && (var>=wMax || (H && var>=(wMax-bndVarHyst))) )
-	{ tErr="5:Помилка верхньої границі попередження"; H=true; EVAL=HH=LL=L=false; }
-	else if( wMax>wMin && (var<=wMin || (L && var<=(wMin+bndVarHyst))) )
-	{ tErr="6:Помилка нижньої границі попередження"; L=true; EVAL=HH=H=LL=false; }
-	else if( speed && varDt > speed ) { tErr="7:Дуже велика швидкість зміни параметру";   EVAL=true; HH=H=LL=L=false; }
-	else EVAL=HH=H=LL=L=false;
-}
-
-if(!f_err.toInt() && tErr.toInt()) this.nodePrev().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tErr.parse(1,":"), -4, SHIFR);
-else if(f_err.toInt() && !tErr.toInt()) this.nodePrev().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": NORMA", 1, SHIFR);
-f_err = tErr;','JavaLikeCalc.JavaScript
-if(f_start) f_err = "0";
-
-if(plcImit)
-{
-	if(plcImitIn != EVAL_REAL) in = plcImitIn;
-	else
-	{
+	else {
 		plcDif = plcMax-plcMin;
 		in = plcMin + plcDif/2 + rand(plcDif/10)-plcDif/20;
 	}
@@ -4463,38 +4434,37 @@ if(plcImit)
 
 tErr = "0";
 if(in > (plcMax+plcExcess*(plcMax-plcMin)/100))
-{ tErr = "1:Выход сигнала за верхнюю аппаратную границу"; var = max+plcExcess*(max-min)/100;}
+{ tErr = "1:"+tr("Signal exceed to upper hardware border"); var = max+plcExcess*(max-min)/100; }
 else if(in < (plcMin-plcExcess*(plcMax-plcMin)/100))
-{ tErr = "2:Выход сигнала за нижнюю аппаратную границу"; var = min-plcExcess*(max-min)/100;}
-if(tErr) 
-{
-  //var = dmsk ? max+plcExcess*(max-min)/100 : min-plcExcess*(max-min)/100;
-  EVAL = true;
+{ tErr = "2:"+tr("Signal exceed to bottom hardware border"); var = min-plcExcess*(max-min)/100; }
+if(tErr) {
+	//var = dmsk ? max+plcExcess*(max-min)/100 : min-plcExcess*(max-min)/100;
+	EVAL = true;
 }
-else
-{
+else {
 	vCalibr = iMult*(in+iAdd);
 
 	vCalibr = (vCalibr-plcMin)/(plcMax-plcMin);
-	varDt = min+(max-min)*(scSqr?pow(vCalibr,0.5):vCalibr)-var;
+	varDt = min + (max-min)*(scSqr?pow(vCalibr,0.5):vCalibr) - var;
 	var += varDt/max(1,Tf/1000*f_frq);
 
 	bndVarHyst = (aMax-aMin)*HystBnd/100;
-	if(aMax>aMin && (var>=aMax || (HH && var>=(aMax-bndVarHyst))))
-	{ tErr="3:Нарушение верхней аварийной границы"; HH=true; EVAL=H=LL=L=false; }
-	else if(aMax>aMin && (var<=aMin || (LL && var<=(aMin+bndVarHyst))))
-	{ tErr="4:Нарушение нижней аварийной границы"; LL=true; EVAL=HH=H=L=false; }
-	else if(wMax>wMin && (var>=wMax || (H && var>=(wMax-bndVarHyst))))
-	{ tErr="5:Нарушение верхней предупредительной границы"; H=true; EVAL=HH=LL=L=false; }
-	else if(wMax>wMin && (var<=wMin || (L && var<=(wMin+bndVarHyst))))
-	{ tErr="6:Нарушение нижней предупредительной границы"; L=true; EVAL=HH=H=LL=false; }
-	else if(speed && varDt > speed) { tErr="7:Очень большая скорость изменения параметра";   EVAL=true; HH=H=LL=L=false; }
-	else EVAL=HH=H=LL=L=false;
+	if(aMax > aMin && (var >= aMax || (HH && var >= (aMax-bndVarHyst))))
+	{ tErr = "3:"+tr("Upper alarm border error"); HH = true; EVAL = H = LL = L = false; }
+	else if(aMax > aMin && (var <= aMin || (LL && var <= (aMin+bndVarHyst))))
+	{ tErr="4:"+tr("Nether alarm border error"); LL = true; EVAL = HH = H = L = false; }
+	else if(wMax > wMin && (var >= wMax || (H && var >= (wMax-bndVarHyst))))
+	{ tErr="5:"+tr("Upper warning border error"); H = true; EVAL = HH = LL = L = false; }
+	else if(wMax > wMin && (var <= wMin || (L && var <= (wMin+bndVarHyst))))
+	{ tErr="6:"+tr("Nether warning border error"); L = true; EVAL = HH = H = LL = false; }
+	else if(speed && varDt > speed)
+	{ tErr = "7:"+tr("Too big parameter''s motion speed"); EVAL = true; HH = H = LL = L = false; }
+	else EVAL = HH = H = LL = L = false;
 }
 
-if(!f_err.toInt() && tErr.toInt()) this.nodePrev().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tErr.parse(1,":"), -4, SHIFR);
-else if(f_err.toInt() && !tErr.toInt()) this.nodePrev().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": НОРМА", 1, SHIFR);
-f_err = tErr;',1416765808);
+if(!f_err.toInt() && tErr.toInt()) this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tErr.parse(1,":"), -4, SHIFR);
+else if(f_err.toInt() && !tErr.toInt()) this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tr("NORMA"), 1, SHIFR);
+f_err = tErr;','','',1441170636);
 INSERT INTO "tmplib_base" VALUES('SNMP','','','','','','',10,0,'JavaLikeCalc.JavaScript
 if(f_start)	{ srcPrm = false; items = new Object(); }
 
@@ -5697,6 +5667,40 @@ for(blkOff = 0, blkLen = 0; blkOff < resp.length; blkOff += 6+blkLen) {
 	{ io.setAttr("err","5:"+resp.charCodeAt(blkOff+7)+":"+tr("Request error")); return; }
 	io.setText(resp.slice(blkOff+6,blkOff+6+blkLen));
 }','',1427532674);
+INSERT INTO "UserProtocol_uPrt" VALUES('IVE_452HS_02','ИВЭ-452HS-02','IVE-452HS-02','','Protocol level of power supply of beam-electrons evaporator of "Plasma Tech" Ltd, from Moskov.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vasiliy Grigoriev from "Vacuum technologies laboratory (http://e-beam.ru)".','Protocol level of power supply of beam-electrons evaporator of "Plasma Tech" Ltd, from Moskov.
+Author: Roman Savochenko <rom_as@oscada.org>
+Sponsored: Vasiliy Grigoriev from "Vacuum technologies laboratory (http://e-beam.ru)".','',1,0,'','','JavaLikeCalc.JavaScript
+//Request form:
+//<mess addr="255" err="1:Error">{req}</mess> - message tag
+//  req - request/respond data;
+//  addr - remote station address (0...255);
+//  err - sets for the request result.
+io.setAttr("err", "");
+addr = io.attr("addr").toInt();
+if(addr < 0 || addr > 255) { io.setAttr("err","1:"+tr("Device address out of range 0...255")); return; }
+//Request prepare
+req = SYS.strFromCharCode(addr)+io.text();
+for(KS = 0, i = 0; i < req.length; i++)	KS += req.charCodeAt(i);
+KS = 0x100-KS&0xFF;
+req += SYS.strFromCharCode(KS);
+SYS.messDebug("/IVE452HS02/PRT",tr("Request")+": "+SYS.strDecode(req,"Bin"," "));
+
+//Send request
+resp = tr.messIO(req);
+while(resp.length) {
+	if(!(tresp=tr.messIO("")).length) break;
+  	resp += tresp;
+}
+if(resp.length == 0) { io.setAttr("err","2:"+tr("No a respond")); return; }
+SYS.messDebug("/IVE452HS02/PRT","Respond: "+SYS.strDecode(resp,"Bin"," "));
+if(resp.length <= 3 || resp.charCodeAt(0) != addr || resp.charCodeAt(1) != req.charCodeAt(1))
+{ io.setAttr("err","3:"+tr("Respond too short or wrong")); return; }
+for(KS = 0, i = 0; i < resp.length-1; i++)	KS += resp.charCodeAt(i);
+KS = 0x100-KS&0xFF;
+if(resp.charCodeAt(resp.length-1) != KS )	{ io.setAttr("err","3:"+tr("CRC error")); return; }
+io.setText(resp.slice(1,resp.length-1));','',1439819778);
 CREATE TABLE 'lib_servProc' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"FORMULA" TEXT DEFAULT '' ,"uk#FORMULA" TEXT DEFAULT '' ,"ru#FORMULA" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "lib_servProc" VALUES('procArh','Archives recalc','Перерахунок архівів','Пересчёт архивов','','','',600,1,'using Special.FLibSYS;
 

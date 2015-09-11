@@ -32,7 +32,7 @@
 #define MOD_NAME	_("Self system OpenSCADA protocol")
 #define MOD_TYPE	SPRT_ID
 #define VER_TYPE	SPRT_VER
-#define MOD_VER		"0.9.5"
+#define MOD_VER		"1.0.1"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides own OpenSCADA protocol based at XML and one's control interface.")
 #define LICENSE		"GPL2"
@@ -104,7 +104,7 @@ int TProt::sesOpen( const string &user, const string &pass, const string &src )
 	    }
 	    ++aI;
 	}
-    if(i_oCnt > singleUserHostLimit() && aOldI != mAuth.end()) {
+    if((int)i_oCnt > singleUserHostLimit() && aOldI != mAuth.end()) {
 	mess_err(nodePath().c_str(), _("Connections from the user '%s' and the source '%s' reached to limit %d. Erasing spare!"),
 	    user.c_str(), TSYS::strLine(src,0).c_str(), singleUserHostLimit());
 	mAuth.erase(aOldI);

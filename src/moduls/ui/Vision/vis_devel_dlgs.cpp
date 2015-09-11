@@ -419,7 +419,7 @@ void LibProjProp::showDlg( const string &iit, bool reload )
 	if(gnd) {
 	    req.clear()->setAttr("path",ed_it+"/"+TSYS::strEncode(obj_ico->objectName().toStdString(),TSYS::PathEl));
 	    if(!owner()->cntrIfCmd(req) && (sval = TSYS::strDecode(req.text(),TSYS::base64)).size() &&
-		    ico_t.loadFromData((const uchar*)sval.c_str(),sval.size()))
+		    ico_t.loadFromData((const uchar*)sval.data(),sval.size()))
 		obj_ico->setIcon(QPixmap::fromImage(ico_t));
 	    else obj_ico->setIcon(QIcon());
 	}
@@ -707,8 +707,7 @@ void LibProjProp::isModify( QObject *snd )
     else if(oname == obj_db->objectName() || oname == obj_name->objectName() || oname == prj_ctm->objectName())
 	req.setText(((LineEdit*)snd)->value().toStdString());
     else if(oname == stl_name->objectName()) { req.setText(((LineEdit*)snd)->value().toStdString()); update = true; }
-    else if(oname == obj_user->objectName() || oname == obj_grp->objectName() || oname == stl_select->objectName())
-    {
+    else if(oname == obj_user->objectName() || oname == obj_grp->objectName() || oname == stl_select->objectName()) {
 	int cPos = ((QComboBox*)snd)->currentIndex();
 	req.setText(((QComboBox*)snd)->itemData(cPos).isNull() ? ((QComboBox*)snd)->itemText(cPos).toStdString() :
 								 ((QComboBox*)snd)->itemData(cPos).toString().toStdString());
@@ -791,8 +790,16 @@ void LibProjProp::delMimeData( )
 
 void LibProjProp::loadMimeData( )
 {
+    if(!mimeDataTable->selectedItems().empty()) {
+	InputDlg dlg(this, windowIcon(),
+	    QString(_("Are you sure of loading a mime to selected item '%1'?")).arg(mimeDataTable->selectedItems()[0]->text()),
+		    _("Load data"), false, false);
+	if(dlg.exec() != QDialog::Accepted) return;
+    }
+
     QString fileName = owner()->getFileName(_("Load data"),"",_("All files (*.*)"));
     if(fileName.isEmpty())	return;
+
     QFile file(fileName);
     if(!file.open(QFile::ReadOnly)) {
 	mod->postMess(mod->nodePath().c_str(), QString(_("Open file '%1' is fail: %2")).arg(fileName).arg(file.errorString()), TVision::Error, this);
@@ -1253,7 +1260,7 @@ void VisItProp::showDlg( const string &iit, bool reload )
 	if(gnd) {
 	    req.clear()->setAttr("path",ed_it+"/"+TSYS::strEncode(obj_ico->objectName().toStdString(),TSYS::PathEl));
 	    if(!owner()->cntrIfCmd(req) && (sval = TSYS::strDecode(req.text(),TSYS::base64)).size() &&
-		    ico_t.loadFromData((const uchar*)sval.c_str(),sval.size()))
+		    ico_t.loadFromData((const uchar*)sval.data(),sval.size()))
 		obj_ico->setIcon(QPixmap::fromImage(ico_t));
 	    else obj_ico->setIcon(QIcon());
 	}
