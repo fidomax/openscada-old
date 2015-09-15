@@ -41,8 +41,8 @@ TBDS::TBDS( ) : TSubSYS(SDB_ID,_("Data Bases"),true), mSYSStPref(true)
     el_db.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
     el_db.fldAdd(new TFld("TYPE",_("DB type (module)"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
     el_db.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
-    el_db.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"200"));
-    el_db.fldAdd(new TFld("ADDR",_("Address"),TFld::String,TFld::NoFlag,"100"));
+    el_db.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"2000"));
+    el_db.fldAdd(new TFld("ADDR",_("Address"),TFld::String,TFld::NoFlag,"1000"));
     el_db.fldAdd(new TFld("CODEPAGE",_("Code page"),TFld::String,TFld::NoFlag,"20"));
     el_db.fldAdd(new TFld("EN",_("To enable"),TFld::Boolean,TFld::NoFlag,"1","1"));
 }
@@ -414,6 +414,7 @@ bool TBDS::dataDel( const string &ibdn, const string &path, TConfig &cfg, bool u
 	ResAlloc res(SYS->cfgRes(), false);
 	XMLNode *nd = SYS->cfgNode(SYS->id()+"/"+path, true);
 	vector<string> cf_el;
+
 	// Search present field
 	for(unsigned i_fld = 0, i_el; nd && i_fld < nd->childSize(); i_fld++) {
 	    XMLNode *el = nd->childGet(i_fld);
@@ -533,22 +534,21 @@ void TBDS::load_( )
 
     //DB open
     // Open, load and enable generic DB
-    string db_tp = TSYS::strSepParse(fullDB(),0,'.');
-    string db_nm = TSYS::strSepParse(fullDB(),1,'.');
+    string db_tp = TSYS::strSepParse(fullDB(), 0, '.');
+    string db_nm = TSYS::strSepParse(fullDB(), 1, '.');
     if(modPresent(db_tp) && !at(db_tp).at().openStat(db_nm)) {
 	at(db_tp).at().open(db_nm);
 	at(db_tp).at().at(db_nm).at().load();
 	at(db_tp).at().at(db_nm).at().enable();
     }
 
-    //>> Open other DB stored into table 'DB' and config-file
+    // Open other DB stored into table 'DB' and config-file
     try {
 	string id,type;
 	if(SYS->chkSelDB(fullDB())) {
 	    TConfig c_el(&el_db);
 	    c_el.cfgViewAll(false);
-	    for(int fld_cnt = 0; SYS->db().at().dataSeek(fullDB(),nodePath()+"DB/",fld_cnt++,c_el,true); )
-	    {
+	    for(int fld_cnt = 0; SYS->db().at().dataSeek(fullDB(),nodePath()+"DB/",fld_cnt++,c_el,true); ) {
 		id = c_el.cfg("ID").getS();
 		type = c_el.cfg("TYPE").getS();
 		if((type+"."+id) != SYS->workDB() && modPresent(type) && !at(type).at().openStat(id))
@@ -682,7 +682,7 @@ void TBD::preDisable( int flag )	{ disable(); }
 
 void TBD::postDisable( int flag )
 {
-    if(flag) SYS->db().at().dataDel(owner().owner().fullDB(), SYS->db().at().nodePath()+"DB/", *this, true);
+    if(flag) SYS->db().at().dataDel(owner().owner().fullDB(), SYS->db().at().nodePath()+"DB/", *this, true, true);
 }
 
 TTypeBD &TBD::owner( )	{ return *(TTypeBD*)nodePrev(); }
@@ -746,13 +746,13 @@ TVariant TBD::objFuncCall( const string &iid, vector<TVariant> &prms, const stri
 	try {
 	    vector< vector<string> > rtbl;
 	    sqlReq(prms[0].getS(), &rtbl, ((prms.size()>=2)?prms[1].getB():EVAL_BOOL));
-	    for(unsigned i_r = 0; i_r < rtbl.size(); i_r++) {
+	    for(unsigned iR = 0; iR < rtbl.size(); iR++) {
 		TArrayObj *row = new TArrayObj();
-		for(unsigned i_c = 0; i_c < rtbl[i_r].size(); i_c++) {
-		    row->arSet(i_c, rtbl[i_r][i_c]);
-		    if(i_r) row->TVarObj::propSet(rtbl[0][i_c], rtbl[i_r][i_c]);
+		for(unsigned iC = 0; iC < rtbl[iR].size(); iC++) {
+		    row->arSet(iC, rtbl[iR][iC]);
+		    if(iR) row->TVarObj::propSet(rtbl[0][iC], rtbl[iR][iC]);
 		}
-		rez->arSet(i_r, row);
+		rez->arSet(iR, row);
 	    }
 	}
 	catch(...){ }

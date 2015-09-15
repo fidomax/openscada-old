@@ -697,22 +697,22 @@ AutoHD<Widget> Widget::wdgAt( const string &wdg, int lev, int off )
 
 string Widget::helpImg( )
 {
-    return _("Image name in form \"[src:]name\", where:\n"
-	    "  \"src\" - image source:\n"
-	    "    file - direct from local file by path;\n"
-	    "    res - from DB mime resources table.\n"
-	    "  \"name\" - file path or resource mime Id.\n"
+    return _("Image name in form \"[{src}:]{name}\", where:\n"
+	    "  \"src\" - the image source:\n"
+	    "    file - direct from local file by the path;\n"
+	    "    res - from the DB mime resources table.\n"
+	    "  \"name\" - the file path or the resource mime Id.\n"
 	    "Examples:\n"
-	    "  \"res:backLogo\" - from DB mime resources table for Id \"backLogo\";\n"
+	    "  \"res:backLogo\" - from the DB mime resources table for Id \"backLogo\";\n"
 	    "  \"backLogo\" - like previous;\n"
-	    "  \"file:/var/tmp/backLogo.png\" - from local file by path \"/var/tmp/backLogo.png\".");
+	    "  \"file:/var/tmp/backLogo.png\" - from local file by the path \"/var/tmp/backLogo.png\".");
 }
 
 string Widget::helpColor( )
 {
-    return _("Color name form \"color[-alpha]\", where:\n"
+    return _("Color name form \"{color}[-{alpha}]\", where:\n"
 	    "  \"color\" - standard color name or digital view of three hexadecimal digit's number form \"#RRGGBB\";\n"
-	    "  \"alpha\" - alpha channel level (0-255).\n"
+	    "  \"alpha\" - alpha channel level [0...255], where 0 - full transparent.\n"
 	    "Examples:\n"
 	    "  \"red\" - solid red color;\n"
 	    "  \"#FF0000\" - solid red color by digital code;\n"
@@ -847,7 +847,7 @@ bool Widget::cntrCmdGeneric( XMLNode *opt )
 	    if(ctrMkNode("area",opt,-1,"/wdg/st",_("State"))) {
 		ctrMkNode("fld",opt,-1,"/wdg/st/en",_("Enable"),RWRWR_,"root",SUI_ID,1,"tp","bool");
 		ctrMkNode("fld",opt,-1,"/wdg/st/use",_("Used"),R_R_R_,"root",SUI_ID,1,"tp","dec");
-		ctrMkNode("fld",opt,-1,"/wdg/st/parent",_("Parent"),RWRWR_,"root",SUI_ID,3,"tp","str","dest","sel_ed","select","/wdg/w_lst");
+		ctrMkNode("fld",opt,-1,"/wdg/st/parent",_("Parent"),RWRWR_,"root",SUI_ID,3,"tp","str", "dest","sel_ed", "select","/wdg/w_lst");
 		if(!parent().freeStat())
 		    ctrMkNode("comm",opt,-1,"/wdg/st/goparent",_("Go to parent"),RWRWR_,"root",SUI_ID,1,"tp","lnk");
 	    }
@@ -1053,9 +1053,9 @@ bool Widget::cntrCmdAttributes( XMLNode *opt, Widget *src )
 			setAttr("modif",u2s(attr.at().modif()))->setAttr("p",attr.at().fld().reserve());
 		    if(list_a[i_el] == "path")		el->setAttr("help",_("Path to the widget."));
 		    else if(list_a[i_el] == "parent")	el->setAttr("help",_("Path to parent widget."));
-		    else if(list_a[i_el] == "owner")	el->setAttr("help",_("The widget owner and group in form \"[owner]:[group]\"."));
+		    else if(list_a[i_el] == "owner")	el->setAttr("help",_("The widget owner and group in form \"{owner}:{group}\"."));
 		    else if(list_a[i_el] == "perm")
-			el->setAttr("help",_("Permission to the widget in form \"[user][group][other]\".\n"
+			el->setAttr("help",_("Permission to the widget in form \"{user}{group}{other}\".\n"
 					     "Where \"user\", \"group\" and \"other\" is:\n"
 					     "  \"__\" - no any access;\n"
 					     "  \"R_\" - read only;\n"
@@ -1063,7 +1063,7 @@ bool Widget::cntrCmdAttributes( XMLNode *opt, Widget *src )
 		    else if(list_a[i_el] == "evProc")
 			el->setAttr("SnthHgl","1")->
 			    setAttr("help",_("Direct events processing for pages manipulation in form:\n"
-					     "      \"[event]:[evSrc]:[com]:[prm]\". Where:\n"
+					     "      \"{event}:{evSrc}:{com}:{prm}\". Where:\n"
 					     "  \"event\" - waiting event;\n"
 					     "  \"evSrc\" - event source;\n"
 					     "  \"com\" - command of a session (open, next, prev);\n"
@@ -1083,10 +1083,10 @@ bool Widget::cntrCmdAttributes( XMLNode *opt, Widget *src )
 			    break;
 			case A_CTX_MENU:
 			    el->setAttr("SnthHgl","1")->
-				setAttr("help",_("Context menu in form strings list: \"[ItName]:[Signal]\".\n"
+				setAttr("help",_("Context menu in form strings list: \"{ItName}:{Signal}\".\n"
 						 "Where:\n"
 						 "  \"ItName\" - item name;\n"
-						 "  \"Signal\" - signal name and result signal name is \"usr_[Signal]\"."));
+						 "  \"Signal\" - signal name and result signal name is \"usr_{Signal}\"."));
 			    break;
 		    }
 		    if(attr.at().type() == TFld::String && attr.at().flgGlob()&Attr::Image)
@@ -1241,9 +1241,10 @@ bool Widget::cntrCmdLinks( XMLNode *opt, bool lnk_ro )
 
 	    bool custom = false, lnkOK = false;
 	    if(obj_tp == "prm:" || obj_tp == "wdg:") {
-		if((obj_tp == "prm:" && !SYS->daq().at().attrAt(cfg_val.substr(4),0,true).freeStat()) ||
-		    (obj_tp == "wdg:" && !srcwdg.at().attrAt(cfg_val.substr(4),0).freeStat()))
-		    { cfg_val.resize(cfg_val.rfind("/")); lnkOK = true; }
+		if(cfg_val.rfind("/") != string::npos &&
+		    ((obj_tp == "prm:" && !SYS->daq().at().attrAt(cfg_val.substr(4),0,true).freeStat()) ||
+		    (obj_tp == "wdg:" && !srcwdg.at().attrAt(cfg_val.substr(4),0).freeStat())))
+		{ cfg_val.resize(cfg_val.rfind("/")); lnkOK = true; }
 	    }else custom = true;
 
 	    string sel;
@@ -1477,7 +1478,7 @@ bool Widget::cntrCmdProcess( XMLNode *opt )
 	}
 	if(ctrChkNode(opt,"add",RWRWR_,"root",SUI_ID,SEC_WR)) {
 	    AutoHD<Widget> wdg = (wattr==".")?AutoHD<Widget>(this):wdgAt(wattr);
-	    wdg.at().attrAdd( new TFld("newAttr",_("New attribute"),TFld::String,Attr::IsUser) );
+	    wdg.at().attrAdd(new TFld("newAttr",_("New attribute"),TFld::String,Attr::IsUser));
 	    //wdg.at().attrAt("newAttr").at().setS(EVAL_STR);
 	    wdg.at().attrAt("newAttr").at().setModif(1);
 	    wdg.at().modif();
@@ -1635,7 +1636,7 @@ bool Widget::cntrCmdProcess( XMLNode *opt )
 //************************************************
 //* Attr: Widget attribute                       *
 //************************************************
-Attr::Attr( TFld *ifld, bool inher ) : mFld(NULL), mModif(0), self_flg((SelfAttrFlgs)0), mConn(0), mOwner(NULL)
+Attr::Attr( TFld *ifld, bool inher ) : mFld(NULL), mModif(0), mFlgSelf((SelfAttrFlgs)0), mConn(0), mOwner(NULL)
 {
     setFld(ifld, inher);
 }
@@ -1690,7 +1691,7 @@ void Attr::setFld( TFld *fld, bool inher )
     mFld = fld;
     if(mFld && !inher)	mFld->setLen(1);
     else if(mFld && inher)	mFld->setLen(mFld->len()+1);
-    self_flg = inher ? self_flg|Attr::IsInher : self_flg & ~Attr::IsInher;
+    mFlgSelf = inher ? mFlgSelf|Attr::IsInher : mFlgSelf & ~Attr::IsInher;
     if(owner()) pthread_mutex_unlock(&owner()->mtxAttr());
 }
 
@@ -2025,10 +2026,10 @@ void Attr::setCfgVal( const string &vl )
 
 void Attr::setFlgSelf( SelfAttrFlgs flg )
 {
-    if(self_flg == flg)	return;
-    SelfAttrFlgs t_flg = (SelfAttrFlgs)self_flg;
-    self_flg = (flg & ~Attr::IsInher) | (t_flg&Attr::IsInher);
-    if(!owner()->attrChange(*this,TVariant()))	self_flg = t_flg;
+    if(mFlgSelf == flg)	return;
+    SelfAttrFlgs t_flg = (SelfAttrFlgs)mFlgSelf;
+    mFlgSelf = (flg & ~Attr::IsInher) | (t_flg&Attr::IsInher);
+    if(!owner()->attrChange(*this,TVariant()))	mFlgSelf = t_flg;
     else {
 	unsigned imdf = owner()->modifVal(*this);
 	mModif = imdf ? imdf : mModif+1;

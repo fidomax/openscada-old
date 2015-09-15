@@ -49,9 +49,9 @@
 #define MOD_TYPE	SSPC_ID
 #define VER_TYPE	SSPC_VER
 #define SUB_TYPE	"TEST"
-#define MOD_VER		"1.5.1"
+#define MOD_VER		"1.5.2"
 #define AUTHORS		_("Roman Savochenko")
-#define DESCRIPTION	_("Allow the group tests for OpenSCADA system.")
+#define DESCRIPTION	_("Provides the group of tests to the OpenSCADA system.")
 #define LICENSE		"GPL2"
 //*************************************************
 
@@ -140,7 +140,7 @@ void TTest::mess( const string &testNm, const char *fmt,  ... )
 string TTest::modInfo( const string &name )
 {
     if(name == "SubType") return SUB_TYPE;
-    else return TModule::modInfo(name);
+    return TModule::modInfo(name);
 }
 
 void TTest::modInfo( vector<string> &list )

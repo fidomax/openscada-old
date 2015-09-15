@@ -34,7 +34,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <signal.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <langinfo.h>
@@ -49,20 +48,22 @@
 using namespace OSCADA;
 
 //Continuously access variable
-TMess	*OSCADA::Mess;
-TSYS	*OSCADA::SYS;
+TMess	*OSCADA::Mess = NULL;
+TSYS	*OSCADA::SYS = NULL;
 bool TSYS::finalKill = false;
 pthread_key_t TSYS::sTaskKey;
 
 TSYS::TSYS( int argi, char ** argb, char **env ) : argc(argi), argv((const char **)argb), envp((const char **)env),
     mUser("root"), mConfFile(sysconfdir_full"/oscada.xml"), mId("EmptySt"), mName(_("Empty Station")),
     mModDir(oscd_moddir_full), mIcoDir("icons;"oscd_datadir_full"/icons"), mDocDir("docs;"oscd_datadir_full"/docs"),
-    mWorkDB(DB_CFG), mSaveAtExit(false), mSavePeriod(0), rootModifCnt(0), sysModifFlgs(0), mStopSignal(-1), mMultCPU(false), mSysTm(time(NULL))
+    mWorkDB(DB_CFG), mSaveAtExit(false), mSavePeriod(0), rootModifCnt(0), sysModifFlgs(0), mStopSignal(-1), mN_CPU(1),
+    mainPthr(0), mSysTm(time(NULL))
 {
     finalKill = false;
     SYS = this;		//Init global access value
     mSubst = grpAdd("sub_",true);
     nodeEn();
+    mainPthr = pthread_self();
     pthread_key_create(&sTaskKey, NULL);
 
     Mess = new TMess();
@@ -76,20 +77,26 @@ TSYS::TSYS( int argi, char ** argb, char **env ) : argc(argi), argv((const char 
     //Multi CPU allow check
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
-    CPU_SET(1,&cpuset);
-    mMultCPU = !pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+    pthread_getaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
+#if __GLIBC_PREREQ(2,6)
+    mN_CPU = CPU_COUNT(&cpuset);
+#endif
 #endif
 
     //Set signal handlers
-    signal(SIGINT,sighandler);
-    signal(SIGTERM,sighandler);
-    //signal(SIGCHLD,sighandler);
-    signal(SIGALRM,sighandler);
-    signal(SIGPIPE,sighandler);
-    //signal(SIGFPE,sighandler);
-    //signal(SIGSEGV,sighandler);
-    signal(SIGABRT,sighandler);
-    signal(SIGUSR1,sighandler);
+    struct sigaction sHdr;
+    memset(&sHdr, 0, sizeof(sHdr));
+    sHdr.sa_sigaction = sighandler;
+    sHdr.sa_flags = SA_SIGINFO;
+    sigaction(SIGINT, &sHdr, &sigActOrig);
+    sigaction(SIGTERM, &sHdr, &sigActOrig);
+    //sigaction(SIGCHLD, &sHdr, &sigActOrig);
+    sigaction(SIGALRM, &sHdr, &sigActOrig);
+    sigaction(SIGPIPE, &sHdr, &sigActOrig);
+    //sigaction(SIGFPE, &sHdr, &sigActOrig);
+    //sigaction(SIGSEGV, &sHdr, &sigActOrig);
+    sigaction(SIGABRT, &sHdr, &sigActOrig);
+    sigaction(SIGUSR1, &sHdr, &sigActOrig);
 }
 
 TSYS::~TSYS( )
@@ -119,6 +126,17 @@ TSYS::~TSYS( )
 	pthread_mutex_unlock(&dataRes());
 	printf(_("System counters on exit: %s"), cntrsStr.c_str());
     }
+
+    //Signal handlers restore
+    sigaction(SIGINT, &sigActOrig, NULL);
+    sigaction(SIGTERM, &sigActOrig, NULL);
+    //sigaction(SIGCHLD, &sigActOrig, NULL);
+    sigaction(SIGALRM, &sigActOrig, NULL);
+    sigaction(SIGPIPE, &sigActOrig, NULL);
+    //sigaction(SIGFPE, &sigActOrig, NULL);
+    //sigaction(SIGSEGV, &sigActOrig, NULL);
+    sigaction(SIGABRT, &sigActOrig, NULL);
+    sigaction(SIGUSR1, &sigActOrig, NULL);
 }
 
 string TSYS::host( )
@@ -179,7 +197,7 @@ XMLNode *TSYS::cfgNode( const string &path, bool create )
 	if(s_el.empty()) return t_node;
 	bool ok = false;
 	for(unsigned i_f = 0; !ok && i_f < t_node->childSize(); i_f++)
-	    if(t_node->childGet(i_f)->attr("id") == s_el) {
+	    if(strcasecmp(t_node->childGet(i_f)->attr("id").c_str(),s_el.c_str()) == 0) {
 		t_node = t_node->childGet(i_f);
 		ok = true;
 	    }
@@ -372,42 +390,46 @@ string TSYS::optDescr( )
 	"********** %s v%s (%s-%s). *********\n"
 	"***************************************************************************\n\n"
 	"===========================================================================\n"
-	"========================= The general system options ======================\n"
+	"==================== Generic options ======================================\n"
 	"===========================================================================\n"
-	"-h, --help             Info message about system options.\n"
-	"    --Config=<path>    Config-file path.\n"
-	"    --Station=<id>     The station identifier.\n"
-	"    --StatName=<name>  The station name.\n"
-	"    --demon            Start into demon mode.\n"
-	"    --CoreDumpAllow	Set limits for core dump creation allow on crash.\n"
-	"    --MessLev=<level>  Process messages <level> (0-7).\n"
-	"    --log=<direct>     Direct messages to:\n"
-	"                         <direct> & 1 - syslogd;\n"
-	"                         <direct> & 2 - stdout;\n"
-	"                         <direct> & 4 - stderr;\n"
-	"                         <direct> & 8 - archive.\n"
+	"-h, --help		Info message about the system options.\n"
+	"    --config=<file>	The station configuration file.\n"
+	"    --station=<id>	The station identifier.\n"
+	"    --statName=<name>	The station name.\n"
+	"    --demon, --daemon	Start into the daemon mode.\n"
+	"    --pidFile=<file>	The file for the programm process ID place here.\n"
+	"    --coreDumpAllow	Set the limits for a core dump creation allow on the crash.\n"
+	"    --messLev=<level>	Process messages <level> (0-7).\n"
+	"    --log=<direct>	Direct messages to, by bitfield:\n"
+	"			  0x1 - syslogd;\n"
+	"			  0x2 - stdout;\n"
+	"			  0x4 - stderr;\n"
+	"			  0x8 - the messages archive.\n"
 	"----------- The config-file station '%s' parameters -----------\n"
 	"StName     <nm>	Station name.\n"
 	"WorkDB     <Type.Name> Work DB (type and name).\n"
-	"Workdir    <path>	Work directory.\n"
+	"WorkDir    <path>	Work directory.\n"
 	"ModDir     <path>	Modules directory.\n"
 	"IcoDir     <path>	Icons directory.\n"
 	"DocDir     <path>	Documents directory.\n"
 	"MessLev    <level>     Messages <level> (0-7).\n"
 	"SelDebCats <list>	Debug categories list (separated by ';').\n"
-	"LogTarget  <direction> Direct messages to:\n"
-	"                           <direct> & 1 - syslogd;\n"
-	"                           <direct> & 2 - stdout;\n"
-	"                           <direct> & 4 - stderr;\n"
-	"                           <direct> & 8 - archive.\n"
+	"LogTarget  <direction> Direct messages to, by bitfield:\n"
+	"			  0x1 - syslogd;\n"
+	"			  0x2 - stdout;\n"
+	"			  0x4 - stderr;\n"
+	"			  0x8 - the messages archive.\n"
 	"Lang       <lang>	Work-internal language, like \"en_US.UTF-8\".\n"
 	"Lang2CodeBase <lang>	Base language for variable texts translation, two symbols code.\n"
-	"SaveAtExit <true>      Save system at exit.\n"
-	"SavePeriod <sec>	Save system period.\n\n"),
+	"MainCPUs   <list>	Main used CPUs list (separated by ':').\n"
+	"SaveAtExit <true>	Save the system at exit.\n"
+	"SavePeriod <sec>	Save the system period.\n\n"),
 	PACKAGE_NAME,VERSION,buf.sysname,buf.release,nodePath().c_str());
 }
 
-string TSYS::getCmdOpt( int &curPos, string *argVal )
+string TSYS::getCmdOpt( int &curPos, string *argVal )	{ return getCmdOpt_(curPos, argVal, argc, (char **)argv); }
+
+string TSYS::getCmdOpt_( int &curPos, string *argVal, int argc, char **argv )
 {
     size_t fPos;
     int argI = curPos&0xFF;
@@ -446,17 +468,17 @@ bool TSYS::cfgFileLoad( )
     //================ Load parameters from commandline =========================
     string argCom, argVl;
     for(int argPos = 0; (argCom=getCmdOpt(argPos,&argVl)).size(); )
-	if(argCom == "h" || argCom == "help") {
+	if(strcasecmp(argCom.c_str(),"h") == 0 || strcasecmp(argCom.c_str(),"help") == 0) {
 	    fprintf(stdout,"%s",optDescr().c_str());
 	    Mess->setMessLevel(7);
 	    cmd_help = true;
 	}
-	else if(argCom == "Config") 	mConfFile = argVl;
-	else if(argCom == "Station")	mId = argVl;
-	else if(argCom == "StatName")	mName = argVl;
+	else if(strcasecmp(argCom.c_str(),"config") == 0)	mConfFile = argVl;
+	else if(strcasecmp(argCom.c_str(),"station") == 0)	mId = argVl;
+	else if(strcasecmp(argCom.c_str(),"statname") == 0)	mName = argVl;
 
     //Load config-file
-    int hd = open(mConfFile.c_str(),O_RDONLY);
+    int hd = open(mConfFile.c_str(), O_RDONLY);
     if(hd < 0) mess_err(nodePath().c_str(),_("Config-file '%s' error: %s"),mConfFile.c_str(),strerror(errno));
     else {
 	bool fOK = true;
@@ -529,6 +551,7 @@ void TSYS::cfgPrmLoad( )
     setDocDir(TBDS::genDBGet(nodePath()+"DocDir",docDir(),"root",TBDS::OnlyCfg), true);
     setSaveAtExit(s2i(TBDS::genDBGet(nodePath()+"SaveAtExit","0")));
     setSavePeriod(s2i(TBDS::genDBGet(nodePath()+"SavePeriod","0")));
+    setMainCPUs(TBDS::genDBGet(nodePath()+"MainCPUs",mainCPUs()));
 }
 
 void TSYS::load_( )
@@ -541,6 +564,7 @@ void TSYS::load_( )
     Mess->load();	//Messages load
 
     if(first_load) {
+
 	//Create subsystems
 	add(new TBDS());
 	add(new TSecurity());
@@ -595,6 +619,7 @@ void TSYS::save_( )
     if(sysModifFlgs&MDF_DocDir)	TBDS::genDBSet(nodePath()+"DocDir", docDir(), "root", TBDS::OnlyCfg);
     TBDS::genDBSet(nodePath()+"SaveAtExit", i2s(saveAtExit()));
     TBDS::genDBSet(nodePath()+"SavePeriod", i2s(savePeriod()));
+    TBDS::genDBSet(nodePath()+"MainCPUs", mainCPUs());
 
     Mess->save();	//Messages load
 }
@@ -609,7 +634,7 @@ int TSYS::start( )
     list(lst);
 
     mess_info(nodePath().c_str(),_("Start!"));
-    for(unsigned i_a=0; i_a < lst.size(); i_a++)
+    for(unsigned i_a = 0; i_a < lst.size(); i_a++)
 	try { at(lst[i_a]).at().subStart(); }
 	catch(TError err) {
 	    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
@@ -677,41 +702,63 @@ bool TSYS::chkSelDB( const string& wDB,  bool isStrong )
     return false;
 }
 
-void TSYS::sighandler( int signal )
+void TSYS::setMainCPUs( const string &vl )
+{
+    mMainCPUs = vl;
+
+#if __GLIBC_PREREQ(2,4)
+    if(nCPU() > 1) {
+	cpu_set_t cpuset;
+	CPU_ZERO(&cpuset);
+	string sval;
+	if(!vl.size()) for(int iCPU = 0; iCPU < nCPU(); iCPU++) CPU_SET(iCPU, &cpuset);
+	else {
+	    string prcVl;
+	    for(int off = 0; (sval=TSYS::strParse(vl,0,":",&off)).size(); ) {
+		if(s2i(sval) < nCPU()) CPU_SET(s2i(sval), &cpuset);
+		prcVl += (prcVl.size()?":":"") + i2s(s2i(sval));
+	    }
+	    mMainCPUs = prcVl;
+	}
+	pthread_setaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
+    }
+#endif
+
+    modif();
+}
+
+void TSYS::sighandler( int signal, siginfo_t *siginfo, void *context )
 {
     switch(signal) {
 	case SIGINT:
 	    SYS->mStopSignal = signal;
 	    break;
 	case SIGTERM:
-	    mess_warning(SYS->nodePath().c_str(),_("The Terminate signal is received. Server is being stopped!"));
+	    mess_warning(SYS->nodePath().c_str(), _("The Terminate signal is received. Server is being stopped!"));
 	    SYS->mStopSignal = signal;
 	    break;
 	case SIGFPE:
-	    mess_warning(SYS->nodePath().c_str(),_("Floating point exception is caught!"));
+	    mess_warning(SYS->nodePath().c_str(), _("Floating point exception is caught!"));
 	    exit(1);
 	    break;
 	case SIGCHLD: {
 	    int status;
 	    pid_t pid = wait(&status);
-	    if(!WIFEXITED(status) && pid > 0)
-		mess_info(SYS->nodePath().c_str(),_("Free child process %d!"),pid);
+	    if(!WIFEXITED(status) && pid > 0) mess_info(SYS->nodePath().c_str(), _("Free child process %d!"), pid);
 	    break;
 	}
 	case SIGPIPE:
 	    //mess_warning(SYS->nodePath().c_str(),_("Broken PIPE signal!"));
 	    break;
 	case SIGSEGV:
-	    mess_emerg(SYS->nodePath().c_str(),_("Segmentation fault signal!"));
+	    mess_emerg(SYS->nodePath().c_str(), _("Segmentation fault signal!"));
 	    break;
 	case SIGABRT:
-	    mess_emerg(SYS->nodePath().c_str(),_("OpenSCADA is aborted!"));
+	    mess_emerg(SYS->nodePath().c_str(), _("OpenSCADA is aborted!"));
 	    break;
-	case SIGALRM:
-	case SIGUSR1:
-	    break;
+	case SIGALRM: case SIGUSR1: break;
 	default:
-	    mess_warning(SYS->nodePath().c_str(),_("Unknown signal %d!"),signal);
+	    mess_warning(SYS->nodePath().c_str(), _("Unknown signal %d!"), signal);
     }
 }
 
@@ -1568,7 +1615,7 @@ void TSYS::taskCreate( const string &path, int priority, void *(*start_routine)(
     }
 }
 
-void TSYS::taskDestroy( const string &path, bool *endrunCntr, int wtm, bool noSignal )
+void TSYS::taskDestroy( const string &path, bool *endrunCntr, int wtm, bool noSignal, pthread_cond_t *cv )
 {
     map<string,STask>::iterator it;
     ResAlloc res(taskRes, false);
@@ -1583,8 +1630,9 @@ void TSYS::taskDestroy( const string &path, bool *endrunCntr, int wtm, bool noSi
     bool first = true;
     res.request(true);
     while((it=mTasks.find(path)) != mTasks.end() && !(it->second.flgs&STask::FinishTask)) {
-	if(first) pthread_kill(it->second.thr, SIGUSR1);	//> User's termination signal, check for it by function taskEndRun()
-	if(!noSignal) pthread_kill(it->second.thr, SIGALRM);	//> Sleep, select and other system calls termination
+	if(first) pthread_kill(it->second.thr, SIGUSR1);	//User's termination signal, check for it by function taskEndRun()
+	if(!noSignal) pthread_kill(it->second.thr, SIGALRM);	//Sleep, select and other system calls termination
+	if(cv) pthread_cond_signal(cv);
 	res.release();
 
 	time_t c_tm = time(NULL);
@@ -1649,16 +1697,17 @@ void *TSYS::taskWrap( void *stas )
 
 #if __GLIBC_PREREQ(2,4)
     //Load and init CPU set
-    if(SYS->multCPU() && !(tsk->flgs & STask::Detached)) {
+    if(SYS->nCPU() > 1 && !(tsk->flgs&STask::Detached)) {
 	tsk->cpuSet = TBDS::genDBGet(SYS->nodePath()+"CpuSet:"+tsk->path);
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	string sval;
 	bool cpuSetOK = false;
-	for(int off = 0; (sval=TSYS::strParse(tsk->cpuSet,0,":",&off)).size(); cpuSetOK = true) CPU_SET(s2i(sval), &cpuset);
+	for(int off = 0; (sval=TSYS::strParse(tsk->cpuSet,0,":",&off)).size(); cpuSetOK = true)
+	    if(s2i(sval) < SYS->nCPU()) CPU_SET(s2i(sval), &cpuset);
 	if(cpuSetOK) pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
     }
-    else if(SYS->multCPU() && (tsk->flgs & STask::Detached)) tsk->cpuSet = "NA";
+    else if(SYS->nCPU() > 1 && (tsk->flgs & STask::Detached)) tsk->cpuSet = "NA";
 #endif
 
     //Final set for init finish indicate
@@ -1915,12 +1964,12 @@ TVariant TSYS::objFuncCall( const string &iid, vector<TVariant> &prms, const str
     //  noPipe - pipe result disable for background call
     if(iid == "system" && prms.size() >= 1) {
 	if(prms.size() >= 2 && prms[1].getB()) return system(prms[0].getS().c_str());
-	FILE *fp = popen(prms[0].getS().c_str(),"r");
+	FILE *fp = popen(prms[0].getS().c_str(), "r");
 	if(!fp) return string("");
 
 	char buf[STR_BUF_LEN];
 	string rez;
-	for(int r_cnt = 0; (r_cnt=fread(buf,1,sizeof(buf),fp)); )
+	for(int r_cnt = 0; (r_cnt=fread(buf,1,sizeof(buf),fp)) || !feof(fp); )
 	    rez.append(buf,r_cnt);
 
 	pclose(fp);
@@ -1950,6 +1999,9 @@ TVariant TSYS::objFuncCall( const string &iid, vector<TVariant> &prms, const str
 	}
 	return wcnt;
     }
+    // int fileRemove( string file ) - Remove <file>.
+    //	  Return the removing result.
+    if(iid == "fileRemove" && prms.size()) return remove(prms[0].getS().c_str());
     // XMLNodeObj XMLNode(string name = "") - creation of the XML node object with the name <name>
     //  name - XML node name
     if(iid == "XMLNode") return new XMLNodeObj((prms.size()>=1) ? prms[0].getS() : "");
@@ -1968,7 +2020,7 @@ TVariant TSYS::objFuncCall( const string &iid, vector<TVariant> &prms, const str
 	}
 	else {
 	    req.setAttr("path","/"+prms[1].getS()+path);
-	    transport().at().cntrIfCmd(req,"cntrReq");
+	    transport().at().cntrIfCmd(req, "cntrReq");
 	    req.setAttr("path",path);
 	}
 	xnd.at().fromXMLNode(req);
@@ -2215,7 +2267,10 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("fld",opt,-1,"/gen/host",_("Host name"),R_R_R_,"root","root",1,"tp","str");
 	    ctrMkNode("fld",opt,-1,"/gen/user",_("System user"),R_R_R_,"root","root",1,"tp","str");
 	    ctrMkNode("fld",opt,-1,"/gen/sys",_("Operation system"),R_R_R_,"root","root",1,"tp","str");
-	    ctrMkNode("fld",opt,-1,"/gen/frq",_("Frequency (MHZ)"),R_R_R_,"root","root",1,"tp","real");
+	    ctrMkNode("fld",opt,-1,"/gen/CPU",_("CPU"),R_R_R_,"root","root",1,"tp","str");
+	    if(nCPU() > 1)
+		ctrMkNode("fld",opt,-1,"/gen/mainCPUs",_("Main CPUs set"),RWRWR_,"root","root",2,"tp","str",
+		    "help",_("For using CPU set write processors numbers string separated by symbol ':'.\nCPU numbers started from 0."));
 	    ctrMkNode("fld",opt,-1,"/gen/clk_res",_("Real-time clock resolution"),R_R_R_,"root","root",1,"tp","str");
 	    ctrMkNode("fld",opt,-1,"/gen/in_charset",_("Internal charset"),R_R___,"root","root",1,"tp","str");
 	    ctrMkNode("fld",opt,-1,"/gen/config",_("Config-file"),R_R___,"root","root",1,"tp","str");
@@ -2227,9 +2282,9 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		"help",_("Separate directory paths with documents by symbol ';'."));
 	    ctrMkNode("fld",opt,-1,"/gen/wrk_db",_("Work DB"),RWRWR_,"root","root",4,"tp","str","dest","select","select","/db/list",
 		"help",_("Work DB address in format [<DB module>.<DB name>].\nChange it field if you want save or reload all system from other DB."));
-	    ctrMkNode("fld",opt,-1,"/gen/saveExit",_("Save system at exit"),RWRWR_,"root","root",2,"tp","bool",
+	    ctrMkNode("fld",opt,-1,"/gen/saveExit",_("Save the system at exit"),RWRWR_,"root","root",2,"tp","bool",
 		"help",_("Select for automatic system saving to DB on exit."));
-	    ctrMkNode("fld",opt,-1,"/gen/savePeriod",_("Save system period"),RWRWR_,"root","root",2,"tp","dec",
+	    ctrMkNode("fld",opt,-1,"/gen/savePeriod",_("Save the system period"),RWRWR_,"root","root",2,"tp","dec",
 		"help",_("Use no zero period (seconds) for periodic saving of changed systems parts to DB."));
 	    ctrMkNode("fld",opt,-1,"/gen/lang",_("Language"),RWRWR_,"root","root",1,"tp","str");
 	    if(ctrMkNode("area",opt,-1,"/gen/mess",_("Messages"),R_R_R_)) {
@@ -2247,7 +2302,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("list",opt,-1,"/subs/br",_("Subsystems"),R_R_R_,"root","root",3,"idm","1","tp","br","br_pref","sub_");
 	if(ctrMkNode("area",opt,-1,"/tasks",_("Tasks"),R_R___))
 	    if(ctrMkNode("table",opt,-1,"/tasks/tasks",_("Tasks"),RWRW__,"root","root",2,"key","path",
-		"help",!multCPU()?"":_("For CPU set use processors numbers string separated by symbol ':'.\n"
+		"help",(nCPU()<=1)?"":_("For an using CPU set write processors numbers string separated by symbol ':'.\n"
 				       "CPU numbers started from 0.")))
 	    {
 		ctrMkNode("list",opt,-1,"/tasks/tasks/path",_("Path"),R_R___,"root","root",1,"tp","str");
@@ -2257,8 +2312,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		ctrMkNode("list",opt,-1,"/tasks/tasks/plc",_("Policy"),R_R___,"root","root",1,"tp","str");
 		ctrMkNode("list",opt,-1,"/tasks/tasks/prior",_("Prior."),R_R___,"root","root",1,"tp","dec");
 #if __GLIBC_PREREQ(2,4)
-		if(multCPU())
-		    ctrMkNode("list",opt,-1,"/tasks/tasks/cpuSet",_("CPU set"),RWRW__,"root","root",1,"tp","str");
+		if(nCPU() > 1) ctrMkNode("list",opt,-1,"/tasks/tasks/cpuSet",_("CPU set"),RWRW__,"root","root",1,"tp","str");
 #endif
 	    }
 	if(ctrMkNode("area",opt,-1,"/tr",_("Translations"))) {
@@ -2276,7 +2330,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		ctrMkNode("fld",opt,-1,"/tr/langs",_("Languages"),RWRWR_,"root","root",2,"tp","str",
 		    "help",_("Processed languages list by two symbols code and separated symbol ';'."));
 		ctrMkNode("fld",opt,-1,"/tr/fltr",_("Source filter"),RWRWR_,"root","root",1,"tp","str");
-		ctrMkNode("fld",opt,-1,"/tr/chkUnMatch",_("Check unmatch"),RWRWR_,"root","root",1,"tp","bool");
+		ctrMkNode("fld",opt,-1,"/tr/chkUnMatch",_("Check for mismatch"),RWRWR_,"root","root",1,"tp","bool");
 		if(ctrMkNode("table",opt,-1,"/tr/mess",_("Messages"),RWRWR_,"root","root",1,"key","base")) {
 		    ctrMkNode("list",opt,-1,"/tr/mess/base",Mess->lang2CodeBase().c_str(),RWRWR_,"root","root",1,"tp","str");
 		    string lngEl;
@@ -2321,7 +2375,23 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(trU(name(),u));
 	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setName(trSetU(name(),u,opt->text()));
     }
-    else if(a_path == "/gen/frq" && ctrChkNode(opt))	opt->setText(r2s((float)sysClk()/1000000.,6));
+    else if(a_path == "/gen/CPU" && ctrChkNode(opt))	opt->setText(strMess(_("%dx%0.3gGHz"),nCPU(),(float)sysClk()/1e9));
+    else if(a_path == "/gen/mainCPUs") {
+	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD)) {
+	    string vl = mainCPUs();
+#if __GLIBC_PREREQ(2,4)
+	    cpu_set_t cpuset;
+	    CPU_ZERO(&cpuset);
+	    pthread_getaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
+	    vl += "(";
+	    for(int iCPU = 0; iCPU < nCPU(); iCPU++)
+		if(CPU_ISSET(iCPU,&cpuset)) vl += string(vl[vl.size()-1]=='('?"":":")+i2s(iCPU);
+	    vl += ")";
+#endif
+	    opt->setText(vl);
+	}
+	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setMainCPUs(TSYS::strParse(opt->text(),0,"("));
+    }
     else if(a_path == "/gen/clk_res" && ctrChkNode(opt)) {
 	struct timespec tmval;
 	clock_getres(CLOCK_REALTIME,&tmval);
@@ -2402,7 +2472,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	    XMLNode *n_stat	= ctrMkNode("list",opt,-1,"/tasks/tasks/stat","",R_R___,"root","root");
 	    XMLNode *n_plc	= ctrMkNode("list",opt,-1,"/tasks/tasks/plc","",R_R___,"root","root");
 	    XMLNode *n_prior	= ctrMkNode("list",opt,-1,"/tasks/tasks/prior","",R_R___,"root","root");
-	    XMLNode *n_cpuSet	= (multCPU() ? ctrMkNode("list",opt,-1,"/tasks/tasks/cpuSet","",RWRW__,"root","root") : NULL);
+	    XMLNode *n_cpuSet	= (nCPU()>1) ? ctrMkNode("list",opt,-1,"/tasks/tasks/cpuSet","",RWRW__,"root","root") : NULL;
 
 	    ResAlloc res(taskRes, false);
 	    for(map<string,STask>::iterator it = mTasks.begin(); it != mTasks.end(); it++) {
@@ -2433,27 +2503,48 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		    n_plc->childAdd("el")->setText(plcVl);
 		}
 		if(n_prior)	n_prior->childAdd("el")->setText(i2s(it->second.prior));
-		if(n_cpuSet)	n_cpuSet->childAdd("el")->setText(it->second.cpuSet);
+		if(n_cpuSet) {
+		    string vl = it->second.cpuSet;
+#if __GLIBC_PREREQ(2,4)
+		    cpu_set_t cpuset;
+		    CPU_ZERO(&cpuset);
+		    pthread_getaffinity_np(it->second.thr, sizeof(cpu_set_t), &cpuset);
+		    vl += "(";
+		    for(int iCPU = 0; iCPU < nCPU(); iCPU++)
+			if(CPU_ISSET(iCPU,&cpuset)) vl += string(vl[vl.size()-1]=='('?"":":")+i2s(iCPU);
+		    vl += ")";
+#endif
+		    n_cpuSet->childAdd("el")->setText(vl);
+		}
 	    }
 	}
 #if __GLIBC_PREREQ(2,4)
-	if(multCPU() && ctrChkNode(opt,"set",RWRW__,"root","root",SEC_WR) && opt->attr("col") == "cpuSet") {
+	if(nCPU() > 1 && ctrChkNode(opt,"set",RWRW__,"root","root",SEC_WR) && opt->attr("col") == "cpuSet") {
 	    ResAlloc res(taskRes, true);
 	    map<string,STask>::iterator it = mTasks.find(opt->attr("key_path"));
 	    if(it == mTasks.end()) throw TError(nodePath().c_str(),_("No present task '%s'."));
 	    if(it->second.flgs & STask::Detached) return;
 
-	    it->second.cpuSet = opt->text();
+	    it->second.cpuSet = TSYS::strParse(opt->text(),0,"(");
 
 	    cpu_set_t cpuset;
 	    CPU_ZERO(&cpuset);
 	    string sval;
-	    for(int off = 0; (sval=TSYS::strParse(it->second.cpuSet,0,":",&off)).size(); ) CPU_SET(s2i(sval), &cpuset);
+	    if(!it->second.cpuSet.size()) for(int iCPU = 0; iCPU < nCPU(); iCPU++) CPU_SET(iCPU, &cpuset);
+	    else {
+		string prcVl;
+		for(int off = 0; (sval=TSYS::strParse(it->second.cpuSet,0,":",&off)).size(); ) {
+		    if(s2i(sval) < nCPU()) CPU_SET(s2i(sval), &cpuset);
+		    prcVl += (prcVl.size()?":":"") + i2s(s2i(sval));
+		}
+		it->second.cpuSet = prcVl;
+	    }
+
 	    int rez = pthread_setaffinity_np(it->second.thr, sizeof(cpu_set_t), &cpuset);
 	    res.release();
-	    TBDS::genDBSet(nodePath()+"CpuSet:"+it->first,opt->text());
-	    if(rez == EINVAL && opt->text().size()) throw TError(nodePath().c_str(),_("Set no allowed processors."));
-	    if(rez && opt->text().size()) throw TError(nodePath().c_str(),_("CPU set for thread error."));
+	    TBDS::genDBSet(nodePath()+"CpuSet:"+it->first, it->second.cpuSet);
+	    if(rez == EINVAL) throw TError(nodePath().c_str(),_("Set not allowed processors try."));
+	    if(rez) throw TError(nodePath().c_str(),_("CPUs set for the thread error."));
 	}
 #endif
     }

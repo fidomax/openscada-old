@@ -45,8 +45,8 @@ class VFileArch
 	//Methods
 	VFileArch( ModVArchEl *owner );
 	VFileArch( const string &iname, int64_t ibeg, int64_t iend, int64_t iper, TFld::Type itp, ModVArchEl *owner);
-	~VFileArch();
-	void delFile();
+	~VFileArch( );
+	void delFile( );
 
 	void attach( const string &name );
 
@@ -60,7 +60,7 @@ class VFileArch
 	bool	err( )		{ return mErr; }
 	bool	isPack( )	{ return mPack; }
 
-	void	setVals( TValBuf &buf, int64_t beg, int64_t end );
+	bool	setVals( TValBuf &buf, int64_t beg, int64_t end );
 	void	getVals( TValBuf &buf, int64_t beg, int64_t end );
 	TVariant getVal( int pos );
 
@@ -92,7 +92,7 @@ class VFileArch
 	void cacheSet( int pos, int off, int vsz, bool last = false, bool wr = false );
 	void cacheDrop( int pos );
 
-	int calcVlOff( int hd, int pos, int *vsz = NULL, bool wr = false );
+	int calcVlOff( int hd, int vpos, int *vsz = NULL, bool wr = false, int *rvpos = NULL );
 	string getValue( int hd, int ioff, int vsz );
 	void setValue( int hd, int ioff, const string &ival );
 	void moveTail( int hd, int old_st, int new_st );
@@ -122,6 +122,7 @@ class VFileArch
 	string	eVal;		//Eval data type value
 	int	mpos;		//Maximum value position into file
 	char	tbt;		//Temporary byte
+	bool	intoRep;	//Into repaire
 
 	// Cache parameters
 	struct CacheEl {
@@ -144,6 +145,7 @@ class ModVArch;
 class ModVArchEl: public TVArchEl
 {
     friend class VFileArch;
+    friend class ModVArch;
     public:
 	//Methods
 	ModVArchEl( TVArchive &iachive, TVArchivator &iarchivator );
@@ -170,7 +172,7 @@ class ModVArchEl: public TVArchEl
 	//Attributes
 	bool	mChecked;	//The present archive files checked, for prevent doubles create at the new data place
 	Res	mRes;		//Resource to access;
-	deque<VFileArch *>	arh_f;
+	deque<VFileArch*>	files;
 	int64_t	realEnd;
 };
 
@@ -194,12 +196,12 @@ class ModVArch: public TVArchivator
 	int	packTm( )	{ return mPackTm; }
 	bool	packInfoFiles( ){ return mPackInfoFiles; }
 
-	void setFileTimeSize( double vl )	{ time_size = vl; modif(); }
-	void setNumbFiles( unsigned vl )	{ mNumbFiles = vl; modif(); }
-	void setMaxCapacity( double vl )	{ mMaxCapacity = vl; modif(); }
-	void setRoundProc( double vl )		{ round_proc = vl; modif(); }
-	void setCheckTm( int vl )		{ mChkTm = vl; modif(); }
-	void setPackTm( int vl )		{ mPackTm = vl; modif(); }
+	void setFileTimeSize( double vl )	{ time_size = vmax(100*valPeriod()/3600,vl); modif(); }
+	void setNumbFiles( unsigned vl )	{ mNumbFiles = vmax(0,vl); modif(); }
+	void setMaxCapacity( double vl )	{ mMaxCapacity = vmax(0,vl); modif(); }
+	void setRoundProc( double vl )		{ round_proc = vmax(0,vmin(50,vl)); modif(); }
+	void setCheckTm( int vl )		{ mChkTm = vmax(0,vl); modif(); }
+	void setPackTm( int vl )		{ mPackTm = vmax(0,vl); modif(); }
 	void setPackInfoFiles( bool vl )	{ mPackInfoFiles = vl; modif(); }
 
 	void start( );

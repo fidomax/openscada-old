@@ -40,8 +40,7 @@ using namespace OSCADA;
 //*************************************************
 //* TModule                                       *
 //*************************************************
-const char *TModule::l_info[] =
-    {"Module","Name","Type","Source","Version","Author","Description","License"};
+const char *TModule::l_info[] = {"Module", "Name", "Type", "Source", "Version", "Author", "Description", "License"};
 
 TModule::TModule( const string &id ) : mId(id)
 {
@@ -56,7 +55,7 @@ TModule::TModule( const string &id ) : mId(id)
     char mess[][100] = { _("Author"), _("License") };
 #endif
 
-    if(mess_lev() == TMess::Debug) SYS->cntrIter("ModulsCntr",1);
+    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TModule::~TModule( )
@@ -64,7 +63,7 @@ TModule::~TModule( )
     //Clean export function list
     for(unsigned i = 0; i < m_efunc.size(); i++) delete m_efunc[i];
 
-    if(mess_lev() == TMess::Debug) SYS->cntrIter("ModulsCntr",-1);
+    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), -1);
 }
 
 string TModule::objName( )	{ return TCntrNode::objName()+":TModule"; }

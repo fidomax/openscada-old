@@ -2,7 +2,7 @@
 //OpenSCADA system module UI.VISION file: tvision.cpp
 /***************************************************************************
  *   Copyright (C) 2005-2006 by Evgen Zaichuk
- *                 2006-2014 by Roman Savochenko (rom_as@oscada.org)
+ *                 2006-2015 by Roman Savochenko (rom_as@oscada.org)
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -45,10 +45,10 @@
 #define MOD_TYPE	SUI_ID
 #define VER_TYPE	SUI_VER
 #define SUB_TYPE	"Qt"
-#define MOD_VER		"1.3.0"
+#define MOD_VER		"3.3.3"
 #define AUTHORS		_("Roman Savochenko")
 #define DEVELOPERS	_("Roman Savochenko, Lysenko Maxim, Yashina Kseniya")
-#define DESCRIPTION	_("Visual operation user interface.")
+#define DESCRIPTION	_("Visual operation user interface, based on Qt library - front-end to VCA engine.")
 #define LICENSE		"GPL2"
 //*************************************************
 
@@ -84,7 +84,7 @@ using namespace VISION;
 //* QTCFG::TVision                                *
 //*************************************************
 TVision::TVision( string name ) : TUI(MOD_ID), mStatusEn(true), mWinPosCntrSave(true), mExitLstRunPrjCls(true), end_run(false),
-    mRestTime(60), mCachePgLife(1), vca_station("."), mPlayCom("play -q %f"), mScrnCnt(0)
+    mRestTime(60), mCachePgLife(1), vca_station("."), /*mPlayCom("play -q %f"),*/ mScrnCnt(0)
 {
     mod		= this;
 
@@ -117,8 +117,8 @@ void TVision::modInfo( vector<string> &list )
 
 string TVision::modInfo( const string &name )
 {
-    if(name == "SubType")		return SUB_TYPE;
-    else if(name == _("Developers"))	return _(DEVELOPERS);
+    if(name == "SubType")	return SUB_TYPE;
+    if(name == _("Developers"))	return _(DEVELOPERS);
     return TModule::modInfo(name);
 }
 
@@ -137,8 +137,7 @@ string TVision::optDescr( )
 	"ExitLstRunPrjCls {0;1}Exit on last run project close (default = 1).\n"
 	"CachePgLife <hours>   Cached pages lifetime.\n"
 	"VCAstation  <id>      VCA station id ('.' - local).\n"
-	"RestoreTime <seconds> Restore connection time.\n"
-	"PlayCom     <cmd>     Audio alarms' files play command.\n\n"),
+	"RestoreTime <seconds> Restore connection time.\n\n"),
 	MOD_TYPE,MOD_ID,nodePath().c_str());
 
     return buf;
@@ -163,7 +162,7 @@ void TVision::load_( )
     setCachePgLife(s2r(TBDS::genDBGet(nodePath()+"CachePgLife",r2s(cachePgLife()))));
     setVCAStation(TBDS::genDBGet(nodePath()+"VCAstation","."));
     setRestoreTime(s2i(TBDS::genDBGet(nodePath()+"RestoreTime",i2s(restoreTime()))));
-    setPlayCom(TBDS::genDBGet(nodePath()+"PlayCom",playCom()));
+    //setPlayCom(TBDS::genDBGet(nodePath()+"PlayCom",playCom()));
 }
 
 void TVision::save_( )
@@ -180,7 +179,7 @@ void TVision::save_( )
     TBDS::genDBSet(nodePath()+"CachePgLife", r2s(cachePgLife()));
     TBDS::genDBSet(nodePath()+"VCAstation", VCAStation());
     TBDS::genDBSet(nodePath()+"RestoreTime",i2s(restoreTime()));
-    TBDS::genDBSet(nodePath()+"PlayCom", playCom());
+    //TBDS::genDBSet(nodePath()+"PlayCom", playCom());
 }
 
 void TVision::postEnable( int flag )
@@ -213,7 +212,7 @@ void TVision::uiPropSet( const string &prop, const string &vl, const string &use
     TBDS::genDBSet(nodePath()+"uiProps",prmNd.save(XMLNode::BrAllPast),user);
 }
 
-QIcon TVision::icon()
+QIcon TVision::icon( )
 {
     QImage ico_t;
     if(!ico_t.load(TUIS::icoGet("UI.Vision",NULL,true).c_str())) ico_t.load(":/images/vision.png");
@@ -281,13 +280,15 @@ QMainWindow *TVision::openWindow( )
 
 	//QDesktopWidget().screen(1)
 	// Find for already opened run window
-	unsigned i_w;
-	for(i_w = 0; i_w < mn_winds.size(); i_w++)
-	    if(qobject_cast<VisRun*>(mn_winds[i_w]) &&
-		    ((isSess && ((VisRun*)mn_winds[i_w])->workSess() == sprj) || (!isSess && ((VisRun*)mn_winds[i_w])->srcProject() == sprj)) &&
-		    ((VisRun*)mn_winds[i_w])->screen() == screen)
-		break;
-	if(i_w < mn_winds.size()) continue;
+	MtxAlloc res(dataRes(), true);
+	bool openRunOK = false;
+	for(unsigned iW = 0; !openRunOK && iW < mnWinds.size(); iW++)
+	    openRunOK = (qobject_cast<VisRun*>(mnWinds[iW]) &&
+		    ((isSess && ((VisRun*)mnWinds[iW])->workSess() == sprj) || (!isSess && ((VisRun*)mnWinds[iW])->srcProject() == sprj)) &&
+		    ((VisRun*)mnWinds[iW])->screen() == screen);
+	res.unlock();
+	if(openRunOK) continue;
+
 	VisRun *sess = new VisRun((isSess?"/ses_":"/prj_")+sprj, user_open, user_pass, VCAStation(), true, screen);
 	sess->show();
 	sess->raise();
@@ -312,8 +313,13 @@ void TVision::modStop( )
 
     end_run = true;
 
-    for(unsigned i_w = 0; i_w < mn_winds.size(); i_w++)
-	while(mn_winds[i_w]) TSYS::sysSleep(STD_WAIT_DELAY*1e-3);
+    MtxAlloc res(dataRes(), true);
+    for(unsigned i_w = 0; i_w < mnWinds.size(); i_w++)
+	while(mnWinds[i_w]) {
+	    res.unlock();
+	    TSYS::sysSleep(STD_WAIT_DELAY*1e-3);
+	    res.lock();
+	}
     TSYS::sysSleep(STD_WAIT_DELAY*1e-3);
 
     run_st = false;
@@ -330,17 +336,19 @@ WdgShape *TVision::getWdgShape( const string &iid )
 
 void TVision::regWin( QMainWindow *mwd )
 {
+    MtxAlloc res(dataRes(), true);
     unsigned i_w;
-    for(i_w = 0; i_w < mn_winds.size(); i_w++)
-	if(mn_winds[i_w] == NULL) break;
-    if(i_w == mn_winds.size()) mn_winds.push_back((QMainWindow*)NULL);
-    mn_winds[i_w] = mwd;
+    for(i_w = 0; i_w < mnWinds.size(); i_w++)
+	if(mnWinds[i_w] == NULL) break;
+    if(i_w == mnWinds.size()) mnWinds.push_back((QMainWindow*)NULL);
+    mnWinds[i_w] = mwd;
 }
 
 void TVision::unregWin( QMainWindow *mwd )
 {
-    for(unsigned i_w = 0; i_w < mn_winds.size(); i_w++)
-	if(mn_winds[i_w] == mwd) mn_winds[i_w] = NULL;
+    MtxAlloc res(dataRes(), true);
+    for(unsigned i_w = 0; i_w < mnWinds.size(); i_w++)
+	if(mnWinds[i_w] == mwd) mnWinds[i_w] = NULL;
 }
 
 void TVision::cntrCmdProc( XMLNode *opt )
@@ -349,6 +357,7 @@ void TVision::cntrCmdProc( XMLNode *opt )
     if(opt->name() == "info") {
 	TUI::cntrCmdProc(opt);
 	ctrMkNode("fld",opt,-1,"/prm/st/disp_n",_("Display number"),R_R_R_,"root",SUI_ID,1,"tp","dec");
+	ctrMkNode("list",opt,-1,"/prm/st/mnWinds",_("Main windows"),R_R_R_,"root",SUI_ID);
 	if(ctrMkNode("area",opt,1,"/prm/cfg",_("Module options"))) {
 	    ctrMkNode("fld",opt,-1,"/prm/cfg/stationVCA",_("VCA engine station"),RWRWR_,"root",SUI_ID,4,"tp","str","idm","1","dest","select","select","/prm/cfg/vca_lst");
 	    ctrMkNode("comm",opt,-1,"/prm/cfg/host_lnk",_("Go to remote stations list configuration"),RWRW__,"root",SUI_ID,1,"tp","lnk");
@@ -369,16 +378,24 @@ void TVision::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("fld",opt,-1,"/prm/cfg/winPos_cntr_save",_("Windows position control and save"),RWRWR_,"root",SUI_ID,1,"tp","bool");
 	    ctrMkNode("fld",opt,-1,"/prm/cfg/exit_on_lst_run_prj_cls",_("Exit on last run project close"),RWRWR_,"root",SUI_ID,1,"tp","bool");
 	}
-	if(ctrMkNode("area",opt,2,"/alarm",_("Alarms"),R_R_R_,"root",SUI_ID))
-	    ctrMkNode("fld",opt,-1,"/alarm/plComm",_("Play command"),RWRWR_,"root",SUI_ID,4,"tp","str","dest","sel_ed","select","/alarm/plComLs","help",
-		    _("Command line for call sounds play.\n"
-		    "Use %f for source file name inserting. If source file is not used play sample is sent to pipe."));
 	return;
     }
 
     //Process command to page
     string a_path = opt->attr("path");
     if(a_path == "/prm/st/disp_n" && ctrChkNode(opt))		opt->setText(i2s(mScrnCnt));
+    else if(a_path == "/prm/st/mnWinds" && ctrChkNode(opt)) {
+	string rez;
+	MtxAlloc res(dataRes(), true);
+	for(unsigned iW = 0; iW < mnWinds.size(); iW++)
+	    if(dynamic_cast<VisDevelop*>(mnWinds[iW]))	opt->childAdd("el")->setText(TSYS::strMess(_("%d: Development"),iW));
+	    else if(dynamic_cast<VisRun*>(mnWinds[iW]))	{
+		opt->childAdd("el")->setText(TSYS::strMess(_("%d: Running \"%s:%s\" - %s"),iW,
+		    ((VisRun*)mnWinds[iW])->workSess().c_str(),
+		    ((VisRun*)mnWinds[iW])->srcProject().c_str(),
+		    ((VisRun*)mnWinds[iW])->connOK()?_("Connected"):_("Disconnected")));
+	    }
+    }
     else if(a_path == "/prm/cfg/start_user") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SUI_ID,SEC_RD))	opt->setText(startUser());
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SUI_ID,SEC_WR))	setStartUser(opt->text());
@@ -450,11 +467,6 @@ void TVision::cntrCmdProc( XMLNode *opt )
 	    opt->childAdd("el")->setAttr("id",lst[i_ls])->
 		setText(SYS->transport().at().extHostGet("*",lst[i_ls]).name);
     }
-    else if(a_path == "/alarm/plComm") {
-	if(ctrChkNode(opt,"get",RWRWR_,"root",SUI_ID,SEC_RD))	opt->setText(playCom());
-	if(ctrChkNode(opt,"set",RWRWR_,"root",SUI_ID,SEC_WR))	setPlayCom(opt->text());
-    }
-    else if(a_path == "/alarm/plComLs" && ctrChkNode(opt)) opt->childAdd("el")->setText("play %f");
     else TUI::cntrCmdProc(opt);
 }
 
@@ -496,7 +508,7 @@ int TVision::cntrIfCmd( XMLNode &node, const string &user, const string &passwor
 	node.setAttr("rqDir", trUser?"0":"1")->
 	    setAttr("rqUser", trUser?host.user:user)->
 	    setAttr("rqPass", trUser?host.pass:password);
-	tr.at().messProtIO(node,"SelfSystem");
+	tr.at().messProtIO(node, "SelfSystem");
 
 	return s2i(node.attr("rez"));
     }

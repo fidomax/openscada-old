@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.Archive.FSArch 1.5.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-15 17:20+0200\n"
+"POT-Creation-Date: 2015-07-01 16:42+0300\n"
 "PO-Revision-Date: 2007-10-21 22:21+0300\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <uk@li.org>\n"
@@ -22,10 +22,10 @@ msgid "Roman Savochenko"
 msgstr "Роман Савоченко"
 
 msgid ""
-"The Archive module. Allow functions for messages and values archiving to "
+"The archiver module. Provides functions for messages and values archiving to "
 "file system."
 msgstr ""
-"Модуль архіву. Надає функції архівації повідомлень та значень на файлову "
+"Модуль архіватору. Надає функції архівації повідомлень та значень на файлову "
 "систему."
 
 msgid "Compress error!"
@@ -37,13 +37,14 @@ msgstr "Помилка розпакування: '%s'!"
 
 msgid ""
 "======================= The module <%s:%s> options =======================\n"
-"    --noArchLimit        Disable archives limit to file number. Use for see "
-"archives mode, not work.\n"
+"    --noArchLimit        Disable archives limit to the file number. Use for "
+"see archives mode, not work.\n"
 "\n"
 msgstr ""
 "======================= Опції модуля <%s:%s> =============================\n"
 "    --noArchLimit        Вимкнути обмеження на кількість файлів.\n"
-"                         Використовуйте для режиму перегляду архівів, не для роботи.\n"
+"                         Використовуйте для режиму перегляду архівів, не для "
+"роботи.\n"
 "\n"
 
 #, c-format
@@ -135,7 +136,7 @@ msgstr ""
 "файли архівів будуть пакуватися gzip архіватором.\n"
 "Встановити в нуль для виключення упакування gzip."
 
-msgid "Check archives period (min)"
+msgid "Checking the archives period (min)"
 msgstr "Період перевірки архівів (хвил)"
 
 msgid ""
@@ -148,7 +149,7 @@ msgstr ""
 "у теці нових файлів архівів, а також перевищення лімітів та видалення старих "
 "файлів архівів."
 
-msgid "Use info files for packed archives"
+msgid "Using info files for the packed archives"
 msgstr "Використовувати інф. файли для упакованих архівів"
 
 msgid ""
@@ -195,13 +196,36 @@ msgstr ""
 "Команда, яка дозволяє запустити перевірку архівів негайно,\n"
 "наприклад, після ручних змін у теці архіватору."
 
-#, c-format
-msgid "Can not create file: '%s'!"
-msgstr "Не можу створити файл: '%s'!"
+msgid "Files"
+msgstr "Файли"
+
+msgid "Name"
+msgstr "Ім'я"
+
+msgid "Begin"
+msgstr "Початок"
+
+msgid "End"
+msgstr "Кінець"
+
+msgid "Charset"
+msgstr "Кодування"
+
+msgid "Size"
+msgstr "Розмір"
+
+msgid "XML"
+msgstr "XML"
+
+msgid "Pack"
+msgstr "Пак."
+
+msgid "Error"
+msgstr "Помилка"
 
 #, c-format
-msgid "Write to file '%s' error"
-msgstr "Помилка запису до файлу '%s'"
+msgid "File '%s' creation error: %s(%d)."
+msgstr "Помилка створення файлу '%s': %s(%d)."
 
 #, c-format
 msgid "File '%s' header error!"
@@ -223,8 +247,8 @@ msgid "Archive file '%s' isn't attached!"
 msgstr "Файл архіву '%s' не під'єднано!"
 
 #, c-format
-msgid "File access to '%s' error."
-msgstr "Помилка доступу до файлу '%s'."
+msgid "Write to the archive file '%s' error: %s(%d)"
+msgstr "Помилка запису до файлу '%s': %s(%d)"
 
 msgid "Getting messages from an error Archive file!"
 msgstr "Отримання повідомлень з файлу архіву з помилкою!"
@@ -250,7 +274,7 @@ msgid "Archive's file time size (hours)"
 msgstr "Розмір файлу архіву (годин)"
 
 msgid ""
-"The parameter is set automatically when you change the frequency values by "
+"The parameter is set automatically when you change the values period by the "
 "archiver\n"
 "and generally proportional to the frequency values of the archiver.\n"
 "Attention! Large archive files will be processed long by long unpacking gzip-"
@@ -278,14 +302,14 @@ msgid ""
 "Testing is done by periodicity checking the archives, which resulted in, on "
 "exceeding the limit,\n"
 "removes the oldest files of all archives. Completely remove this restriction "
-"can be set to zero."
+"can be set to < 1."
 msgstr ""
 "Встановлює обмеження на максимально використаний об'єм дискового простору "
 "файлами всіх архівів архіватору.\n"
 "Перевірка здійснюється з періодичністю перевірки архівів, в результаті якой, "
 "при перевищені ліміту,\n"
 "відбувається видалення най старіших файлів всіх архівів. Повністю зняти це "
-"обмеження можна встановивши параметр у ноль."
+"обмеження можна встановивши параметр у значення < 1."
 
 msgid "Numeric values rounding (%)"
 msgstr "Округлення числових значень (%)"
@@ -307,6 +331,15 @@ msgstr ""
 "за межами дійсності, параметри. Виключити цю властивість можна встановивши "
 "параметр у нуль."
 
+msgid "Packing files timeout (min)"
+msgstr "Таймаут пакування файлів (хвил)"
+
+msgid "Checking archives period (min)"
+msgstr "Період перевірки архівів (хвил)"
+
+msgid "Using info files for packed archives"
+msgstr "Використовувати інф. файли для упакованих архівів"
+
 msgid "Files size"
 msgstr "Розмір файлів"
 
@@ -316,17 +349,38 @@ msgstr "Експорт"
 msgid "Archive"
 msgstr "Архів"
 
-msgid "Begin"
-msgstr "Початок"
-
-msgid "End"
-msgstr "Кінець"
-
 msgid "Type"
 msgstr "Тип"
 
 msgid "To file"
 msgstr "До файлу"
+
+msgid "Period, us"
+msgstr "Період, мкс"
+
+msgid "Unknown"
+msgstr "Невідомий"
+
+msgid "Boolean"
+msgstr "Логічний"
+
+msgid "Int16"
+msgstr "Цілий16"
+
+msgid "Int32"
+msgstr "Цілий32"
+
+msgid "Int64"
+msgstr "Цілий64"
+
+msgid "Float"
+msgstr "Реальний"
+
+msgid "Double"
+msgstr "Подвіний, реал."
+
+msgid "String"
+msgstr "Рядок"
 
 #, c-format
 msgid "Archive file '%s' no opened!"
@@ -344,12 +398,9 @@ msgid "Warning! Allocated buffer size %d for indexes lesser for used %d."
 msgstr ""
 "Попередження! Виділений розмір %d буферу індексу менше використаного %d."
 
-msgid ""
-"Write data block to the archive file '%s' error. Will structure break. mSize="
-"%d, foff_end=%d, vSize=%d"
-msgstr ""
-"Помилка запису блока до файлу архіву '%s'. Структуру буде зламано. mSize=%d, "
-"foff_end=%d, vSize=%d"
+#, c-format
+msgid "Write to the archive '%s' file '%s' error: %s(%d)"
+msgstr "Помилка запису до архівного '%s' файлу '%s': %s(%d)"
 
 #, c-format
 msgid "Read file '%s' for offset %d error!"
@@ -359,14 +410,20 @@ msgstr "Помилка читання файлу '%s' для зсуву %d!"
 msgid "Write to file '%s' error!"
 msgstr "Помилка запису до файлу '%s'!"
 
+#, c-format
 msgid ""
 "Error archive file structure: '%s'. Margin = %d byte. Will try fix that!"
 msgstr ""
 "Помилка структури файлу: '%s'. Різниця = %d байт. Спробую виправити це!"
 
+#, c-format
 msgid "Error open/create archive file for copy here: %s"
 msgstr "Помилка відкриття/створення нового файлу архіву для копіювання: %s"
 
 #, c-format
 msgid "Last value for actual archive file '%s' is not EVAL. Will try fix that!"
-msgstr "Останнє значення актуального файлу архіву '%s' не EVAL. Спробую виправити це!"
+msgstr ""
+"Останнє значення актуального файлу архіву '%s' не EVAL. Спробую виправити це!"
+
+#~ msgid "Use info files for packed archives"
+#~ msgstr "Використовувати інф. файли для упакованих архівів"

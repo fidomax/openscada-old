@@ -704,7 +704,7 @@ QString VisDevelop::getFileName(const QString &caption, const QString &dir, cons
     fileDlg->setAcceptMode(mode);
     fileDlg->setWindowTitle(caption);
     fileDlg->setNameFilter(filter);
-    if(dir.size()) fileDlg->selectFile(dir);
+    if(dir.size()) { QString dirF = dir; fileDlg->selectFile(dirF.replace("\"","")); }
     if(fileDlg->exec() && !fileDlg->selectedFiles().empty()) return fileDlg->selectedFiles()[0];
 
     return "";
@@ -983,13 +983,12 @@ void VisDevelop::itDBLoad( )
     if(own_wdg.empty()) return;
 
     //Request to confirm
-    InputDlg dlg(this,actDBLoad->icon(),
+    InputDlg dlg(this, actDBLoad->icon(),
 	    QString(_("Are you sure of loading visual items '%1' from DB?")).arg(QString(own_wdg.c_str()).replace(";","; ")),
-	    _("Load visual item's data from DB"),false,false);
+	    _("Load visual item's data from DB"), false, false);
     if(dlg.exec() == QDialog::Accepted) {
 	string cur_wdg;
-	for(int i_off = 0; (cur_wdg=TSYS::strSepParse(own_wdg,0,';',&i_off)).size(); )
-	{
+	for(int i_off = 0; (cur_wdg=TSYS::strSepParse(own_wdg,0,';',&i_off)).size(); ) {
 	    // Send load request
 	    XMLNode req("load");
 	    req.setAttr("path",cur_wdg+"/%2fobj");
@@ -1306,7 +1305,7 @@ void VisDevelop::visualItEdit( )
 	if(!cntrIfCmd(req)) {
 	    QImage ico_t;
 	    string simg = TSYS::strDecode(req.text(),TSYS::base64);
-	    if(ico_t.loadFromData((const uchar*)simg.c_str(),simg.size()))
+	    if(ico_t.loadFromData((const uchar*)simg.data(),simg.size()))
 		scrl->parentWidget()->setWindowIcon(QPixmap::fromImage(ico_t));	//parentWidget is QMdiSubWindow
 	}
     }

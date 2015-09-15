@@ -42,6 +42,7 @@
 #include <QTableWidget>
 #include <QScrollArea>
 #include <QTextBrowser>
+#include <QPrinter>
 
 #ifdef HAVE_WEBKIT
 #include <QWebView>
@@ -94,7 +95,7 @@ class WdgShape : public QObject
 	virtual bool eventFilter( WdgView *view, QObject *object, QEvent *event )	{ return false; }
 
 	//Static methods
-	static QFont getFont( const string &vl, float fsc = 1, bool pixSize = true );
+	static QFont getFont( const string &vl, float fsc = 1, bool pixSize = true, const QFont &defFnt = QFont() );
 	static QColor getColor( const string &vl );
 
     protected:
@@ -201,7 +202,7 @@ class ShapeText : public WdgShape
 
     private:
 	//Data
-	//- Argument object's class -
+	// Argument object's class
 	class ArgObj
 	{
 	    public:
@@ -219,7 +220,7 @@ class ShapeText : public WdgShape
 		QVariant	m_val;
 		string		m_cfg;
 	};
-	//- Shape node date -
+	// Shape node date
 	class ShpDt
 	{
 	    public:
@@ -472,7 +473,7 @@ class ShapeProtocol : public WdgShape
 
     private:
 	//Data
-	//> Shape node date
+	// Shape node date
 	class ShpDt
 	{
 	    public:
@@ -505,7 +506,7 @@ class ShapeProtocol : public WdgShape
 	};
 	//Private methods
 	void loadData( WdgView *view, bool full = false );
-	//> Recursively widgets process for disable focusable and events filter set
+	// Recursively widgets process for disable focusable and events filter set
 	void eventFilterSet( WdgView *view, QWidget *wdg, bool en );
 	void setFocus(WdgView *view, QWidget *wdg, bool en = false, bool devel = false );
 };
@@ -519,7 +520,7 @@ class ShapeDocument : public WdgShape
 
     public:
 	//Data
-	//> Shape node date
+	// Shape node date
 	class ShpDt
 	{
 	    public:
@@ -528,6 +529,7 @@ class ShapeDocument : public WdgShape
 
 		string	toHtml( );
 		void	nodeProcess( XMLNode *xcur );
+		void	print( QPrinter * printer );
 
 		//Attributes
 		short	en	:1;
@@ -553,6 +555,9 @@ class ShapeDocument : public WdgShape
 	bool event( WdgView *view, QEvent *event );
 	bool eventFilter( WdgView *view, QObject *object, QEvent *event );
 
+    private slots:
+	void custContextMenu( );
+
     private:
 	//Methods
 	//Recursively widgets process for disable focusable and events filter set
@@ -572,7 +577,7 @@ class ShapeBox : public WdgShape
 {
     public:
 	//Data
-	//> Shape node date
+	// Shape node date
 	class ShpDt
 	{
 	    public:
@@ -585,7 +590,7 @@ class ShapeBox : public WdgShape
 		QPen		border;
 		QBrush		backGrnd;
 		RunPageView	*inclWidget;
-		QScrollArea 	*inclScrl;
+		QScrollArea	*inclScrl;
 	};
 
 	//Methods

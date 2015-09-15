@@ -33,7 +33,7 @@
 #define MOD_NAME	_("DB SQLite")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"1.6.4"
+#define MOD_VER		"2.1.0"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("BD module. Provides support of the BD SQLite.")
 #define LICENSE		"GPL2"
@@ -186,7 +186,7 @@ TTable *MBD::openTable( const string &inm, bool create )
     return new MTable(inm, this, create);
 }
 
-void MBD::sqlReq( const string &ireq, vector< vector<string> > *tbl, char intoTrans )
+void MBD::sqlReq( const string &req, vector< vector<string> > *tbl, char intoTrans )
 {
     char *zErrMsg = NULL;
     int rc, nrow = 0, ncol = 0;
@@ -196,8 +196,6 @@ void MBD::sqlReq( const string &ireq, vector< vector<string> > *tbl, char intoTr
     if(!enableStat())	return;
 
     //Commit set
-    string req = ireq;
-
     if(intoTrans && intoTrans != EVAL_BOOL) transOpen();
     else if(!intoTrans && reqCnt) transCommit();
 
@@ -323,7 +321,7 @@ void MTable::fieldStruct( TConfig &cfg )
 	string sid = tblStrct[i_fld][1];
 	if(cfg.cfgPresent(sid)) continue;
 
-	int flg = (tblStrct[i_fld][5] == "1") ? (int)TCfg::Key : (int)TFld::NoFlag;
+	int flg = s2i(tblStrct[i_fld][5]) ? (int)TCfg::Key : (int)TFld::NoFlag;
 	if(tblStrct[i_fld][2] == "TEXT")
 	    cfg.elem().fldAdd(new TFld(sid.c_str(),sid.c_str(),TFld::String,flg,"16777215"));
 	else if(tblStrct[i_fld][2] == "INTEGER")
@@ -603,7 +601,7 @@ void MTable::fieldFix( TConfig &cfg )
 	    crtReq += (next?",\"":"\"") + mod->sqlReqCode(tblStrct[i_fld][1],'"') + "\" "+
 		tblStrct[i_fld][2]+" DEFAULT " + tblStrct[i_fld][4] + " ";
 	    next = true;
-	    if(tblStrct[i_fld][5] == "1") {
+	    if(s2i(tblStrct[i_fld][5])) {
 		pr_keys += (next_key?",\"":"\"") + mod->sqlReqCode(tblStrct[i_fld][1],'"') + "\"";
 		next_key = true;
 	    }

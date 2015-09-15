@@ -43,7 +43,7 @@ using namespace OSCADA;
 #define DAQ_NAME	_("ModBUS")
 #define DAQ_TYPE	SDAQ_ID
 #define DAQ_SUBVER	SDAQ_VER
-#define DAQ_MVER	"1.3.0"
+#define DAQ_MVER	"1.8.0"
 #define DAQ_AUTHORS	_("Roman Savochenko")
 #define DAQ_DESCR	_("Allow realization of ModBus client service. Supported Modbus/TCP, Modbus/RTU and Modbus/ASCII protocols.")
 #define DAQ_LICENSE	"GPL2"
@@ -204,8 +204,8 @@ class TMdContr: public TController
 		&mNode,				//Node
 		&blkMaxSz;			//Maximum request block size
 	TCfg	&mSched,			//Calc schedule
-		&mPrt,                          //Protocol
-		&mAddr;                         //Transport device address
+		&mPrt,				//Protocol
+		&mAddr;				//Transport device address
 	char	&mMerge,			//Fragments of register merge
 		&mMltWr,			//Use multi-write functions(15,16)
 		&mAsynchWr;			//Asynchronous write
@@ -223,7 +223,7 @@ class TMdContr: public TController
 	vector<SDataRec>	acqBlksIn;	//Acquisition data blocks for input registers
 	vector<SDataRec>	acqBlksCoil;	//Acquisition data blocks for coils
 	vector<SDataRec>	acqBlksCoilIn;	//Acquisition data blocks for input coils
-	map<string,string>	asynchWrs;	//Asynchronous writers list
+	map<string, string>	asynchWrs;	//Asynchronous writers list
 
 	float	tmDelay;			//Delay time for next try connect
 

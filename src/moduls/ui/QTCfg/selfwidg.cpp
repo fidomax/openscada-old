@@ -42,6 +42,7 @@
 #include <QCommonStyle>
 #endif
 #include <QScrollBar>
+#include <QCompleter>
 
 #include <tsys.h>
 
@@ -243,7 +244,7 @@ void LineEdit::setCfg( const QString &cfg )
 		pref  = TSYS::strSepParse(cfg.toStdString(),3,':');
 		suff  = TSYS::strSepParse(cfg.toStdString(),4,':');
 	    }
-	    ((QSpinBox*)ed_fld)->setRange(minv,maxv);
+	    ((QSpinBox*)ed_fld)->setRange(minv, maxv);
 	    ((QSpinBox*)ed_fld)->setSingleStep(sstep);
 	    ((QSpinBox*)ed_fld)->setPrefix(pref.c_str());
 	    ((QSpinBox*)ed_fld)->setSuffix(suff.c_str());
@@ -277,6 +278,7 @@ void LineEdit::setCfg( const QString &cfg )
 	    ((QComboBox*)ed_fld)->addItems(cfg.split("\n"));
 	    if(((QComboBox*)ed_fld)->findText(ctext) < 0) ((QComboBox*)ed_fld)->addItem(ctext);
 	    ((QComboBox*)ed_fld)->setEditText(ctext);
+	    if(((QComboBox*)ed_fld)->completer()) ((QComboBox*)ed_fld)->completer()->setCaseSensitivity(Qt::CaseSensitive);
 	    break;
 	}
     }
@@ -339,17 +341,17 @@ void SyntxHighl::setSnthHgl(XMLNode nd)
     rules = nd;
 
     //Set current font settings
-    QFont rez;
+    QFont rez = document()->defaultFont();
 
-    char family[101]; strcpy(family,"Arial");
-    int size = 10, bold = 0, italic = 0, underline = 0, strike = 0;
-    sscanf(nd.attr("font").c_str(),"%100s %d %d %d %d %d",family,&size,&bold,&italic,&underline,&strike);
-    rez.setFamily(QString(family).replace(QRegExp("_")," "));
-    rez.setPointSize(size);
-    rez.setBold(bold);
-    rez.setItalic(italic);
-    rez.setUnderline(underline);
-    rez.setStrikeOut(strike);
+    char family[101]; family[0] = 0; //strcpy(family, "Arial");
+    int size = -1, bold = -1, italic = -1, underline = -1, strike = -1;
+    sscanf(nd.attr("font").c_str(), "%100s %d %d %d %d %d", family, &size, &bold, &italic, &underline, &strike);
+    if(strlen(family)) rez.setFamily(QString(family).replace(QRegExp("_")," "));
+    if(size >= 0)	rez.setPointSize(size);
+    if(bold >= 0)	rez.setBold(bold);
+    if(italic >= 0)	rez.setItalic(italic);
+    if(underline >= 0)	rez.setUnderline(underline);
+    if(strike >= 0)	rez.setStrikeOut(strike);
     document()->setDefaultFont(rez);
 
     rehighlight();
@@ -570,7 +572,7 @@ void TextEdit::resizeEvent( QResizeEvent *e )
 {
     if(but_box && but_box->isVisible()) {
 	but_box->move(width()-but_box->width(), height()-but_box->height());
-	ed_fld->resize(ed_fld->width(), height()-but_box->height());
+	ed_fld->resize(width(), height()-but_box->height());
     }
     else ed_fld->resize(size());
 }

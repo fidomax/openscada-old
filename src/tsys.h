@@ -40,6 +40,7 @@
 #define BUF_ARCH_NM	"<buffer>"
 #define DB_CFG		"<cfg>"
 
+#include <signal.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <math.h>
@@ -130,9 +131,11 @@ class TSYS : public TCntrNode
 
 	string	workDB( )	{ return mWorkDB; }
 	string	selDB( )	{ return mSelDB; }
+	string	mainCPUs( )	{ return mMainCPUs; }
 	bool	chkSelDB( const string& wDB, bool isStrong = false );
 	void	setWorkDB( const string &wdb )	{ mWorkDB = wdb; modifG(); }
 	void	setSelDB( const string &vl )	{ mSelDB = vl; }
+	void	setMainCPUs( const string &vl );
 	bool	saveAtExit( )	{ return mSaveAtExit; }
 	void	setSaveAtExit( bool vl )	{ mSaveAtExit = vl; modif(); }
 	int	savePeriod( )	{ return mSavePeriod; }
@@ -140,10 +143,10 @@ class TSYS : public TCntrNode
 
 	string	optDescr( );	//print comand line options
 
-	static void sighandler( int signal );
+	static void sighandler( int signal, siginfo_t *siginfo, void *context );
 
 	// Short time dimensions
-	bool	multCPU( )	{ return mMultCPU; }
+	int	nCPU( )		{ return mN_CPU; }
 	uint64_t sysClk( )	{ return mSysclc; }
 	void	clkCalc( );
 	uint64_t shrtCnt( ) {
@@ -157,17 +160,17 @@ class TSYS : public TCntrNode
 	}
 	static long HZ( );
 
-	time_t	sysTm( ) volatile	{ return mSysTm; }	//> System time fast access, from updated cell
-	static int64_t curTime( );	//> Current system time (usec)
+	time_t	sysTm( ) volatile	{ return mSysTm; }	//System time fast access, from updated cell
+	static int64_t curTime( );	//Current system time (usec)
 
 	// Tasks control
 	void taskCreate( const string &path, int priority, void *(*start_routine)(void *), void *arg, int wtm = 5, pthread_attr_t *pAttr = NULL, bool *startSt = NULL );
-	void taskDestroy( const string &path, bool *endrunCntr = NULL, int wtm = 5, bool noSignal = false );
+	void taskDestroy( const string &path, bool *endrunCntr = NULL, int wtm = 5, bool noSignal = false, pthread_cond_t *cv = NULL );
 	double taskUtilizTm( const string &path );
 	static bool taskEndRun( );	// Check for the task endrun by signal SIGUSR1
 
 	// Sleep task for period grid <per> on ns or to cron time.
-	static int sysSleep( float tm );			//System sleep in seconds up to nanoseconds (1e-9)
+	static int sysSleep( float tm );			//System sleep in seconds down to nanoseconds (1e-9)
 	static void taskSleep( int64_t per, time_t cron = 0, int64_t *lag = NULL );
 	static time_t cron( const string &vl, time_t base = 0 );
 
@@ -265,6 +268,7 @@ class TSYS : public TCntrNode
 
 	// Reentrant commandline processing
 	string getCmdOpt( int &curPos, string *argVal = NULL );
+	static string getCmdOpt_( int &curPos, string *argVal, int argc, char **argv );
 
 	//  System control interface functions
 	static void ctrListFS( XMLNode *nd, const string &fsBase, const string &fileExt = "" );	//Inline file system browsing
@@ -337,7 +341,8 @@ class TSYS : public TCntrNode
 		mIcoDir,	// Icons directory
 		mDocDir;	// Icons directory
 
-	string	mWorkDB, mSelDB;// Work and selected DB
+	string	mWorkDB, mSelDB,// Work and selected DB
+		mMainCPUs;	// Main used processors set
 	bool	mSaveAtExit;	// Save at exit
 	int	mSavePeriod;	// Save period (s) for periodic system saving to DB
 
@@ -350,16 +355,19 @@ class TSYS : public TCntrNode
 	int	mStopSignal,	// Stop station signal
 		mSubst;		// Subsystem tree id
 
-	map<string,STask>	mTasks;
+	map<string, STask>	mTasks;
 	static pthread_key_t	sTaskKey;
 
 	Res	taskRes, mCfgRes;
 
-	bool	mMultCPU;
-	uint64_t mSysclc;
+	int	mN_CPU;
+	pthread_t	mainPthr;
+	uint64_t	mSysclc;
 	volatile time_t	mSysTm;
 
 	map<string, double>	mCntrs;
+
+	struct sigaction	sigActOrig;
 };
 
 //*************************************************

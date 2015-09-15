@@ -33,11 +33,15 @@ using namespace OSCADA;
 TValue::TValue( ) : l_cfg(0), mCfg(NULL)
 {
     m_vl = grpAdd("a_", true);
+
+    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TValue::~TValue( )
 {
     while(elem.size()) vlElemDet(elem[0]);
+
+    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), -1);
 }
 
 string TValue::objName( )	{ return TCntrNode::objName() + ":TValue"; }
@@ -69,7 +73,7 @@ void TValue::delFld( TElem *el, unsigned id_val )
 void TValue::setVlCfg( TConfig *cfg )
 {
     vector<string> list;
-    // Detach old configurations
+    //Detach old configurations
     if(mCfg) {
 	mCfg->cfgList(list);
 	for(unsigned i_cf = 0; i_cf < list.size(); i_cf++)
@@ -79,9 +83,9 @@ void TValue::setVlCfg( TConfig *cfg )
 	    }
 	mCfg = NULL;
     }
-    // Attach new config
+    //Attach new config
     if(cfg) {
-	cfg->cfgList( list );
+	cfg->cfgList(list);
 	for(unsigned i_cf = 0; i_cf < list.size(); i_cf++)
 	    if(!(cfg->cfg(list[i_cf]).fld().flg()&TCfg::NoVal) && !vlPresent(list[i_cf])) {
 		TVal *vl = vlNew();
@@ -785,7 +789,7 @@ void TVal::setO( AutoHD<TVarObj> value, int64_t tm, bool sys )
 TVariant TVal::objFuncCall( const string &iid, vector<TVariant> &prms, const string &user )
 {
     // ElTp get(int tm = 0, int utm = 0, bool sys = false) - get attribute value at time <tm:utm> and system access flag <sys>.
-    //  tm, utm - time for requested value
+    //  tm, utm - the time for requested value
     //  sys - system request, direct from object
     if(iid == "get") {
 	try {
@@ -796,8 +800,8 @@ TVariant TVal::objFuncCall( const string &iid, vector<TVariant> &prms, const str
 	    bool isSys = false;
 	    if(prms.size() >= 3) isSys = prms[2].getB();
 	    rez = get(&tm,isSys);
-	    if(prms.size() >= 1)	{ prms[0].setI(tm/1000000); prms[0].setModify(); }
-	    if(prms.size() >= 2)	{ prms[1].setI(tm%1000000); prms[1].setModify(); }
+	    if(prms.size() >= 1) { prms[0].setI(tm/1000000); prms[0].setModify(); }
+	    if(prms.size() >= 2) { prms[1].setI(tm%1000000); prms[1].setModify(); }
 
 	    return rez;
 	}catch(...){ }

@@ -459,8 +459,7 @@ void TArchiveS::messGet( time_t b_tm, time_t e_tm, vector<TMess::SRec> & recs,
 
     //Get records from buffer
     unsigned i_buf = headBuf;
-    while(level >= 0 && (!arch.size() || arch == BUF_ARCH_NM) && time(NULL) < upTo)
-    {
+    while(level >= 0 && (!arch.size() || arch == BUF_ARCH_NM) && time(NULL) < upTo) {
 	if(mBuf[i_buf].time >= b_tm && mBuf[i_buf].time != 0 && mBuf[i_buf].time <= e_tm &&
 		abs(mBuf[i_buf].level) >= level && re.test(mBuf[i_buf].categ))
 	    recs.push_back(mBuf[i_buf]);
@@ -471,11 +470,9 @@ void TArchiveS::messGet( time_t b_tm, time_t e_tm, vector<TMess::SRec> & recs,
     //Get records from archives
     vector<string> t_lst, o_lst;
     modList(t_lst);
-    for(unsigned i_t = 0; level >= 0 && i_t < t_lst.size(); i_t++)
-    {
+    for(unsigned i_t = 0; level >= 0 && i_t < t_lst.size(); i_t++) {
 	at(t_lst[i_t]).at().messList(o_lst);
-	for(unsigned i_o = 0; i_o < o_lst.size() && time(NULL) < upTo; i_o++)
-	{
+	for(unsigned i_o = 0; i_o < o_lst.size() && time(NULL) < upTo; i_o++) {
 	    AutoHD<TMArchivator> archtor = at(t_lst[i_t]).at().messAt(o_lst[i_o]);
 	    if(archtor.at().startStat() && (!arch.size() || arch == archtor.at().workId()))
 		archtor.at().get(b_tm, e_tm, recs, category, level);
@@ -686,8 +683,7 @@ TVariant TArchiveS::objFuncCall( const string &iid, vector<TVariant> &prms, cons
     //  cat - messages' category
     //  lev - messages level
     //  arch - messages archivator
-    if(iid == "messGet" && prms.size() >= 2)
-    {
+    if(iid == "messGet" && prms.size() >= 2) {
 	vector<TMess::SRec> recs;
 	messGet(prms[0].getI(), prms[1].getI(), recs, ((prms.size()>=3) ? prms[2].getS() : string("")),
 	    ((prms.size()>=4) ? prms[3].getI() : 0), ((prms.size()>=5) ? prms[4].getS() : string("")));
@@ -699,7 +695,7 @@ TVariant TArchiveS::objFuncCall( const string &iid, vector<TVariant> &prms, cons
 	    am->propSet("categ", recs[i_m].categ);
 	    am->propSet("level", recs[i_m].level);
 	    am->propSet("mess", recs[i_m].mess);
-	    rez->propSet(i2s(i_m), am);
+	    rez->arSet(i_m, am);
 	}
 	return rez;
     }
@@ -709,8 +705,7 @@ TVariant TArchiveS::objFuncCall( const string &iid, vector<TVariant> &prms, cons
     //  cat - message' category
     //  lev - message level
     //  mess - message text
-    if(iid == "messPut" && prms.size() >= 5)
-    {
+    if(iid == "messPut" && prms.size() >= 5) {
 	messPut(prms[0].getI(), prms[1].getI(), prms[2].getS(), prms[3].getI(), prms[4].getS());
 	return true;
     }
@@ -736,6 +731,8 @@ void TArchiveS::cntrCmdProc( XMLNode *opt )
 	    string cat     = opt->attr("cat");
 	    int    lev     = s2i(opt->attr("lev"));
 	    vector<TMess::SRec> rez;
+
+	    if(!tm) { tm = time(NULL); opt->setAttr("tm", u2s(tm)); }
 	    messGet(tm_grnd, tm, rez, cat, (TMess::Type)lev, arch);
 	    for(unsigned i_r = 0; i_r < rez.size(); i_r++)
 		opt->childAdd("el")->
@@ -1055,11 +1052,11 @@ bool TMArchivator::chkMessOK( const string &icateg, int8_t ilvl )
 
 TVariant TMArchivator::objFuncCall( const string &iid, vector<TVariant> &prms, const string &user )
 {
-    // bool status() - get archivator status.
+    // bool status( ) - get the archivator start status.
     if(iid == "status")	return startStat();
-    // int end() - get archivator data end time.
+    // int end( ) - get the archivator data end time.
     if(iid == "end")	return (int64_t)end();
-    // int begin() - get archivator data begin time.
+    // int begin( ) - get the archivator data begin time.
     if(iid == "begin")	return (int64_t)begin();
 
     //Configuration functions call

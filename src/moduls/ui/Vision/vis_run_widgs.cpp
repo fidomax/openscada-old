@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_run_widgs.cpp
 /***************************************************************************
- *   Copyright (C) 2007-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -27,7 +27,6 @@
 #include <QStatusBar>
 
 #include <tsys.h>
-#include "../VCAEngine/types.h"
 
 #include "tvision.h"
 #include "vis_shapes.h"
@@ -35,7 +34,6 @@
 #include "vis_run_widgs.h"
 
 using namespace VISION;
-using namespace VCA;
 
 //*************************************************
 //* Shape widget view runtime mode                *
@@ -68,8 +66,8 @@ string RunWdgView::pgOpenSrc( )	{ return property("pgOpenSrc").toString().toStdS
 
 void RunWdgView::setPgOpenSrc( const string &vl )
 {
-    setProperty("pgOpenSrc",vl.c_str());
-    attrSet("pgOpenSrc",vl,3);
+    setProperty("pgOpenSrc", vl.c_str());
+    attrSet("pgOpenSrc", vl, A_PG_OPEN_SRC);
 }
 
 int RunWdgView::cntrIfCmd( XMLNode &node, bool glob )	{ return mainWin()->cntrIfCmd(node,glob); }
@@ -81,19 +79,20 @@ void RunWdgView::update( bool full, XMLNode *aBr, bool FullTree )
     bool reqBrCr = false;
     if(!aBr) {
 	aBr = new XMLNode("get");
-	aBr->setAttr("path",id()+"/%2fserv%2fattrBr")->
-	    setAttr("tm",u2s(full?0:mainWin()->reqTm()))->setAttr("FullTree",FullTree?"1":"0");
+	aBr->setAttr("path", id()+"/%2fserv%2fattrBr")->
+	    setAttr("tm", u2s(full?0:mainWin()->reqTm()))->setAttr("FullTree", FullTree?"1":"0");
 	cntrIfCmd(*aBr);
 	reqBrCr = true;
     }
 
     if(full)	setAllAttrLoad(true);
-    for(unsigned i_el = 0; i_el < aBr->childSize(); i_el++)
-	if(aBr->childGet(i_el)->name() == "el")
-	    attrSet("",aBr->childGet(i_el)->text(),s2i(aBr->childGet(i_el)->attr("p")));
+    for(unsigned i_el = 0; i_el < aBr->childSize(); i_el++) {
+	XMLNode *cN = aBr->childGet(i_el);
+	if(cN->name() == "el") attrSet(cN->attr("id"), cN->text(), s2i(cN->attr("p")));
+    }
     if(full) {
 	setAllAttrLoad(false);
-	attrSet("","load",-1);
+	attrSet("", "load", A_COM_LOAD);
     }
 
     //Delete child widgets check
@@ -183,11 +182,16 @@ bool RunWdgView::attrSet( const string &attr, const string &val, int uiPrmPos )
 	    setPermCntr(s2i(val)&SEC_WR);
 	    setPermView(s2i(val)&SEC_RD);
 	    return true;
+	case A_NO_ID: {
+	    //User's status line items
+	    if(attr == "statLine") { mainWin()->usrStatus(val, dynamic_cast<RunPageView*>(this)); return true; }
+	    break;
+	}
 	case A_PG_NAME:	setWindowTitle(val.c_str());	break;
-	case A_PG_OPEN_SRC: setProperty("pgOpenSrc",val.c_str());	return true;
-	case A_PG_GRP: setProperty("pgGrp",val.c_str());		return true;
-	case A_EN: setProperty("isVisible", s2i(val) && (permView() || dynamic_cast<RunPageView*>(this)));	return true;
-	case A_ACTIVE: setProperty("active",(bool)s2i(val));	return true;
+	case A_PG_OPEN_SRC: setProperty("pgOpenSrc", val.c_str());	return true;
+	case A_PG_GRP:	setProperty("pgGrp", val.c_str());		return true;
+	case A_EN:	setProperty("isVisible", s2i(val) && (permView() || dynamic_cast<RunPageView*>(this)));	return true;
+	case A_ACTIVE:	setProperty("active",(bool)s2i(val));	return true;
 	case A_GEOM_Z:
 	    if(!allAttrLoad() && !dynamic_cast<RunPageView*>(this)) {
 		RunWdgView *wdg = qobject_cast<RunWdgView*>(parentWidget());
@@ -198,7 +202,7 @@ bool RunWdgView::attrSet( const string &attr, const string &val, int uiPrmPos )
 	    if(val.size() && mainWin()->masterPg() == this)
 		mainWin()->statusBar()->showMessage(val.c_str(), 10000);
 	    return true;
-	case A_CTX_MENU: setProperty("contextMenu",val.c_str());	return true;
+	case A_CTX_MENU: setProperty("contextMenu", val.c_str());	return true;
     }
 
     return rez;
@@ -496,12 +500,6 @@ float RunPageView::xScale( bool full )	{ return full ? mainWin()->xScale()*WdgVi
 
 float RunPageView::yScale( bool full )	{ return full ? mainWin()->yScale()*WdgView::yScale() : WdgView::yScale(); }
 
-void RunPageView::resizeF( const QSizeF &size )
-{
-    WdgView::resizeF(size);
-    resize(sizeF().width(), sizeF().height());	//Fit to minimal for guaranty to include without scroll
-}
-
 RunPageView *RunPageView::parent( )	{ return qobject_cast<RunPageView*>(parentWidget()); }
 
 RunPageView *RunPageView::findOpenPage( const string &ipg )
@@ -558,8 +556,7 @@ bool RunPageView::callPage( const string &pg_it, const string &pgGrp, const stri
         }
     //Put checking to self include pages
     for(int i_ch = 0; i_ch < children().size(); i_ch++)
-	if(qobject_cast<RunPageView*>(children().at(i_ch)) &&
-		((RunPageView *)children().at(i_ch))->callPage(pg_it,pgGrp,pgSrc))
+	if(qobject_cast<RunPageView*>(children().at(i_ch)) && ((RunPageView *)children().at(i_ch))->callPage(pg_it,pgGrp,pgSrc))
 	    return true;
     //Check for open child page or for unknown and empty source pages open as master page child windows
     if((pgGrp.empty() && pgSrc == id()) || this == mainWin()->master_pg) {
@@ -573,7 +570,7 @@ bool RunPageView::callPage( const string &pg_it, const string &pgGrp, const stri
 	pg->setMaximumSize(pg->frameGeometry().size());
 	pg->setWindowState(pg->windowState() | Qt::WindowActive);
 
-	//>> Get page name
+	// Get the page name
 	/*XMLNode req("get");
 	req.setAttr("path",pg->id()+"/%2fwdg%2fcfg%2fname");
 	if( !mainWin()->cntrIfCmd(req) ) pg->setWindowTitle(req.text().c_str());
@@ -599,7 +596,7 @@ void RunPageView::closeEvent( QCloseEvent *event )
     req.setAttr("path","/ses_"+mainWin()->workSess()+"/%2fserv%2fpg")->setAttr("pg",id());
     mainWin()->cntrIfCmd(req);
 
-    //> Close included pages
+    //Close included pages
     /*for(int i_ch = 0; i_ch < children().size(); i_ch++)
 	if(!qobject_cast<RunPageView*>(children().at(i_ch)) && ((RunWdgView *)children().at(i_ch))->root() == "Box" &&
 		!((RunWdgView*)children().at(i_ch))->pgOpenSrc().empty())
@@ -608,50 +605,6 @@ void RunPageView::closeEvent( QCloseEvent *event )
 	    mainWin()->cntrIfCmd(req);
 	}*/
 }
-
-//*********************************************
-//* Play sound thread for RunTime session     *
-//*********************************************
-SndPlay::SndPlay( QObject *parent ) : QThread(parent)
-{
-
-}
-
-VisRun *SndPlay::mainWin( )	{ return (VisRun *)parent(); }
-
-void SndPlay::run( )
-{
-    if(mPlayData.empty()) return;
-
-    size_t comPos = 0;
-    string com = mod->playCom();
-    string srcFile = "/var/tmp/oscadaPlayTmp_"+mainWin()->workSess( );
-
-    //Put source file name to command
-    bool srcToPipe = false;
-    if((comPos=com.find("%f")) != string::npos)	com.replace(comPos, 2, srcFile.c_str());
-    else srcToPipe = true;
-
-    //Write play data to file
-    if(!srcToPipe) {
-	FILE *fp = fopen(srcFile.c_str(), "w");
-	if(!fp)	{ mPlayData.clear(); return; }
-	if(fwrite(mPlayData.data(),1,mPlayData.size(),fp) != mPlayData.size())
-	    mess_err(mod->nodePath().c_str(), _("Error write to: %s"), srcFile.c_str());
-	fclose(fp);
-    }
-
-    //Call play command
-    FILE *fp = popen(com.c_str(), "w");
-    if(!fp) { mPlayData.clear(); return; }
-    //Write data to pipe
-    if(srcToPipe && fwrite(mPlayData.data(),mPlayData.size(),1,fp) != mPlayData.size())
-	mess_err(mod->nodePath().c_str(), _("Error write to: %s"), srcFile.c_str());
-    pclose(fp);
-    if(!srcToPipe) remove(srcFile.c_str());
-
-    mPlayData.clear();
-};
 
 //*********************************************
 //* Status bar styles                         *
@@ -711,5 +664,40 @@ bool StylesStBar::styleSel( )
 bool StylesStBar::event( QEvent *event )
 {
     if(event->type() == QEvent::MouseButtonDblClick)	styleSel();
+    return QLabel::event(event);
+}
+
+//*********************************************
+//* User's status bar item                    *
+//*********************************************
+UserItStBar::UserItStBar( QWidget *parent ) : QLabel(parent)
+{
+
+}
+
+bool UserItStBar::event( QEvent *event )
+{
+    string mod_ev, objId = objectName().toStdString();
+    if(objId.compare(0,4,"usr_") == 0) objId = objId.substr(4);
+    VisRun *w = dynamic_cast<VisRun*>(parentWidget()->window());
+
+    switch(event->type()) {
+	case QEvent::MouseButtonPress:
+	    mod_ev = "key_mousePres";
+	case QEvent::MouseButtonRelease:
+	    if(mod_ev.empty()) mod_ev = "key_mouseRels";
+	    switch(((QMouseEvent*)event)->button()) {
+		case Qt::LeftButton:	mod_ev += "Left";	break;
+		case Qt::RightButton:	mod_ev += "Right";	break;
+		case Qt::MidButton:	mod_ev += "Midle";	break;
+		default: break;
+	    }
+	    if(w && w->masterPg()) { w->masterPg()->attrSet("event", mod_ev+":/stIt_"+objId); return true; }
+	    break;
+	case QEvent::MouseButtonDblClick:
+	    if(w && w->masterPg()) { w->masterPg()->attrSet("event", "key_mouseDblClick:/stIt_"+objId); return true; }
+	    break;
+    }
+
     return QLabel::event(event);
 }

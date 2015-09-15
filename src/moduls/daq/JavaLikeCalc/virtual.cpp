@@ -36,13 +36,14 @@
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
 #define SUB_TYPE	"LIB"
-#define MOD_VER		"2.0.0"
+#define MOD_VER		"2.8.1"
 #define AUTHORS		_("Roman Savochenko")
-#define DESCRIPTION	_("Allow java-like based calculator and function's libraries engine. User can create and modify function and libraries.")
+#define DESCRIPTION	_("Provides based on java like language calculator and engine of libraries. \
+ The user can create and modify functions and libraries.")
 #define LICENSE		"GPL2"
 //*************************************************
 
-JavaLikeCalc::TipContr *JavaLikeCalc::mod;
+JavaLikeCalc::TpContr *JavaLikeCalc::mod;
 
 extern "C"
 {
@@ -62,7 +63,7 @@ extern "C"
     TModule *attach( const TModule::SAt &AtMod, const string &source )
 #endif
     {
-	if(AtMod == TModule::SAt(MOD_ID,MOD_TYPE,VER_TYPE))	return new JavaLikeCalc::TipContr(source);
+	if(AtMod == TModule::SAt(MOD_ID,MOD_TYPE,VER_TYPE))	return new JavaLikeCalc::TpContr(source);
 	return NULL;
     }
 }
@@ -70,9 +71,9 @@ extern "C"
 using namespace JavaLikeCalc;
 
 //*************************************************
-//* TipContr                                      *
+//* TpContr                                      *
 //*************************************************
-TipContr::TipContr( string src ) : TTypeDAQ(MOD_ID), mSafeTm(10)
+TpContr::TpContr( string src ) : TTypeDAQ(MOD_ID), mSafeTm(10)
 {
     mod		= this;
 
@@ -87,12 +88,24 @@ TipContr::TipContr( string src ) : TTypeDAQ(MOD_ID), mSafeTm(10)
     mLib = grpAdd("lib_");
 }
 
-TipContr::~TipContr( )
+TpContr::~TpContr( )
 {
     nodeDelAll();
 }
 
-void TipContr::postEnable( int flag )
+void TpContr::modInfo( vector<string> &list )
+{
+    TModule::modInfo(list);
+    list.push_back("HighPriority");
+}
+
+string TpContr::modInfo( const string &name )
+{
+    if(name == "HighPriority")	return "1";
+    return TModule::modInfo(name);
+}
+
+void TpContr::postEnable( int flag )
 {
     TTypeDAQ::postEnable( flag );
 
@@ -173,9 +186,9 @@ void TipContr::postEnable( int flag )
     mBFunc.push_back(BFunc("tr",Reg::FTr,1));
 }
 
-TController *TipContr::ContrAttach( const string &name, const string &daq_db )	{ return new Contr(name,daq_db,this); }
+TController *TpContr::ContrAttach( const string &name, const string &daq_db )	{ return new Contr(name,daq_db,this); }
 
-bool TipContr::compileFuncLangs( vector<string> *ls )
+bool TpContr::compileFuncLangs( vector<string> *ls )
 {
     if(ls) {
 	ls->clear();
@@ -185,7 +198,7 @@ bool TipContr::compileFuncLangs( vector<string> *ls )
     return true;
 }
 
-void TipContr::compileFuncSynthHighl( const string &lang, XMLNode &shgl )
+void TpContr::compileFuncSynthHighl( const string &lang, XMLNode &shgl )
 {
     if(lang == "JavaScript") {
 	shgl.setAttr("font","Courier");
@@ -202,7 +215,7 @@ void TipContr::compileFuncSynthHighl( const string &lang, XMLNode &shgl )
     }
 }
 
-string TipContr::compileFunc( const string &lang, TFunction &fnc_cfg, const string &prog_text, const string &usings, int maxCalcTm )
+string TpContr::compileFunc( const string &lang, TFunction &fnc_cfg, const string &prog_text, const string &usings, int maxCalcTm )
 {
     if(lang != "JavaScript") throw TError(nodePath().c_str(),_("Compilation with the help of the program language %s is not supported."),lang.c_str());
     if(!lbPresent("sys_compile")) lbReg(new Lib("sys_compile","",""));
@@ -253,7 +266,7 @@ string TipContr::compileFunc( const string &lang, TFunction &fnc_cfg, const stri
     return func.at().nodePath(0,true);
 }
 
-void TipContr::load_( )
+void TpContr::load_( )
 {
     //Load parameters from command line
 
@@ -278,7 +291,7 @@ void TipContr::load_( )
 		    lbReg(new Lib(l_id.c_str(),"",(db_ls[i_db]==SYS->workDB())?"*.*":db_ls[i_db]));
 		    try {
 			lbAt(l_id).at().load();
-			lbAt(l_id).at().setStart(true);
+			//lbAt(l_id).at().setStart(true);		//Do not try start into the loading but possible broblems like into openscada --help
 		    }
 		    catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 		}
@@ -299,13 +312,13 @@ void TipContr::load_( )
     }
 }
 
-void TipContr::save_( )
+void TpContr::save_( )
 {
     //Save parameters
     TBDS::genDBSet(nodePath()+"SafeTm",i2s(safeTm()));
 }
 
-void TipContr::modStart( )
+void TpContr::modStart( )
 {
     vector<string> lst;
 
@@ -317,7 +330,7 @@ void TipContr::modStart( )
     TTypeDAQ::modStart();
 }
 
-void TipContr::modStop( )
+void TpContr::modStop( )
 {
     //Stop and disable all JavaLike-controllers
     vector<string> lst;
@@ -331,7 +344,7 @@ void TipContr::modStop( )
 	lbAt(lst[i_lb]).at().setStart(false);
 }
 
-void TipContr::cntrCmdProc( XMLNode *opt )
+void TpContr::cntrCmdProc( XMLNode *opt )
 {
     //Get page info
     if(opt->name() == "info") {
@@ -364,14 +377,14 @@ void TipContr::cntrCmdProc( XMLNode *opt )
     else TTypeDAQ::cntrCmdProc(opt);
 }
 
-NConst *TipContr::constGet( const char *nm )
+NConst *TpContr::constGet( const char *nm )
 {
     for(unsigned i_cst = 0; i_cst < mConst.size(); i_cst++)
 	if(mConst[i_cst].name == nm) return &mConst[i_cst];
 	    return NULL;
 }
 
-BFunc *TipContr::bFuncGet( const char *nm )
+BFunc *TpContr::bFuncGet( const char *nm )
 {
     for(unsigned i_bf = 0; i_bf < mBFunc.size(); i_bf++)
 	if(mBFunc[i_bf].name == nm) return &mBFunc[i_bf];
@@ -774,10 +787,12 @@ void Prm::enable( )
     //Init elements
     vector<string> pls;
     string mio, ionm, aid, anm;
-    for(int io_off = 0; (mio=TSYS::strSepParse(cfg("FLD").getS(),0,'\n',&io_off)).size(); ) {
-	ionm	= TSYS::strSepParse(mio,0,':');
-	aid	= TSYS::strSepParse(mio,1,':');
-	anm	= TSYS::strSepParse(mio,2,':');
+    for(int ioOff = 0, ioOff1 = 0; (mio=TSYS::strSepParse(cfg("FLD").getS(),0,'\n',&ioOff)).size(); ) {
+	if(mio[0] == '#') continue;
+	ioOff1 = 0;
+	ionm	= TSYS::strSepParse(mio, 0, ':', &ioOff1);
+	aid	= TSYS::strSepParse(mio, 0, ':', &ioOff1);
+	anm	= TSYS::strSepParse(mio, 0, ':', &ioOff1);
 	if(aid.empty()) aid = ionm;
 
 	int io_id = ((Contr &)owner()).ioId(ionm);
@@ -889,6 +904,7 @@ void Prm::cntrCmdProc( XMLNode *opt )
     //Process command to page
     string a_path = opt->attr("path");
     if(a_path == "/prm/cfg/FLD" && ctrChkNode(opt,"SnthHgl",RWRWR_,"root",SDAQ_ID,SEC_RD)) {
+	opt->childAdd("rule")->setAttr("expr","^#[^\n]*")->setAttr("color","gray")->setAttr("font_italic","1");
 	opt->childAdd("rule")->setAttr("expr","^[^:]*")->setAttr("color","darkblue");
 	opt->childAdd("rule")->setAttr("expr","\\:")->setAttr("color","blue");
     }

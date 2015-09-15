@@ -38,6 +38,12 @@ Project::Project( const string &id, const string &name, const string &lib_db ) :
     mPer(cfg("PER").getId()), mFlgs(cfg("FLGS").getId()), mStyleIdW(cfg("STYLE").getId()),
     mEnable(false)
 {
+    pthread_mutexattr_t attrM;
+    pthread_mutexattr_init(&attrM);
+    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&mFuncM, &attrM);
+    pthread_mutexattr_destroy(&attrM);
+
     mId = id;
     cfg("NAME").setS(name);
     cfg("DB_TBL").setS(string("prj_")+id);
@@ -46,7 +52,7 @@ Project::Project( const string &id, const string &name, const string &lib_db ) :
 
 Project::~Project( )
 {
-
+    pthread_mutex_destroy(&mFuncM);
 }
 
 TCntrNode &Project::operator=( TCntrNode &node )
@@ -155,6 +161,8 @@ void Project::setFullDB( const string &it )
 
 void Project::load_( )
 {
+    MtxAlloc fRes(funcM(), true);	//Prevent multiple entry
+
     if(!SYS->chkSelDB(DB())) throw TError();
 
     mess_info(nodePath().c_str(), _("Load project."));
@@ -166,14 +174,13 @@ void Project::load_( )
     TConfig c_el(&mod->elPage());
     c_el.cfgViewAll(false);
     c_el.cfg("OWNER").setS("/"+id(), true);
-    for(int fld_cnt = 0; SYS->db().at().dataSeek(fullDB(),mod->nodePath()+tbl()+"/",fld_cnt++,c_el); )
-    {
+    for(int fld_cnt = 0; SYS->db().at().dataSeek(fullDB(),mod->nodePath()+tbl()+"/",fld_cnt++,c_el); ) {
 	string f_id = c_el.cfg("ID").getS();
 	if(!present(f_id)) add(f_id,"","");
 	itReg[f_id] = true;
     }
 
-    //Check for remove items removed from DB
+    //Check for remove items removed from the DB
     if(!SYS->selDB().empty()) {
 	vector<string> it_ls;
 	list(it_ls);
@@ -189,8 +196,7 @@ void Project::load_( )
     TConfig c_stl(&mod->elPrjStl());
     string svl;
     vector<string> vlst;
-    for(int fld_cnt = 0; SYS->db().at().dataSeek(fullDB()+"_stl",nodePath()+tbl()+"_stl",fld_cnt++,c_stl); )
-    {
+    for(int fld_cnt = 0; SYS->db().at().dataSeek(fullDB()+"_stl",nodePath()+tbl()+"_stl",fld_cnt++,c_stl); ) {
 	vlst.clear();
 	for(int i_s = 0; i_s < 10; i_s++) {
 	    svl = c_stl.cfg(TSYS::strMess("V_%d",i_s)).getS();
@@ -227,8 +233,7 @@ void Project::save_( )
     //Save styles
     ResAlloc res( mStRes, false );
     TConfig c_stl( &mod->elPrjStl() );
-    for(map< string, vector<string> >::iterator iStPrp = mStProp.begin(); iStPrp != mStProp.end(); iStPrp++)
-    {
+    for(map< string, vector<string> >::iterator iStPrp = mStProp.begin(); iStPrp != mStProp.end(); iStPrp++) {
 	c_stl.cfg("ID").setS(iStPrp->first);
 	for(unsigned i_s = 0; i_s < iStPrp->second.size() && i_s < 10; i_s++)
 	    c_stl.cfg(TSYS::strMess("V_%d",i_s)).setS(iStPrp->second[i_s]);
@@ -248,6 +253,8 @@ void Project::save_( )
 void Project::setEnable( bool val )
 {
     if(val == enable()) return;
+
+    MtxAlloc fRes(funcM(), true);	//Prevent multiple entry
 
     mess_info(nodePath().c_str(),val ? _("Enable project.") : _("Disable project."));
 
@@ -276,7 +283,7 @@ void Project::add( const string &id, const string &name, const string &orig )
 void Project::add( Page *iwdg )
 {
     if(present(iwdg->id())) delete iwdg;
-    else chldAdd(mPage,iwdg);
+    else chldAdd(mPage, iwdg);
 }
 
 AutoHD<Page> Project::at( const string &id )	{ return chldAt(mPage,id); }
@@ -499,14 +506,14 @@ void Project::cntrCmdProc( XMLNode *opt )
 	    }
 	}
 	if(ctrMkNode("area",opt,-1,"/mess",_("Diagnostics"))) {
-	    ctrMkNode("fld",opt,-1,"/mess/tm",_("Time"),RWRW__,"root",SDAQ_ID,1,"tp","time");
-	    ctrMkNode("fld",opt,-1,"/mess/size",_("Size (s)"),RWRW__,"root",SDAQ_ID,1,"tp","dec");
-	    if(ctrMkNode("table",opt,-1,"/mess/mess",_("Messages"),R_R___,"root",SDAQ_ID)) {
-		ctrMkNode("list",opt,-1,"/mess/mess/0",_("Time"),R_R___,"root",SDAQ_ID,1,"tp","time");
-		ctrMkNode("list",opt,-1,"/mess/mess/0a",_("mcsec"),R_R___,"root",SDAQ_ID,1,"tp","dec");
-		ctrMkNode("list",opt,-1,"/mess/mess/1",_("Category"),R_R___,"root",SDAQ_ID,1,"tp","str");
-		ctrMkNode("list",opt,-1,"/mess/mess/2",_("Lev."),R_R___,"root",SDAQ_ID,1,"tp","dec");
-		ctrMkNode("list",opt,-1,"/mess/mess/3",_("Message"),R_R___,"root",SDAQ_ID,1,"tp","str");
+	    ctrMkNode("fld",opt,-1,"/mess/tm",_("Time"),RWRW__,"root",SUI_ID,1,"tp","time");
+	    ctrMkNode("fld",opt,-1,"/mess/size",_("Size (s)"),RWRW__,"root",SUI_ID,1,"tp","dec");
+	    if(ctrMkNode("table",opt,-1,"/mess/mess",_("Messages"),R_R___,"root",SUI_ID)) {
+		ctrMkNode("list",opt,-1,"/mess/mess/0",_("Time"),R_R___,"root",SUI_ID,1,"tp","time");
+		ctrMkNode("list",opt,-1,"/mess/mess/0a",_("mcsec"),R_R___,"root",SUI_ID,1,"tp","dec");
+		ctrMkNode("list",opt,-1,"/mess/mess/1",_("Category"),R_R___,"root",SUI_ID,1,"tp","str");
+		ctrMkNode("list",opt,-1,"/mess/mess/2",_("Lev."),R_R___,"root",SUI_ID,1,"tp","dec");
+		ctrMkNode("list",opt,-1,"/mess/mess/3",_("Message"),R_R___,"root",SUI_ID,1,"tp","str");
 	    }
 	}
 	return;
@@ -732,31 +739,31 @@ void Project::cntrCmdProc( XMLNode *opt )
 	stlCurentSet(-1);
     }
     else if(a_path == "/mess/tm") {
-	if(ctrChkNode(opt,"get",RWRW__,"root",SDAQ_ID,SEC_RD)) {
+	if(ctrChkNode(opt,"get",RWRW__,"root",SUI_ID,SEC_RD)) {
 	    opt->setText(TBDS::genDBGet(mod->nodePath()+"messTm","0",opt->attr("user")));
 	    if(!s2i(opt->text())) opt->setText(i2s(time(NULL)));
 	}
-	if(ctrChkNode(opt,"set",RWRW__,"root",SDAQ_ID,SEC_WR))
+	if(ctrChkNode(opt,"set",RWRW__,"root",SUI_ID,SEC_WR))
 	    TBDS::genDBSet(mod->nodePath()+"messTm",(s2i(opt->text())>=time(NULL))?"0":opt->text(),opt->attr("user"));
     }
     else if(a_path == "/mess/size") {
-	if(ctrChkNode(opt,"get",RWRWR_,"root",SDAQ_ID,SEC_RD))
+	if(ctrChkNode(opt,"get",RWRWR_,"root",SUI_ID,SEC_RD))
 	    opt->setText(TBDS::genDBGet(mod->nodePath()+"messSize","600",opt->attr("user")));
-	if(ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR))
+	if(ctrChkNode(opt,"set",RWRWR_,"root",SUI_ID,SEC_WR))
 	    TBDS::genDBSet(mod->nodePath()+"messSize",opt->text(),opt->attr("user"));
     }
-    else if(a_path == "/mess/mess" && ctrChkNode(opt,"get",R_R___,"root",SDAQ_ID)) {
+    else if(a_path == "/mess/mess" && ctrChkNode(opt,"get",R_R___,"root",SUI_ID)) {
 	vector<TMess::SRec> rec;
 	time_t gtm = s2i(TBDS::genDBGet(mod->nodePath()+"messTm","0",opt->attr("user")));
 	if(!gtm) gtm = time(NULL);
 	int gsz = s2i(TBDS::genDBGet(mod->nodePath()+"messSize","600",opt->attr("user")));
 	SYS->archive().at().messGet(gtm-gsz, gtm, rec, "/("+catsPat()+")/", TMess::Info, "");
 
-	XMLNode *n_tm   = ctrMkNode("list",opt,-1,"/mess/mess/0","",R_R___,"root",SDAQ_ID);
-	XMLNode *n_tmu  = ctrMkNode("list",opt,-1,"/mess/mess/0a","",R_R___,"root",SDAQ_ID);
-	XMLNode *n_cat  = ctrMkNode("list",opt,-1,"/mess/mess/1","",R_R___,"root",SDAQ_ID);
-	XMLNode *n_lvl  = ctrMkNode("list",opt,-1,"/mess/mess/2","",R_R___,"root",SDAQ_ID);
-	XMLNode *n_mess = ctrMkNode("list",opt,-1,"/mess/mess/3","",R_R___,"root",SDAQ_ID);
+	XMLNode *n_tm   = ctrMkNode("list",opt,-1,"/mess/mess/0","",R_R___,"root",SUI_ID);
+	XMLNode *n_tmu  = ctrMkNode("list",opt,-1,"/mess/mess/0a","",R_R___,"root",SUI_ID);
+	XMLNode *n_cat  = ctrMkNode("list",opt,-1,"/mess/mess/1","",R_R___,"root",SUI_ID);
+	XMLNode *n_lvl  = ctrMkNode("list",opt,-1,"/mess/mess/2","",R_R___,"root",SUI_ID);
+	XMLNode *n_mess = ctrMkNode("list",opt,-1,"/mess/mess/3","",R_R___,"root",SUI_ID);
 	for(int i_rec = rec.size()-1; i_rec >= 0; i_rec--) {
 	    if(n_tm)	n_tm->childAdd("el")->setText(i2s(rec[i_rec].time));
 	    if(n_tmu)	n_tmu->childAdd("el")->setText(i2s(rec[i_rec].utime));
@@ -1076,7 +1083,7 @@ void Page::loadIO( )
 	itReg[sid] = true;
     }
 
-    // Check for remove items removed from DB
+    // Check for remove items removed from the DB
     if(!SYS->selDB().empty()) {
 	vector<string> it_ls;
 	wdgList(it_ls);
@@ -1245,7 +1252,7 @@ string Page::resourceGet( const string &id, string *mime )
 {
     string mimeType, mimeData;
 
-    if(!ownerProj()->mimeDataGet(id, mimeType, &mimeData ) && !parent().freeStat())
+    if(!ownerProj()->mimeDataGet(id,mimeType,&mimeData) && !parent().freeStat())
 	mimeData = parent().at().resourceGet(id, &mimeType);
     if(mime) *mime = mimeType;
 
@@ -1603,7 +1610,7 @@ void PageWdg::load_( )
     //Load generic widget's data
     string db  = ownerPage().ownerProj()->DB();
     string tbl = ownerPage().ownerProj()->tbl()+"_incl";
-    SYS->db().at().dataGet(db+"."+tbl,mod->nodePath()+tbl,*this);
+    SYS->db().at().dataGet(db+"."+tbl, mod->nodePath()+tbl, *this);
 
     //Inherit modify attributes
     vector<string> als;
@@ -1631,7 +1638,7 @@ void PageWdg::loadIO( )
 {
     if(!enable()) return;
 
-    //> Load widget's work attributes
+    //Load widget's work attributes
     mod->attrsLoad(*this, ownerPage().ownerProj()->DB()+"."+ownerPage().ownerProj()->tbl(), ownerPage().path(), id(), cfg("ATTRS").getS());
 }
 

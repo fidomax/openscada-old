@@ -698,7 +698,7 @@ string TMdContr::modBusReq( string &pdu )
 	setAttr("debugCat", (messLev()==TMess::Debug) ? nodePath() : string(""))->
 	setText(pdu);
 
-    tr.at().messProtIO(req,"ModBus");
+    tr.at().messProtIO(req, "ModBus");
 
     if(!req.attr("err").empty()) {
 	if(s2i(req.attr("err")) == 14) numErrCon++;
@@ -1356,7 +1356,7 @@ void TMdPrm::vlGet( TVal &val )
 	    if(!enableStat())			val.setS(_("1:Parameter is disabled."),0,true);
 	    else if(!owner().startStat())	val.setS(_("2:Acquisition is stopped."),0,true);
 	}
-	else val.setS(EVAL_STR,0,true);
+	else val.setS(EVAL_STR, 0, true);
 	return;
     }
 
@@ -1371,7 +1371,7 @@ void TMdPrm::vlGet( TVal &val )
 
 void TMdPrm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
 {
-    if(!enableStat() || !owner().startStat())	vo.setS(EVAL_STR, 0, true);
+    if(!enableStat() || !owner().startStat())	{ vo.setS(EVAL_STR, 0, true); return; }
 
     if(vl.isEVal() || vl == pvl) return;
 

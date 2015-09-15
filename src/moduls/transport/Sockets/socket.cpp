@@ -30,17 +30,6 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 
-#include <linux/can.h>
-#include <linux/can/raw.h>
-
-#ifndef PF_CAN
-#define PF_CAN 29
-#endif
-
-#ifndef AF_CAN
-#define AF_CAN PF_CAN
-#endif
-
 #include <fcntl.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -53,13 +42,27 @@
 #include <tmodule.h>
 #include "socket.h"
 
+#ifdef HAVE_LINUX_CAN_H
+#include <linux/can.h>
+#include <linux/can/raw.h>
+
+#ifndef PF_CAN
+#define PF_CAN 29
+#endif
+
+#ifndef AF_CAN
+#define AF_CAN PF_CAN
+#endif
+#endif
+
+
 //************************************************
 //* Modul info!                                  *
 #define MOD_ID		"Sockets"
 #define MOD_NAME	_("Sockets")
 #define MOD_TYPE	STR_ID
 #define VER_TYPE	STR_VER
-#define MOD_VER		"1.5.1"
+#define MOD_VER		"1.8.0"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides sockets based transport. Support inet and unix sockets. Inet socket uses TCP, UDP and RAWCAN protocols.")
 #define LICENSE		"GPL2"
@@ -132,7 +135,7 @@ void TTransSock::perSYSCall( unsigned int cnt )
 
     //Iniciative input protocols check for restart/reconnect need.
     inList(trls);
-    for(unsigned iTr = 0; iTr < trls.size(); iTr++)
+    for(unsigned iTr = 0; !SYS->stopSignal() && iTr < trls.size(); iTr++)
 	((AutoHD<TSocketIn>)inAt(trls[iTr])).at().check();
 }
 
@@ -225,11 +228,13 @@ void TSocketIn::start( )
 	    throw TError(nodePath().c_str(), _("Error create '%s' socket!"), s_type.c_str());
 	type = SOCK_UNIX;
     }
+#ifdef HAVE_LINUX_CAN_H
     else if(s_type == S_NM_RAWCAN) {
 	if((sock_fd = socket(PF_CAN,SOCK_RAW,CAN_RAW)) == -1)
 	    throw TError(nodePath().c_str(), _("Error create '%s' socket!"), s_type.c_str());
 	type = SOCK_RAWCAN;
     }
+#endif
     else throw TError(nodePath().c_str(), _("Socket type '%s' error!"), s_type.c_str());
 
     if(type == SOCK_TCP || type == SOCK_UDP) {
@@ -255,12 +260,14 @@ void TSocketIn::start( )
 	    else name_in.sin_port = 10001;
 
 	    if(mode() == 2) {							//Initiate connection
+		int flags = fcntl(sock_fd, F_GETFL, 0);
+		fcntl(sock_fd, F_SETFL, flags|O_NONBLOCK);
 		int res = connect(sock_fd, (sockaddr*)&name_in, sizeof(name_in));
 		if(res == -1 && errno == EINPROGRESS) {
 		    struct timeval tv;
 		    socklen_t slen = sizeof(res);
 		    fd_set fdset;
-		    tv.tv_sec = 10; tv.tv_usec = 0;
+		    tv.tv_sec = 5; tv.tv_usec = 0;
 		    FD_ZERO(&fdset); FD_SET(sock_fd, &fdset);
 		    if((res=select(sock_fd+1,NULL,&fdset,NULL,&tv)) > 0 && !getsockopt(sock_fd,SOL_SOCKET,SO_ERROR,&res,&slen) && !res) res = 0;
 		    else res = -1;
@@ -313,6 +320,7 @@ void TSocketIn::start( )
 	}
 	listen(sock_fd, maxQueue());
     }
+#ifdef HAVE_LINUX_CAN_H
     else if(type == SOCK_RAWCAN) {
 	path	= TSYS::strSepParse(addr(), 1, ':');
 	struct can_filter rfilter;
@@ -332,6 +340,7 @@ void TSocketIn::start( )
 	}
 	else if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("RAWCAN socket binded '%s'!"), addr().c_str());
     }
+#endif
 
     if(mode() == 2) {	//client task create for initiative connection
 	SSockIn *sin = new SSockIn(this, sock_fd, addr());
@@ -542,6 +551,7 @@ void *TSocketIn::Task( void *sock_in )
 	    r_len = sendto(sock->sock_fd, answ.c_str(), answ.size(), 0, (sockaddr *)&name_cl, name_cl_len);
 	    sock->trOut += vmax(0, r_len);
 	}
+#ifdef HAVE_LINUX_CAN_H
 	else if(sock->type == SOCK_RAWCAN) {
 	    struct can_frame frame;
 	    string req, answ;
@@ -561,6 +571,7 @@ void *TSocketIn::Task( void *sock_in )
 	    r_len = send(sock->sock_fd, answ.c_str(), answ.size(), 0);
 	    sock->trOut += vmax(0, r_len);
 	}
+#endif
     }
     pthread_attr_destroy(&pthr_attr);
 
@@ -874,7 +885,9 @@ void TSocketOut::start( int itmCon )
     else if(s_type == S_NM_TCP)		type = SOCK_TCP;
     else if(s_type == S_NM_UDP)		type = SOCK_UDP;
     else if(s_type == S_NM_UNIX)	type = SOCK_UNIX;
+#ifdef HAVE_LINUX_CAN_H
     else if(s_type == S_NM_RAWCAN)	type = SOCK_RAWCAN;
+#endif
     else throw TError(nodePath().c_str(),_("Type socket '%s' error!"),s_type.c_str());
 
     if(type == SOCK_FORCE) {
@@ -951,6 +964,7 @@ void TSocketOut::start( int itmCon )
 	}
 	fcntl(sock_fd, F_SETFL, fcntl(sock_fd,F_GETFL,0)|O_NONBLOCK);
     }
+#ifdef HAVE_LINUX_CAN_H
     else if(type == SOCK_RAWCAN) {
 	if((sock_fd = socket(PF_CAN, SOCK_RAW, CAN_RAW)) == -1)
 	    throw TError(nodePath().c_str(), _("Error create '%s' socket!"), s_type.c_str());
@@ -973,6 +987,7 @@ void TSocketOut::start( int itmCon )
 	    throw TError(nodePath().c_str(), _("RAWCAN socket doesn't bind to '%s'!"), addr().c_str());
 	}
     }
+#endif
 
     mLstReqTm = TSYS::curTime();
 
@@ -1061,8 +1076,18 @@ repeate:
 	tv.tv_sec  = time/1000; tv.tv_usec = 1000*(time%1000);
 	FD_ZERO(&rw_fd); FD_SET(sock_fd, &rw_fd);
 	kz = select(sock_fd+1, &rw_fd, NULL, NULL, &tv);
-	if(kz == 0)	{ res.release(); if(writeReq) stop(); mLstReqTm = TSYS::curTime(); throw TError(nodePath().c_str(),_("Timeouted!")); }
-	else if(kz < 0)	{ res.release(); stop(); mLstReqTm = TSYS::curTime(); throw TError(nodePath().c_str(),_("Socket error!")); }
+	if(kz == 0) {
+	    res.release();
+	    if(writeReq) stop();
+	    mLstReqTm = TSYS::curTime();
+	    throw TError(nodePath().c_str(),_("Timeouted!"));
+	}
+	else if(kz < 0)	{
+	    err = strerror(errno);
+	    res.release(); stop();
+	    mLstReqTm = TSYS::curTime();
+	    throw TError(nodePath().c_str(),_("Socket error: %s"), err.c_str());
+	}
 	else if(FD_ISSET(sock_fd, &rw_fd)) {
 	    i_b = read(sock_fd, ibuf, len_ib);
 	    if(i_b <= 0 && obuf) {

@@ -273,7 +273,7 @@ namespace VISION
 	    void applySlot( );
 	    void cancelSlot( );
 	    void curPosChange( );
-	    void ctrTreePopup( );
+	    void custContextMenu( );
 	    void find( );
 
 	private:
@@ -319,6 +319,7 @@ namespace VISION
 	    QMainWindow	*mainWin( )	{ return main_win; }
 	    QPointF	posF( )		{ return mWPos; }
 	    QSizeF	sizeF( )	{ return mWSize; }
+	    QSizeF	sizeOrigF( )	{ return mWSizeOrig; }
 	    QRectF	geometryF( )	{ return QRectF(mWPos,mWSize); }
 	    virtual float xScale( bool full = false );
 	    virtual float yScale( bool full = false );
@@ -331,8 +332,12 @@ namespace VISION
 	    void	setZ( int vl )	{ z_coord = vl; }
 	    void	setAllAttrLoad( bool vl )	{ mAllAttrLoad = vl; }
 
+	    // Group attributes as <attrs>, into single request, set to the data model
 	    void	attrsSet( AttrValS &attrs );
-	    virtual bool attrSet( const string &attr, const string &val, int uiPrmPos = 0 );
+	    // Single attribute <attr> set to the data model or process the changes from:
+	    //  <attr> no empty and uiPrmPos != A_NO_ID - write <val> for <attr> to the data model;
+	    //  <uiPrmPos> != A_WR_TO_MODEL - process the changes <val> from the data model.
+	    virtual bool attrSet( const string &attr, const string &val, int uiPrmPos = A_WR_TO_MODEL );
 	    virtual string resGet( const string &res );
 
 	    virtual int cntrIfCmd( XMLNode &node, bool glob = false )	{ return 1; };
@@ -356,8 +361,8 @@ namespace VISION
 	    //Protected attributes
 	    bool		mAllAttrLoad;	//All attributes load
 	    int			mWLevel;	//Widget level
-	    QPointF		mWPos;		//Widget position into real;
-	    QSizeF		mWSize;		//Widget size into real;
+	    QPointF		mWPos;		//Widget position into real
+	    QSizeF		mWSize, mWSizeOrig;	//Widget real and original (unscaled) size into real
 	    float		x_scale, 	//Widget x scale
 				y_scale;	//	 y scale
 	    int			z_coord;	//Z coordinate

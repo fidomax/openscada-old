@@ -37,7 +37,7 @@
 #define MOD_NAME	_("MMS(IEC-9506)")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"0.5.0"
+#define MOD_VER		"1.3.1"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("MMS(IEC-9506) client implementation.")
 #define LICENSE		"GPL2"
@@ -779,7 +779,7 @@ void TMdPrm::vlGet( TVal &val )
 
 void TMdPrm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
 {
-    if(!enableStat())	vo.setS(EVAL_STR, 0, true);
+    if(!enableStat() || !owner().startStat())	{ vo.setS(EVAL_STR, 0, true); return; }
 
     //Send to active reserve station
     if(owner().redntUse()) {

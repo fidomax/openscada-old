@@ -181,8 +181,7 @@ void TTransportS::load_( )
     // Load external hosts
     try {
 	TConfig c_el(&el_ext);
-	for(int fld_cnt = 0; SYS->db().at().dataSeek(extHostsDB(),nodePath()+"ExtTansp",fld_cnt++,c_el,true); )
-	{
+	for(int fld_cnt = 0; SYS->db().at().dataSeek(extHostsDB(),nodePath()+"ExtTansp",fld_cnt++,c_el,true); ) {
 	    ExtHost host("", "");
 	    host.user_open	= c_el.cfg("OP_USER").getS();
 	    host.id		= c_el.cfg("ID").getS();
@@ -411,25 +410,27 @@ int TTransportS::cntrIfCmd( XMLNode &node, const string &senderPref, const strin
 {
     int path_off = 0;
     string path = node.attr("path");
-    string station = TSYS::pathLev(path,0,false,&path_off);
+    string station = TSYS::pathLev(path, 0, false, &path_off);
     if(station.empty()) station = SYS->id();
-    else node.setAttr("path",path.substr(path_off));
+    else node.setAttr("path", path.substr(path_off));
 
     if(station == SYS->id()) {
-	node.setAttr("user",(user.empty()?"root":user));
+	node.setAttr("user", user.empty()?"root":user);
 	SYS->cntrCmd(&node);
-	node.setAttr("path",path);
+	node.setAttr("path", path);
 	return s2i(node.attr("rez"));
     }
 
-    //Connect to transport
-    TTransportS::ExtHost host = extHostGet((user.empty()?"*":user),station);
-    AutoHD<TTransportOut> tr = extHost(host,senderPref);
+    //Connect to the transport
+    TTransportS::ExtHost host = extHostGet(user.empty()?"*":user, station);
+    AutoHD<TTransportOut> tr = extHost(host, senderPref);
     if(!tr.at().startStat()) tr.at().start(s2i(node.attr("conTm")));
 
-    node.setAttr("rqDir","0")->setAttr("rqUser",host.user)->setAttr("rqPass",host.pass);
-    tr.at().messProtIO(node,"SelfSystem");
-    node.setAttr("path",path);
+    node.setAttr("rqDir", "0")->setAttr("rqUser", host.user)->setAttr("rqPass", host.pass);
+    if(mess_lev() == TMess::Debug) mess_debug((tr.at().nodePath()+senderPref).c_str(), _("REQ: %s"), node.save().c_str());
+    tr.at().messProtIO(node, "SelfSystem");
+    if(mess_lev() == TMess::Debug) mess_debug((tr.at().nodePath()+senderPref).c_str(), _("RESP: %s"), node.save().c_str());
+    node.setAttr("path", path);
 
     return s2i(node.attr("rez"));
 }
@@ -742,6 +743,21 @@ TVariant TTransportIn::objFuncCall( const string &iid, vector<TVariant> &prms, c
 	try { return writeTo(prms[0].getS(), prms[1].getS()); }	catch(TError) { }
 	return 0;
     }
+    // string status() - the transport status
+    if(iid == "status") return getStatus();
+    // string addr( string vl = "" ) - the transport address return, set the to no empty <vl>
+    if(iid == "addr") {
+	if(prms.size() && prms[0].getS().size())
+	    try{ setAddr(prms[0].getS()); } catch(TError) { }
+	return addr();
+    }
+    // TArrayObj assTrsList() - assigned output transports list to the input
+    if(iid == "assTrsList") {
+	TArrayObj *rez = new TArrayObj();
+	vector<AutoHD<TTransportOut> > trs = assTrs();
+	for(unsigned iTr = 0; iTr < trs.size(); iTr++) rez->arSet(iTr, trs[iTr].at().id());
+	return rez;
+    }
 
     //Configuration functions call
     TVariant cfRez = objFunc(iid, prms, user);
@@ -786,8 +802,7 @@ void TTransportIn::cntrCmdProc( XMLNode *opt )
 	vector<string> list;
 	int c_lv = 0;
 	string c_path = "", c_el;
-	for(int c_off = 0; (c_el=TSYS::strSepParse(protocolFull(),0,'.',&c_off)).size(); c_lv++)
-	{
+	for(int c_off = 0; (c_el=TSYS::strSepParse(protocolFull(),0,'.',&c_off)).size(); c_lv++) {
 	    opt->childAdd("el")->setText(c_path);
 	    c_path += c_lv ? "."+c_el : c_el;
 	}
@@ -902,15 +917,29 @@ TVariant TTransportOut::objFuncCall( const string &iid, vector<TVariant> &prms, 
     //      session through the transport by means of protocol.
     //  req - request into XML-tree
     //  prt - protocol name
-    else if(iid == "messIO" && prms.size() >= 2 && !AutoHD<XMLNodeObj>(prms[0].getO()).freeStat()) {
+    if(iid == "messIO" && prms.size() >= 2 && !AutoHD<XMLNodeObj>(prms[0].getO()).freeStat()) {
 	try {
 	    XMLNode req;
 	    if(!startStat()) start();
 	    AutoHD<XMLNodeObj>(prms[0].getO()).at().toXMLNode(req);
-	    messProtIO(req,prms[1].getS());
+	    messProtIO(req, prms[1].getS());
 	    AutoHD<XMLNodeObj>(prms[0].getO()).at().fromXMLNode(req);
 	} catch(TError err) { return err.mess; }
 	return 0;
+    }
+    // string status( ) - the transport status
+    if(iid == "status")	return getStatus();
+    // string addr( string vl = "" ) - the transport address return, set the to no empty <vl>
+    if(iid == "addr") {
+	if(prms.size() && prms[0].getS().size())
+	    try{ setAddr(prms[0].getS()); } catch(TError) { }
+	return addr();
+    }
+    // string timings( string vl = "" ) - the transport timings return, set the to no empty <vl>
+    if(iid == "timings") {
+	if(prms.size() && prms[0].getS().size())
+	    try{ setTimings(prms[0].getS()); } catch(TError) { }
+	return timings();
     }
 
     //Configuration functions call

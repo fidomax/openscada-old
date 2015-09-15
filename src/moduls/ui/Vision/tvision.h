@@ -2,7 +2,7 @@
 //OpenSCADA system module UI.VISION file: tvision.h
 /***************************************************************************
  *   Copyright (C) 2005-2006 by Evgen Zaichuk
- *                 2006-2014 by Roman Savochenko (rom_as@oscada.org)
+ *                 2006-2015 by Roman Savochenko (rom_as@oscada.org)
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include <telem.h>
 #include <tuis.h>
 #include "tsys.h"
+#include "../VCAEngine/types.h"
 
 #undef _
 #define _(mess) mod->I18N(mess)
@@ -37,6 +38,7 @@
 #define POS_PREC_DIG	3
 
 using namespace OSCADA;
+using namespace VCA;
 
 namespace VISION
 {
@@ -51,7 +53,7 @@ class TVision : public TUI
     public:
 	//Data
 	enum MessLev	{ Info, Warning, Error, Crit };
-	enum Alarm	{ Light = 0x01, Alarm = 0x02, Sound = 0x04 };
+	//enum Alarm	{ Light = 0x01, Alarm = 0x02, Sound = 0x04 };
 
 	//Methods
 	TVision( string name );
@@ -66,7 +68,7 @@ class TVision : public TUI
 	bool exitLstRunPrjCls( )		{ return mExitLstRunPrjCls; }
 	string VCAStation( )			{ return vca_station; }
 	int restoreTime( )			{ return mRestTime; }
-	string playCom( )			{ return mPlayCom; }
+	//string playCom( )			{ return mPlayCom; }
 	float cachePgLife( )			{ return mCachePgLife; }
 	string uiPropGet( const string &prop, const string &user = "root" );
 
@@ -78,7 +80,7 @@ class TVision : public TUI
 	void setExitLstRunPrjCls( bool en )	{ mExitLstRunPrjCls = en; modif(); }
 	void setVCAStation( const string &stat ){ vca_station = stat; modif(); }
 	void setRestoreTime( int vl )		{ mRestTime = vl; modif(); }
-	void setPlayCom( const string &com )	{ mPlayCom = com; modif(); }
+	//void setPlayCom( const string &com )	{ mPlayCom = com; modif(); }
 	void setCachePgLife( float vl )		{ mCachePgLife = vmax(0,vmin(1000,vl)); modif(); }
 	void uiPropSet( const string &prop, const string &vl, const string &user = "root" );
 
@@ -104,7 +106,7 @@ class TVision : public TUI
 	int cntrIfCmd( XMLNode &node, const string &user, const string &password, const string &VCAStat, bool glob = false );
 
 	//Attributes
-	vector<QMainWindow*>	mn_winds;
+	vector<QMainWindow*>	mnWinds;
 
     protected:
 	//Methods
@@ -131,7 +133,7 @@ class TVision : public TUI
 
 	string		vca_station;		//VCA station id ('.' - for local station)
 
-	string		mPlayCom;		//Play command
+	//string		mPlayCom;		//Play command
 
 	int		mScrnCnt;
 };

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-21 10:51+0200\n"
+"POT-Creation-Date: 2015-07-18 09:09+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgstr ""
 msgid "Roman Savochenko"
 msgstr ""
 
-msgid "Allow access to sound card data."
+msgid "Provides an access to the sound card."
 msgstr ""
 
 msgid "Parameters' table"
@@ -58,7 +58,7 @@ msgid "Allowed %d input channels"
 msgstr ""
 
 #, c-format
-msgid "Gathering from %d channels. Recieved %.2f MB. Adjusted samplerate %d. Lost frames %g"
+msgid "Gathering from %d channels. Recieved %.2g MB. Adjusted samplerate %d. Lost frames %g"
 msgstr ""
 
 #, c-format

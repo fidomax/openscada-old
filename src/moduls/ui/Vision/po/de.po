@@ -4,13 +4,13 @@
 # Irina Popkova <IrischkaPopkova@yandex.ru>, 2009, 2011.
 # Joan Zimmermann <j.zimmermann@fetron.de>, 2009.
 # Klaus Fetscher <k.fetscher@fetron.de>, 2009.
-# Roman Savochenko <rom_as@oscada.org>, 2010-2014.
+# Roman Savochenko <rom_as@oscada.org>, 2010-2015.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.UI.Vision 1.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-20 12:19+0200\n"
+"POT-Creation-Date: 2015-08-31 07:52+0300\n"
 "PO-Revision-Date: 2011-07-19 21:48+0400\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -27,8 +27,12 @@ msgstr "Roman Savotschenko"
 msgid "Roman Savochenko, Lysenko Maxim, Yashina Kseniya"
 msgstr "Roman Savotschenko, Maxim Lysjenko, Ksenija Jaschina"
 
-msgid "Visual operation user interface."
-msgstr "Benutzerschnittstelle"
+msgid ""
+"Visual operation user interface, based on Qt library - front-end to VCA "
+"engine."
+msgstr ""
+"Visuelle Betrieb Benutzeroberfläche basierend auf Qt-Bibliothek - Front-End "
+"für VCA-Motor."
 
 msgid "Developers"
 msgstr "Entwickler"
@@ -46,7 +50,6 @@ msgid ""
 "CachePgLife <hours>   Cached pages lifetime.\n"
 "VCAstation  <id>      VCA station id ('.' - local).\n"
 "RestoreTime <seconds> Restore connection time.\n"
-"PlayCom     <cmd>     Audio alarms' files play command.\n"
 "\n"
 msgstr ""
 "======================== Optionen des Moduls <%s:%s> "
@@ -63,7 +66,6 @@ msgstr ""
 "CachePgLife    <uhr>  Die Lebensdauer der Seiten im Cache.\n"
 "VCAstation      <id>  Station mit der VCA Maschine ('.' - local).\n"
 "RestoreTime <Sekunden> Wiederherstellen Verbindungszeit.\n"
-"PlayCom     <befehl>  Audio-Alarme Dateien abspielen Befehl.\n"
 "\n"
 
 msgid "Load module."
@@ -86,6 +88,9 @@ msgstr "Modul anhalten."
 
 msgid "Display number"
 msgstr "Anzeige der Anzahl"
+
+msgid "Main windows"
+msgstr "Hauptfenster"
 
 msgid "Module options"
 msgstr "Optionen des Moduls"
@@ -139,21 +144,19 @@ msgstr "Windows-Lageregelung und sparen"
 msgid "Exit on last run project close"
 msgstr "Beenden, wenn der letzte der Ablauf des Projekts"
 
-msgid "Alarms"
-msgstr "Störungen"
-
-msgid "Play command"
-msgstr "Play Kommando"
+#, c-format
+msgid "%d: Development"
+msgstr "%d: Entwicklung"
 
 #, c-format
-msgid ""
-"Command line for call sounds play.\n"
-"Use %f for source file name inserting. If source file is not used play "
-"sample is sent to pipe."
-msgstr ""
-"Kommandozeile für Wiedergabe des Tons.\n"
-"Verwenden Sie %f für Dateinamen. Falls Dateiname nicht verwendet wird, "
-"werden die Dateien in den Kanal gesendet."
+msgid "%d: Running \"%s:%s\" - %s"
+msgstr "%d: Laufen \"%s:%s\" - %s"
+
+msgid "Connected"
+msgstr "Verbunden"
+
+msgid "Disconnected"
+msgstr "Getrennt"
 
 #, c-format
 msgid "OpenSCADA Vision developing: %s"
@@ -1101,6 +1104,10 @@ msgstr ""
 msgid "No one row is selected."
 msgstr "Keine Zeile ist ausgewählt."
 
+msgid "Are you sure of loading a mime to selected item '%1'?"
+msgstr ""
+"Sind Sie sicher, der das Laden einer MIME, um ausgewählte Element '%1'?"
+
 msgid "All files (*.*)"
 msgstr "Alle Dateien (*.*)"
 
@@ -1493,44 +1500,11 @@ msgstr "Schaltfläche für die Quittierung aller Störungen"
 msgid "Press for all alarms quittance."
 msgstr "Betätigen für die Quittierung aller Störungen."
 
-msgid "Blink alarm"
-msgstr "Blinzalarme"
-
-msgid "The button for all blink alarms quittance"
-msgstr "Schaltfläche für Quittierung alle Alarme blinken"
-
-msgid "Press for all blink alarms quittance."
-msgstr "Betätigen für die Quittierung alle Alarme blinken."
-
-msgid "Speaker alarm"
-msgstr "Lautsprecheralarm"
-
-msgid "PC speaker alarm"
-msgstr "PC Lautsprecheralarm"
-
-msgid "The button for all PC speaker alarms quittance"
-msgstr "Schaltfläche für die Quittierung aller Lautsprecheralarme"
-
-msgid "Press for all PC speaker alarms quittance."
-msgstr "Betätigen für die Quittierung aller Lautsprecheralarme."
-
-msgid "Sound/speech alarm"
-msgstr "Signal/Redealarm"
-
-msgid "Sound or speech alarm"
-msgstr "Signal- oder Redealarm"
-
-msgid "The button for all sound or speech alarms quittance"
-msgstr "Schaltfläche für die Quittierung aller akustischen Alarme"
-
-msgid "Press for all sound or speech alarms quittance."
-msgstr "Betätigen für Quittierung aller akustischen Alarme."
-
 msgid "&Alarm"
 msgstr "Stö&rung"
 
-msgid "Alarms (status)"
-msgstr "Störung (Status)"
+msgid "Generic (status)"
+msgstr "Generisches (Status)"
 
 msgid "This label displays current system's time."
 msgstr "Dieses Zeichen zeigt die aktuelle Systemzeit."
@@ -1734,13 +1708,8 @@ msgstr "<Erstellen Sie eine neue Sitzung>"
 msgid "Running project: %1"
 msgstr "Ausführen Projekt: %1"
 
-#, c-format
-msgid "Error open: %s"
-msgstr "Fehler beim Öffnen: %s"
-
-#, c-format
-msgid "Error write to: %s"
-msgstr "Fehler schreiben Sie an: %s"
+msgid "Status line items"
+msgstr "Statuszeile Elemente"
 
 msgid "Alarm level: %1"
 msgstr "Stufe der Störung: %1"
@@ -1752,6 +1721,44 @@ msgstr "Wiederaufbau der Schaffung der Session für '%s'."
 #, c-format
 msgid "Session '%s' update time %f ms."
 msgstr "Sitzung '%s' Aktualisierungszeit %f ms."
+
+#, c-format
+msgid "Function of the notificator '%s' error: %s"
+msgstr "Funktion des Melder '%s' Fehler: %s"
+
+msgid "Enabled notification"
+msgstr "Aktivieren Meldung"
+
+msgid "Doing notification, always 1"
+msgstr "Doing Meldung, immer 1"
+
+msgid "Doing resource, always 0"
+msgstr "Doing Ressource, immer 0"
+
+msgid "Resource stream"
+msgstr "Ressourcen-Stream"
+
+msgid "Notification message"
+msgstr "Benachrichtigung"
+
+msgid "Notification message's language"
+msgstr "Sprache Benachrichtigung"
+
+#, c-format
+msgid "Notyfier %d"
+msgstr "Notyfier %d"
+
+msgid "The button for current \"%1\" quittance"
+msgstr "Schaltfläche für die Quittierung Strömung \"%1\""
+
+msgid "Press for current \"%1\" quittance."
+msgstr "Betätigen für die Quittierung Strömung \"%1\"."
+
+msgid "The button for all \"%1\" quittance"
+msgstr "Schaltfläche für die Quittierung aller \"%1\""
+
+msgid "Press for all \"%1\" quittance."
+msgstr "Betätigen für die Quittierung aller \"%1\"."
 
 msgid ""
 "Page: '%1'.\n"
@@ -2116,6 +2123,12 @@ msgstr "Datum und Uhrzeit"
 msgid "Level"
 msgstr "Stufe"
 
+msgid "Print"
+msgstr "Drucken"
+
+msgid "Export"
+msgstr "Export"
+
 #, c-format
 msgid "Document parsing error: %s"
 msgstr "Fehler der Dokumentanalyse: %s"
@@ -2127,7 +2140,7 @@ msgid "ID:"
 msgstr "ID:"
 
 msgid "Ok"
-msgstr "Annehmen"
+msgstr ""
 
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -2171,6 +2184,9 @@ msgstr "Suche"
 msgid "Find next"
 msgstr "Weitersuchen"
 
+msgid "Apply"
+msgstr "Annehmen"
+
 msgid "Cursor = (%1:%2)"
 msgstr "Cursor = (%1:%2)"
 
@@ -2204,5 +2220,56 @@ msgstr "Zeit der Initialisation '%s' %f ms."
 msgid "Vision dialog"
 msgstr "Vision-Dialog"
 
-#~ msgid "Options help"
-#~ msgstr "Optionen Hilfe"
+#~ msgid "Alarms"
+#~ msgstr "Störungen"
+
+#~ msgid "Play command"
+#~ msgstr "Play Kommando"
+
+#~ msgid ""
+#~ "Command line for call sounds play.\n"
+#~ "Use %f for source file name inserting. If source file is not used play "
+#~ "sample is sent to pipe."
+#~ msgstr ""
+#~ "Kommandozeile für Wiedergabe des Tons.\n"
+#~ "Verwenden Sie %f für Dateinamen. Falls Dateiname nicht verwendet wird, "
+#~ "werden die Dateien in den Kanal gesendet."
+
+#~ msgid "Blink alarm"
+#~ msgstr "Blinzalarme"
+
+#~ msgid "The button for all blink alarms quittance"
+#~ msgstr "Schaltfläche für Quittierung alle Alarme blinken"
+
+#~ msgid "Press for all blink alarms quittance."
+#~ msgstr "Betätigen für die Quittierung alle Alarme blinken."
+
+#~ msgid "Speaker alarm"
+#~ msgstr "Lautsprecheralarm"
+
+#~ msgid "PC speaker alarm"
+#~ msgstr "PC Lautsprecheralarm"
+
+#~ msgid "The button for all PC speaker alarms quittance"
+#~ msgstr "Schaltfläche für die Quittierung aller Lautsprecheralarme"
+
+#~ msgid "Press for all PC speaker alarms quittance."
+#~ msgstr "Betätigen für die Quittierung aller Lautsprecheralarme."
+
+#~ msgid "Sound/speech alarm"
+#~ msgstr "Signal/Redealarm"
+
+#~ msgid "Sound or speech alarm"
+#~ msgstr "Signal- oder Redealarm"
+
+#~ msgid "The button for all sound or speech alarms quittance"
+#~ msgstr "Schaltfläche für die Quittierung aller akustischen Alarme"
+
+#~ msgid "Press for all sound or speech alarms quittance."
+#~ msgstr "Betätigen für Quittierung aller akustischen Alarme."
+
+#~ msgid "Error open: %s"
+#~ msgstr "Fehler beim Öffnen: %s"
+
+#~ msgid "Error write to: %s"
+#~ msgstr "Fehler schreiben Sie an: %s"

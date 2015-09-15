@@ -71,7 +71,7 @@ string TModSchedul::optDescr( )
     char buf[STR_BUF_LEN];
     snprintf(buf,sizeof(buf),_(
 	"=================== Subsystem \"Module scheduler\" options =================\n"
-	"    --ModPath=<path>   Modules <path> (/var/os/modules/).\n"
+	"    --modPath=<path>   Modules <path> (/var/os/modules/).\n"
 	"------------ Parameters of section '%s' in config-file -----------\n"
 	"ModPath  <path>        Path to shared libraries(modules).\n"
 	"ModAllow <list>        List of shared libraries allowed for automatic loading, attaching and starting (bd_DBF.so;daq_JavaLikeCalc.so).\n"
@@ -92,8 +92,8 @@ void TModSchedul::load_( )
     //Load parameters from command line
     string argCom, argVl;
     for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
-	if(argCom == "h" || argCom == "help")	fprintf(stdout,"%s",optDescr().c_str());
-	else if(argCom == "ModPath")	SYS->setModDir(optarg, true);
+	if(strcasecmp(argCom.c_str(),"h") == 0 || strcasecmp(argCom.c_str(),"help") == 0) fprintf(stdout,"%s",optDescr().c_str());
+	else if(strcasecmp(argCom.c_str(),"modpath") == 0)	SYS->setModDir(optarg, true);
 
     //Load parameters from command line
     setChkPer(s2i(TBDS::genDBGet(nodePath()+"ChkPer",i2s(chkPer()))));
@@ -221,9 +221,9 @@ void TModSchedul::libAtt( const string &iname, bool full )
 	    }
 
 	    //Get allow modules from library and start it
-	    int n_mod=0, add_mod=0;
+	    int n_mod = 0, add_mod = 0;
 	    TModule::SAt AtMod;
-	    while((AtMod = (module)(n_mod++)).id.size()) {
+	    while((AtMod=(module)(n_mod++)).id.size()) {
 		vector<string> list;
 		owner().list(list);
 		for(unsigned i_sub = 0; i_sub < list.size(); i_sub++) {
@@ -239,7 +239,7 @@ void TModSchedul::libAtt( const string &iname, bool full )
 			    mess_warning(nodePath().c_str(),_("Module '%s' is already present!"),AtMod.id.c_str());
 			else {
 			    // Attach new module
-			    TModule *LdMod = (attach)( AtMod, iname );
+			    TModule *LdMod = (attach)(AtMod, iname);
 			    if(LdMod == NULL) {
 				mess_warning(nodePath().c_str(),_("Attach module '%s' error!"),AtMod.id.c_str());
 				break;

@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_run_widgs.h
 /***************************************************************************
- *   Copyright (C) 2007-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -59,7 +59,7 @@ namespace VISION
 
 	    WdgView *newWdgItem( const string &iwid );
 	    void update( bool full, XMLNode *aBr = NULL, bool FullTree = false );
-	    bool attrSet( const string &attr, const string &val, int uiPrmPos = 0 );
+	    bool attrSet( const string &attr, const string &val, int uiPrmPos = A_WR_TO_MODEL );
 
 	    void shapeList( const string &snm, vector<string> &ls );
 	    RunWdgView *findOpenWidget( const string &wdg );
@@ -96,8 +96,6 @@ namespace VISION
 	    float  xScale( bool full = false );
 	    float  yScale( bool full = false );
 
-	    void resizeF( const QSizeF &size );
-
 	    void setReqTm( unsigned vl )	{ reqtm = vl; }
 
 	    RunPageView *findOpenPage( const string &pg );
@@ -115,36 +113,6 @@ namespace VISION
 	private:
 	    //Private attributes
 	    unsigned	reqtm;		//Request values time
-    };
-
-    //*********************************************
-    //* Play sound thread for RunTime session     *
-    //*********************************************
-    class SndPlay: public QThread
-    {
-	public:
-	    //Public methods
-	    SndPlay( QObject * parent = 0 );
-
-	    unsigned time( )	{ return mTm; }
-	    string widget( )	{ return mWdg; }
-	    string playData( )	{ return mPlayData; }
-
-	    void setTime( unsigned vl )	{ mTm = vl; }
-	    void setWidget( string vl )	{ mWdg = vl; }
-	    void setData( string vl )	{ mPlayData = vl; }
-
-	    VisRun *mainWin( );
-
-	protected:
-	    //Protected methods
-	    void run( );
-
-	private:
-	    //Private attributes
-	    unsigned	mTm;		//Request last sound time
-	    string	mWdg;		//Play widget
-	    string	mPlayData;	//Play data
     };
 
     //*********************************************
@@ -173,6 +141,20 @@ namespace VISION
 
 	private:
 	    int	mStyle;
+    };
+
+    //*********************************************
+    //* User's status bar item                    *
+    //*********************************************
+    class UserItStBar : public QLabel
+    {
+	Q_OBJECT
+
+	public:
+	    UserItStBar( QWidget *parent = 0 );
+
+	protected:
+	    bool event( QEvent *event );
     };
 }
 

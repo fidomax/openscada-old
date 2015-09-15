@@ -1,0 +1,170 @@
+# OpenSCADA.DAQ.Fastwel translate to Russian.
+# This file is distributed under the same license as the OpenSCADA.DAQ.Fastwel package module.
+#
+# Maxim Kochetkov <fido_max@inbox.ru> 2015.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Fastwel 0.0.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-07-18 12:26+0300\n"
+"PO-Revision-Date: 2015-04-23 09:36+0300\n"
+"Last-Translator: Maxim Kochetkov <fido_max@inbox.ru>\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+msgid "Fastwel IO"
+msgstr "Fastwel IO"
+
+msgid "Maxim Kochetkov"
+msgstr "Максим Кочетков"
+
+msgid "Fastwel IO FBUS client implementation"
+msgstr "Реализация опроса Fastwel IO FBUS "
+
+msgid "FBUS init failed."
+msgstr "Ошибка инициализации FBUS"
+
+#, c-format
+msgid "FBUS open net #%d failed."
+msgstr "Ошибка открытия сети FBUS  #%d "
+
+#, c-format
+msgid "FBUS rescan net #%d failed."
+msgstr "Ошибка сканирования сети #%d"
+
+#, c-format
+msgid "FBUS GetNodeDescription net #%d, #id%d  failed."
+msgstr "Ошибка FBUS GetNodeDescription net #%d, #id%d"
+
+msgid "DIM762 Parameteres table"
+msgstr "Таблица параметров DIM762"
+
+msgid "DIM716 Parameteres table"
+msgstr "Таблица параметров DIM716"
+
+msgid "DIM718 Parameteres table"
+msgstr "Таблица параметров DIM718"
+
+msgid "AIM791 Parameteres table"
+msgstr "Таблица параметров AIM791"
+
+msgid "AIM726 Parameteres table"
+msgstr "Таблица параметров AIM726"
+
+msgid "AIM730 Parameteres table"
+msgstr "Таблица параметров AIM730"
+
+msgid "AIM725 Parameteres table"
+msgstr "Таблица параметров AIM725"
+
+msgid "Acquisition schedule"
+msgstr "Планирование опроса"
+
+msgid "Gather task priority"
+msgstr "Уровень приоритета задачи сбора данных"
+
+msgid "Network number"
+msgstr "Номер сети"
+
+msgid "DIM762"
+msgstr "DIM762"
+
+msgid "Device address"
+msgstr "Адрес"
+
+msgid "Debounce"
+msgstr "Фильтр дребезга"
+
+msgid "No;200us;3ms"
+msgstr "Нет;200uс;3мс"
+
+msgid "Enable counting"
+msgstr "Включить счетчик"
+
+msgid "DIM716"
+msgstr "DIM716"
+
+msgid "DIM718"
+msgstr "DIM718"
+
+msgid "AIM791"
+msgstr "AIM791"
+
+msgid "Input range"
+msgstr "Диапазон входа"
+
+msgid "0..5mA;0..20mA;4..20mA"
+msgstr "0..5мА;0..20мА;4..20мА"
+
+msgid "Scan Rate"
+msgstr "Период измерения"
+
+msgid "Filter depth"
+msgstr "Глубина фильтра"
+
+msgid "AIM726"
+msgstr "AIM726"
+
+msgid "AIM730"
+msgstr "AIM730"
+
+msgid "Output range"
+msgstr "Диапазон выхода"
+
+msgid "0..20mA;4..20mA"
+msgstr "0..20мА;4..20мА"
+
+msgid "AIM725"
+msgstr "AIM725"
+
+msgid "Sensor range"
+msgstr "Диапазон входа"
+
+msgid ""
+"PT50;PT100;PT200;PT500;PT1000;NI100;NI120;CU100;CU50;0-150 Ohm;0-300 "
+"Ohm;0-600 Ohm;0-1500 Ohm; 0-3000 Ohm"
+msgstr ""
+"PT50;PT100;PT200;PT500;PT1000;NI100;NI120;CU100;CU50;0-150 Ом;0-300 Ом;0-600 "
+"Ом;0-1500 Ом; 0-3000 Ом"
+
+msgid "Sensor type"
+msgstr "Тип датчика"
+
+msgid "2-wire;3-wire"
+msgstr "2-х проводный;3-х проводный"
+
+msgid "Call now. "
+msgstr "Вызов сейчас. "
+
+#, c-format
+msgid "Call by period: %s. "
+msgstr "Вызовы с периодом: %s. "
+
+#, c-format
+msgid "Call next by cron '%s'. "
+msgstr "Следующий вызов по cron '%s'. "
+
+#, c-format
+msgid "Spent time: %s."
+msgstr "Spent time: %s."
+
+msgid "1:Parameter is disabled."
+msgstr "1:Параметр отключен."
+
+msgid "2:Acquisition is stopped."
+msgstr "2:Опрос остановлен."
+
+msgid "0: Normal"
+msgstr "0: Норма"
+
+#, c-format
+msgid "3: Wrong type: %s"
+msgstr "3:Неверный тип: %s"

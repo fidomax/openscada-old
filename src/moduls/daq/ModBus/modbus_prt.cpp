@@ -267,7 +267,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 	    //Encode MBAP (Modbus Application Protocol)
 	    int tid = rand();
 	    mbap.reserve(pdu.size()+7);
-	    mbap.append((char *)&tid,2);	//Transaction ID
+	    mbap.append((char*)&tid,2);		//Transaction ID
 	    mbap.append(2,(char)0);		//Protocol ID
 	    mbap += (char)((pdu.size()+1)>>8);	//PDU size MSB
 	    mbap += (char)(pdu.size()+1);	//PDU size LSB
@@ -308,7 +308,12 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError err){ break; }
 			rez.append(buf, resp_len);
 		    }
-		} catch(TError er) { err = _("14:Device error: ") + er.mess; continue; } //By possible the send request breakdown and no response
+		}
+		catch(TError er) {	//By possible the send request breakdown and no response
+		    if(err.empty()) err = _("14:Device error: ") + er.mess;
+		    else if(err.find(er.mess) == string::npos) err += "; " + er.mess;
+		    continue;
+		}
 
 		if(rez.size() < 2) { err = _("13:Error respond: Too short."); continue; }
 		if(CRC16(rez.substr(0,rez.size()-2)) != (uint16_t)((rez[rez.size()-2]<<8)+(uint8_t)rez[rez.size()-1]))
@@ -335,7 +340,12 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError err){ break; }
 			rez.append(buf, resp_len);
 		    }
-		} catch(TError er) { err = _("14:Device error: ") + er.mess; continue; } //By possible the send request breakdown and no response
+		}
+		catch(TError er) {	//By possible the send request breakdown and no response
+		    if(err.empty()) err = _("14:Device error: ") + er.mess;
+		    else if(err.find(er.mess) != string::npos) err += "; " + er.mess;
+		    continue;
+		}
 
 		if(rez.size() < 3 || rez[0] != ':' || rez.substr(rez.size()-2,2) != "\x0D\x0A")
 		{ err = _("13:Error respond: Error format."); continue; }
@@ -479,8 +489,7 @@ bool TProtIn::mess( const string &ireqst, string &answer )
 
 retry:
     // ASCII check
-    if(reqst.size() > 3 && reqst[0] == ':' && reqst.substr(reqst.size()-2,2) == "\x0D\x0A")
-    {
+    if(reqst.size() > 3 && reqst[0] == ':' && reqst.substr(reqst.size()-2,2) == "\x0D\x0A") {
 	prt = "ASCII";
 	string req = modPrt->ASCIIToData(reqst.substr(1,reqst.size()-3));
 	if(modPrt->LRC(req.substr(0,req.size()-1)) != (uint8_t)req[req.size()-1]) return false;
@@ -907,8 +916,7 @@ string Node::getStatus( )
     string rez = _("Disabled. ");
     if(enableStat()) {
 	rez = _("Enabled. ");
-	switch(mode())
-	{
+	switch(mode()) {
 	    case MD_DATA:
 		rez += TSYS::strMess(_("Spent time: %s. Requests %.4g. Read registers %.4g, coils %.4g, register inputs %.4g, coil inputs %.4g.\n"
 					"Writed registers %.4g, coils %.4g."),
@@ -937,8 +945,7 @@ bool Node::req( const string &itr, const string &iprt, unsigned char inode, stri
 
     //Data mode requests process
     if(mode() == MD_DATA)
-	switch(pdu[0])
-	{
+	switch(pdu[0]) {
 	    case TProt::FC_MULT_COILS: case TProt::FC_MULT_COILS_IN: {	//Read multiple coils
 		int c_sz = 0;
 		if(pdu.size() == 5) c_sz = (unsigned short)(pdu[3]<<8) | (unsigned char)pdu[4];

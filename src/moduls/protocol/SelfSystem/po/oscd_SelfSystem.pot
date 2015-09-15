@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-21 10:53+0200\n"
+"POT-Creation-Date: 2015-05-10 17:24+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,11 @@ msgstr ""
 msgid "Roman Savochenko"
 msgstr ""
 
-msgid "Self OpenSCADA protocol, support generic functions."
+msgid "Provides own OpenSCADA protocol based at XML and one's control interface."
+msgstr ""
+
+#, c-format
+msgid "Connections from the user '%s' and the source '%s' reached to limit %d. Erasing spare!"
 msgstr ""
 
 #, c-format
@@ -68,10 +72,19 @@ msgstr ""
 msgid "Parameters"
 msgstr ""
 
+msgid "State"
+msgstr ""
+
+msgid "Active authentication sessions"
+msgstr ""
+
 msgid "Module options"
 msgstr ""
 
 msgid "Life time of auth session(min)"
+msgstr ""
+
+msgid "Single user and host connections limit"
 msgstr ""
 
 msgid "Compression level"
@@ -88,6 +101,10 @@ msgid "Lower compression border"
 msgstr ""
 
 msgid "Value in bytes."
+msgstr ""
+
+#, c-format
+msgid "%s %s(%s)"
 msgstr ""
 
 #, c-format

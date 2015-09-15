@@ -28,11 +28,13 @@ using namespace FLibSYS;
 IOObj::IOObj( const string &nm, const string &perm, const string &mFormat, const string &ienc ) : fhd(NULL), pos(0)
 {
     open(nm, perm, mFormat, ienc);
+    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 IOObj::~IOObj( )
 {
     close();
+    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), -1);
 }
 
 void IOObj::open( const string &nm, const string &perm, const string &imFormat, const string &ienc )
@@ -132,8 +134,7 @@ TVariant IOObj::funcCall( const string &id, vector<TVariant> &prms )
 	    // From string stream
 	    if(!fhd) {
 		if(cnt != 1) ao = new TArrayObj();
-		for(long i_cnt = 0; (cnt < 0 || i_cnt < cnt) && (pos+tpD.szBt) <= str.size(); pos += tpD.szBt, i_cnt++)
-		{
+		for(long i_cnt = 0; (cnt < 0 || i_cnt < cnt) && (pos+tpD.szBt) <= str.size(); pos += tpD.szBt, i_cnt++) {
 		    switch(tpD.szBt) {
 			case 2: {
 			    uint16_t v = TSYS::getUnalign16(str.data()+pos);
@@ -299,7 +300,7 @@ TVariant IOObj::funcCall( const string &id, vector<TVariant> &prms )
 	//Char stream
 	if(tpD.szBt == 1 && vals.type() == TVariant::String) {
 	    string outCd = (prms.size()>=3) ? prms[2].getS() : strEnc;
-	    string sval = Mess->codeConvOut(outCd, prms[0].getS());
+	    string sval = outCd.size() ? Mess->codeConvOut(outCd, prms[0].getS()) : prms[0].getS();
 	    if(!fhd) {
 		if(pos >= str.size()) str.append(sval);
 		else str.replace(pos, vmax(0,vmin(str.size()-pos,sval.size())), sval);

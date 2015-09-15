@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_run.cpp
 /***************************************************************************
- *   Copyright (C) 2007-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -21,6 +21,7 @@
 
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include <algorithm>
 
@@ -60,7 +61,7 @@ using namespace VISION;
 VisRun::VisRun( const string &iprjSes_it, const string &open_user, const string &user_pass, const string &VCAstat, bool icrSessForce, unsigned iScr ) :
     QMainWindow(QDesktopWidget().screen(iScr)), prPg(NULL), prDiag(NULL), prDoc(NULL), fileDlg(NULL), winClose(false), conErr(NULL),
     crSessForce(icrSessForce), keepAspectRatio(false), prjSes_it(iprjSes_it), master_pg(NULL), mPeriod(1000), mScreen(iScr), wPrcCnt(0), reqtm(1),
-    expDiagCnt(1), expDocCnt(1), x_scale(1), y_scale(1), mAlrmSt(0xFFFFFF)
+    expDiagCnt(1), expDocCnt(1), x_scale(1), y_scale(1), mAlrmSt(0xFFFFFF), alrLevSet(false), ntfSet(0)
 {
     QImage ico_t;
 
@@ -195,62 +196,35 @@ VisRun::VisRun( const string &iprjSes_it, const string &open_user, const string 
     // Alarms actions
     //  Alarm level display button and full alarms quittance
     if(!ico_t.load(TUIS::icoGet("alarmLev",NULL,true).c_str())) ico_t.load(":/images/alarmLev.png");
-    actAlrmLev = new QAction( QPixmap::fromImage(ico_t), _("Alarm level"), this );
+    actAlrmLev = new QAction(QPixmap::fromImage(ico_t), _("Alarm level"), this);
     actAlrmLev->setObjectName("alarmLev");
     actAlrmLev->setToolTip(_("Alarm level"));
     actAlrmLev->setWhatsThis(_("The button for all alarms quittance"));
     actAlrmLev->setStatusTip(_("Press for all alarms quittance."));
-    //  Alarm by Light
-    if(!ico_t.load(TUIS::icoGet("alarmLight",NULL,true).c_str())) ico_t.load(":/images/alarmLight.png");
-    actAlrmLight = new QAction( QPixmap::fromImage(ico_t), _("Blink alarm"), this );
-    actAlrmLight->setObjectName("alarmLight");
-    actAlrmLight->setToolTip(_("Blink alarm"));
-    actAlrmLight->setWhatsThis(_("The button for all blink alarms quittance"));
-    actAlrmLight->setStatusTip(_("Press for all blink alarms quittance."));
-    actAlrmLight->setVisible(false);
-    //  Alarm by mono sound (PC speaker)
-    if(!ico_t.load(TUIS::icoGet("alarmAlarm",NULL,true).c_str())) ico_t.load(":/images/alarmAlarm.png");
-    actAlrmAlarm = new QAction( QPixmap::fromImage(ico_t), _("Speaker alarm"), this );
-    actAlrmAlarm->setObjectName("alarmAlarm");
-    actAlrmAlarm->setToolTip(_("PC speaker alarm"));
-    actAlrmAlarm->setWhatsThis(_("The button for all PC speaker alarms quittance"));
-    actAlrmAlarm->setStatusTip(_("Press for all PC speaker alarms quittance."));
-    actAlrmAlarm->setVisible(false);
-    //  Alarm by sound or synthesis of speech
-    if(!ico_t.load(TUIS::icoGet("alarmSound",NULL,true).c_str())) ico_t.load(":/images/alarmSound.png");
-    actAlrmSound = new QAction( QPixmap::fromImage(ico_t), _("Sound/speech alarm"), this );
-    actAlrmSound->setObjectName("alarmSound");
-    actAlrmSound->setToolTip(_("Sound or speech alarm"));
-    actAlrmSound->setWhatsThis(_("The button for all sound or speech alarms quittance"));
-    actAlrmSound->setStatusTip(_("Press for all sound or speech alarms quittance."));
-    actAlrmSound->setVisible(false);
 
     //Create menu
-    mn_file = menuBar()->addMenu(_("&File"));
-    mn_file->addAction(menuPrint->menuAction());
-    mn_file->addAction(menuExport->menuAction());
-    mn_file->addSeparator();
-    mn_file->addAction(actClose);
-    mn_file->addAction(actQuit);
-    mn_alarm = menuBar()->addMenu(_("&Alarm"));
-    mn_alarm->addAction(actAlrmLev);
-    mn_alarm->addAction(actAlrmLight);
-    mn_alarm->addAction(actAlrmAlarm);
-    mn_alarm->addAction(actAlrmSound);
-    mn_view = menuBar()->addMenu(_("&View"));
-    mn_view->addAction(actFullScr);
-    mn_help = menuBar()->addMenu(_("&Help"));
-    mn_help->addAction(actAbout);
-    mn_help->addAction(actQtAbout);
-    mn_help->addAction(actProjManual);
-    mn_help->addAction(actManual);
-    mn_help->addAction(actManualSYS);
-    mn_help->addSeparator();
-    mn_help->addAction(actWhatIs);
+    menuFile = menuBar()->addMenu(_("&File"));
+    menuFile->addAction(menuPrint->menuAction());
+    menuFile->addAction(menuExport->menuAction());
+    menuFile->addSeparator();
+    menuFile->addAction(actClose);
+    menuFile->addAction(actQuit);
+    menuAlarm = menuBar()->addMenu(_("&Alarm"));
+    menuAlarm->addAction(actAlrmLev);
+    menuView = menuBar()->addMenu(_("&View"));
+    menuView->addAction(actFullScr);
+    menuHelp = menuBar()->addMenu(_("&Help"));
+    menuHelp->addAction(actAbout);
+    menuHelp->addAction(actQtAbout);
+    menuHelp->addAction(actProjManual);
+    menuHelp->addAction(actManual);
+    menuHelp->addAction(actManualSYS);
+    menuHelp->addSeparator();
+    menuHelp->addAction(actWhatIs);
 
     //Init tool bars
-    // Alarms tools bar
-    toolBarStatus = new QToolBar(_("Alarms (status)"),this);
+    // Generic tools bar
+    toolBarStatus = new QToolBar(_("Generic (status)"),this);
     connect(toolBarStatus, SIGNAL(actionTriggered(QAction*)), this, SLOT(alarmAct(QAction*)));
     toolBarStatus->setIconSize(QSize(16,16));
     toolBarStatus->addAction(actProjManual);
@@ -259,16 +233,13 @@ VisRun::VisRun( const string &iprjSes_it, const string &open_user, const string 
     toolBarStatus->addAction(menuExport->menuAction());
     toolBarStatus->addSeparator();
     toolBarStatus->addAction(actAlrmLev);
-    toolBarStatus->addAction(actAlrmLight);
-    toolBarStatus->addAction(actAlrmAlarm);
-    toolBarStatus->addAction(actAlrmSound);
 
     //Init status bar
     mWTime = new QLabel(this);
     mWTime->setVisible(false);
     mWTime->setAlignment(Qt::AlignCenter);
     mWTime->setWhatsThis(_("This label displays current system's time."));
-    statusBar()->insertPermanentWidget(0,mWTime);
+    statusBar()->insertPermanentWidget(0, mWTime);
     mWUser = new UserStBar( open_user.c_str(), user_pass.c_str(), VCAstat.c_str(), this );
     mWUser->setWhatsThis(_("This label displays current user."));
     mWUser->setToolTip(_("Field for display of the current user."));
@@ -285,8 +256,8 @@ VisRun::VisRun( const string &iprjSes_it, const string &open_user, const string 
     mStlBar->setToolTip(_("Field for display the used interface style."));
     mStlBar->setStatusTip(_("Double click for style change."));
     connect(mStlBar, SIGNAL(styleChanged()), this, SLOT(styleChanged()));
-    statusBar()->insertPermanentWidget(0,mStlBar);
-    statusBar()->insertPermanentWidget(0,toolBarStatus);
+    statusBar()->insertPermanentWidget(0, mStlBar);
+    statusBar()->insertPermanentWidget(0, toolBarStatus);
     statusBar()->setVisible(mod->runPrjsSt());
 
     //Init scroller
@@ -297,16 +268,14 @@ VisRun::VisRun( const string &iprjSes_it, const string &open_user, const string 
 
     //Create timers
     // End run timer
-    endRunTimer   = new QTimer( this );
+    endRunTimer   = new QTimer(this);
     endRunTimer->setSingleShot(false);
     connect(endRunTimer, SIGNAL(timeout()), this, SLOT(endRunChk()));
     endRunTimer->start(STD_WAIT_DELAY);
     // Update timer
-    updateTimer = new QTimer( this );
+    updateTimer = new QTimer(this);
     updateTimer->setSingleShot(false);
     connect(updateTimer, SIGNAL(timeout()), this, SLOT(updatePage()));
-
-    alrmPlay = new SndPlay(this);
 
     //actProjManual->setEnabled(TUIS::docGet(actProjManual->property("doc").toString().toStdString(),NULL,TUIS::GetFilePath).size());
     menuBar()->setVisible(SYS->security().at().access(user(),SEC_WR,"root","root",RWRWR_));
@@ -346,7 +315,8 @@ VisRun::~VisRun( )
     updateTimer->stop();
 
     alarmSet(0);
-    alrmPlay->wait();
+    for(map<uint8_t,Notify*>::iterator iN = mNotify.begin(); iN != mNotify.end(); ++iN) delete iN->second;
+    //alrmPlay->wait();
 
     //Disconnect/delete session
     XMLNode req("disconnect");
@@ -383,7 +353,7 @@ int VisRun::cntrIfCmd( XMLNode &node, bool glob )
 	return 10;
     }
 
-    int rez = mod->cntrIfCmd(node,user(),password(),VCAStation(),glob);
+    int rez = mod->cntrIfCmd(node, user(), password(), VCAStation(), glob);
     //Display error message about connection error
     if(rez == 10 && masterPg()) {
 	if(!conErr) {
@@ -424,7 +394,7 @@ QString VisRun::getFileName( const QString &caption, const QString &dir, const Q
     fileDlg->setAcceptMode(mode);
     fileDlg->setWindowTitle(caption);
     fileDlg->setNameFilter(filter);
-    if(dir.size()) fileDlg->selectFile(dir);
+    if(dir.size()) { QString dirF = dir; fileDlg->selectFile(dirF.replace("\"","")); }
 #if QT_VERSION >= 0x040500
     fileDlg->setReadOnly(!menuBar()->isVisible());
 #endif
@@ -485,7 +455,20 @@ void VisRun::quitSt( )
 
 void VisRun::print( )
 {
-    if(masterPg()) printPg(masterPg()->id());
+    if(masterPg()) {
+	//Check for the single and big document present for default the printing
+	RunPageView *rpg;
+	RunWdgView *rwdg;
+	vector<string> lst;
+	for(unsigned i_p = 0; i_p < pgList.size(); i_p++)
+	    if((rpg=findOpenPage(pgList[i_p])))
+		rpg->shapeList("Document",lst);
+	if(lst.size() == 1 && (rwdg=findOpenWidget(lst[0])) &&
+		((masterPg()->width()/vmax(1,rwdg->width())) < 2 || (masterPg()->height()/vmax(1,rwdg->height())) < 2))
+	    printDoc(rwdg->id());
+	//Print master page
+	else printPg(masterPg()->id());
+    }
 }
 
 void VisRun::printPg( const string &ipg )
@@ -500,10 +483,10 @@ void VisRun::printPg( const string &ipg )
 	//Make select page dialog
 	QImage ico_t;
 	if(!ico_t.load(TUIS::icoGet("print",NULL,true).c_str())) ico_t.load(":/images/print.png");
-	InputDlg sdlg( this, QPixmap::fromImage(ico_t), _("Select page for print."), _("Page print."), false, false );
-	sdlg.edLay()->addWidget( new QLabel(_("Pages:"),&sdlg), 2, 0 );
+	InputDlg sdlg(this, QPixmap::fromImage(ico_t), _("Select page for print."), _("Page print."), false, false);
+	sdlg.edLay()->addWidget(new QLabel(_("Pages:"),&sdlg), 2, 0);
 	QComboBox *spg = new QComboBox(&sdlg);
-	sdlg.edLay()->addWidget( spg, 2, 1 );
+	sdlg.edLay()->addWidget(spg, 2, 1);
 	for(unsigned i_p = 0; i_p < pgList.size(); i_p++)
 	    if((rpg=findOpenPage(pgList[i_p])))
 		spg->addItem((rpg->name()+" ("+pgList[i_p]+")").c_str(),pgList[i_p].c_str());
@@ -571,13 +554,13 @@ void VisRun::printDiag( const string &idg )
 	    QImage ico_t;
 	    if(!ico_t.load(TUIS::icoGet("print",NULL,true).c_str())) ico_t.load(":/images/print.png");
 	    InputDlg sdlg(this, QPixmap::fromImage(ico_t), _("Select diagram for print."), _("Diagram print."), false, false);
-	    sdlg.edLay()->addWidget( new QLabel(_("Diagrams:"),&sdlg), 2, 0 );
+	    sdlg.edLay()->addWidget(new QLabel(_("Diagrams:"),&sdlg), 2, 0);
 	    QComboBox *spg = new QComboBox(&sdlg);
-	    sdlg.edLay()->addWidget( spg, 2, 1 );
+	    sdlg.edLay()->addWidget(spg, 2, 1);
 	    for(unsigned i_l = 0; i_l < lst.size(); i_l++)
 		if((rwdg=findOpenWidget(lst[i_l])))
 		    spg->addItem((rwdg->name()+" ("+lst[i_l]+")").c_str(),lst[i_l].c_str());
-	    if( sdlg.exec() != QDialog::Accepted )	return;
+	    if(sdlg.exec() != QDialog::Accepted) return;
 	    dg = spg->itemData(spg->currentIndex()).toString().toStdString();
 	}
     }
@@ -654,10 +637,10 @@ void VisRun::printDoc( const string &idoc )
 	    //Make select diagrams dialog
 	    QImage ico_t;
 	    if(!ico_t.load(TUIS::icoGet("print",NULL,true).c_str())) ico_t.load(":/images/print.png");
-	    InputDlg sdlg( this, QPixmap::fromImage(ico_t), _("Select document for print."), _("Document print."), false, false );
-	    sdlg.edLay()->addWidget( new QLabel(_("Document:"),&sdlg), 2, 0 );
+	    InputDlg sdlg(this, QPixmap::fromImage(ico_t), _("Select document for print."), _("Document print."), false, false);
+	    sdlg.edLay()->addWidget(new QLabel(_("Document:"),&sdlg), 2, 0);
 	    QComboBox *spg = new QComboBox(&sdlg);
-	    sdlg.edLay()->addWidget( spg, 2, 1 );
+	    sdlg.edLay()->addWidget(spg, 2, 1);
 	    for(unsigned i_l = 0; i_l < lst.size(); i_l++)
 		if((rwdg=findOpenWidget(lst[i_l])))
 		    spg->addItem((rwdg->name()+" ("+lst[i_l]+")").c_str(),lst[i_l].c_str());
@@ -672,17 +655,30 @@ void VisRun::printDoc( const string &idoc )
     if(!prDoc) prDoc = new QPrinter(QPrinter::HighResolution);
     QPrintDialog dlg(prDoc, this);
     dlg.setWindowTitle(QString(_("Print document: \"%1\" (%2)")).arg(docnm.c_str()).arg(doc.c_str()));
-    if(dlg.exec() == QDialog::Accepted)
-#ifdef HAVE_WEBKIT
-	((ShapeDocument::ShpDt*)rwdg->shpData)->web->print(prDoc);
-#else
-	((ShapeDocument::ShpDt*)rwdg->shpData)->web->document()->print(prDoc);
-#endif
+    if(dlg.exec() == QDialog::Accepted) ((ShapeDocument::ShpDt*)rwdg->shpData)->print(prDoc);
 }
 
 void VisRun::exportDef( )
 {
-    if(master_pg) exportPg(master_pg->id());
+    if(master_pg) {
+	//Check for the single and big document present for default the exporting
+	RunPageView *rpg;
+	RunWdgView *rwdg;
+	vector<string> lstDoc, lstDiagr;
+	for(unsigned i_p = 0; i_p < pgList.size(); i_p++)
+	    if((rpg=findOpenPage(pgList[i_p]))) {
+		rpg->shapeList("Document", lstDoc);
+		rpg->shapeList("Diagram", lstDiagr);
+	    }
+	if(lstDoc.size() == 1 && (rwdg=findOpenWidget(lstDoc[0])) &&
+		((masterPg()->width()/vmax(1,rwdg->width())) < 2 || (masterPg()->height()/vmax(1,rwdg->height())) < 2))
+	    exportDoc(rwdg->id());
+	else if(lstDiagr.size() == 1 && (rwdg=findOpenWidget(lstDiagr[0])) &&
+		((masterPg()->width()/vmax(1,rwdg->width())) < 2 || (masterPg()->height()/vmax(1,rwdg->height())) < 2))
+	    exportDiag(rwdg->id());
+	//Export master page
+	else exportPg(master_pg->id());
+    }
 }
 
 void VisRun::exportPg( const string &ipg )
@@ -889,18 +885,16 @@ void VisRun::exportDoc( const string &idoc )
 		    curNode = curNode->childGet(treeStk.back());
 		    treeStk.push_back(0);
 		    //  Check for marked table and process it
-		    if(strcasecmp(curNode->name().c_str(),"table") == 0 && s2i(curNode->attr("export")))
-		    {
+		    if(strcasecmp(curNode->name().c_str(),"table") == 0 && s2i(curNode->attr("export"))) {
 			map<int,int>	rowSpn;
 			XMLNode *tblN = NULL, *tblRow;
 			string val;
 			for(int i_st = 0; i_st < 4; i_st++) {
-			    switch(i_st)
-			    {
+			    switch(i_st) {
 				case 0:	tblN = curNode->childGet("thead", 0, true);	break;
-				case 1: tblN = curNode->childGet("tbody", 0, true);	break;
-				case 2: tblN = curNode->childGet("tfoot", 0, true);	break;
-				case 3: tblN = curNode;					break;
+				case 1:	tblN = curNode->childGet("tbody", 0, true);	break;
+				case 2:	tblN = curNode->childGet("tfoot", 0, true);	break;
+				case 3:	tblN = curNode;					break;
 				default: tblN = NULL;
 			    }
 			    if(!tblN)	continue;
@@ -1018,24 +1012,87 @@ void VisRun::alarmAct( QAction *alrm )
     if(alrm == NULL) return;
 
     int quittance = 0;
+    bool quittanceRet = false;
     string qwdg;
     if(alrm->objectName() == "alarmLev")	quittance = 0xFF;
-    else if(alrm->objectName() == "alarmLight")	quittance = 0x01;
-    else if(alrm->objectName() == "alarmAlarm")	quittance = 0x02;
-    else if(alrm->objectName() == "alarmSound") {
-	quittance = 0x04;
-	qwdg = alrmPlay->widget( );
+    else if(alrm->objectName().toStdString().compare(0,8,"alarmNtf") == 0) {
+	quittanceRet = alrm->property("quittanceRet").toBool();
+	quittanceRet = quittanceRet && !alrm->isChecked();
+	quittance = s2i(alrm->objectName().toStdString().substr(8));
+	map<uint8_t, Notify*>::iterator iN = mNotify.find(quittance);
+	if(!quittanceRet && iN != mNotify.end()) qwdg = iN->second->curQueueWdg();
+	quittance = (1<<quittance);
     }
     else return;
 
     XMLNode req("quittance");
-    req.setAttr("path","/ses_"+work_sess+"/%2fserv%2falarm")->
-	setAttr("tmpl",u2s(quittance))->
-	setAttr("wdg",qwdg);
+    req.setAttr("path", "/ses_"+work_sess+"/%2fserv%2falarm")->
+	setAttr("tmpl", u2s(quittance))->
+	setAttr("ret", i2s(quittanceRet))->
+	setAttr("wdg", qwdg);
     cntrIfCmd(req);
 
     //Send event to master page
     if(master_pg) master_pg->attrSet("event",("ws_"+alrm->objectName()).toStdString());
+}
+
+void VisRun::usrStatus( const string &val, RunPageView *pg )
+{
+    UserItStBar *userSt, *userSt1;
+    if(!pg) pg = masterPg();
+
+    //Presence mark clean
+    for(int iC = 0; iC < statusBar()->children().size(); iC++)
+	if((userSt=qobject_cast<UserItStBar*>(statusBar()->children().at(iC))) && userSt->objectName().indexOf("usr_") == 0)
+	    userSt->setProperty("usrStPresent", false);
+
+    //Items list parse
+    string iLn;
+    for(int off = 0, lCnt = 0; (iLn=TSYS::strLine(val,0,&off)).size(); lCnt++) {
+	// Parse line in the format: "{id}:{label}:{tip}:{color}:{ico}
+	int offIt = 0;
+	string	itId  = TSYS::strParse(iLn, 0, ":", &offIt),
+		itLab = TSYS::strParse(iLn, 0, ":", &offIt),
+		itTip = TSYS::strParse(iLn, 0, ":", &offIt),
+		itColor = TSYS::strParse(iLn, 0, ":", &offIt),
+		itIco = TSYS::strParse(iLn, 0, ":", &offIt);
+	if(itTip.empty()) itTip = itId;
+	if(itColor.empty()) itColor = "black";
+
+	// Try presence yet
+	userSt = statusBar()->findChild<UserItStBar*>(("usr_"+itId).c_str());
+	// Create new one
+	if(!userSt) {
+	    userSt = new UserItStBar(this);
+	    userSt->setObjectName(("usr_"+itId).c_str());
+	    userSt->setAlignment(Qt::AlignCenter);
+	    statusBar()->insertPermanentWidget(0, userSt);
+	}
+	// Set properties
+	userSt->setProperty("usrStPresent", true);
+	userSt->setProperty("usrStPos", lCnt);
+	userSt->setToolTip(itTip.c_str());
+
+	QImage ico_t;
+	if(!itIco.empty()) {
+	    itIco = pg->resGet(itIco);
+	    ico_t.loadFromData((const uchar*)itIco.data(), itIco.size());
+	}
+	userSt->setPixmap(QPixmap::fromImage(ico_t));
+
+	if(itLab.size()) userSt->setText(QString("<font color='%1'>%2</font>").arg(itColor.c_str()).arg(itLab.c_str()));
+    }
+
+    //Check for remove and order
+    for(int iC = 0; iC < statusBar()->children().size(); iC++)
+	if((userSt=qobject_cast<UserItStBar*>(statusBar()->children().at(iC))) && userSt->objectName().indexOf("usr_") == 0) {
+	    if(!userSt->property("usrStPresent").toBool()) userSt->deleteLater();
+	    /*else for(int iC1 = iC; iC1 > 0 ; iC1--) {
+		if(!(userSt1=qobject_cast<UserItStBar*>(statusBar()->children().at(iC1-1))) ||
+		    userSt1->objectName().indexOf("usr_") != 0) continue;
+		if(userSt->property("usrStPos").toInt() < userSt1->property("usrStPos").toInt()) userSt1->stackUnder(userSt);
+	    }*/
+	}
 }
 
 void VisRun::initSess( const string &prjSes_it, bool crSessForce )
@@ -1053,8 +1110,7 @@ void VisRun::initSess( const string &prjSes_it, bool crSessForce )
     //Get opened sessions list for our page and put dialog for connection
     XMLNode req("list");
     req.setAttr("path","/%2fserv%2fsess")->setAttr("prj",src_prj);
-    if(!isSess && !crSessForce && !cntrIfCmd(req) && req.childSize())
-    {
+    if(!isSess && !crSessForce && !cntrIfCmd(req) && req.childSize()) {
 	// Prepare and execute a session selection dialog
 	QImage ico_t;
 	if(!ico_t.load(TUIS::icoGet("vision_prj_run",NULL,true).c_str())) ico_t.load(":/images/prj_run.png");
@@ -1078,8 +1134,10 @@ void VisRun::initSess( const string &prjSes_it, bool crSessForce )
     if(work_sess.empty()) req.setAttr("prj",src_prj);
     else req.setAttr("sess",work_sess);
     if(cntrIfCmd(req)) {
-	mod->postMess(req.attr("mcat").c_str(), req.text().c_str(), TVision::Error, this);
-	close();
+	if(!(conErr && s2i(req.attr("rez")) == 10)) {	//Need check for prevent the warning dialog and the run closing by the session creation wait
+	    mod->postMess(req.attr("mcat").c_str(), req.text().c_str(), TVision::Error, this);
+	    close();
+	}
 	return;
     }
 
@@ -1105,7 +1163,7 @@ void VisRun::initSess( const string &prjSes_it, bool crSessForce )
 	pN = req.childGet(1);
 	QImage img;
 	string simg = TSYS::strDecode(pN->text(),TSYS::base64);
-	if(img.loadFromData((const uchar*)simg.c_str(),simg.size()))
+	if(img.loadFromData((const uchar*)simg.data(),simg.size()))
 	    setWindowIcon(QPixmap::fromImage(img));
 	// Period
 	pN = req.childGet(2);
@@ -1176,9 +1234,19 @@ void VisRun::callPage( const string& pg_it, bool updWdg )
 	}
     }
 
+    //Place all needs atrributes to one request
+    XMLNode req("CntrReqs"), *chN; req.setAttr("path", pg_it);
+    req.childAdd("get")->setAttr("path", "/%2fattr%2fpgGrp");
+    req.childAdd("get")->setAttr("path", "/%2fattr%2fpgOpenSrc");
+    for(unsigned iNtf = 0; iNtf < 7; iNtf++) {
+	req.childAdd("get")->setAttr("path", "/%2fattr%2fnotifyVis"+mod->modId()+i2s(iNtf));
+	req.childAdd("get")->setAttr("path", "/%2fattr%2fnotify"+i2s(iNtf));
+    }
+    cntrIfCmd(req);
+
     //Get group and parent page
-    string pgGrp = wAttrGet(pg_it,"pgGrp");
-    string pgSrc = wAttrGet(pg_it,"pgOpenSrc");
+    string pgGrp = (chN=req.getElementBy("path","/%2fattr%2fpgGrp")) ? chN->text() : "";	//wAttrGet(pg_it, "pgGrp");
+    string pgSrc = (chN=req.getElementBy("path","/%2fattr%2fpgOpenSrc")) ? chN->text() : "";	//wAttrGet(pg_it, "pgOpenSrc");
 
     //Check for master page replace
     if(!master_pg || pgGrp == "main" || master_pg->pgGrp() == pgGrp) {
@@ -1188,8 +1256,14 @@ void VisRun::callPage( const string& pg_it, bool updWdg )
 	    cntrIfCmd(req);
 	}
 
+	// Get and activate for specific attributes to the master-page
+	XMLNode reqSpc("CntrReqs"); reqSpc.setAttr("path", pg_it);
+	reqSpc.childAdd("activate")->setAttr("path", "/%2fattr%2fstatLine")->
+				     setAttr("aNm", _("Status line items"))->setAttr("aTp", i2s(TFld::String))->setAttr("aFlg", i2s(TFld::FullText));
+	cntrIfCmd(reqSpc);
+
 	// Create widget view
-	master_pg = new RunPageView(pg_it,this,centralWidget());
+	master_pg = new RunPageView(pg_it, this, centralWidget());
 	//master_pg->load("");
 	master_pg->setFocusPolicy(Qt::StrongFocus);
 	((QScrollArea *)centralWidget())->setWidget(master_pg);
@@ -1200,7 +1274,13 @@ void VisRun::callPage( const string& pg_it, bool updWdg )
 	else x_scale = y_scale = 1.0;
     }
     //Put to check for include
-    else master_pg->callPage(pg_it,pgGrp,pgSrc);
+    else master_pg->callPage(pg_it, pgGrp, pgSrc);
+
+    //Get the notificators configuration and register thats
+    for(unsigned iNtf = 0; iNtf < 7; iNtf++)
+	if(((chN=req.getElementBy("path","/%2fattr%2fnotifyVis"+mod->modId()+i2s(iNtf))) && !s2i(chN->attr("rez"))) ||
+		((chN=req.getElementBy("path","/%2fattr%2fnotify"+i2s(iNtf))) && !s2i(chN->attr("rez"))))
+	    ntfReg(iNtf, chN->text());
 }
 
 void VisRun::pgCacheClear( )
@@ -1279,37 +1359,32 @@ void VisRun::alarmSet( unsigned alarm )
 
     //Check for early this session running equalent project
     bool isMaster = true;
-    for(unsigned i_w = 0; i_w < mod->mn_winds.size(); i_w++)
-	if(qobject_cast<VisRun*>(mod->mn_winds[i_w]) && ((VisRun*)mod->mn_winds[i_w])->srcProject() == srcProject())
-	{
-	    if(((VisRun*)mod->mn_winds[i_w])->workSess() != workSess()) isMaster = false;
+    MtxAlloc res(mod->dataRes(), true);
+    for(unsigned i_w = 0; i_w < mod->mnWinds.size(); i_w++)
+	if(qobject_cast<VisRun*>(mod->mnWinds[i_w]) && ((VisRun*)mod->mnWinds[i_w])->srcProject() == srcProject()) {
+	    if(((VisRun*)mod->mnWinds[i_w])->workSess() != workSess()) isMaster = false;
 	    break;
 	}
+    res.unlock();
 
-    //Alarm types init
-    // Set momo sound alarm
-    if(isMaster && (ch_tp>>16)&TVision::Alarm) {
-	const char *spkEvDev = "/dev/input/by-path/platform-pcspkr-event-spkr";
-	int hd = open(spkEvDev,O_WRONLY);
-	if(hd < 0) mess_warning(mod->nodePath().c_str(),_("Error open: %s"),spkEvDev);
-	else {
-	    input_event ev;
-	    ev.time.tv_sec = time(NULL);
-	    ev.type = EV_SND;
-	    ev.code = SND_TONE;
-	    ev.value = ((alarm>>16)&TVision::Alarm) ? 1000 : 0;
-	    bool fOK = (write(hd,&ev,sizeof(ev)) == sizeof(ev));
-	    ::close(hd);
-	    if(!fOK) mess_warning(mod->nodePath().c_str(), _("Error write to: %s"), spkEvDev);
+    //Set notify to the alarm
+    for(map<uint8_t,Notify*>::iterator iN = mNotify.begin(); isMaster && iN != mNotify.end(); ++iN) iN->second->ntf(alarm);
+    for(int iAl = 0; iAl < menuAlarm->actions().size(); ++iAl) {
+	QAction *cO = menuAlarm->actions()[iAl];
+	if(!cO || cO->objectName().toStdString().compare(0,8,"alarmNtf") != 0)	continue;
+	unsigned nTp = s2i(cO->objectName().toStdString().substr(8));
+	bool newSt;
+	if((ch_tp>>8)&(1<<nTp) && (newSt=(alarm>>8)&(1<<nTp)) != cO->isVisible()) cO->setVisible(newSt);
+	if((ch_tp>>16)&(1<<nTp)) {
+	    newSt = (alarm>>16)&(1<<nTp);
+	    if(cO->property("quittanceRet").toBool() && !newSt != cO->isChecked()) cO->setChecked(!newSt);
+	    if(!cO->property("quittanceRet").toBool() && newSt != cO->isEnabled()) cO->setEnabled(newSt);
 	}
     }
-    // Set speach or sound alarm
-    if(isMaster && (alarm>>16)&TVision::Sound && !alrmPlay->isRunning() && !alrmPlay->playData().empty()) alrmPlay->start();
 
     //Alarm action indicators update
     // Alarm level icon update
-    if(ch_tp&0xFF || (alarm>>16)&(TVision::Light|TVision::Alarm|TVision::Sound) || !alrLevSet)
-    {
+    if(ch_tp&0xFF || (alarm>>16)&ntfSet /*|| (alarm>>16)&(TVision::Light|TVision::Alarm|TVision::Sound)*/ || !alrLevSet) {
 	int alarmLev = alarm&0xFF;
 	actAlrmLev->setToolTip(QString(_("Alarm level: %1")).arg(alarmLev));
 
@@ -1318,14 +1393,13 @@ void VisRun::alarmSet( unsigned alarm )
 
 	QPainter painter(&levImage);
 	//QColor lclr( alarmLev ? 224 : 0, alarmLev ? 224-(int)(0.87*alarmLev) : 224, 0 );
-	QColor lclr( alarmLev ? 255 : 0, alarmLev ? 255-alarmLev : 255, 0 );
+	QColor lclr(alarmLev ? 255 : 0, alarmLev ? 255-alarmLev : 255, 0);
 
 	painter.setCompositionMode(QPainter::CompositionMode_Source);
 	painter.fillRect(levImage.rect(),Qt::transparent);
 	painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-	if(!((alarm>>16)&(TVision::Light|TVision::Alarm|TVision::Sound) && alrLevSet))
-	{
+	if(!((alarm>>16)&ntfSet && /*(alarm>>16)&(TVision::Light|TVision::Alarm|TVision::Sound) &&*/ alrLevSet)) {
 	    for(int i_x = 0; i_x < lens.size().width(); i_x++)
 		for(int i_y = 0; i_y < lens.size().height(); i_y++)
 		    if(lens.pixel(i_x,i_y)&0xFF000000)	levImage.setPixel(i_x,i_y,lclr.rgba());
@@ -1336,14 +1410,16 @@ void VisRun::alarmSet( unsigned alarm )
 	painter.end();
 	actAlrmLev->setIcon(QPixmap::fromImage(levImage));
     }
-    //Alarm buttons status process
-    for(int i_b = 0; i_b < 3; i_b++) {
-	QAction *actAlrm = (i_b==0) ? actAlrmLight : ((i_b==1) ? actAlrmAlarm : actAlrmSound);
-	if((ch_tp>>8)&(0x01<<i_b))	actAlrm->setVisible((alarm>>8)&(0x01<<i_b));
-	if((ch_tp>>16)&(0x01<<i_b))	actAlrm->setEnabled((alarm>>16)&(0x01<<i_b));
-    }
 
     mAlrmSt = alarm;
+}
+
+void VisRun::ntfReg( uint8_t tp, const string &props )
+{
+    map<uint8_t,Notify*>::iterator iN = mNotify.find(tp);
+    if(iN != mNotify.end()) return;
+    mNotify[tp] = new Notify(tp, props, this);
+    ntfSet |= (1<<tp);
 }
 
 string VisRun::cacheResGet( const string &res )
@@ -1378,11 +1454,11 @@ void VisRun::updatePage( )
 
     //Pages update
     XMLNode req("openlist");
-    req.setAttr("tm",u2s(reqtm))->
-	setAttr("path","/ses_"+work_sess+"/%2fserv%2fpg");
+    req.setAttr("tm", u2s(reqtm))->
+	setAttr("path", "/ses_"+work_sess+"/%2fserv%2fpg");
 
     if(!(rez=cntrIfCmd(req))) {
-	// Check for delete pages
+	// Check for delete the pages
 	RunPageView *pg;
 	for(unsigned i_p = 0, i_ch; i_p < pgList.size(); i_p++) {
 	    for(i_ch = 0; i_ch < req.childSize(); i_ch++)
@@ -1400,11 +1476,11 @@ void VisRun::updatePage( )
 	    }
 	}
 
-	// Process opened pages
+	// Process the opened pages
 	pgList.clear();
 	for(unsigned i_ch = 0; i_ch < req.childSize(); i_ch++) {
 	    pgList.push_back(req.childGet(i_ch)->text());
-	    callPage(req.childGet(i_ch)->text(),s2i(req.childGet(i_ch)->attr("updWdg")));
+	    callPage(req.childGet(i_ch)->text(), s2i(req.childGet(i_ch)->attr("updWdg")));
 	}
     }
     // Restore closed session of used project.
@@ -1426,21 +1502,6 @@ void VisRun::updatePage( )
 	    setAttr("mode", "stat")->
 	    setAttr("path", "/ses_"+work_sess+"/%2fserv%2falarm");
 	if(!cntrIfCmd(req)) wAlrmSt = s2i(req.attr("alarmSt"));
-
-	// Get sound resources for play
-	if(alarmTp(TVision::Sound,true) && !alrmPlay->isRunning()) {
-	    req.clear()->
-		setName("get")->
-		setAttr("mode", "sound")->
-		setAttr("path", "/ses_"+work_sess+"/%2fserv%2falarm")->
-		setAttr("tm", u2s(alrmPlay->time()))->
-		setAttr("wdg", alrmPlay->widget());
-	    if(!cntrIfCmd(req)) {
-		alrmPlay->setTime(strtoul(req.attr("tm").c_str(),NULL,10));
-		alrmPlay->setWidget(req.attr("wdg"));
-		alrmPlay->setData(TSYS::strDecode(req.text(),TSYS::base64));
-	    }
-	}
 
 	// Set alarm
 	alarmSet(wAlrmSt);
@@ -1464,11 +1525,10 @@ void VisRun::updatePage( )
     }
 
     //Time update
-    if(mWTime->isVisible() && !(wPrcCnt%vmax(1000/vmin(1000,period()),1)))
-    {
+    if(mWTime->isVisible() && !(wPrcCnt%vmax(1000/vmin(1000,period()),1))) {
 	QDateTime dtm = QDateTime::currentDateTime();
-	mWTime->setText( locale().toString(dtm,"hh:mm:ss\nddd, d MMM") );
-	mWTime->setToolTip( locale().toString(dtm,"dddd, dd-MMM-yyyy") );
+	mWTime->setText(locale().toString(dtm,"hh:mm:ss\nddd, d MMM"));
+	mWTime->setToolTip(locale().toString(dtm,"dddd, dd-MMM-yyyy"));
     }
 
     //Scale for full screen check
@@ -1488,4 +1548,227 @@ void VisRun::updatePage( )
     }
 
     wPrcCnt++;
+}
+
+//* Notify: Generic notifying object.		 *
+//************************************************
+VisRun::Notify::Notify( uint8_t itp, const string &props, VisRun *iown ) :
+    tp(itp), alSt(0xFFFFFFFF), repDelay(-1), comIsExtScript(false), f_notify(false), f_resource(false), f_queue(false), f_quittanceRet(false),
+    toDo(false), alEn(false), comText(props), mQueueCurTm(0), mOwner(iown)
+{
+    //The resource allocation object init
+    pthread_mutexattr_t attrM;
+    pthread_mutexattr_init(&attrM);
+    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&dataM, &attrM);
+    pthread_mutexattr_destroy(&attrM);
+
+    //Parse properties
+    string iLn, iOpt, ico, name;
+    bool hasLang  = false, hasFlags = false;
+    for(int off = 0, lCnt = 0, fPos; (!hasLang || !hasFlags || ico.empty() || name.empty()) && (iLn=TSYS::strLine(props,0,&off)).size(); lCnt++)
+	if(!hasLang && !lCnt && iLn.find("#!") == 0) { hasLang = comIsExtScript = true; continue; }
+	else if(!hasFlags && (fPos=iLn.find("flags=")) != string::npos)
+	    for(fPos += 6; (iOpt=TSYS::strParse(iLn,0,"|",&fPos)).size(); ) {
+		if(iOpt.compare(0,6,"notify") == 0) {
+		    f_notify = true;
+		    repDelay = (iOpt.size() > 6) ? vmax(0,vmin(100,atoi(iOpt.c_str()+6))) : -1;
+		}
+		else if(iOpt == "resource")	f_resource = true;
+		else if(iOpt == "queue")	{ f_queue = true; if(repDelay < 0) repDelay = 0; }
+		else if(iOpt == "quittanceRet")	f_quittanceRet = true;
+	    }
+	else if(ico.empty() && (fPos=iLn.find("ico=")) != string::npos)	  ico = iLn.substr(fPos+4);
+	else if(name.empty() && (fPos=iLn.find("name=")) != string::npos) name = iLn.substr(fPos+5);
+
+    //The command procedure prepare
+    if(comIsExtScript) {
+	// Prepare the external script
+	comProc = "sesRun_"+owner()->workSess()+"_ntf"+i2s(tp);
+	bool fOK = false;
+	int hd = open(comProc.c_str(), O_CREAT|O_TRUNC|O_WRONLY, 0775);
+	if(hd >= 0) {
+	    fOK = write(hd, comText.data(), comText.size()) == comText.size();
+	    ::close(hd);
+	}
+	if(!fOK) {
+	    mess_err((mod->nodePath()+"/sesRun_"+owner()->workSess()).c_str(), _("Function of the notificator '%s' error: %s"), comProc.c_str(), strerror(errno));
+	    comProc = "";
+	}
+    }
+    else {
+	// Prepare internal procedure
+	TFunction funcIO("sesRun_"+owner()->workSess()+"_ntf"+i2s(tp));
+	//funcIO.setStor(DB());
+	funcIO.ioIns(new IO("en",_("Enabled notification"),IO::Boolean,IO::Default), IFA_en);
+	funcIO.ioIns(new IO("doNtf",_("Doing notification, always 1"),IO::Boolean,IO::Default), IFA_doNtf);
+	funcIO.ioIns(new IO("doRes",_("Doing resource, always 0"),IO::Boolean,IO::Default), IFA_doRes);
+	funcIO.ioIns(new IO("res",_("Resource stream"),IO::String,IO::Output), IFA_res);
+	funcIO.ioIns(new IO("mess",_("Notification message"),IO::String,IO::Default), IFA_mess);
+	funcIO.ioIns(new IO("lang",_("Notification message's language"),IO::String,IO::Default), IFA_lang);
+	try { comProc = SYS->daq().at().at("JavaLikeCalc").at().compileFunc("JavaScript", funcIO, comText); }
+	catch(TError er) {
+	    mess_err((mod->nodePath()+"/sesRun_"+owner()->workSess()).c_str(), _("Function of the notificator '%s' error: %s"),
+		    funcIO.id().c_str(), er.mess.c_str());
+	}
+    }
+
+    if(f_notify) {
+	//Call conditional variable init
+	pthread_cond_init(&callCV, NULL);
+
+	//Notification task create
+	SYS->taskCreate(mod->nodePath('.',true)+".sesRun_"+owner()->workSess()+".ntf"+i2s(tp), 0, VisRun::Notify::Task, this);
+    }
+
+    //The quittance action prepare and place
+    QImage ico_t;
+    if(!ico.empty()) {
+	ico = owner()->masterPg()->resGet(ico);
+	ico_t.loadFromData((const uchar*)ico.data(),ico.size());
+    }
+    if(ico_t.isNull() && !ico_t.load(TUIS::icoGet("alarmAlarm",NULL,true).c_str())) ico_t.load(":/images/alarmAlarm.png");
+    if(name.empty()) name = TSYS::strMess(_("Notyfier %d"), tp);
+    QAction *actAlrm = new QAction(QPixmap::fromImage(ico_t), name.c_str(), owner());
+    actAlrm->setObjectName(("alarmNtf"+i2s(tp)).c_str());
+    //actAlrm->setToolTip(_("Blink alarm"));
+    if(f_queue) {
+	actAlrm->setWhatsThis(QString(_("The button for current \"%1\" quittance")).arg(name.c_str()));
+	actAlrm->setStatusTip(QString(_("Press for current \"%1\" quittance.")).arg(name.c_str()));
+    }
+    else {
+	actAlrm->setWhatsThis(QString(_("The button for all \"%1\" quittance")).arg(name.c_str()));
+	actAlrm->setStatusTip(QString(_("Press for all \"%1\" quittance.")).arg(name.c_str()));
+    }
+    actAlrm->setProperty("quittanceRet", (bool)f_quittanceRet);
+    actAlrm->setCheckable(f_quittanceRet);
+    actAlrm->setVisible(false);
+    owner()->menuAlarm->addAction(actAlrm);
+    owner()->toolBarStatus->addAction(actAlrm);
+}
+
+VisRun::Notify::~Notify( )
+{
+    if(f_notify) {
+	SYS->taskDestroy(mod->nodePath('.',true)+".sesRun_"+owner()->workSess()+".ntf"+i2s(tp), NULL, 10, false, &callCV);
+	pthread_cond_destroy(&callCV);
+    }
+
+    //The command procedure remove
+    if(comIsExtScript && comProc.size()) remove(comProc.c_str());
+
+    pthread_mutex_destroy(&dataM);
+}
+
+string VisRun::Notify::curQueueWdg( )
+{
+    if(!hasQueue()) return "";
+    pthread_mutex_lock(&dataM);
+    string rez = mQueueCurPath;
+    pthread_mutex_unlock(&dataM);
+
+    return rez;
+}
+
+void VisRun::Notify::ntf( int ialSt )
+{
+    //Check for the alarm state change
+    if(!f_notify || !(((ialSt^alSt)>>16)&(1<<tp)))	return;
+
+    alEn = (bool)((ialSt>>16)&(1<<tp));
+    pthread_mutex_lock(&dataM);
+    toDo = true;
+    pthread_cond_signal(&callCV);
+    pthread_mutex_unlock(&dataM);
+
+    alSt = ialSt;
+}
+
+string VisRun::Notify::ntfRes( string &mess, string &lang )
+{
+    string rez;
+    mess = lang = "";
+
+    //Call same request to the VCA server for resources
+    XMLNode req("get");
+    req.setAttr("path", "/ses_"+owner()->workSess()+"/%2fserv%2falarm")->
+	setAttr("mode", "resource")->
+	setAttr("tp", i2s(tp))->
+	setAttr("tm", u2s(mQueueCurTm))->
+	setAttr("wdg", mQueueCurPath);
+    if(!owner()->cntrIfCmd(req)) {
+	mQueueCurTm = strtoul(req.attr("tm").c_str(), NULL, 10);
+	mQueueCurPath = req.attr("wdg");
+	rez = TSYS::strDecode(req.text(), TSYS::base64);
+	mess = req.attr("mess");
+	lang = req.attr("lang");
+    }
+
+    return rez;
+}
+
+void VisRun::Notify::commCall( string &res, const string &mess, const string &lang )
+{
+    if(comProc.empty()) return;
+
+    //Shared data obtain
+    pthread_mutex_lock(&dataM);
+    string wcomProc = comProc;
+    pthread_mutex_unlock(&dataM);
+
+    if(comIsExtScript) {
+	string resFile = "sesRun_"+owner()->workSess()+"_res"+i2s(tp);
+	int hdRes = res.size() ? open(resFile.c_str(), O_CREAT|O_TRUNC|O_WRONLY, 0664) : -1;
+	if(hdRes >= 0) { write(hdRes, res.data(), res.size()); ::close(hdRes); }
+	// Prepare environment and execute the external script
+	system(("en="+i2s(alEn)+" doNtf=1 doRes=0 res="+resFile+
+	    " mess=\""+TSYS::strEncode(mess,TSYS::SQL)+"\" lang=\""+TSYS::strEncode(lang,TSYS::SQL)+"\" ./"+wcomProc).c_str());
+	if(hdRes >= 0) remove(resFile.c_str());
+    }
+    else {
+	// Prepare and execute internal procedure
+	TValFunc funcV;
+	funcV.setFunc(&((AutoHD<TFunction>)SYS->nodeAt(wcomProc)).at());
+
+	//  Load inputs
+	funcV.setB(IFA_en, alEn);
+	funcV.setB(IFA_doNtf, true);
+	funcV.setB(IFA_doRes, false);
+	funcV.setS(IFA_res, res);
+	funcV.setS(IFA_mess, mess);
+	funcV.setS(IFA_lang, lang);
+
+	//  Call to processing
+	funcV.calc();
+    }
+}
+
+void *VisRun::Notify::Task( void *intf )
+{
+    VisRun::Notify &ntf = *(VisRun::Notify*)intf;
+
+    pthread_mutex_lock(&ntf.dataM);
+    while(!TSYS::taskEndRun() || ntf.toDo) {
+	if(!ntf.toDo) pthread_cond_wait(&ntf.callCV, &ntf.dataM);
+	if(!ntf.toDo || ntf.comProc.empty()) { ntf.toDo = false; continue; }
+	ntf.toDo = false;
+	pthread_mutex_unlock(&ntf.dataM);
+
+	string ntfRes, ntfMess, ntfLang;
+	unsigned delayCnt = 0;
+	do {
+	    if(delayCnt) { TSYS::sysSleep(1); delayCnt--; continue; }
+
+	    //  Get the resources for the notification
+	    if((ntf.f_queue || ntf.f_resource) && ntf.alEn) ntfRes = ntf.ntfRes(ntfMess, ntfLang);
+
+	    //  Same notification
+	    ntf.commCall(ntfRes, ntfMess, ntfLang);
+
+	    delayCnt = ntf.repDelay;
+	} while((ntf.repDelay >= 0 || ntf.f_queue) && ntf.alEn && !TSYS::taskEndRun());
+
+	pthread_mutex_lock(&ntf.dataM);
+    }
+    pthread_mutex_unlock(&ntf.dataM);
 }
