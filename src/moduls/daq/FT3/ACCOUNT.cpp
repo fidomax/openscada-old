@@ -258,7 +258,7 @@ void B_ACCOUNT::tmHandler(void)
 	    UpdateParamFl(data[i].RadiusM, PackID(ID, (i + 1), 26), 1);
 	    UpdateParamFl(data[i].PressureA, PackID(ID, (i + 1), 27), 1);
 	}
-	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 0), 0);
+	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 1);
     }
 }
 
