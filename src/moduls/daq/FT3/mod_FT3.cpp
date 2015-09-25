@@ -459,7 +459,7 @@ void TTpContr::postEnable(int flag)
 
     int t_prm = tpParmAdd("tp_BUC", "PRM_BD_BUC", _("BUC"));
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;15"));
-    tpPrmAt(t_prm).fldAdd(new TFld("MOD", _("Modification"), TFld::Integer, TCfg::Hide, "3", "0", "0;255"));
+    tpPrmAt(t_prm).fldAdd(new TFld("MOD", _("Modification"), TFld::Integer, TFld::HexDec|TCfg::NoVal, "4", "0"));
     // tpPrmAt(t_prm).fldAdd( new TFld("STOP_TIME",_("Last stop time"),TFld::String,TCfg::Hide,"2","0","0;15") );
 
     t_prm = tpParmAdd("tp_BVTS", "PRM_BD_BVTS", _("BVTS"));
@@ -1108,7 +1108,7 @@ void TMdPrm::enable()
 	if(type().name == "tp_GNS") mDA = new KA_GNS(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	if(type().name == "tp_BTU") mDA = new KA_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     } else {
-	if(type().name == "tp_BUC") mDA = new B_BUC(*this, cfg("DEV_ID").getI());
+	if(type().name == "tp_BUC") mDA = new B_BUC(*this, cfg("DEV_ID").getI(),cfg("MOD").getI());
 	if(type().name == "tp_BVI") mDA = new B_BVI(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("EXT_PERIOD").getB());
 	if(type().name == "tp_BVTS") mDA = new B_BVTC(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	if(type().name == "tp_BVT")
