@@ -220,7 +220,7 @@ void DA::UpdateParamFlState(flData& param, ui8Data& state, uint16_t ID, uint8_t 
 	state.Update(tmpui8);
 	param.Update(tmpfl.f);
 	uint8_t E[5] = { state.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
-	mPrm.owner().PushInBE(cl, sizeof(E), ID, E);
+	mPrm.owner().PushInBE((tmpui8 != state.vl)? 1:cl , sizeof(E), ID, E);
     }
 }
 

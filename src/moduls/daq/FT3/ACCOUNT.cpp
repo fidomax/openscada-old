@@ -239,7 +239,7 @@ void B_ACCOUNT::tmHandler(void)
 	    UpdateParamFl(data[i].ServiceQ, PackID(ID, (i + 1), 7), 1);
 	    UpdateParam8(data[i].Hour, PackID(ID, (i + 1), 2), 8);
 	    UpdateParamFl(data[i].HourlyQ, PackID(ID, (i + 1), 9), 1);
-	    UpdateParamFl(data[i].Counter, PackID(ID, (i + 1), 10), 1);
+	    UpdateParamFl(data[i].Counter, PackID(ID, (i + 1), 10), 0);
 	    /*	    UpdateParamFl(data[i].HourQ, PackID(ID, (i + 1), 11), 1);
 	     UpdateParamFl(data[i].HourdP, PackID(ID, (i + 1), 3), 1);
 	     UpdateParamFl(data[i].HourT, PackID(ID, (i + 1), 3), 1);
@@ -258,7 +258,7 @@ void B_ACCOUNT::tmHandler(void)
 	    UpdateParamFl(data[i].RadiusM, PackID(ID, (i + 1), 26), 1);
 	    UpdateParamFl(data[i].PressureA, PackID(ID, (i + 1), 27), 1);
 	}
-	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 1);
+	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 2);
     }
 }
 

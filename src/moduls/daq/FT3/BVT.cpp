@@ -215,7 +215,7 @@ void KA_BVT::tmHandler(void)
 	if(with_params) {
 	    data[i].UpdateTTParam(PackID(ID, (i + 1), 2), 1);
 	}
-	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 0), 0);
+	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 0), 2);
     }
 }
 
@@ -480,14 +480,14 @@ void B_BVT::tmHandler(void)
 	    if(with_k) {
 		UpdateParamFl(data[i].CorFactor, PackID(ID, (i + 1), 10), 1);
 		if(with_rate) {
-		    UpdateParamFlState(data[i].Rate, data[i].State, PackID(ID, (i + 1), 11), 1);
+		    UpdateParamFlState(data[i].Rate, data[i].State, PackID(ID, (i + 1), 11), 2);
 		    UpdateParam8(data[i].Calcs, PackID(ID, (i + 1), 12), 1);
 		    UpdateParamFl(data[i].RateSens, PackID(ID, (i + 1), 13), 1);
 		    UpdateParamFl(data[i].RateLimit, PackID(ID, (i + 1), 14), 1);
 		}
 	    }
 	}
-	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 1);
+	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 2);
     }
 }
 
