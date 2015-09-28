@@ -228,7 +228,6 @@ void B_ACCOUNT::saveIO()
 
 void B_ACCOUNT::tmHandler(void)
 {
-    NeedInit = false;
     for(int i = 0; i < count_n; i++) {
 	if(with_params) {
 	    UpdateParam8(data[i].Period, PackID(ID, (i + 1), 2), 1);
@@ -260,6 +259,7 @@ void B_ACCOUNT::tmHandler(void)
 	}
 	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 2);
     }
+    NeedInit = false;
 }
 
 uint16_t B_ACCOUNT::Task(uint16_t uc)

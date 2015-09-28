@@ -59,7 +59,7 @@ string KA_BUC::getStatus(void)
 
 void KA_BUC::tmHandler(void)
 {
-
+    NeedInit = false;
 }
 
 uint16_t KA_BUC::Task(uint16_t uc)
@@ -261,7 +261,7 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
 		    }
 		    s_state = addr;
 		    uint8_t E[2] = { addr, state };
-		    mPrm.owner().PushInBE(1, 2, prmID, E);
+		    PushInBE(1, 2, prmID, E);
 		    l = 3;
 		}
 		break;

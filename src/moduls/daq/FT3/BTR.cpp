@@ -97,12 +97,12 @@ void KA_BTU::saveIO()
 
 void KA_BTU::tmHandler(void)
 {
-    NeedInit = false;
     for(int i = 0; i < count_nu; i++) {
 	for(int j = 0; j < 16; j++) {
 	    UpdateParamW(TUdata[i].Time[j], PackID(ID, i + 1, 1), 1);
 	}
     }
+    NeedInit = false;
 }
 
 uint16_t KA_BTU::Task(uint16_t uc)
@@ -224,7 +224,7 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 	    l = runTU(req[2]);
 	    if(l) {
 		uint8_t E[2] = { addr, req[2] };
-		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+		PushInBE(1, sizeof(E), prmID, E);
 	    }
 	    break;
 	}
@@ -238,7 +238,7 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 		l = 3;
 		E[0] = addr;
 		E[1] = req[2];
-		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+		PushInBE(1, sizeof(E), prmID, E);
 		break;
 	    case 1:
 	    case 2:
@@ -265,7 +265,7 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 		l = 3;
 		E[0] = addr;
 		E[1] = req[2];
-		mPrm.owner().PushInBE(1, sizeof(E), prmID, E);
+		PushInBE(1, sizeof(E), prmID, E);
 		break;
 	    }
 	}

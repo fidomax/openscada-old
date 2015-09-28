@@ -210,13 +210,13 @@ void KA_BVT::saveIO()
 
 void KA_BVT::tmHandler(void)
 {
-    NeedInit = false;
     for(int i = 0; i < count_n; i++) {
 	if(with_params) {
 	    data[i].UpdateTTParam(PackID(ID, (i + 1), 2), 1);
 	}
 	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 0), 2);
     }
+    NeedInit = false;
 }
 
 uint16_t KA_BVT::Task(uint16_t uc)
@@ -466,7 +466,6 @@ void B_BVT::saveIO()
 
 void B_BVT::tmHandler(void)
 {
-    NeedInit = false;
     for(int i = 0; i < count_n; i++) {
 	if(with_params) {
 	    UpdateParam8(data[i].Period, PackID(ID, (i + 1), 2), 1);
@@ -489,6 +488,7 @@ void B_BVT::tmHandler(void)
 	}
 	UpdateParamFlState(data[i].Value, data[i].State, PackID(ID, (i + 1), 1), 2);
     }
+    NeedInit = false;
 }
 
 uint16_t B_BVT::Task(uint16_t uc)
