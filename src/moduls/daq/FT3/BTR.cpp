@@ -604,9 +604,10 @@ uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
 		break;
 	    case 1:
 		l = SetNewWVal(TUdata[ft3ID.k - 1].TC, addr, prmID, TSYS::getUnalign16(req + 2));
-		;
+		break;
 	    case 2:
 		l = SetNew8Val(TUdata[ft3ID.k - 1].ExTime, addr, prmID, req[2]);
+		break;
 	    }
 	}
 	if(count_nr && ((ft3ID.k > count_nu) && (ft3ID.k <= count_nr + count_nu))) {
