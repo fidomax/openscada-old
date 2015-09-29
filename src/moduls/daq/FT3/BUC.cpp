@@ -289,7 +289,7 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
 }
 
 B_BUC::B_BUC(TMdPrm& prm, uint16_t id, uint16_t modif ) :
-	DA(prm), ID(id), mod_KP(modif), state(1), stateWatch(1), s_tm(0), wt1(0), wt2(0), s_wt1(0), s_wt2(0)
+	DA(prm), ID(id), mod_KP(modif), state(2), stateWatch(1), s_tm(0), wt1(0), wt2(0), s_wt1(0), s_wt2(0)
 {
     mTypeFT3 = GRS;
     TFld * fld;

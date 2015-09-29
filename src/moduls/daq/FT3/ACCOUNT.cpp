@@ -237,7 +237,7 @@ void B_ACCOUNT::tmHandler(void)
 	    UpdateParam32(data[i].Sensors, PackID(ID, (i + 1), 6), 1);
 	    UpdateParamFl(data[i].ServiceQ, PackID(ID, (i + 1), 7), 1);
 	    UpdateParam8(data[i].Hour, PackID(ID, (i + 1), 2), 8);
-	    UpdateParamFl(data[i].HourlyQ, PackID(ID, (i + 1), 9), 1);
+	    UpdateParamFl(data[i].HourlyQ, PackID(ID, (i + 1), 9), 0);
 	    UpdateParamFl(data[i].Counter, PackID(ID, (i + 1), 10), 0);
 	    /*	    UpdateParamFl(data[i].HourQ, PackID(ID, (i + 1), 11), 1);
 	     UpdateParamFl(data[i].HourdP, PackID(ID, (i + 1), 3), 1);
@@ -858,10 +858,22 @@ uint8_t B_ACCOUNT::cmdGet(uint16_t prmID, uint8_t * out)
 	    case 28:
 		//TODO get
 		for(uint8_t j = 0; j < 4; j++) {
-		    out[1 + j] = data[ft3ID.k - 1].dP.b_vl[j];
-		    out[5 + j] = data[ft3ID.k - 1].T.b_vl[j];
-		    out[9 + j] = data[ft3ID.k - 1].P.b_vl[j];
-		    out[13 + j] = data[ft3ID.k - 1].E.b_vl[j];
+		    V.f = data[ft3ID.k - 1].dP.Get();
+		    for(uint8_t j = 0; j < 4; j++) {
+			out[0 + j] = V.b[j];
+		    }
+		    V.f = data[ft3ID.k - 1].T.Get();
+		    for(uint8_t j = 0; j < 4; j++) {
+			out[4 + j] = V.b[j];
+		    }
+		    V.f = data[ft3ID.k - 1].P.Get();
+		    for(uint8_t j = 0; j < 4; j++) {
+			out[8 + j] = V.b[j];
+		    }
+		    V.f = data[ft3ID.k - 1].E.Get();
+		    for(uint8_t j = 0; j < 4; j++) {
+			out[12 + j] = V.b[j];
+		    }
 		}
 		l = 16;
 		break;
