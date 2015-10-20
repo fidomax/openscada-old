@@ -19,7 +19,7 @@
  ***************************************************************************/
 
 #include <sys/stat.h>
-#include <sys/prctl.h>
+//#include <sys/prctl.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <fcntl.h>
@@ -61,7 +61,7 @@ int main( int argc, char *argv[], char *envp[] )
     for(int argPos = 0; (argCom=TSYS::getCmdOpt_(argPos,&argVl,argc,argv)).size(); )
 	if(strcasecmp(argCom.c_str(),"coredumpallow") == 0) {
 	    // Set the Dumpable state to be enabled
-	    prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
+//	    prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
 	    // Set the core dump limitation to be unlimited
 	    struct rlimit rlim;
 	    rlim.rlim_cur = RLIM_INFINITY;

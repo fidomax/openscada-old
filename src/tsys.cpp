@@ -20,8 +20,8 @@
 
 #include <features.h>
 #include <byteswap.h>
-#include <ieee754.h>
-#include <syscall.h>
+#include <ieeefp.h>
+//#include <syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -73,15 +73,15 @@ TSYS::TSYS( int argi, char ** argb, char **env ) : argc(argi), argv((const char 
     //Init system clock
     clkCalc();
 
-#if __GLIBC_PREREQ(2,4)
+//#if __GLIBC_PREREQ(2,4)
     //Multi CPU allow check
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    pthread_getaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
-#if __GLIBC_PREREQ(2,6)
-    mN_CPU = CPU_COUNT(&cpuset);
-#endif
-#endif
+//    cpu_set_t cpuset;
+//    CPU_ZERO(&cpuset);
+//    pthread_getaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
+//#if __GLIBC_PREREQ(2,6)
+//    mN_CPU = CPU_COUNT(&cpuset);
+//#endif
+//#endif
 
     //Set signal handlers
     struct sigaction sHdr;
@@ -703,23 +703,23 @@ void TSYS::setMainCPUs( const string &vl )
 {
     mMainCPUs = vl;
 
-#if __GLIBC_PREREQ(2,4)
-    if(nCPU() > 1) {
-	cpu_set_t cpuset;
-	CPU_ZERO(&cpuset);
-	string sval;
-	if(!vl.size()) for(int iCPU = 0; iCPU < nCPU(); iCPU++) CPU_SET(iCPU, &cpuset);
-	else {
-	    string prcVl;
-	    for(int off = 0; (sval=TSYS::strParse(vl,0,":",&off)).size(); ) {
-		if(s2i(sval) < nCPU()) CPU_SET(s2i(sval), &cpuset);
-		prcVl += (prcVl.size()?":":"") + i2s(s2i(sval));
-	    }
-	    mMainCPUs = prcVl;
-	}
-	pthread_setaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
-    }
-#endif
+//#if __GLIBC_PREREQ(2,4)
+//    if(nCPU() > 1) {
+//	cpu_set_t cpuset;
+//	CPU_ZERO(&cpuset);
+//	string sval;
+//	if(!vl.size()) for(int iCPU = 0; iCPU < nCPU(); iCPU++) CPU_SET(iCPU, &cpuset);
+//	else {
+//	    string prcVl;
+//	    for(int off = 0; (sval=TSYS::strParse(vl,0,":",&off)).size(); ) {
+//		if(s2i(sval) < nCPU()) CPU_SET(s2i(sval), &cpuset);
+//		prcVl += (prcVl.size()?":":"") + i2s(s2i(sval));
+//	    }
+//	    mMainCPUs = prcVl;
+//	}
+//	pthread_setaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
+//    }
+//#endif
 
     modif();
 }
@@ -1305,22 +1305,22 @@ uint64_t TSYS::i64_BE( uint64_t in )
 float TSYS::floatLE( float in )
 {
 #if __BYTE_ORDER == __BIG_ENDIAN
-    ieee754_float ieee754_be;
-    union ieee754_le {
-	float f;
-	struct {
-	    unsigned int mantissa:23;
-	    unsigned int exponent:8;
-	    unsigned int negative:1;
-	} ieee;
-    } ieee754_le;
+//    ieee754_float ieee754_be;
+//    union ieee754_le {
+//	float f;
+//	struct {
+//	    unsigned int mantissa:23;
+//	    unsigned int exponent:8;
+//	    unsigned int negative:1;
+//	} ieee;
+//    } ieee754_le;
 
-    ieee754_be.f = in;
-    ieee754_le.ieee.mantissa	= ieee754_be.ieee.mantissa;
-    ieee754_le.ieee.exponent	= ieee754_be.ieee.exponent;
-    ieee754_le.ieee.negative	= ieee754_be.ieee.negative;
+//    ieee754_be.f = in;
+//    ieee754_le.ieee.mantissa	= ieee754_be.ieee.mantissa;
+//    ieee754_le.ieee.exponent	= ieee754_be.ieee.exponent;
+//    ieee754_le.ieee.negative	= ieee754_be.ieee.negative;
 
-    return ieee754_le.f;
+//    return ieee754_le.f;
 #endif
 
     return in;
@@ -1329,22 +1329,22 @@ float TSYS::floatLE( float in )
 float TSYS::floatLErev( float in )
 {
 #if __BYTE_ORDER == __BIG_ENDIAN
-    ieee754_float ieee754_be;
-    union ieee754_le {
-	float f;
-	struct {
-	    unsigned int mantissa:23;
-	    unsigned int exponent:8;
-	    unsigned int negative:1;
-	} ieee;
-    } ieee754_le;
-
-    ieee754_le.f = in;
-    ieee754_be.ieee.mantissa	= ieee754_le.ieee.mantissa;
-    ieee754_be.ieee.exponent	= ieee754_le.ieee.exponent;
-    ieee754_be.ieee.negative	= ieee754_le.ieee.negative;
-
-    return ieee754_be.f;
+//    ieee754_float ieee754_be;
+//    union ieee754_le {
+//	float f;
+//	struct {
+//	    unsigned int mantissa:23;
+//	    unsigned int exponent:8;
+//	    unsigned int negative:1;
+//	} ieee;
+//    } ieee754_le;
+//
+//    ieee754_le.f = in;
+//    ieee754_be.ieee.mantissa	= ieee754_le.ieee.mantissa;
+//    ieee754_be.ieee.exponent	= ieee754_le.ieee.exponent;
+//    ieee754_be.ieee.negative	= ieee754_le.ieee.negative;
+//
+//    return ieee754_be.f;
 #endif
 
     return in;
@@ -1353,24 +1353,24 @@ float TSYS::floatLErev( float in )
 double TSYS::doubleLE( double in )
 {
 #if __BYTE_ORDER == __BIG_ENDIAN || __FLOAT_WORD_ORDER == __BIG_ENDIAN
-    ieee754_double ieee754_be;
-    union ieee754_le {
-	double d;
-	struct {
-	    unsigned int mantissa1:32;
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-	} ieee;
-    } ieee754_le;
-
-    ieee754_be.d = in;
-    ieee754_le.ieee.mantissa0	= ieee754_be.ieee.mantissa0;
-    ieee754_le.ieee.mantissa1	= ieee754_be.ieee.mantissa1;
-    ieee754_le.ieee.exponent	= ieee754_be.ieee.exponent;
-    ieee754_le.ieee.negative	= ieee754_be.ieee.negative;
-
-    return ieee754_le.d;
+//    ieee754_double ieee754_be;
+//    union ieee754_le {
+//	double d;
+//	struct {
+//	    unsigned int mantissa1:32;
+//	    unsigned int mantissa0:20;
+//	    unsigned int exponent:11;
+//	    unsigned int negative:1;
+//	} ieee;
+//    } ieee754_le;
+//
+//    ieee754_be.d = in;
+//    ieee754_le.ieee.mantissa0	= ieee754_be.ieee.mantissa0;
+//    ieee754_le.ieee.mantissa1	= ieee754_be.ieee.mantissa1;
+//    ieee754_le.ieee.exponent	= ieee754_be.ieee.exponent;
+//    ieee754_le.ieee.negative	= ieee754_be.ieee.negative;
+//
+//    return ieee754_le.d;
 #endif
 
     return in;
@@ -1379,24 +1379,24 @@ double TSYS::doubleLE( double in )
 double TSYS::doubleLErev( double in )
 {
 #if __BYTE_ORDER == __BIG_ENDIAN || __FLOAT_WORD_ORDER == __BIG_ENDIAN
-    ieee754_double ieee754_be;
-    union ieee754_le {
-	double d;
-	struct {
-	    unsigned int mantissa1:32;
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-	} ieee;
-    } ieee754_le;
-
-    ieee754_le.d = in;
-    ieee754_be.ieee.mantissa0	= ieee754_le.ieee.mantissa0;
-    ieee754_be.ieee.mantissa1	= ieee754_le.ieee.mantissa1;
-    ieee754_be.ieee.exponent	= ieee754_le.ieee.exponent;
-    ieee754_be.ieee.negative	= ieee754_le.ieee.negative;
-
-    return ieee754_be.d;
+//    ieee754_double ieee754_be;
+//    union ieee754_le {
+//	double d;
+//	struct {
+//	    unsigned int mantissa1:32;
+//	    unsigned int mantissa0:20;
+//	    unsigned int exponent:11;
+//	    unsigned int negative:1;
+//	} ieee;
+//    } ieee754_le;
+//
+//    ieee754_le.d = in;
+//    ieee754_be.ieee.mantissa0	= ieee754_le.ieee.mantissa0;
+//    ieee754_be.ieee.mantissa1	= ieee754_le.ieee.mantissa1;
+//    ieee754_be.ieee.exponent	= ieee754_le.ieee.exponent;
+//    ieee754_be.ieee.negative	= ieee754_le.ieee.negative;
+//
+//    return ieee754_be.d;
 #endif
 
     return in;
@@ -1405,22 +1405,22 @@ double TSYS::doubleLErev( double in )
 float TSYS::floatBE( float in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    ieee754_float ieee754_le;
-    union ieee754_be {
-	float f;
-	struct {
-	    unsigned int negative:1;
-	    unsigned int exponent:8;
-	    unsigned int mantissa:23;
-	} ieee;
-    } ieee754_be;
-
-    ieee754_le.f = in;
-    ieee754_be.ieee.mantissa	= ieee754_le.ieee.mantissa;
-    ieee754_be.ieee.exponent	= ieee754_le.ieee.exponent;
-    ieee754_be.ieee.negative	= ieee754_le.ieee.negative;
-
-    return ieee754_be.f;
+//    ieee754_float ieee754_le;
+//    union ieee754_be {
+//	float f;
+//	struct {
+//	    unsigned int negative:1;
+//	    unsigned int exponent:8;
+//	    unsigned int mantissa:23;
+//	} ieee;
+//    } ieee754_be;
+//
+//    ieee754_le.f = in;
+//    ieee754_be.ieee.mantissa	= ieee754_le.ieee.mantissa;
+//    ieee754_be.ieee.exponent	= ieee754_le.ieee.exponent;
+//    ieee754_be.ieee.negative	= ieee754_le.ieee.negative;
+//
+//    return ieee754_be.f;
 #endif
 
     return in;
@@ -1429,22 +1429,22 @@ float TSYS::floatBE( float in )
 float TSYS::floatBErev( float in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    ieee754_float ieee754_le;
-    union ieee754_be {
-	float f;
-	struct {
-	    unsigned int negative:1;
-	    unsigned int exponent:8;
-	    unsigned int mantissa:23;
-	} ieee;
-    } ieee754_be;
-
-    ieee754_be.f = in;
-    ieee754_le.ieee.mantissa	= ieee754_be.ieee.mantissa;
-    ieee754_le.ieee.exponent	= ieee754_be.ieee.exponent;
-    ieee754_le.ieee.negative	= ieee754_be.ieee.negative;
-
-    return ieee754_le.f;
+//    ieee754_float ieee754_le;
+//    union ieee754_be {
+//	float f;
+//	struct {
+//	    unsigned int negative:1;
+//	    unsigned int exponent:8;
+//	    unsigned int mantissa:23;
+//	} ieee;
+//    } ieee754_be;
+//
+//    ieee754_be.f = in;
+//    ieee754_le.ieee.mantissa	= ieee754_be.ieee.mantissa;
+//    ieee754_le.ieee.exponent	= ieee754_be.ieee.exponent;
+//    ieee754_le.ieee.negative	= ieee754_be.ieee.negative;
+//
+//    return ieee754_le.f;
 #endif
 
     return in;
@@ -1453,24 +1453,24 @@ float TSYS::floatBErev( float in )
 double TSYS::doubleBE( double in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    ieee754_double ieee754_le;
-    union ieee754_be {
-	double d;
-	struct {
-	    unsigned int negative:1;
-	    unsigned int exponent:11;
-	    unsigned int mantissa0:20;
-	    unsigned int mantissa1:32;
-	} ieee;
-    } ieee754_be;
-
-    ieee754_le.d = in;
-    ieee754_be.ieee.mantissa0	= ieee754_le.ieee.mantissa0;
-    ieee754_be.ieee.mantissa1	= ieee754_le.ieee.mantissa1;
-    ieee754_be.ieee.exponent	= ieee754_le.ieee.exponent;
-    ieee754_be.ieee.negative	= ieee754_le.ieee.negative;
-
-    return ieee754_be.d;
+//    ieee754_double ieee754_le;
+//    union ieee754_be {
+//	double d;
+//	struct {
+//	    unsigned int negative:1;
+//	    unsigned int exponent:11;
+//	    unsigned int mantissa0:20;
+//	    unsigned int mantissa1:32;
+//	} ieee;
+//    } ieee754_be;
+//
+//    ieee754_le.d = in;
+//    ieee754_be.ieee.mantissa0	= ieee754_le.ieee.mantissa0;
+//    ieee754_be.ieee.mantissa1	= ieee754_le.ieee.mantissa1;
+//    ieee754_be.ieee.exponent	= ieee754_le.ieee.exponent;
+//    ieee754_be.ieee.negative	= ieee754_le.ieee.negative;
+//
+//    return ieee754_be.d;
 #endif
 
     return in;
@@ -1479,24 +1479,24 @@ double TSYS::doubleBE( double in )
 double TSYS::doubleBErev( double in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    ieee754_double ieee754_le;
-    union ieee754_be {
-	double d;
-	struct {
-	    unsigned int negative:1;
-	    unsigned int exponent:11;
-	    unsigned int mantissa0:20;
-	    unsigned int mantissa1:32;
-	} ieee;
-    } ieee754_be;
-
-    ieee754_be.d = in;
-    ieee754_le.ieee.mantissa0	= ieee754_be.ieee.mantissa0;
-    ieee754_le.ieee.mantissa1	= ieee754_be.ieee.mantissa1;
-    ieee754_le.ieee.exponent	= ieee754_be.ieee.exponent;
-    ieee754_le.ieee.negative	= ieee754_be.ieee.negative;
-
-    return ieee754_le.d;
+//    ieee754_double ieee754_le;
+//    union ieee754_be {
+//	double d;
+//	struct {
+//	    unsigned int negative:1;
+//	    unsigned int exponent:11;
+//	    unsigned int mantissa0:20;
+//	    unsigned int mantissa1:32;
+//	} ieee;
+//    } ieee754_be;
+//
+//    ieee754_be.d = in;
+//    ieee754_le.ieee.mantissa0	= ieee754_be.ieee.mantissa0;
+//    ieee754_le.ieee.mantissa1	= ieee754_be.ieee.mantissa1;
+//    ieee754_le.ieee.exponent	= ieee754_be.ieee.exponent;
+//    ieee754_le.ieee.negative	= ieee754_be.ieee.negative;
+//
+//    return ieee754_le.d;
 #endif
 
     return in;
@@ -1570,9 +1570,9 @@ void TSYS::taskCreate( const string &path, int priority, void *(*start_routine)(
     prior.sched_priority = 0;
 
     int policy = SCHED_OTHER;
-#if __GLIBC_PREREQ(2,4)
-    if(priority < 0)	policy = SCHED_BATCH;
-#endif
+//#if __GLIBC_PREREQ(2,4)
+//    if(priority < 0)	policy = SCHED_BATCH;
+//#endif
     if(priority > 0)	policy = SCHED_RR;
     pthread_attr_setschedpolicy(pthr_attr, policy);
     prior.sched_priority = vmax(sched_get_priority_min(policy),vmin(sched_get_priority_max(policy),priority));
@@ -1692,23 +1692,23 @@ void *TSYS::taskWrap( void *stas )
     tsk->policy = policy;
     //tsk->prior = param.sched_priority;	//!!!! Commented for nice
 
-#if __GLIBC_PREREQ(2,4)
+//#if __GLIBC_PREREQ(2,4)
     //Load and init CPU set
-    if(SYS->nCPU() > 1 && !(tsk->flgs&STask::Detached)) {
-	tsk->cpuSet = TBDS::genDBGet(SYS->nodePath()+"CpuSet:"+tsk->path);
-	cpu_set_t cpuset;
-	CPU_ZERO(&cpuset);
-	string sval;
-	bool cpuSetOK = false;
-	for(int off = 0; (sval=TSYS::strParse(tsk->cpuSet,0,":",&off)).size(); cpuSetOK = true)
-	    if(s2i(sval) < SYS->nCPU()) CPU_SET(s2i(sval), &cpuset);
-	if(cpuSetOK) pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
-    }
-    else if(SYS->nCPU() > 1 && (tsk->flgs & STask::Detached)) tsk->cpuSet = "NA";
-#endif
+//    if(SYS->nCPU() > 1 && !(tsk->flgs&STask::Detached)) {
+//	tsk->cpuSet = TBDS::genDBGet(SYS->nodePath()+"CpuSet:"+tsk->path);
+//	cpu_set_t cpuset;
+//	CPU_ZERO(&cpuset);
+//	string sval;
+//	bool cpuSetOK = false;
+//	for(int off = 0; (sval=TSYS::strParse(tsk->cpuSet,0,":",&off)).size(); cpuSetOK = true)
+//	    if(s2i(sval) < SYS->nCPU()) CPU_SET(s2i(sval), &cpuset);
+//	if(cpuSetOK) pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+//    }
+//    else if(SYS->nCPU() > 1 && (tsk->flgs & STask::Detached)) tsk->cpuSet = "NA";
+//#endif
 
     //Final set for init finish indicate
-    tsk->tid = syscall(SYS_gettid);
+//    tsk->tid = syscall(SYS_gettid);
     // Set nice level without realtime if it no permitted
     if(tsk->policy != SCHED_RR && tsk->prior > 0 && setpriority(PRIO_PROCESS,tsk->tid,-tsk->prior/5) != 0) tsk->prior = 0;
     tsk->thr = pthread_self();		//Task creation finish
@@ -2308,9 +2308,9 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		ctrMkNode("list",opt,-1,"/tasks/tasks/stat",_("Status"),R_R___,"root","root",1,"tp","str");
 		ctrMkNode("list",opt,-1,"/tasks/tasks/plc",_("Policy"),R_R___,"root","root",1,"tp","str");
 		ctrMkNode("list",opt,-1,"/tasks/tasks/prior",_("Prior."),R_R___,"root","root",1,"tp","dec");
-#if __GLIBC_PREREQ(2,4)
-		if(nCPU() > 1) ctrMkNode("list",opt,-1,"/tasks/tasks/cpuSet",_("CPU set"),RWRW__,"root","root",1,"tp","str");
-#endif
+//#if __GLIBC_PREREQ(2,4)
+//		if(nCPU() > 1) ctrMkNode("list",opt,-1,"/tasks/tasks/cpuSet",_("CPU set"),RWRW__,"root","root",1,"tp","str");
+//#endif
 	    }
 	if(ctrMkNode("area",opt,-1,"/tr",_("Translations"))) {
 	    ctrMkNode("fld",opt,-1,"/tr/baseLang",_("Text variable's base language"),RWRWR_,"root","root",5,
@@ -2376,15 +2376,15 @@ void TSYS::cntrCmdProc( XMLNode *opt )
     else if(a_path == "/gen/mainCPUs") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD)) {
 	    string vl = mainCPUs();
-#if __GLIBC_PREREQ(2,4)
-	    cpu_set_t cpuset;
-	    CPU_ZERO(&cpuset);
-	    pthread_getaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
-	    vl += "(";
-	    for(int iCPU = 0; iCPU < nCPU(); iCPU++)
-		if(CPU_ISSET(iCPU,&cpuset)) vl += string(vl[vl.size()-1]=='('?"":":")+i2s(iCPU);
-	    vl += ")";
-#endif
+//#if __GLIBC_PREREQ(2,4)
+//	    cpu_set_t cpuset;
+//	    CPU_ZERO(&cpuset);
+//	    pthread_getaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
+//	    vl += "(";
+//	    for(int iCPU = 0; iCPU < nCPU(); iCPU++)
+//		if(CPU_ISSET(iCPU,&cpuset)) vl += string(vl[vl.size()-1]=='('?"":":")+i2s(iCPU);
+//	    vl += ")";
+//#endif
 	    opt->setText(vl);
 	}
 	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setMainCPUs(TSYS::strParse(opt->text(),0,"("));
@@ -2474,7 +2474,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	    ResAlloc res(taskRes, false);
 	    for(map<string,STask>::iterator it = mTasks.begin(); it != mTasks.end(); it++) {
 		if(n_path)	n_path->childAdd("el")->setText(it->first);
-		if(n_thr)	n_thr->childAdd("el")->setText(u2s(it->second.thr));
+		if(n_thr)	n_thr->childAdd("el")->setText(u2s((uint64_t)it->second.thr));
 		if(n_tid)	n_tid->childAdd("el")->setText(i2s(it->second.tid));
 		if(n_stat) {
 		    int64_t	tm_beg = 0, tm_end = 0, tm_per = 0, tm_pnt = 0, lagMax = 0, consMax = 0;
@@ -2494,56 +2494,56 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		if(n_plc) {
 		    string plcVl = _("Standard");
 		    if(it->second.policy == SCHED_RR) plcVl = _("RT Round-robin");
-#if __GLIBC_PREREQ(2,4)
-		    if(it->second.policy == SCHED_BATCH) plcVl = _("Style \"batch\"");
-#endif
+//#if __GLIBC_PREREQ(2,4)
+//		    if(it->second.policy == SCHED_BATCH) plcVl = _("Style \"batch\"");
+//#endif
 		    n_plc->childAdd("el")->setText(plcVl);
 		}
 		if(n_prior)	n_prior->childAdd("el")->setText(i2s(it->second.prior));
 		if(n_cpuSet) {
 		    string vl = it->second.cpuSet;
-#if __GLIBC_PREREQ(2,4)
-		    cpu_set_t cpuset;
-		    CPU_ZERO(&cpuset);
-		    pthread_getaffinity_np(it->second.thr, sizeof(cpu_set_t), &cpuset);
-		    vl += "(";
-		    for(int iCPU = 0; iCPU < nCPU(); iCPU++)
-			if(CPU_ISSET(iCPU,&cpuset)) vl += string(vl[vl.size()-1]=='('?"":":")+i2s(iCPU);
-		    vl += ")";
-#endif
+//#if __GLIBC_PREREQ(2,4)
+//		    cpu_set_t cpuset;
+//		    CPU_ZERO(&cpuset);
+//		    pthread_getaffinity_np(it->second.thr, sizeof(cpu_set_t), &cpuset);
+//		    vl += "(";
+//		    for(int iCPU = 0; iCPU < nCPU(); iCPU++)
+//			if(CPU_ISSET(iCPU,&cpuset)) vl += string(vl[vl.size()-1]=='('?"":":")+i2s(iCPU);
+//		    vl += ")";
+//#endif
 		    n_cpuSet->childAdd("el")->setText(vl);
 		}
 	    }
 	}
-#if __GLIBC_PREREQ(2,4)
-	if(nCPU() > 1 && ctrChkNode(opt,"set",RWRW__,"root","root",SEC_WR) && opt->attr("col") == "cpuSet") {
-	    ResAlloc res(taskRes, true);
-	    map<string,STask>::iterator it = mTasks.find(opt->attr("key_path"));
-	    if(it == mTasks.end()) throw TError(nodePath().c_str(),_("No present task '%s'."));
-	    if(it->second.flgs & STask::Detached) return;
-
-	    it->second.cpuSet = TSYS::strParse(opt->text(),0,"(");
-
-	    cpu_set_t cpuset;
-	    CPU_ZERO(&cpuset);
-	    string sval;
-	    if(!it->second.cpuSet.size()) for(int iCPU = 0; iCPU < nCPU(); iCPU++) CPU_SET(iCPU, &cpuset);
-	    else {
-		string prcVl;
-		for(int off = 0; (sval=TSYS::strParse(it->second.cpuSet,0,":",&off)).size(); ) {
-		    if(s2i(sval) < nCPU()) CPU_SET(s2i(sval), &cpuset);
-		    prcVl += (prcVl.size()?":":"") + i2s(s2i(sval));
-		}
-		it->second.cpuSet = prcVl;
-	    }
-
-	    int rez = pthread_setaffinity_np(it->second.thr, sizeof(cpu_set_t), &cpuset);
-	    res.release();
-	    TBDS::genDBSet(nodePath()+"CpuSet:"+it->first, it->second.cpuSet);
-	    if(rez == EINVAL) throw TError(nodePath().c_str(),_("Set not allowed processors try."));
-	    if(rez) throw TError(nodePath().c_str(),_("CPUs set for the thread error."));
-	}
-#endif
+//#if __GLIBC_PREREQ(2,4)
+//	if(nCPU() > 1 && ctrChkNode(opt,"set",RWRW__,"root","root",SEC_WR) && opt->attr("col") == "cpuSet") {
+//	    ResAlloc res(taskRes, true);
+//	    map<string,STask>::iterator it = mTasks.find(opt->attr("key_path"));
+//	    if(it == mTasks.end()) throw TError(nodePath().c_str(),_("No present task '%s'."));
+//	    if(it->second.flgs & STask::Detached) return;
+//
+//	    it->second.cpuSet = TSYS::strParse(opt->text(),0,"(");
+//
+//	    cpu_set_t cpuset;
+//	    CPU_ZERO(&cpuset);
+//	    string sval;
+//	    if(!it->second.cpuSet.size()) for(int iCPU = 0; iCPU < nCPU(); iCPU++) CPU_SET(iCPU, &cpuset);
+//	    else {
+//		string prcVl;
+//		for(int off = 0; (sval=TSYS::strParse(it->second.cpuSet,0,":",&off)).size(); ) {
+//		    if(s2i(sval) < nCPU()) CPU_SET(s2i(sval), &cpuset);
+//		    prcVl += (prcVl.size()?":":"") + i2s(s2i(sval));
+//		}
+//		it->second.cpuSet = prcVl;
+//	    }
+//
+//	    int rez = pthread_setaffinity_np(it->second.thr, sizeof(cpu_set_t), &cpuset);
+//	    res.release();
+//	    TBDS::genDBSet(nodePath()+"CpuSet:"+it->first, it->second.cpuSet);
+//	    if(rez == EINVAL) throw TError(nodePath().c_str(),_("Set not allowed processors try."));
+//	    if(rez) throw TError(nodePath().c_str(),_("CPUs set for the thread error."));
+//	}
+//#endif
     }
     else if(a_path == "/tr/baseLang") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(Mess->lang2CodeBase());

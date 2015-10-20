@@ -330,19 +330,19 @@ TCntrNode &TUser::operator=( TCntrNode &node )
 
 void TUser::setPass( const string &n_pass )
 {
-    crypt_data data;
-    data.initialized = 0;
-    string salt = "$1$"+name();		//Use MD5
-    cfg("PASS").setS(crypt_r(n_pass.c_str(),salt.c_str(),&data));
+//    crypt_data data;
+//    data.initialized = 0;
+//    string salt = "$1$"+name();		//Use MD5
+    cfg("PASS").setS(n_pass);
 }
 
 bool TUser::auth( const string &ipass )
 {
-    crypt_data data;
-    data.initialized = 0;
+//    crypt_data data;
+//    data.initialized = 0;
     string pass = cfg("PASS").getS();
-    string salt = (pass.compare(0,3,"$1$") == 0) ? "$1$"+name() : name();	//Check for MD5 or old method
-    return (pass == crypt_r(ipass.c_str(),salt.c_str(),&data));
+//    string salt = (pass.compare(0,3,"$1$") == 0) ? "$1$"+name() : name();	//Check for MD5 or old method
+    return (pass == ipass);
 }
 
 void TUser::postDisable( int flag )

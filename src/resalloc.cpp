@@ -30,9 +30,9 @@ using namespace OSCADA;
 //********************************************
 Res::Res( )
 {
-#if !__GLIBC_PREREQ(2,4)
-    wThr = 0;
-#endif
+//#if !__GLIBC_PREREQ(2,4)
+//    wThr = 0;
+//#endif
     if(pthread_rwlock_init(&rwc,NULL)) throw TError("ResAlloc", _("Error open semaphore!"));
 }
 
@@ -45,24 +45,24 @@ Res::~Res( )
 void Res::resRequestW( unsigned short tm )
 {
     int rez = 0;
-#if !__GLIBC_PREREQ(2,4)
+//#if !__GLIBC_PREREQ(2,4)
     //EDEADLK imitation
-    if(wThr && wThr == pthread_self()) rez == EDEADLK;
-    else
-#endif
+//    if(wThr && wThr == pthread_self()) rez == EDEADLK;
+//    else
+//#endif
     if(!tm) rez = pthread_rwlock_wrlock(&rwc);
     else {
 	timespec wtm;
 	clock_gettime(CLOCK_REALTIME,&wtm);
 	wtm.tv_nsec += 1000000*(tm%1000);
 	wtm.tv_sec += tm/1000 + wtm.tv_nsec/1000000000; wtm.tv_nsec = wtm.tv_nsec%1000000000;
-	rez = pthread_rwlock_timedwrlock(&rwc,&wtm);
+	rez = 0;//pthread_rwlock_timedwrlock(&rwc,&wtm);
     }
     if(rez == EDEADLK) throw TError(10, "ResAlloc", _("Resource is try deadlock a thread!"));
     else if(tm && rez == ETIMEDOUT) throw TError("ResAlloc", _("Resource is timeouted!"));
-#if !__GLIBC_PREREQ(2,4)
-    wThr = pthread_self();
-#endif
+//#if !__GLIBC_PREREQ(2,4)
+//    wThr = pthread_self();
+//#endif
 }
 
 bool Res::resTryW( )
@@ -76,18 +76,18 @@ bool Res::resTryW( )
 void Res::resRequestR( unsigned short tm )
 {
     int rez = 0;
-#if !__GLIBC_PREREQ(2,4)
+//#if !__GLIBC_PREREQ(2,4)
     //EDEADLK imitation
-    if(wThr && wThr == pthread_self()) rez == EDEADLK;
-    else
-#endif
+//    if(wThr && wThr == pthread_self()) rez == EDEADLK;
+//    else
+//#endif
     if(!tm) rez = pthread_rwlock_rdlock(&rwc);
     else {
 	timespec wtm;
 	clock_gettime(CLOCK_REALTIME,&wtm);
 	wtm.tv_nsec += 1000000*(tm%1000);
 	wtm.tv_sec += tm/1000 + wtm.tv_nsec/1000000000; wtm.tv_nsec = wtm.tv_nsec%1000000000;
-	rez = pthread_rwlock_timedrdlock(&rwc,&wtm);
+	rez = 0;//pthread_rwlock_timedrdlock(&rwc,&wtm);
     }
     if(rez == EDEADLK) throw TError(10,"ResAlloc",_("Resource is try deadlock a thread!"));
     else if(tm && rez == ETIMEDOUT) throw TError("ResAlloc",_("Resource is timeouted!"));
@@ -104,9 +104,9 @@ bool Res::resTryR( )
 void Res::resRelease( )
 {
     pthread_rwlock_unlock(&rwc);
-#if !__GLIBC_PREREQ(2,4)
-    if(wThr == pthread_self()) wThr = 0;
-#endif
+//#if !__GLIBC_PREREQ(2,4)
+//    if(wThr == pthread_self()) wThr = 0;
+//#endif
 }
 
 //********************************************
