@@ -108,6 +108,8 @@ bool TProt::inReq( string &request, const string &inPrtId, string *answ )
 
 int TProt::writeToClient( const string &inPrtId, const string &data )	{ return at(inPrtId).at().writeTo(data); }
 
+string TProt::clientAddr( const string &inPrtId )	{ return TSYS::strLine(at(inPrtId).at().srcAddr(), 0); }
+
 void TProt::discoveryUrls( vector<string> &ls )
 {
     ls.clear();
@@ -404,7 +406,8 @@ uint32_t OPCEndPoint::reqData( int reqTp, XML_N &req )
 	    if(cNd.freeStat()) return OpcUa_BadBrowseNameInvalid;
 
 	    //typeDefinition reference browse
-	    if(lstNd.empty() && rtId.numbVal() == OpcUa_References && (bd == BD_FORWARD || bd == BD_BOTH) && !dynamic_cast<TDAQS*>(&cNd.at()))
+	    if(lstNd.empty() && rtId.numbVal() == OpcUa_References && (bd == BD_FORWARD || bd == BD_BOTH) &&
+		!dynamic_cast<TDAQS*>(&cNd.at()))
 	    {
 		XML_N *ndTpDef = ndMap[NodeId(OpcUa_BaseDataVariableType).toAddr()];
 		if(dynamic_cast<TTypeDAQ*>(&cNd.at()))		ndTpDef = ndMap[NodeId("DAQModuleObjectType",NS_OpenSCADA_DAQ).toAddr()];
@@ -482,7 +485,7 @@ uint32_t OPCEndPoint::reqData( int reqTp, XML_N &req )
 		    nPrm->vlList(chLs);
 		    for(unsigned i_ch = 0; i_ch < chLs.size(); i_ch++)
 			prevLs.childAdd("ref")->setAttr("NodeId", NodeId("DAQ."+nPrm->vlAt(chLs[i_ch]).at().DAQPath(),NS_OpenSCADA_DAQ).toAddr())->
-			    setAttr("referenceTypeId", NodeId(OpcUa_HasComponent).toAddr())->setAttr("dir", "1")->
+			    setAttr("referenceTypeId", NodeId(OpcUa_Organizes/*OpcUa_HasComponent*/).toAddr())->setAttr("dir", "1")->
 			    setAttr("name", nPrm->vlAt(chLs[i_ch]).at().name())->
 			    setAttr("NodeClass", i2s(NC_Variable))->setAttr("typeDefinition", NodeId(OpcUa_BaseDataVariableType).toAddr());
 		}

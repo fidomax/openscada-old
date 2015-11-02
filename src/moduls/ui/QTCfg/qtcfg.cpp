@@ -74,7 +74,7 @@ using namespace QTCFG;
 //* ConfApp                                       *
 //*************************************************
 ConfApp::ConfApp( string open_user ) : reqPrgrs(NULL),
-    pgInfo("info"), genReqs("CntrReqs"), root(&pgInfo), copyBuf("0"), queSz(20), tblInit(false), inHostReq(false)
+    pgInfo("info"), genReqs("CntrReqs"), root(&pgInfo), copyBuf("0"), queSz(20), tblInit(false), inHostReq(0)
 {
     //Main window settings
     setAttribute(Qt::WA_DeleteOnClose, true);
@@ -428,6 +428,11 @@ ConfApp::ConfApp( string open_user ) : reqPrgrs(NULL),
     endRunTimer->setSingleShot(false);
     connect(endRunTimer, SIGNAL(timeout()), this, SLOT(endRunChk()));
     endRunTimer->start(STD_WAIT_DELAY);
+    // Create Request progress closing timer
+    reqPrgrsTimer = new QTimer(this);
+    reqPrgrsTimer->setSingleShot(true);
+    reqPrgrsTimer->setInterval(500);
+    connect(reqPrgrsTimer, SIGNAL(timeout()), SLOT(reqPrgrsSet()));
 
     menuBar()->setVisible(true);
 
@@ -441,6 +446,7 @@ ConfApp::~ConfApp( )
 {
     endRunTimer->stop();
     autoUpdTimer->stop();
+    reqPrgrsTimer->stop();
 
     mod->unregWin(this);
 
@@ -571,7 +577,7 @@ void ConfApp::pagePrev( )
     string path = prev[0];
     prev.erase(prev.begin());
 
-    try{ pageDisplay(path); } catch(TError err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
+    try{ pageDisplay(path); } catch(TError err) { mod->postMess(err.cat, err.mess, TUIMod::Error, this); }
 }
 
 void ConfApp::pageNext( )
@@ -581,7 +587,7 @@ void ConfApp::pageNext( )
     string path = next[0];
     next.erase(next.begin());
 
-    try{ pageDisplay(path); } catch(TError err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
+    try{ pageDisplay(path); } catch(TError err) { mod->postMess(err.cat, err.mess, TUIMod::Error, this); }
 }
 
 void ConfApp::itDBLoad( )
@@ -765,13 +771,14 @@ void ConfApp::itPaste( )
 	    dst_nm += "/" +TSYS::strSepParse(dlg.target(),2,'\n') + dlg.id().toStdString();
 	    // Check for already present node
 	    XMLNode req("get");
-	    req.setAttr("path",to_path+"/%2fbr%2f"+TSYS::strSepParse(dlg.target( ),2,'\n'));
+	    req.setAttr("path",to_path+"/%2fbr%2f"+TSYS::strSepParse(dlg.target(),2,'\n'));
 	    if(cntrIfCmd(req)) { mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TUIMod::Error,this); return; }
 	    for(unsigned i_lel = 0; i_lel < req.childSize(); i_lel++)
 		if((req.childGet(i_lel)->attr("id").size() && req.childGet(i_lel)->attr("id") == dlg.id().toStdString()) ||
 		   (!req.childGet(i_lel)->attr("id").size() && req.childGet(i_lel)->text() == dlg.id().toStdString()))
 		{
-		    InputDlg dlg1(this, actItPaste->icon(), QString(_("Node '%1' is already present. Continue?")).arg(dst_nm.c_str()), _("Move or copy node"), 0, 0);
+		    InputDlg dlg1(this, actItPaste->icon(), QString(_("Node '%1' is already present. Continue?")).arg(dst_nm.c_str()),
+					_("Move or copy node"), 0, 0);
 		    if(isMult) {
 			prcAlrPres = new QCheckBox(_("Do not the question anymore."),&dlg1);
 			dlg1.edLay->addWidget(prcAlrPres,5,0,5,1);
@@ -1171,7 +1178,7 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 	    if(helpVl.size() > TOOL_TIP_LIM) lstbox->setWhatsThis(helpVl.c_str());
 	    XMLNode req("get");
 	    req.setAttr("path",br_path);
-	    if((rez=cntrIfCmd(req)) > 0) mod->postMess(req.attr("mcat"),req.text(),TUIMod::Error,this);
+	    if((rez=cntrIfCmd(req)) > 0) mod->postMess(req.attr("mcat"), req.text(), TUIMod::Error, this);
 	    else if(rez == 0)
 		for(unsigned i_el = 0; i_el < req.childSize(); i_el++)
 		    if(req.childGet(i_el)->name() == "el")
@@ -1216,7 +1223,7 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 	    tbl->setToolTip(TSYS::strMess(TOOL_TIP_LIM,"%s",helpVl.c_str()).c_str());
 	    if(helpVl.size() > TOOL_TIP_LIM) tbl->setWhatsThis(helpVl.c_str());
 	    XMLNode req("get"); req.setAttr("path",br_path);
-	    if((rez=cntrIfCmd(req)) > 0) mod->postMess(req.attr("mcat"),req.text(),TUIMod::Error,this);
+	    if((rez=cntrIfCmd(req)) > 0) mod->postMess(req.attr("mcat"), req.text(), TUIMod::Error, this);
 	    else if(rez <= 0) {
 		//   Collumns adjusting flag
 		bool adjCol = widget || !tbl->rowCount();
@@ -1261,7 +1268,7 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 			else {
 			    XMLNode x_lst("get");
 			    x_lst.setAttr("path",TSYS::strEncode(t_linf->attr("select"),TSYS::PathEl));
-			    if((rez=cntrIfCmd(x_lst)) > 0) mod->postMess(x_lst.attr("mcat"),x_lst.text(),TUIMod::Error,this);
+			    if((rez=cntrIfCmd(x_lst)) > 0) mod->postMess(x_lst.attr("mcat"), x_lst.text(), TUIMod::Error, this);
 			    else if(rez == 0)
 				for(unsigned i_ls = 0; i_ls < x_lst.childSize(); i_ls++) {
 				    if(!x_lst.childGet(i_ls)->attr("id").empty())
@@ -1928,8 +1935,9 @@ void ConfApp::pageDisplay( const string &path )
 	// Request new page tree
 	XMLNode n_node("info");
 	n_node.setAttr("path", path);
-	if(cntrIfCmd(n_node) || !n_node.childGet(0,true))
-	    throw TError(s2i(n_node.attr("rez")),n_node.attr("mcat").c_str(),"%s",n_node.text().c_str());
+	if(cntrIfCmd(n_node))		throw TError(s2i(n_node.attr("rez")), n_node.attr("mcat").c_str(), "%s", n_node.text().c_str());
+	if(!n_node.childGet(0,true))	throw TError(mod->nodePath().c_str(), _("Broken info respond - no a child."));
+
 	selPath = path;
 	pgInfo = n_node;
 	root = pgInfo.childGet(0);
@@ -1941,7 +1949,7 @@ void ConfApp::pageDisplay( const string &path )
 	// Check the new node structure and the old node
 	XMLNode n_node("info");
 	n_node.setAttr("path",selPath);
-	if(cntrIfCmd(n_node)) { throw TError(s2i(n_node.attr("rez")),n_node.attr("mcat").c_str(),"%s",n_node.text().c_str()); }
+	if(cntrIfCmd(n_node)) { throw TError(s2i(n_node.attr("rez")), n_node.attr("mcat").c_str(), "%s", n_node.text().c_str()); }
 	upStruct(*root, *n_node.childGet(0));
     }
 
@@ -1960,22 +1968,24 @@ void ConfApp::pageDisplay( const string &path )
 
 loadGenReqDate:
     //Page content forming
+    CtrTree->blockSignals(true);
     tabs->blockSignals(true);
     selectChildRecArea(*root, "/");
     tabs->blockSignals(false);
+    CtrTree->blockSignals(false);
 
     //Load and Save allow check
     actDBLoad->setEnabled(false); actDBSave->setEnabled(false);
     XMLNode req("modify");
     req.setAttr("path", "/%2fobj");
-    if(cntrIfCmd(req) > 0) mod->postMess(req.attr("mcat"),req.text(),TUIMod::Error,this);
+    if(cntrIfCmd(req) > 0) mod->postMess(req.attr("mcat"), req.text(), TUIMod::Error, this);
     else if(s2i(req.text()))	{ actDBLoad->setEnabled(true); actDBSave->setEnabled(true); }
 
     //Stop complex request forming
     if(genReqs.attr("fillMode") == "1") {
 	genReqs.attrDel("fillMode");
 	if(cntrIfCmd(genReqs)) {
-	    mod->postMess(genReqs.attr("mcat"),genReqs.text(),TUIMod::Error,this);
+	    mod->postMess(genReqs.attr("mcat"), genReqs.text(), TUIMod::Error, this);
 	    genReqs.clear();
 	    return;
 	}
@@ -2093,7 +2103,7 @@ void ConfApp::ctrTreePopup( )
 	    treeUpdate();
 	}
 	popup.clear();
-    }catch(TError err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
+    }catch(TError err) { mod->postMess(err.cat, err.mess, TUIMod::Error, this); }
 }
 
 void ConfApp::tabSelect( int idx )
@@ -2102,7 +2112,7 @@ void ConfApp::tabSelect( int idx )
 	pageCyclRefrStop();
 	pageDisplay(selPath);
     }
-    catch(TError err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
+    catch(TError err) { mod->postMess(err.cat, err.mess, TUIMod::Error, this); }
 }
 
 void ConfApp::viewChildRecArea( QTreeWidgetItem *i, bool upTree )
@@ -2293,32 +2303,49 @@ int ConfApp::cntrIfCmdHosts( XMLNode &node )
     }
 
     //Main-first request
-    bool isConcur = inHostReq;
-    inHostReq = true;
-    while(iHost->reqBusy()) qApp->processEvents();
+    inHostReq++;
+    while(iHost->reqBusy()) {
+	reqPrgrsSet(0, QString(_("Wait for reply from host '%1'")).arg(hostId.c_str()), iHost->reqTmMax);
+	qApp->processEvents();
+    }
     if(!iHost->reqDo(node)) {
-	if(!reqPrgrs) {
-	    reqPrgrs = new QProgressDialog(this);
-	    reqPrgrs->setWindowModality(Qt::WindowModal);
-	    reqPrgrs->setCancelButtonText(_("Cancel"));
-	    reqPrgrs->show();
-	    qApp->processEvents();
-	}
-	reqPrgrs->setLabelText(QString(_("Wait for reply from host '%1'")).arg(hostId.c_str()));
-	reqPrgrs->setMaximum(iHost->reqTmMax);
+	reqPrgrsSet(0, QString(_("Wait for reply from host '%1'")).arg(hostId.c_str()), iHost->reqTmMax);
 
 	//Wait for the request done
 	time_t stTm = SYS->sysTm();
 	while(iHost->reqBusy()) {
+	    reqPrgrsSet(SYS->sysTm()-stTm);
 	    if(reqPrgrs->wasCanceled()) iHost->sendSIGALRM();
-	    else reqPrgrs->setValue(SYS->sysTm()-stTm);
 	    qApp->processEvents();
 	}
-	if(!isConcur) { delete reqPrgrs; reqPrgrs = NULL; }
     }
-    if(!isConcur) inHostReq = false;
+    inHostReq--;
 
     return s2i(node.attr("rez"));
+}
+
+void ConfApp::reqPrgrsSet( int cur, const QString &lab, int max )
+{
+    //Create
+    if(!reqPrgrs && cur >= 0) {
+	reqPrgrs = new QProgressDialog(this);
+	reqPrgrs->setWindowModality(Qt::WindowModal);
+	reqPrgrs->setCancelButtonText(_("Cancel"));
+	reqPrgrs->show();
+    }
+    //Close
+    else if(reqPrgrs && cur < 0) {
+	reqPrgrsTimer->stop();
+	delete reqPrgrs;
+	reqPrgrs = NULL;
+    }
+    //Set the progress value
+    if(reqPrgrs) {
+	if(max >= 0)	reqPrgrs->setMaximum(max);
+	if(lab.size())	reqPrgrs->setLabelText(lab);
+	reqPrgrsTimer->start();
+	reqPrgrs->setValue(cur);
+    }
 }
 
 string ConfApp::getPrintVal( const string &vl )
@@ -2419,7 +2446,7 @@ void ConfApp::checkBoxStChange( int stat )
 		wUser->user().toStdString().c_str(), (selPath+"/"+path).c_str(), val.c_str());
 
 	    req.setName("set")->setText(val);
-	    if(cntrIfCmd(req))	mod->postMess(req.attr("mcat"),req.text(),TUIMod::Error,this);
+	    if(cntrIfCmd(req))	mod->postMess(req.attr("mcat"), req.text(), TUIMod::Error, this);
 	}
     }catch(TError err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
 
@@ -2439,10 +2466,10 @@ void ConfApp::buttonClicked( )
 	//Check link
 	if(n_el->attr("tp") == "lnk") {
 	    XMLNode req("get"); req.setAttr("path",selPath+"/"+button->objectName().toStdString());
-	    if(cntrIfCmd(req)) { mod->postMess(req.attr("mcat"),req.text(),TUIMod::Error,this); return; }
+	    if(cntrIfCmd(req)) { mod->postMess(req.attr("mcat"), req.text(), TUIMod::Error, this); return; }
 	    string url = "/"+TSYS::pathLev(selPath,0)+req.text();
 	    mess_info(mod->nodePath().c_str(), _("%s| Go to link '%s'!"), wUser->user().toStdString().c_str(), url.c_str());
-	    selectPage( url );
+	    selectPage(url);
 	    return;
 	}
 	else {
@@ -2455,7 +2482,7 @@ void ConfApp::buttonClicked( )
 		wUser->user().toStdString().c_str(), (selPath+"/"+button->objectName().toStdString()).c_str());
 	    if(cntrIfCmd(req)) { mod->postMess(req.attr("mcat"),req.text(),TUIMod::Error,this); return; }
 	}
-    }catch(TError err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
+    } catch(TError err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
 
     //Redraw
     pageRefresh(true);
@@ -2513,7 +2540,7 @@ void ConfApp::combBoxActivate( const QString& ival )
 	    req.setName("set")->setText(val);
 	    if(cntrIfCmd(req)) mod->postMess(req.attr("mcat"),req.text(),TUIMod::Error,this);// return; }
 	}
-    }catch(TError err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
+    } catch(TError err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
 
     //Redraw
     pageRefresh(true);
