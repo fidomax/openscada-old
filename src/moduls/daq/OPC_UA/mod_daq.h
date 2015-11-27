@@ -44,7 +44,7 @@ using namespace OPC;
 #define DAQ_NAME	_("OPC UA")
 #define DAQ_TYPE	SDAQ_ID
 #define DAQ_SUBVER	SDAQ_VER
-#define DAQ_MVER	"1.5.2"
+#define DAQ_MVER	"1.5.3"
 #define DAQ_AUTOR	_("Roman Savochenko")
 #define DAQ_DESCR	_("OPC UA client service implementation.")
 #define DAQ_LICENSE	"GPL2"
@@ -133,7 +133,7 @@ class TMdContr: public TController, public Client
 	// OPC_UA Client methods
 	string sessionName( )	{ return "OpenSCADA station "+SYS->id(); }
 	void protIO( XML_N &io );
-	int messIO( const char *obuf, int len_ob, char *ibuf = NULL, int len_ib = 0 );
+	int messIO( const char *oBuf, int oLen, char *iBuf = NULL, int iLen = 0 );
 	void debugMess( const string &mess );
 
     protected:
