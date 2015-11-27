@@ -1372,7 +1372,7 @@ void ShapeMedia::clear( WdgView *w )
 {
     ShpDt *shD = (ShpDt*)w->shpData;
 
-    //> Clear label widget's elements
+    //Clear label widget's elements
     QLabel *lab = dynamic_cast<QLabel*>(shD->addrWdg);
     if(lab) {
 	if(lab->movie()) {
@@ -1729,8 +1729,7 @@ bool ShapeMedia::eventFilter( WdgView *w, QObject *object, QEvent *event )
 #ifdef HAVE_PHONON
     VideoPlayer *player = dynamic_cast<VideoPlayer*>(((ShpDt*)w->shpData)->addrWdg);
     if(player && player->videoWidget() == object)
-	if(event->type() == QEvent::MouseButtonDblClick && ((QMouseEvent*)event)->button() == Qt::LeftButton)
-	{
+	if(event->type() == QEvent::MouseButtonDblClick && ((QMouseEvent*)event)->button() == Qt::LeftButton) {
 	    player->videoWidget()->setFullScreen(!player->videoWidget()->isFullScreen());
 	    return true;
 	}
@@ -1743,13 +1742,12 @@ bool ShapeMedia::eventFilter( WdgView *w, QObject *object, QEvent *event )
 //*************************************************
 bool ShapeMedia::MapArea::containsPoint( const QPoint & point )
 {
-    switch(shp)
-    {
+    switch(shp) {
 	case FM_RECT:
 	    if(pnts.size() < 2) return false;
 	    return QRect(pnts[0],pnts[1]).contains(point);
 	case FM_POLY:
-	    return QPolygon(pnts).containsPoint(point,Qt::OddEvenFill);
+	    return QPolygon(pnts).containsPoint(point, Qt::OddEvenFill);
 	case FM_CIRCLE: {
 	    if(pnts.size() < 2) return false;
 	    QPoint work = point-pnts[0];
@@ -3541,7 +3539,7 @@ void ShapeDiagram::TrendObj::loadTrendsData( bool full )
 	    if(view->cntrIfCmd(req,true))	return;
 
 	    int64_t lst_tm = (s2ll(req.attr("tm"))/wantPer)*wantPer;
-	    if(lst_tm >= valEnd()) {
+	    if(lst_tm && lst_tm >= valEnd()) {
 		double curVal = (req.text() == EVAL_STR) ? EVAL_REAL : s2r(req.text());
 		if((val_tp == TFld::Boolean && curVal == EVAL_BOOL) || (val_tp == TFld::Integer && curVal == EVAL_INT) || isinf(curVal))
 		    curVal = EVAL_REAL;

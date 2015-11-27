@@ -192,7 +192,7 @@ class TSocketOut: public TTransportOut
 	void start( int time = 0 );
 	void stop( );
 
-	int messIO( const char *obuf, int len_ob, char *ibuf = NULL, int len_ib = 0, int time = 0, bool noRes = false );
+	int messIO( const char *oBuf, int oLen, char *iBuf = NULL, int iLen = 0, int time = 0, bool noRes = false );
 
     protected:
 	//Methods
@@ -218,7 +218,7 @@ class TSocketOut: public TTransportOut
 
 	// Status atributes
 	uint64_t	trIn, trOut;		//Traffic in and out counter
-	Res		wres;
+	ResMtx		wres;
 	int64_t		mLstReqTm;
 };
 
