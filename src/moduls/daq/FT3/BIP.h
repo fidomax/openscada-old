@@ -72,7 +72,7 @@ namespace FT3
 	int lnkSize()
 	{
 	    if(with_params) {
-		return data.size() * 19;
+		return data.size() * 14;
 	    } else {
 		return data.size() * 2;
 	    }
