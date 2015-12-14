@@ -157,6 +157,16 @@ string TMdContr::productUri( )		{ return "urn:OpenSCADA:DAQ.OPC_UA";/*PACKAGE_SI
 
 string TMdContr::applicationName( )	{ return "OpenSCADA.OPC-UA Client"; }
 
+bool TMdContr::connect( int8_t est )
+{
+    if(tr.freeStat()) return false;
+
+    if(est == 0) tr.at().stop();
+    else if(est > 0) tr.at().start();
+
+    return tr.at().startStat();
+}
+
 TParamContr *TMdContr::ParamAttach( const string &name, int type )	{ return new TMdPrm(name, &owner().tpPrmAt(type)); }
 
 void TMdContr::enable_( )
@@ -212,6 +222,7 @@ void TMdContr::protIO( XML_N &io )
 
 int TMdContr::messIO( const char *obuf, int len_ob, char *ibuf, int len_ib )
 {
+    if(!connect()) connect(true);
     return tr.at().messIO(obuf, len_ob, ibuf, len_ib, 0, true);
 }
 
@@ -276,7 +287,8 @@ void *TMdContr::Task( void *icntr )
 	    cntr.reqService(req);
 
 	    //Place results
-	    bool isErr = !req.attr("err").empty(), ndSt = 0;
+	    bool isErr = !req.attr("err").empty();
+	    int ndSt = 0;
 	    AutoHD<TVal> vl;
 	    res.lock();
 	    for(unsigned i_c = 0, i_p = 0, varTp = 0; i_c < req.childSize() && i_p < cntr.pHd.size(); i_c++) {
@@ -854,13 +866,13 @@ void TMdPrm::vlGet( TVal &val )
 	uint32_t firstErr = 0;
 	vector<uint32_t> astls;
 	MtxAlloc res(dataRes(), true);
-	for(unsigned i_a = 0; i_a < pEl.fldSize(); i_a++) {
-	    astls.push_back(pEl.fldAt(i_a).len());
-	    if(pEl.fldAt(i_a).len() && !firstErr) firstErr = pEl.fldAt(i_a).len();
+	for(unsigned iA = 0; iA < pEl.fldSize(); iA++) {
+	    astls.push_back(pEl.fldAt(iA).len());
+	    if(pEl.fldAt(iA).len() && !firstErr) firstErr = pEl.fldAt(iA).len();
 	}
 	res.unlock();
 	string aLs;
-	for(unsigned i_a = 0; i_a < astls.size(); i_a++) aLs += TSYS::strMess(":0x%x",astls[i_a]);
+	for(unsigned iA = 0; iA < astls.size(); iA++) aLs += TSYS::strMess(":0x%x",astls[iA]);
 	val.setS(TSYS::strMess(_("0x%x: Attribute's errors %s"),firstErr,aLs.c_str()),0,true);
     }
 }
