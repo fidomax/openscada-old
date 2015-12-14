@@ -1,6 +1,98 @@
+2015-12-12 Roman
+- !!!!:DB.LibsDB.OscadaLibs.db: User protocol for IEC-60870-104 is added, by the template only.
+- !!:DAQ.SMH2Gi: Version 1.0.0 released.
+
+
+2015-12-11 Roman
+- !!:FIX:DAQ.OPC_UA.libOPC_UA: Specific value types OpcUa_IntAuto and OpcUa_UIntAuto for adaptive integer type selection,
+	mostly for provide integer into not fixed int64.
+    Error OpcUa_BadNoSubscription added to PublishRequest.
+    Server folder "ServerCapabilities" added and some items here.
+    FIX: Conditional session's clear for selected endpoint is added, mostly for prevent this lost at no "None" policies.
+    Virtual function connect() into client is added for the connection control, used into service "CloseSecureChannel" for close connection.
+    "Nonce" of the Server part disabled into CreateSessionResponse and ActivateSessionRespons for policy "None".
+
+
+2015-12-08 Roman
+- FIX:DAQ.OPC_UA.libOPC_UA: Using the client certificate into a renewal secure channel request set only for no "None" policies.
+    Full session clear at errors into a renewal secure channel request is added.
+    Some lack information resolved like to "transportProfileUri" and "securityLevel".
+    libOPC_UA independent version control is added.
+- FIX:DAQ.OPC_UA.Client: Status codes display fix for the controller's attributes.
+
+
+2015-12-07 Roman
+- !!!!:SYS.TVarObj: Object's twice free possibility prevented. TVarObj::propGet() EVAL result fix.
+
+
+2015-12-03 Roman
+- DB.LibsDB.OscadaLibs.db: UserProtocol.OWEN some tested and fixed.
+- DAQ.{LogicLev,ModBus}: User API function attrAdd() expanded by option "ro", for read-only.
+- Protocol.UserProtocol: For input requests expanded to try enable, mostly for allow to use static functons into the procedures.
+- UI.QTStarter: WinControl's timer stopping moved to it destructor for ensure the timer create/start and stop into one thread.
+
+
+2015-11-28 Roman
+- !!!:FIX:DAQ.OPC_UA:
+    Library: Expanded to new error codes.
+	Auth processing for client fixed to storing current endpoint description for next actual "policyId" obtain and using to the auth service.
+	Wrong NodeId::Opaque type set fix.
+	Next empty arrays number fix for set to 0 instead -1.
+	Fix something "EndPoint" lack.
+	To server part new default name spaces added: 2-"http://opcfoundation.org/UA/DI/, 3-"http://PLCopen.org/OpcUa/IEC61131-3/"
+    Client: Appending information by: applicationUri(), productUri(), applicationName().
+	For empty "browseName" browsed nodes using "displayName" set.
+    Server: OpenSCADA DAQ name space set to index 4.
+- UI.Vision: Adapted for build with libphonon4qt5 and Qt5. Deprecated functions using is resolved for Phonon.
+- UI.{QTCfg,Vision}: Early timers stopping added to the close event processing.
+- UI.VCAEngine: Media files selection appended by URL's extensions: avi, mov, mpg4.
+
+
+2015-11-26 Roman
+- FIX:DAQ.OPC_UA: Empty Read service list cicling fix.
+- !!!!:SYS: Object ResMtx is added for gather all platform specific mutex implementation.
+    Later it will used instead the direct POSIX API everywhere.
+- !!:Transports.*: messIO() return to the previous prototype and for the no request mode set used <time> argument in negative value (< -1e-3).
+- !!:FIX:Transports.*: Resource of output transport lock into messIO() fixed, by no real a lock hold.
+- Transports.{SSL,Serial}: Appended by diagnostic like to Transports.Sockets.
+- Transports.SSL: Connections processing mostly moved like to Transports.Sockets.
+- Transports.Serial: Disconnect (transport stop) from output port added on read <= 0, which points to the device lost at all.
+- Transports.Sockets: Writing resource allocation, to output transport by messIO(), moved to ResMtx.
+
+
+2015-11-25 Roman
+- SYS: Transports subsystem type modules version rose to 9.
+- !!:Transports.*: run_st also renamed to runSt. messIO() expanded by change attribute "noRes" to "flags" and the flags appended:
+    IO_NoRes and IO_NoReq.
+    User API function {TrOut}.start() some fixed.
+    User API function {TrOut}.messIO() expanded by the argument "noReq" for no request mode enable.
+    All modules mostly adapted to the no request mode support.
+- !!:FIX:Transports.Sockets: Debug messages some unified and appended.
+    The connection time global sticking to the value from messIO() fixed by executions processing for restore.
+- Transports: User API function {TrOut}.start() added for fast control for the output transport state.
+- FIX:UI.VCAEngine: To function of a widget changes down to the parrent added checking for the recurrence inheritance prevent.
+
+
+2015-11-19 Roman
+- DB.LibsDB.OscadaLibs.db: regEl.pidUnifD adapted and tested for pulse with position, mostly for: manual positioner fix, switching to the manual mode.
+- SYS.TVariant: Debug counters conditions disabled for now for some performance rise.
+- FIX:DAQ.JvaLikeCalc: For library "run_st" renamed to "runSt" and init to false.
+- UI.QTCfg: QDoubleValidator for real value's fields disabled for Qt > 5.0.
+    Busy progress bar dialog adapted for first range set and it adapting as maximum to current.
+- UI.Vision: QPixmap::grabWidget() replaced to grab() for Qt > 5.0.
+- FIX:UI.{Vision,WebVision}: Crash into trand's data loading fix for no a value present (time = 0).
+
+
+2015-11-13 Roman
+- FIX:SYS: Wrong translation fix to Russian for the message "%s for type '%s' doesn't support module version: %d!"
+- Protocol.UserProtocol: Translation to the new messages appended.
+- FIX:UI.WebVision: Protocol's table fixed for clean before a structure changing.
+
+
 2015-11-13 fido_max
 - DAQ.Fastwel: DIM765/766 added. Init refactored.
 - DAQ.FT3: AddrReq/ReqData processing combined. Using PLC timestamp.   
+
 
 2015-11-12 Roman
 - SYS,Archive.FSArch,DB.DBF,DAQ.{Comedi,SMH2Gi}:

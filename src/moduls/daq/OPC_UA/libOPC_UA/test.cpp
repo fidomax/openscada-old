@@ -34,7 +34,7 @@ int main( int argc, char *argv[], char *envp[] )
 	printf("OPC UA client test program need command line arguments:\n"
 	    "  \"testOPC_UA opc.tcp://{Host}:{Port}/{SecurePolicy}/{MessSecMode} {NodeId} [{user}:{pass}]\"\n"
 	    "Examples:\n"
-	    "  \"testOPC_UA opc.tcp://127.0.0.1:4841/None/None 84\""
+	    "  \"testOPC_UA opc.tcp://127.0.0.1:4841/None/None 84\"\n"
 	    "  \"testOPC_UA opc.tcp://127.0.0.1:4841/Basic128Rsa15/SignEnc 84 user:pass\"");
 	return 0;
     }
@@ -176,7 +176,7 @@ void TestClient::start( )
 	setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &vl, sizeof(int));
 
 	// Real connect to socket
-	connRes = connect(sock_fd, (sockaddr*)&name_in, sizeof(name_in));
+	connRes = ::connect(sock_fd, (sockaddr*)&name_in, sizeof(name_in));
     }
 
     //Error connection
@@ -192,8 +192,18 @@ void TestClient::stop( )
     sock_fd = -1;
 }
 
+bool TestClient::connect( int8_t est )
+{
+    if(est == 0) stop();
+    else if(est > 0) start();
+
+    return (sock_fd >= 0);
+}
+
 int TestClient::messIO( const char *obuf, int len_ob, char *ibuf, int len_ib )
 {
+    if(!connect()) connect(true);
+
     int reqTry = 0;
 
     repeate:

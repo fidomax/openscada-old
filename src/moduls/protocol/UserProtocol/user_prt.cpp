@@ -33,7 +33,7 @@
 #define MOD_NAME	_("User protocol")
 #define MOD_TYPE	SPRT_ID
 #define VER_TYPE	SPRT_VER
-#define MOD_VER		"0.8.0"
+#define MOD_VER		"0.8.1"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Allows you to create your own user protocols on any OpenSCADA's language.")
 #define LICENSE		"GPL2"
@@ -83,7 +83,7 @@ TProt::TProt( string name ) : TProtocol(MOD_ID)
     mUPrtEl.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"300"));
     mUPrtEl.fldAdd(new TFld("EN",_("To enable"),TFld::Boolean,0,"1","0"));
     mUPrtEl.fldAdd(new TFld("PR_TR",_("Program translation allow"),TFld::Boolean,TFld::NoFlag,"1","1"));
-    mUPrtEl.fldAdd(new TFld("WaitReqTm",_("Wait request timeout"),TFld::Integer,TFld::NoFlag,"6","0"));
+    mUPrtEl.fldAdd(new TFld("WaitReqTm",_("Wait request timeout, ms"),TFld::Integer,TFld::NoFlag,"6","0"));
     mUPrtEl.fldAdd(new TFld("InPROG",_("Input program"),TFld::String,TFld::FullText|TCfg::TransltText,"1000000"));
     mUPrtEl.fldAdd(new TFld("OutPROG",_("Output program"),TFld::String,TFld::FullText|TCfg::TransltText,"1000000"));
     mUPrtEl.fldAdd(new TFld("TIMESTAMP",_("Date of modification"),TFld::Integer,TFld::DateTimeDec));
@@ -250,9 +250,15 @@ bool TProtIn::mess( const string &reqst, string &answer )
     try {
 	//Find user protocol for using
 	if(!funcV.func()) {
+	    //Try enable, mostly for allow to use static functons into the procedures
+	    if(!up.freeStat() && !up.at().enableStat() && up.at().toEnable() && up.at().workInProg().size()) up.at().setEnable(true);
+
+	    //Malfunction input protocol checking
 	    if(up.freeStat() || !up.at().enableStat() || up.at().workInProg().empty()) return false;
+
+	    //The input function's execution context creation
 	    funcV.setFunc(&((AutoHD<TFunction>)SYS->nodeAt(up.at().workInProg())).at());
-	    funcV.setO(4,new TCntrNodeObj(AutoHD<TCntrNode>(&srcTr().at()),"root"));
+	    funcV.setO(4, new TCntrNodeObj(AutoHD<TCntrNode>(&srcTr().at()),"root"));
 	}
 
 	//Load inputs
@@ -467,7 +473,7 @@ void UserPrt::cntrCmdProc( XMLNode *opt )
 	    }
 	    if(ctrMkNode("area",opt,-1,"/in",_("Input"),RWRW__,"root",SPRT_ID)) {
 		ctrMkNode("fld",opt,-1,"/in/WaitReqTm",_("Wait request timeout, ms"),RWRW__,"root",SPRT_ID,2,
-		    "tp","dec", "help",_("Use it for pool mode enable by set the timeout to a nonzero value.\n"
+		    "tp","dec", "help",_("Use it for pool mode enabling by set the timeout to a nonzero value.\n"
 					"Into the pool mode an input transport will call the protocol by no "
 					"a request with an empty message after that timeout."));
 		ctrMkNode("fld",opt,-1,"/in/PROGLang",_("Input program language"),RWRW__,"root",SPRT_ID,3,

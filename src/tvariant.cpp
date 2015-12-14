@@ -37,73 +37,73 @@ using namespace OSCADA;
 //*************************************************
 TVariant::TVariant( ) : mType(Null), mModify(false), mFixedTp(false)
 {
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( bool ivl ) : mType(Null), mModify(false), mFixedTp(false)
 {
     setB(ivl);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( char ivl ) : mType(Null), mModify(false), mFixedTp(false)
 {
     setB(ivl);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( int ivl ) : mType(Null), mModify(false), mFixedTp(false)
 {
     setI(ivl);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( int64_t ivl ) : mType(Null), mModify(false), mFixedTp(false)
 {
     setI(ivl);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( double ivl ) : mType(Null), mModify(false), mFixedTp(false)
 {
     setR(ivl);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( const string &ivl ) : mType(Null), mModify(false), mFixedTp(false)
 {
     setS(ivl);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( const char *ivl ) : mType(Null), mModify(false), mFixedTp(false)
 {
     setS(ivl);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( AutoHD<TVarObj> ivl ) : mType(Null), mModify(false), mFixedTp(false)
 {
     setO(ivl);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( TVarObj *ivl ) : mType(Null), mModify(false), mFixedTp(false)
 {
     setO(AutoHD<TVarObj>(ivl));
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::TVariant( const TVariant &var ) : mType(Null), mModify(false), mFixedTp(false)
 {
     operator=(var);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
 TVariant::~TVariant( )
 {
     setType(Null);
-    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), -1);
+    //if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), -1);
 }
 
 void TVariant::setType( Type tp, bool fix )
@@ -357,9 +357,10 @@ bool TVarObj::AHDDisConnect( )
     pthread_mutex_lock(&dataM);
     if(mUseCnt) mUseCnt--;
     else mess_err("TVarObj",_("Double disconnection try: %d."),mUseCnt);
+    bool toFree = (mUseCnt == 0);
     pthread_mutex_unlock(&dataM);
 
-    return (mUseCnt==0);
+    return toFree;
 }
 
 void TVarObj::propList( vector<string> &ls )
@@ -391,7 +392,7 @@ TVariant TVarObj::propGet( const string &ids, char sep )
     else for(int off = 0; (tid=TSYS::pathLev(ids,0,true,&off)).size() && obj.type() == TVariant::Object; )
 	obj = obj.getO().at().propGet(tid);
 
-    return tid.size() ? TVariant(EVAL_BOOL) : obj;
+    return tid.size() ? TVariant((char)EVAL_BOOL) : obj;
 }
 
 void TVarObj::propSet( const string &id, TVariant val )
