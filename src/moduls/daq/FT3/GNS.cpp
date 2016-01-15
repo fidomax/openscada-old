@@ -95,7 +95,7 @@ void KA_GNS::SKANSchannel::UpdateTime(uint16_t ID, uint8_t cl)
 	ui832 tmp;
     tmp.ui32 = Time.Get();
     Time.Update(tmp.ui32,0);
-    if((tmp.ui32 - Time.vl_sens) > 600) {
+    if((tmp.ui32 - Time.vl_sens) > 36000) {
 		Time.s = 0;
 		Time.Update(tmp.ui32,1);
 		uint8_t E[5] = { 0, tmp.b[0], tmp.b[1], tmp.b[2], tmp.b[3] };
