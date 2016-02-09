@@ -1,9 +1,9 @@
 
 //OpenSCADA OPC_UA implementation library file: libOPC_UA.h
 /******************************************************************************
- *   Copyright (C) 2009-2015 by Roman Savochenko, <rom_as@oscada.org>	      *
+ *   Copyright (C) 2009-2016 by Roman Savochenko, <rom_as@oscada.org>	      *
  *									      *
- *   Version: 1.0.1							      *
+ *   Version: 1.0.2							      *
  *	* Initial version control.					      *
  *									      *
  *   This library is free software; you can redistribute it and/or modify     *
@@ -161,6 +161,10 @@ namespace OPC
 #define OpcUa_BrowseNextResponse		536
 #define OpcUa_TranslateBrowsePathsToNodeIdsRequest	554
 #define OpcUa_TranslateBrowsePathsToNodeIdsResponse	557
+#define OpcUaId_RegisterNodesRequest		560
+#define OpcUaId_RegisterNodesResponse		563
+#define OpcUaId_UnregisterNodesRequest		566
+#define OpcUaId_UnregisterNodesResponse		569
 #define OpcUa_ReadRequest			631
 #define OpcUa_ReadResponse			634
 #define OpcUa_WriteRequest			673
@@ -669,8 +673,8 @@ class Server: public UA
 		bool	en;			//Enable state
 		double	publInterv;		//Publish interval (ms)
 		uint32_t seqN,			//Sequence number for responds, rolls over 1, no increment for KeepAlive messages
-			 cntrLifeTime, wLT,	//Counter after that miss notifications from client remove the object and
-			 cntrKeepAlive, wKA,	//Counter after that neet send empty publish respond
+			 cntrLifeTime, wLT,	//Counter after that miss notifications from client remove the object
+			 cntrKeepAlive, wKA,	//Counter after that neet send empty publish respond and
 						//send StatusChangeNotification with Bad_Timeout
 			 maxNotPerPubl;		//Maximum notifications per single Publish response
 		uint8_t	pr;			//Priority
