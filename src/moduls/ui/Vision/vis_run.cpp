@@ -59,8 +59,8 @@
 using namespace VISION;
 
 VisRun::VisRun( const string &iprjSes_it, const string &open_user, const string &user_pass, const string &VCAstat, bool icrSessForce, unsigned iScr ) :
-    QMainWindow(QDesktopWidget().screen(iScr)), prPg(NULL), prDiag(NULL), prDoc(NULL), fileDlg(NULL), winClose(false), conErr(NULL),
-    crSessForce(icrSessForce), keepAspectRatio(false), prjSes_it(iprjSes_it), master_pg(NULL), mPeriod(1000), mScreen(iScr), wPrcCnt(0), reqtm(1),
+    QMainWindow(QDesktopWidget().screen(iScr)), isResizeManual(false), prPg(NULL), prDiag(NULL), prDoc(NULL), fileDlg(NULL), winClose(false), conErr(NULL),
+    crSessForce(icrSessForce), mKeepAspectRatio(true), mWinPosCntrSave(false), prjSes_it(iprjSes_it), master_pg(NULL), mPeriod(1000), mScreen(iScr), wPrcCnt(0), reqtm(1),
     expDiagCnt(1), expDocCnt(1), x_scale(1), y_scale(1), mAlrmSt(0xFFFFFF), alrLevSet(false), ntfSet(0)
 {
     QImage ico_t;
@@ -258,7 +258,7 @@ VisRun::VisRun( const string &iprjSes_it, const string &open_user, const string 
     connect(mStlBar, SIGNAL(styleChanged()), this, SLOT(styleChanged()));
     statusBar()->insertPermanentWidget(0, mStlBar);
     statusBar()->insertPermanentWidget(0, toolBarStatus);
-    statusBar()->setVisible(mod->runPrjsSt());
+    //statusBar()->setVisible(mod->runPrjsSt());
 
     //Init scroller
     QScrollArea *scrl = new QScrollArea;
@@ -295,7 +295,7 @@ VisRun::VisRun( const string &iprjSes_it, const string &open_user, const string 
     statusBar()->showMessage(_("Ready"), 2000);
 
     //Restore main window position
-    if(mod->winPosCntrSave() && masterPg()) {
+    if(winPosCntrSave() && masterPg()) {
 	string xPos, yPos;
 	if((xPos=wAttrGet(masterPg()->id(),i2s(screen())+"geomX",true)).size() &&
 		(yPos=wAttrGet(masterPg()->id(),i2s(screen())+"geomY",true)).size())
@@ -348,8 +348,8 @@ void VisRun::setStyle( int istl )	{ mStlBar->setStyle(istl); }
 
 int VisRun::cntrIfCmd( XMLNode &node, bool glob )
 {
-    if(masterPg() && conErr && (time(NULL)-conErr->property("tm").toInt()) < mod->restoreTime()) {
-	conErr->setText(conErr->property("labTmpl").toString().arg(mod->restoreTime()-(time(NULL)-conErr->property("tm").toInt())));
+    if(masterPg() && conErr && (time(NULL)-conErr->property("tm").toLongLong()) < mod->restoreTime()) {
+	conErr->setText(conErr->property("labTmpl").toString().arg(mod->restoreTime()-(time(NULL)-conErr->property("tm").toLongLong())));
 	return 10;
     }
 
@@ -409,7 +409,7 @@ QString VisRun::getFileName( const QString &caption, const QString &dir, const Q
 void VisRun::closeEvent( QCloseEvent* ce )
 {
     //Save main window position
-    if(mod->winPosCntrSave() && masterPg()) {
+    if(winPosCntrSave() && masterPg()) {
 	wAttrSet(masterPg()->id(), i2s(screen())+"geomX", i2s(pos().x()), true);
 	wAttrSet(masterPg()->id(), i2s(screen())+"geomY", i2s(pos().y()), true);
     }
@@ -441,9 +441,13 @@ void VisRun::resizeEvent( QResizeEvent *ev )
 	    y_scale *= (float)((QScrollArea*)centralWidget())->maximumViewportSize().height()/(float)masterPg()->size().height();
 	    if(x_scale > 1 && x_scale < 1.02) x_scale = 1;
 	    if(y_scale > 1 && y_scale < 1.02) y_scale = 1;
-	    if(keepAspectRatio) x_scale = y_scale = vmin(x_scale, y_scale);
+	    if(keepAspectRatio()) x_scale = y_scale = vmin(x_scale, y_scale);
 	}else x_scale = y_scale = 1;
-	if(x_scale_old != x_scale || y_scale_old != y_scale)	fullUpdatePgs();
+	if(x_scale_old != x_scale || y_scale_old != y_scale) {
+	    isResizeManual = true;
+	    fullUpdatePgs();
+	    isResizeManual = false;
+	}
 	mess_debug(mod->nodePath().c_str(), _("Root page scale [%f:%f]."), x_scale, y_scale);
     }
     mWTime->setVisible(windowState()==Qt::WindowFullScreen);
@@ -996,7 +1000,7 @@ void VisRun::userChanged( const QString &oldUser, const QString &oldPass )
 	    y_scale *= (float)((QScrollArea*)centralWidget())->maximumViewportSize().height()/(float)master_pg->size().height();
 	    if(x_scale > 1 && x_scale < 1.05) x_scale = 1;
 	    if(y_scale > 1 && y_scale < 1.05) y_scale = 1;
-	    if(keepAspectRatio) x_scale = y_scale = vmin(x_scale, y_scale);
+	    if(keepAspectRatio()) x_scale = y_scale = vmin(x_scale, y_scale);
 	    mess_debug(mod->nodePath().c_str(), _("Root page scale [%f:%f]."), x_scale, y_scale);
 	}
 	fullUpdatePgs();
@@ -1175,7 +1179,7 @@ void VisRun::initSess( const string &prjSes_it, bool crSessForce )
     req.childAdd("get")->setAttr("path","/ses_"+work_sess+"/%2fobj%2fcfg%2fper");
     req.childAdd("get")->setAttr("path","/ses_"+work_sess+"/%2fobj%2fcfg%2fstyle");
     req.childAdd("get")->setAttr("path","/ses_"+work_sess+"/%2fobj%2fcfg%2fstLst");
-    req.childAdd("get")->setAttr("path","/prj_"+src_prj+"/%2fobj%2fcfg%2fflgs");
+    //req.childAdd("get")->setAttr("path","/prj_"+src_prj+"/%2fobj%2fcfg%2fflgs");
     req.childAdd("openlist")->setAttr("path","/ses_"+work_sess+"/%2fserv%2fpg");
     if(!cntrIfCmd(req)) {
 	// Title
@@ -1196,13 +1200,13 @@ void VisRun::initSess( const string &prjSes_it, bool crSessForce )
 	pN = req.childGet(4);
 	if(style() < 0 && pN->childSize() <= 1) mStlBar->setVisible(false);
 	// Flags
-	pN = req.childGet(5);
+	/*pN = req.childGet(5);
 	int flgs = s2i(pN->text());
 	if(flgs&0x01)		setWindowState(Qt::WindowMaximized);
 	else if(flgs&0x02)	actFullScr->setChecked(true);
-	keepAspectRatio = flgs&0x04;
+	keepAspectRatio = flgs&0x04;*/
 	// Open pages list
-	pN = req.childGet(6);
+	pN = req.childGet(5);
 	for(unsigned i_ch = 0; i_ch < pN->childSize(); i_ch++) {
 	    pgList.push_back(pN->childGet(i_ch)->text());
 	    callPage(pN->childGet(i_ch)->text());
@@ -1281,11 +1285,26 @@ void VisRun::callPage( const string& pg_it, bool updWdg )
 	// Get and activate for specific attributes to the master-page
 	XMLNode reqSpc("CntrReqs"); reqSpc.setAttr("path", pg_it);
 	reqSpc.childAdd("activate")->setAttr("path", "/%2fserv%2fattr%2fstatLine")->
-				     setAttr("aNm", _("Status line items"))->setAttr("aTp", i2s(TFld::String))->setAttr("aFlg", i2s(TFld::FullText));
+				     setAttr("aNm", _("Status line items"))->
+				     setAttr("aTp", i2s(TFld::String))->setAttr("aFlg", i2s(TFld::FullText));
+	reqSpc.childAdd("activate")->setAttr("path", "/%2fserv%2fattr%2frunWin")->
+				     setAttr("aNm", _("Run window"))->
+				     setAttr("aTp", i2s(TFld::Integer))->setAttr("aFlg", i2s(TFld::Selected))->
+				     setAttr("aVls", "0;1;2")->setAttr("aNms", _("Original size;Maximize;Full screen"));
+	reqSpc.childAdd("activate")->setAttr("path", "/%2fserv%2fattr%2fkeepAspectRatio")->
+				     setAttr("aNm", _("Keep aspect ratio on scale"))->
+				     setAttr("aTp", i2s(TFld::Boolean));
+	reqSpc.childAdd("activate")->setAttr("path", "/%2fserv%2fattr%2fstBarNoShow")->
+				     setAttr("aNm", _("No show status bar"))->
+				     setAttr("aTp", i2s(TFld::Boolean));
+	reqSpc.childAdd("activate")->setAttr("path", "/%2fserv%2fattr%2fwinPosCntrSave")->
+				     setAttr("aNm", _("Windows position control and save"))->
+				     setAttr("aTp", i2s(TFld::Boolean));
 	cntrIfCmd(reqSpc);
 
 	// Create widget view
 	master_pg = new RunPageView(pg_it, this, centralWidget());
+	conErr = NULL;			//possible a connection error status clean up
 	//master_pg->load("");
 	master_pg->setFocusPolicy(Qt::StrongFocus);
 	((QScrollArea *)centralWidget())->setWidget(master_pg);
@@ -1302,7 +1321,7 @@ void VisRun::callPage( const string& pg_it, bool updWdg )
     for(unsigned iNtf = 0; iNtf < 7; iNtf++)
 	if(((chN=req.getElementBy("path","/%2fattr%2fnotifyVis"+mod->modId()+i2s(iNtf))) && !s2i(chN->attr("rez"))) ||
 		((chN=req.getElementBy("path","/%2fattr%2fnotify"+i2s(iNtf))) && !s2i(chN->attr("rez"))))
-	    ntfReg(iNtf, chN->text());
+	    ntfReg(iNtf, chN->text(), pg_it);
 }
 
 void VisRun::pgCacheClear( )
@@ -1436,12 +1455,44 @@ void VisRun::alarmSet( unsigned alarm )
     mAlrmSt = alarm;
 }
 
-void VisRun::ntfReg( uint8_t tp, const string &props )
+void VisRun::ntfReg( uint8_t tp, const string &props, const string &pgCrtor )
 {
+    vector<string> pgPropsQ;
+
+    //Find for presented notification type
     map<uint8_t,Notify*>::iterator iN = mNotify.find(tp);
-    if(iN != mNotify.end()) return;
-    mNotify[tp] = new Notify(tp, props, this);
-    ntfSet |= (1<<tp);
+    if(iN != mNotify.end()) {
+	if(pgCrtor == iN->second->pgCrtor() && props == iN->second->props()) return;
+	pgPropsQ = iN->second->pgPropsQ;
+	if(pgCrtor != iN->second->pgCrtor()) {
+	    // Check the queue for the page already here
+	    for(vector<string>::iterator iQ = iN->second->pgPropsQ.begin(); iQ != iN->second->pgPropsQ.end(); ++iQ)
+		if(TSYS::strLine(*iQ,0) == pgCrtor) {
+		    if(props.empty()) iN->second->pgPropsQ.erase(iQ);
+		    else *iQ = pgCrtor+"\n"+props;
+		    return;
+		}
+	    if(props.empty()) return;
+	    pgPropsQ.push_back(iN->second->pgProps);
+	}
+	delete iN->second;
+	mNotify.erase(iN);
+	ntfSet &= ~(1<<tp);
+    }
+    //New or replaced creation
+    if(props.size()) {
+	mNotify[tp] = new Notify(tp, pgCrtor+"\n"+props, this);
+	mNotify[tp]->pgPropsQ = pgPropsQ;
+	ntfSet |= (1<<tp);
+
+
+    }
+    //Take and place a notificator from the queue
+    else if(pgPropsQ.size()) {
+	mNotify[tp] = new Notify(tp, pgPropsQ.back(), this); pgPropsQ.pop_back();
+	mNotify[tp]->pgPropsQ = pgPropsQ;
+	ntfSet |= (1<<tp);
+    }
 }
 
 string VisRun::cacheResGet( const string &res )
@@ -1494,6 +1545,7 @@ void VisRun::updatePage( )
 		else {
 		    ((QScrollArea *)centralWidget())->setWidget(new QWidget());
 		    master_pg = NULL;
+		    conErr = NULL;		//possible a connection error status clean up
 		}
 	    }
 	}
@@ -1563,7 +1615,7 @@ void VisRun::updatePage( )
 	    x_scale *= xSc;
 	    y_scale *= ySc;
 	    //Proportional scale
-	    if(keepAspectRatio) x_scale = y_scale = vmin(x_scale,y_scale);
+	    if(keepAspectRatio()) x_scale = y_scale = vmin(x_scale,y_scale);
 
 	    fullUpdatePgs();
 	}
@@ -1574,21 +1626,14 @@ void VisRun::updatePage( )
 
 //* Notify: Generic notifying object.		 *
 //************************************************
-VisRun::Notify::Notify( uint8_t itp, const string &props, VisRun *iown ) :
+VisRun::Notify::Notify( uint8_t itp, const string &ipgProps, VisRun *iown ) : pgProps(ipgProps),
     tp(itp), alSt(0xFFFFFFFF), repDelay(-1), comIsExtScript(false), f_notify(false), f_resource(false), f_queue(false), f_quittanceRet(false),
-    toDo(false), alEn(false), comText(props), mQueueCurTm(0), mOwner(iown)
+    toDo(false), alEn(false), mQueueCurTm(0), dataM(true), mOwner(iown), actAlrm(NULL)
 {
-    //The resource allocation object init
-    pthread_mutexattr_t attrM;
-    pthread_mutexattr_init(&attrM);
-    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&dataM, &attrM);
-    pthread_mutexattr_destroy(&attrM);
-
     //Parse properties
-    string iLn, iOpt, ico, name;
+    string iLn, iOpt, ico, name, iProps = props();
     bool hasLang  = false, hasFlags = false;
-    for(int off = 0, lCnt = 0, fPos; (!hasLang || !hasFlags || ico.empty() || name.empty()) && (iLn=TSYS::strLine(props,0,&off)).size(); lCnt++)
+    for(int off = 0, lCnt = 0, fPos; (!hasLang || !hasFlags || ico.empty() || name.empty()) && (iLn=TSYS::strLine(iProps,0,&off)).size(); lCnt++)
 	if(!hasLang && !lCnt && iLn.find("#!") == 0) { hasLang = comIsExtScript = true; continue; }
 	else if(!hasFlags && (fPos=iLn.find("flags=")) != string::npos)
 	    for(fPos += 6; (iOpt=TSYS::strParse(iLn,0,"|",&fPos)).size(); ) {
@@ -1610,7 +1655,7 @@ VisRun::Notify::Notify( uint8_t itp, const string &props, VisRun *iown ) :
 	bool fOK = false;
 	int hd = open(comProc.c_str(), O_CREAT|O_TRUNC|O_WRONLY, 0775);
 	if(hd >= 0) {
-	    fOK = write(hd, comText.data(), comText.size()) == comText.size();
+	    fOK = write(hd, props().data(), props().size()) == props().size();
 	    ::close(hd);
 	}
 	if(!fOK) {
@@ -1628,7 +1673,7 @@ VisRun::Notify::Notify( uint8_t itp, const string &props, VisRun *iown ) :
 	funcIO.ioIns(new IO("res",_("Resource stream"),IO::String,IO::Output), IFA_res);
 	funcIO.ioIns(new IO("mess",_("Notification message"),IO::String,IO::Default), IFA_mess);
 	funcIO.ioIns(new IO("lang",_("Notification message's language"),IO::String,IO::Default), IFA_lang);
-	try { comProc = SYS->daq().at().at("JavaLikeCalc").at().compileFunc("JavaScript", funcIO, comText); }
+	try { comProc = SYS->daq().at().at("JavaLikeCalc").at().compileFunc("JavaScript", funcIO, props()); }
 	catch(TError er) {
 	    mess_err((mod->nodePath()+"/sesRun_"+owner()->workSess()).c_str(), _("Function of the notificator '%s' error: %s"),
 		    funcIO.id().c_str(), er.mess.c_str());
@@ -1651,7 +1696,7 @@ VisRun::Notify::Notify( uint8_t itp, const string &props, VisRun *iown ) :
     }
     if(ico_t.isNull() && !ico_t.load(TUIS::icoGet("alarmAlarm",NULL,true).c_str())) ico_t.load(":/images/alarmAlarm.png");
     if(name.empty()) name = TSYS::strMess(_("Notyfier %d"), tp);
-    QAction *actAlrm = new QAction(QPixmap::fromImage(ico_t), name.c_str(), owner());
+    actAlrm = new QAction(QPixmap::fromImage(ico_t), name.c_str(), owner());
     actAlrm->setObjectName(("alarmNtf"+i2s(tp)).c_str());
     //actAlrm->setToolTip(_("Blink alarm"));
     if(f_queue) {
@@ -1664,9 +1709,13 @@ VisRun::Notify::Notify( uint8_t itp, const string &props, VisRun *iown ) :
     }
     actAlrm->setProperty("quittanceRet", (bool)f_quittanceRet);
     actAlrm->setCheckable(f_quittanceRet);
-    actAlrm->setVisible(false);
     owner()->menuAlarm->addAction(actAlrm);
     owner()->toolBarStatus->addAction(actAlrm);
+
+    //Apply to the current alarm status
+    actAlrm->setVisible((owner()->alarmSt()>>8)&(1<<tp));
+    if(f_quittanceRet) actAlrm->setChecked(!(owner()->alarmSt()>>16)&(1<<tp));
+    else actAlrm->setEnabled((owner()->alarmSt()>>16)&(1<<tp));
 }
 
 VisRun::Notify::~Notify( )
@@ -1679,15 +1728,26 @@ VisRun::Notify::~Notify( )
     //The command procedure remove
     if(comIsExtScript && comProc.size()) remove(comProc.c_str());
 
-    pthread_mutex_destroy(&dataM);
+    //The quittance action remove
+    if(actAlrm) actAlrm->deleteLater();
+    actAlrm = NULL;
+}
+
+string	VisRun::Notify::pgCrtor( )	{ return TSYS::strLine(pgProps, 0); }
+
+string	VisRun::Notify::props( )
+{
+    int off = 0;
+    TSYS::strLine(pgProps, 0, &off);
+    return pgProps.substr(off);
 }
 
 string VisRun::Notify::curQueueWdg( )
 {
     if(!hasQueue()) return "";
-    pthread_mutex_lock(&dataM);
+    pthread_mutex_lock(&dataM.mtx());
     string rez = mQueueCurPath;
-    pthread_mutex_unlock(&dataM);
+    pthread_mutex_unlock(&dataM.mtx());
 
     return rez;
 }
@@ -1698,10 +1758,10 @@ void VisRun::Notify::ntf( int ialSt )
     if(!f_notify || !(((ialSt^alSt)>>16)&(1<<tp)))	return;
 
     alEn = (bool)((ialSt>>16)&(1<<tp));
-    pthread_mutex_lock(&dataM);
+    pthread_mutex_lock(&dataM.mtx());
     toDo = true;
     pthread_cond_signal(&callCV);
-    pthread_mutex_unlock(&dataM);
+    pthread_mutex_unlock(&dataM.mtx());
 
     alSt = ialSt;
 }
@@ -1734,9 +1794,9 @@ void VisRun::Notify::commCall( string &res, const string &mess, const string &la
     if(comProc.empty()) return;
 
     //Shared data obtain
-    pthread_mutex_lock(&dataM);
+    pthread_mutex_lock(&dataM.mtx());
     string wcomProc = comProc;
-    pthread_mutex_unlock(&dataM);
+    pthread_mutex_unlock(&dataM.mtx());
 
     if(comIsExtScript) {
 	string resFile = "sesRun_"+owner()->workSess()+"_res"+i2s(tp);
@@ -1769,12 +1829,12 @@ void *VisRun::Notify::Task( void *intf )
 {
     VisRun::Notify &ntf = *(VisRun::Notify*)intf;
 
-    pthread_mutex_lock(&ntf.dataM);
+    pthread_mutex_lock(&ntf.dataM.mtx());
     while(!TSYS::taskEndRun() || ntf.toDo) {
-	if(!ntf.toDo) pthread_cond_wait(&ntf.callCV, &ntf.dataM);
+	if(!ntf.toDo) pthread_cond_wait(&ntf.callCV, &ntf.dataM.mtx());
 	if(!ntf.toDo || ntf.comProc.empty()) { ntf.toDo = false; continue; }
 	ntf.toDo = false;
-	pthread_mutex_unlock(&ntf.dataM);
+	pthread_mutex_unlock(&ntf.dataM.mtx());
 
 	string ntfRes, ntfMess, ntfLang;
 	unsigned delayCnt = 0;
@@ -1790,7 +1850,7 @@ void *VisRun::Notify::Task( void *intf )
 	    delayCnt = ntf.repDelay;
 	} while((ntf.repDelay >= 0 || ntf.f_queue) && ntf.alEn && !TSYS::taskEndRun());
 
-	pthread_mutex_lock(&ntf.dataM);
+	pthread_mutex_lock(&ntf.dataM.mtx());
     }
-    pthread_mutex_unlock(&ntf.dataM);
+    pthread_mutex_unlock(&ntf.dataM.mtx());
 }
