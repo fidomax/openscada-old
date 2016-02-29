@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_run.h
 /***************************************************************************
- *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,6 +23,7 @@
 #define VIS_RUN_H
 
 #include <string>
+#include <vector>
 #include <deque>
 #include <map>
 
@@ -34,6 +35,7 @@
 #include "tvision.h"
 
 using std::string;
+using std::vector;
 using std::deque;
 using std::map;
 
@@ -61,9 +63,12 @@ class VisRun : public QMainWindow
 
 		//Methods
 		explicit Notify( ) : tp(-1), comIsExtScript(false),
-		    f_notify(false), f_resource(false), f_queue(false), f_quittanceRet(false), mOwner(NULL)	{ }
-		Notify( uint8_t tp, const string &props, VisRun *own );
+		    f_notify(false), f_resource(false), f_queue(false), f_quittanceRet(false), mOwner(NULL), actAlrm(NULL)	{ }
+		Notify( uint8_t tp, const string &pgProps, VisRun *own );
 		~Notify( );
+
+		string	pgCrtor( );
+		string	props( );
 
 		bool hasQueue( )	{ return f_queue; }
 		bool hasQuittanceRet( )	{ return f_quittanceRet; }
@@ -71,6 +76,10 @@ class VisRun : public QMainWindow
 
 		void ntf( int alrmSt );	//Same notify for the alarm status
 		string ntfRes( string &mess, string &lang );	//The notification resource request
+
+		//Attributes
+		string	pgProps;			//Page-creator and it's properties
+		vector<string> pgPropsQ;		//Page-creators queue
 
 	    private:
 		//Methods
@@ -93,14 +102,15 @@ class VisRun : public QMainWindow
 
 		unsigned toDo		:1;	//Need to do some notification doings
 		unsigned alEn		:1;	//Alarm enabled
-		string	comText, comProc;	//Command text and the procedure name
+		string	comProc;		//Command procedure name
 
 		unsigned mQueueCurTm;
 		string	mQueueCurPath;
 
-		pthread_mutex_t	dataM;
+		ResMtx	dataM;
 		pthread_cond_t	callCV;
 		VisRun	*mOwner;
+		QAction	*actAlrm;
 	};
 
 	//Public methods
@@ -117,12 +127,17 @@ class VisRun : public QMainWindow
 	string	srcProject( )	{ return src_prj; }
 	float	xScale( )	{ return x_scale; }
 	float	yScale( )	{ return y_scale; }
+	bool keepAspectRatio( )	{ return mKeepAspectRatio; }
+	bool winPosCntrSave( )	{ return mWinPosCntrSave; }
 	unsigned reqTm( )	{ return reqtm; }
 	int	style( );
 	bool	connOK( )	{ return !conErr; }
+	QAction *aFullScr( )	{ return actFullScr; }
 
 	void setXScale( float vl )	{ x_scale = vl; }
 	void setYScale( float vl )	{ y_scale = vl; }
+	void setKeepAspectRatio( bool vl )	{ mKeepAspectRatio = vl; }
+	void setWinPosCntrSave( bool vl)	{ mWinPosCntrSave = vl; }
 	void setReqTm( unsigned rt )	{ reqtm = rt; }
 	void setStyle( int istl );
 
@@ -158,7 +173,11 @@ class VisRun : public QMainWindow
 	char alarmTp( char tmpl, bool quittance = false )	{ return (mAlrmSt>>(quittance?16:8)) & tmpl; }
 	int  alarmLev( )					{ return mAlrmSt & 0xFF; }
 	void alarmSet( unsigned alarm );
-	void ntfReg( uint8_t tp, const string &props );
+	//  Notification type <tp> register for no empty <props> else unregister, from the page-creator <pgCrtor>
+	void ntfReg( uint8_t tp, const string &props, const string &pgCrtor );
+
+	//Public attributes
+	bool isResizeManual;				//Manual resizing flag
 
     protected:
 	//Protected methods
@@ -230,7 +249,8 @@ class VisRun : public QMainWindow
 	QLabel		*mWTime;		//Run-time time display for fullscreen
 	QLabel		*conErr;		//Connection error label
 	bool		crSessForce;		//Force session creation flag
-	bool		keepAspectRatio;	//Keep aspect ratio on scale
+	bool		mKeepAspectRatio;	//Keep aspect ratio on scale
+	bool		mWinPosCntrSave;	//Windows position control and save
 	string 		prjSes_it, work_sess, src_prj;//Work session and source project
 	RunPageView	*master_pg;		//Master page of runtime session
 	int		mPeriod;		//Clock's period

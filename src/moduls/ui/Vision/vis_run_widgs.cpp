@@ -60,6 +60,24 @@ string RunWdgView::user( )	{ return mainWin()->user(); }
 
 VisRun *RunWdgView::mainWin( )	{ return (VisRun *)WdgView::mainWin(); }
 
+void RunWdgView::resizeF( const QSizeF &size )
+{
+    WdgView::resizeF(size);
+
+    RunPageView *holdPg = dynamic_cast<RunPageView*>(this);
+    RunWdgView *cntW = NULL;
+    if(holdPg && !holdPg->property("cntPg").toString().isEmpty())
+	cntW = (RunWdgView*)TSYS::str2addr(holdPg->property("cntPg").toString().toStdString());
+    else if(!holdPg && root() == "Box" && (holdPg=((ShapeBox::ShpDt*)shpData)->inclPg)) cntW = this;
+    if(holdPg && cntW) {
+	bool wHold = (holdPg->sizeOrigF().width() <= cntW->sizeOrigF().width());
+	bool hHold = (holdPg->sizeOrigF().height() <= cntW->sizeOrigF().height());
+	holdPg->setMinimumSize(wHold ? cntW->size().width() : holdPg->size().width(), hHold ? cntW->size().height() : holdPg->size().height());
+	holdPg->setMaximumSize(wHold ? cntW->size().width() : 1000000, hHold ? cntW->size().height() : 1000000);
+    }
+}
+
+
 string RunWdgView::pgGrp( )	{ return property("pgGrp").toString().toStdString(); }
 
 string RunWdgView::pgOpenSrc( )	{ return property("pgOpenSrc").toString().toStdString(); }
@@ -184,8 +202,20 @@ bool RunWdgView::attrSet( const string &attr, const string &val, int uiPrmPos, b
 	    return true;
 	case A_NO_ID:
 	    //User's status line items
-	    if(attr == "statLine") { mainWin()->usrStatus(val, dynamic_cast<RunPageView*>(this)); return true; }
-	    break;
+	    if(attr == "statLine")		mainWin()->usrStatus(val, dynamic_cast<RunPageView*>(this));
+	    else if(attr == "runWin") {
+		if(mainWin()->isResizeManual) return true;
+		switch(s2i(val)) {
+		    case 0: mainWin()->aFullScr()->setChecked(false); mainWin()->setWindowState(Qt::WindowNoState);	break;
+		    case 1: mainWin()->aFullScr()->setChecked(false); mainWin()->setWindowState(Qt::WindowMaximized);	break;
+		    case 2: mainWin()->aFullScr()->setChecked(true);	break;
+		}
+	    }
+	    else if(attr == "keepAspectRatio")	mainWin()->setKeepAspectRatio(s2i(val));
+	    else if(attr == "stBarNoShow")	mainWin()->statusBar()->setVisible(!s2i(val));
+	    else if(attr == "winPosCntrSave")	mainWin()->setWinPosCntrSave(s2i(val));
+	    else break;
+	    return true;
 	case A_PG_NAME:	setWindowTitle(val.c_str());	break;
 	case A_PG_OPEN_SRC: setProperty("pgOpenSrc", val.c_str());	return true;
 	case A_PG_GRP:	setProperty("pgGrp", val.c_str());		return true;
@@ -485,7 +515,7 @@ RunPageView::RunPageView( const string &iwid, VisRun *mainWind, QWidget* parent,
 
     //Restore external window position
     string xPos, yPos;
-    if(mod->winPosCntrSave()) {
+    if(mainWin()->winPosCntrSave()) {
 	if(f == Qt::Tool && (xPos=mainWin()->wAttrGet(id(),i2s(mainWin()->screen())+"geomX",true)).size() &&
 		(yPos=mainWin()->wAttrGet(id(),i2s(mainWin()->screen())+"geomY",true)).size())
 	    move(s2i(xPos), s2i(yPos));
@@ -524,8 +554,8 @@ RunPageView *RunPageView::findOpenPage( const string &ipg )
 	if(rwdg->property("isVisible").toBool() && rwdg->root() == "Box") {
 	    if(rwdg->pgOpenSrc() == ipg && !rwdg->property("inclPg").toString().isEmpty())
 		return (RunPageView*)TSYS::str2addr(rwdg->property("inclPg").toString().toStdString());
-	    if(((ShapeBox::ShpDt*)rwdg->shpData)->inclWidget) {
-		pg = ((ShapeBox::ShpDt*)rwdg->shpData)->inclWidget->findOpenPage(ipg);
+	    if(((ShapeBox::ShpDt*)rwdg->shpData)->inclPg) {
+		pg = ((ShapeBox::ShpDt*)rwdg->shpData)->inclPg->findOpenPage(ipg);
 		if(pg) return pg;
 	    }
 	}
@@ -553,8 +583,8 @@ bool RunPageView::callPage( const string &pg_it, const string &pgGrp, const stri
 		}
 		return true;
 	    }
-	    if(((ShapeBox::ShpDt*)((RunWdgView*)children().at(i_ch))->shpData)->inclWidget &&
-		    ((ShapeBox::ShpDt*)((RunWdgView*)children().at(i_ch))->shpData)->inclWidget->callPage(pg_it,pgGrp,pgSrc))
+	    if(((ShapeBox::ShpDt*)((RunWdgView*)children().at(i_ch))->shpData)->inclPg &&
+		    ((ShapeBox::ShpDt*)((RunWdgView*)children().at(i_ch))->shpData)->inclPg->callPage(pg_it,pgGrp,pgSrc))
 		return true;
         }
     //Put checking to self include pages
@@ -589,7 +619,7 @@ bool RunPageView::callPage( const string &pg_it, const string &pgGrp, const stri
 void RunPageView::closeEvent( QCloseEvent *event )
 {
     //Save curent position
-    if(mod->winPosCntrSave()) {
+    if(mainWin()->winPosCntrSave()) {
 	mainWin()->wAttrSet(id(), i2s(mainWin()->screen())+"geomX", i2s(pos().x()), true);
 	mainWin()->wAttrSet(id(), i2s(mainWin()->screen())+"geomY", i2s(pos().y()), true);
     }
@@ -607,6 +637,12 @@ void RunPageView::closeEvent( QCloseEvent *event )
 	    req.setAttr("path","/ses_"+mainWin()->workSess()+"/%2fserv%2fpg")->setAttr("pg",((RunWdgView*)children().at(i_ch))->pgOpenSrc());
 	    mainWin()->cntrIfCmd(req);
 	}*/
+}
+
+void RunPageView::hideEvent( QHideEvent * event )
+{
+    //Free of the notificators configuration of the page
+    for(unsigned iNtf = 0; iNtf < 7; iNtf++) mainWin()->ntfReg(iNtf, "", id());
 }
 
 //*********************************************
@@ -654,7 +690,7 @@ bool StylesStBar::styleSel( )
 	if(s2i(req.childGet(i_s)->attr("id")) == style())
 	    stls->setCurrentIndex(i_s);
     }
-    dlg.resize(300,120);
+    dlg.resize(300, 120);
     if(dlg.exec() == QDialog::Accepted && stls->currentIndex() >= 0) {
 	setStyle(stls->itemData(stls->currentIndex()).toInt(), stls->itemText(stls->currentIndex()).toStdString());
 	emit styleChanged();
