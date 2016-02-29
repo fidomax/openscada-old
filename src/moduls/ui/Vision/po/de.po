@@ -4,13 +4,13 @@
 # Irina Popkova <IrischkaPopkova@yandex.ru>, 2009, 2011.
 # Joan Zimmermann <j.zimmermann@fetron.de>, 2009.
 # Klaus Fetscher <k.fetscher@fetron.de>, 2009.
-# Roman Savochenko <rom_as@oscada.org>, 2010-2015.
+# Roman Savochenko <rom_as@oscada.org>, 2010-2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.UI.Vision 1.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-31 07:52+0300\n"
+"POT-Creation-Date: 2016-02-17 18:02+0200\n"
 "PO-Revision-Date: 2011-07-19 21:48+0400\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -21,10 +21,7 @@ msgstr ""
 msgid "Operation user interface (Qt)"
 msgstr "Benutzerschnittstelle (Qt)"
 
-msgid "Roman Savochenko"
-msgstr "Roman Savotschenko"
-
-msgid "Roman Savochenko, Lysenko Maxim, Yashina Kseniya"
+msgid "Roman Savochenko, Maxim Lysenko, Kseniya Yashina"
 msgstr "Roman Savotschenko, Maxim Lysjenko, Ksenija Jaschina"
 
 msgid ""
@@ -34,9 +31,6 @@ msgstr ""
 "Visuelle Betrieb Benutzeroberfläche basierend auf Qt-Bibliothek - Front-End "
 "für VCA-Motor."
 
-msgid "Developers"
-msgstr "Entwickler"
-
 #, c-format
 msgid ""
 "======================= The module <%s:%s> options =======================\n"
@@ -44,8 +38,6 @@ msgid ""
 "StartUser   <user>    No password requested start user.\n"
 "UserPass    <pass>    User password for no local start.\n"
 "RunPrjs     <list>    Run projects list on the module start.\n"
-"RunPrjsSt    {0;1}    Display status for run projects (default = 1).\n"
-"WinPosCntrSave {0;1}  Windows position control and save (default = 1).\n"
 "ExitLstRunPrjCls {0;1}Exit on last run project close (default = 1).\n"
 "CachePgLife <hours>   Cached pages lifetime.\n"
 "VCAstation  <id>      VCA station id ('.' - local).\n"
@@ -58,9 +50,6 @@ msgstr ""
 "StartUser     <user>  Startbenutzer, ohne Kennwort.\n"
 "UserPass  <passwort>  Passwort auf eine nicht-lokale Start.\n"
 "RunPrjs       <list>  Liste von aktivierten Projekte beim Starten .\n"
-"RunPrjsSt      {0;1}  Zeigt den Status der laufenden Projekte (standardmäßig "
-"= 1).\n"
-"WinPosCntrSave {0;1}  Windows-Lageregelung und sparen (standardmäßig = 1).\n"
 "ExitLstRunPrjCls {0;1}Beenden, wenn der letzte der Ablauf des Projekts "
 "(standardmäßig = 1).\n"
 "CachePgLife    <uhr>  Die Lebensdauer der Seiten im Cache.\n"
@@ -134,12 +123,6 @@ msgstr ""
 "im Format: 'PrjName-1'.\n"
 "Für eine Verbindung zum Hintergrund oder anderen geöffnet Sitzung Einsatz "
 "\"ses_{SesID}\"."
-
-msgid "Run projects status display"
-msgstr "Zeigt den Status von aktivierten Projekten"
-
-msgid "Windows position control and save"
-msgstr "Windows-Lageregelung und sparen"
 
 msgid "Exit on last run project close"
 msgstr "Beenden, wenn der letzte der Ablauf des Projekts"
@@ -846,6 +829,9 @@ msgstr ""
 "Autor: %11\n"
 "Web Seite: %12"
 
+msgid "Developers"
+msgstr "Entwickler"
+
 msgid "Manual"
 msgstr "Handbuch"
 
@@ -1003,12 +989,6 @@ msgstr "Zugang:"
 
 msgid "Calculate period (ms):"
 msgstr "Rechenzeit (ms):"
-
-msgid "Run window mode:"
-msgstr "Ausführungsfenster Modus:"
-
-msgid "Keep aspect ratio on scale:"
-msgstr "Seitenverhältnis beibehalten auf der Skala"
 
 msgid "Mime data"
 msgstr "Mime Angaben"
@@ -1711,6 +1691,21 @@ msgstr "Ausführen Projekt: %1"
 msgid "Status line items"
 msgstr "Statuszeile Elemente"
 
+msgid "Run window"
+msgstr "Fenster des Ausführung"
+
+msgid "Original size;Maximize;Full screen"
+msgstr "Originalgrösse;Maximieren;Vollbild"
+
+msgid "Keep aspect ratio on scale"
+msgstr "Seitenverhältnis beibehalten auf der Skala"
+
+msgid "No show status bar"
+msgstr "Keine Statusleiste anzeigen"
+
+msgid "Windows position control and save"
+msgstr "Windows-Lageregelung und sparen"
+
 msgid "Alarm level: %1"
 msgstr "Stufe der Störung: %1"
 
@@ -2219,57 +2214,3 @@ msgstr "Zeit der Initialisation '%s' %f ms."
 
 msgid "Vision dialog"
 msgstr "Vision-Dialog"
-
-#~ msgid "Alarms"
-#~ msgstr "Störungen"
-
-#~ msgid "Play command"
-#~ msgstr "Play Kommando"
-
-#~ msgid ""
-#~ "Command line for call sounds play.\n"
-#~ "Use %f for source file name inserting. If source file is not used play "
-#~ "sample is sent to pipe."
-#~ msgstr ""
-#~ "Kommandozeile für Wiedergabe des Tons.\n"
-#~ "Verwenden Sie %f für Dateinamen. Falls Dateiname nicht verwendet wird, "
-#~ "werden die Dateien in den Kanal gesendet."
-
-#~ msgid "Blink alarm"
-#~ msgstr "Blinzalarme"
-
-#~ msgid "The button for all blink alarms quittance"
-#~ msgstr "Schaltfläche für Quittierung alle Alarme blinken"
-
-#~ msgid "Press for all blink alarms quittance."
-#~ msgstr "Betätigen für die Quittierung alle Alarme blinken."
-
-#~ msgid "Speaker alarm"
-#~ msgstr "Lautsprecheralarm"
-
-#~ msgid "PC speaker alarm"
-#~ msgstr "PC Lautsprecheralarm"
-
-#~ msgid "The button for all PC speaker alarms quittance"
-#~ msgstr "Schaltfläche für die Quittierung aller Lautsprecheralarme"
-
-#~ msgid "Press for all PC speaker alarms quittance."
-#~ msgstr "Betätigen für die Quittierung aller Lautsprecheralarme."
-
-#~ msgid "Sound/speech alarm"
-#~ msgstr "Signal/Redealarm"
-
-#~ msgid "Sound or speech alarm"
-#~ msgstr "Signal- oder Redealarm"
-
-#~ msgid "The button for all sound or speech alarms quittance"
-#~ msgstr "Schaltfläche für die Quittierung aller akustischen Alarme"
-
-#~ msgid "Press for all sound or speech alarms quittance."
-#~ msgstr "Betätigen für Quittierung aller akustischen Alarme."
-
-#~ msgid "Error open: %s"
-#~ msgstr "Fehler beim Öffnen: %s"
-
-#~ msgid "Error write to: %s"
-#~ msgstr "Fehler schreiben Sie an: %s"
