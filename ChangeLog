@@ -1,3 +1,36 @@
+2016-02-29 fido_max
+- DAQ.FT3: B_BIP updated, logic side implemented (tmHandler, cmdGet, cmdSet), version rise to 0.2.0.
+- Protocol.FT3: Version rise to 0.2.0.
+
+2016-02-28 Roman
+- DB.Model.{AGLKS.vca.db,Boiler.St.db}: Visualizer's UI.Vision specific attributes moved to the project's root-page.
+- FIX:SYS: User's space flags to generic nodes (TCntrNode) processing fixed, mostly for "RM_Full" flag and DAQ paramter's archives propper removing.
+- UI.Vision: Global modification mark processing moved to different function modifyGlbStUpdate() and some changed.
+- FIX:UI.Vision: Included to container's pages align processing rewrote to trace on the widget's geometry update and
+    to the misaligned scrol-bars appearing sometime prevent.
+
+
+2016-02-17 Roman
+- FIX:UI.VCAEngine: Notifications by queue and direct pointed resource is fixed.
+- SYS: CoreLib version rise to 3.5.
+    Security: Adapted to prevent passwors storing in open view as hash instead, for: OpenSCADA host (Transports), Protocol.SelfSystem, UI.Vision.
+    Security: crypt_r() using enabled only for "__USE_GNU" and the open passwords store instead.
+
+
+2016-02-15 Roman
+- UI.{VCAEngine,Vision}: Projects flags moved to as the visualizator specific attributes "runWin" and "keepAspectRatio".
+    Vision global properties "stBarNoShow", "winPosCntrSave" moved to the visualizator specific attributes.
+- UI.VCAEngine: Control request "activate" expanded by "aVls" and "aNms" determine.
+- SYS: Function realRound() some simply set.
+    System configuration fields "workdir", "moddir", "icodir" and "docdir" set to readonly from the configuration interface,
+	mostly for wrong changes prevent and the changes allow only by the configuration file edit.
+- *.=Tmpl=.configure.ac: Some spare code parts removed, mostly for old i18n manage.
+- FIX:DAQ.OPC_UA.libOPC_UA: Variable's statuses added, mostly for the "Publish" service.
+    Initial "Publish" responses are added: first after the CreateSubscrition service and second after the CreateMonitoredItems service.
+- UI.{VCAEngine,Vision}: pthread_mutex_t moved to ResMtx. Notifications expanded to unregister and stacked registering ones from other pages.
+- FIX:UI.Vision: conErr pointer lost for not zero set at the master page free/replace is fixed. That sometime causes to crashes!
+
+
 2016-01-31 Roman
 - DAQ.OPC_UA.libOPC_UA: New client/server services implemented:
     RegisterNodesRequest, RegisterNodesResponse, UnregisterNodesRequest, UnregisterNodesResponse. Only formal and no a real doings!
