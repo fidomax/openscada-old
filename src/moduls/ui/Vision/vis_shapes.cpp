@@ -917,7 +917,7 @@ bool ShapeFormEl::eventFilter( WdgView *w, QObject *object, QEvent *event )
 		switch(shD->elType) {
 		    case F_LIST: case F_TREE: case F_TABLE:
 			QApplication::sendEvent(w, event);
-			return true;
+			return false;
 		}
 		break;
 	    }
@@ -1869,7 +1869,7 @@ bool ShapeDiagram::attrSet( WdgView *w, int uiPrmPos, const string &val )
 	case A_DiagramTrcPer:
 	    shD->trcPer = s2r(val);
 	    if(shD->trcPer < 0.01) { shD->trcPer = 0; shD->trcTimer->stop(); }
-	    else shD->trcTimer->start(shD->trcPer*1000);
+	    else shD->trcTimer->start(vmax(qobject_cast<RunWdgView*>(w)?0.01:1,shD->trcPer)*1000);
 	    break;
 	case A_DiagramType: shD->type = s2i(val); reld_tr_dt = 2;		break;
 	case A_DiagramTSek:
