@@ -1,3 +1,19 @@
+2016-04-06 Roman
+- DB.LibsDB.vcaBase.db: Left graphics group fix to "name" attribute.
+- !!:Archives: messPut() and messGet() expanded to archivators list allow instead single.
+    User API function messGet() expanded by argument "upTo", for the timeout direct control allow.
+- FIX:DB.PostgreSQL: Fix cycling at unsuccessful a table's structure correction.
+- UI.VCAEngine: To messages reading by repeating tags of primitive "Document" added attribute "docAMessArchs" to allow read only archivators.
+
+
+2016-04-04 Roman
+- SYS: TSYS::strEncode() in variant SQL expanded by doubling method of pointed symbols.
+- DB.{PostgreSQL,SQLite}: TSYS::strEncode() in doubling method used.
+- UI.VCAEngine: Manual creation mark for pages is added. Mostly for modification of childs clean up and it's inheritance storing prevent
+    by it is spare and sometime problematic on the parent update, like messages about impossible to enable a widget.
+- FIX:DB.PostgreSQL: Fixed for symbols "'" '"' encoding by it replace to the doubling method.
+
+
 2016-04-03 Roman
 - UI.{Vision,WebVision}: For primitive "Diagram" to data block "data:<dt/>" option "Aproximation (aprox)" is added.
 - !!:DAQ.DCON: Some cleaned. Adapted and enabled hierarchical parameters. Pass to real requests at the first and last iterations.
