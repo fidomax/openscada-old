@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tarchives.h
 /***************************************************************************
- *   Copyright (C) 2003-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -59,23 +59,23 @@ class TMArchivator : public TCntrNode, public TConfig
 	string	workId( );
 	string	name( );
 	string	dscr( )		{ return cfg("DESCR").getS(); }
-	bool	toStart( )	{ return m_start; }
-	bool	startStat( )	{ return run_st; }
+	bool	toStart( )	{ return mStart; }
+	bool	startStat( )	{ return runSt; }
 	string	addr( )		{ return cfg("ADDR").getS(); }
 	int	level( )	{ return mLevel; }
 	void	categ( vector<string> &list );
 
-	string	DB( )		{ return m_db; }
+	string	DB( )		{ return mDB; }
 	string	tbl( );
 	string	fullDB( )	{ return DB()+'.'+tbl(); }
 
 	void setName( const string &vl )	{ cfg("NAME").setS(vl); }
 	void setDscr( const string &vl )	{ cfg("DESCR").setS(vl); }
-	void setToStart( bool vl )		{ m_start = vl; modif(); }
+	void setToStart( bool vl )		{ mStart = vl; modif(); }
 	void setAddr( const string &vl )	{ cfg("ADDR").setS(vl); }
 	void setLevel( int lev )		{ mLevel = lev; }
 
-	void setDB( const string &idb )		{ m_db = idb; modifG(); }
+	void setDB( const string &idb )		{ mDB = idb; modifG(); }
 
 	virtual void start( );
 	virtual void stop( );
@@ -104,7 +104,7 @@ class TMArchivator : public TCntrNode, public TConfig
 	bool chkMessOK( const string &icateg, int8_t ilvl );
 
 	//Protected atributes
-	bool	run_st;
+	bool	runSt;
 	int	messHead;			//Last read and archived head of messages buffer
 
     private:
@@ -114,8 +114,8 @@ class TMArchivator : public TCntrNode, public TConfig
 	//Private attributes
 	TCfg	&mId,		//Mess arch id
 		&mLevel;	//Mess arch level
-	char	&m_start;	//Mess arch starting flag
-	string	m_db;
+	char	&mStart;	//Mess arch starting flag
+	string	mDB;
 };
 
 //************************************************
@@ -207,7 +207,7 @@ class TArchiveS : public TSubSYS
 	AutoHD<TTypeArchivator> at( const string &name )		{ return modAt(name); }
 
 	// Message archive function
-	void messPut( time_t tm, int utm, const string &categ, int8_t level, const string &mess );
+	void messPut( time_t tm, int utm, const string &categ, int8_t level, const string &mess, const string &arch = "" );
 	void messPut( const vector<TMess::SRec> &recs );
 	void messGet( time_t b_tm, time_t e_tm, vector<TMess::SRec> & recs, const string &category = "",
 	    int8_t level = TMess::Debug, const string &arch = "", time_t upTo = 0 );
