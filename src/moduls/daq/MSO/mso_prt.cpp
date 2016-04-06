@@ -41,13 +41,7 @@ TProt::TProt( string name ) : TProtocol(PRT_ID), mPrtLen(0)
 {
     modPrt	= this;
 
-    mType	= PRT_TYPE;
-    mName	= PRT_NAME;
-    mVers	= PRT_MVER;
-    mAuthor	= PRT_AUTHORS;
-    mDescr	= PRT_DESCR;
-    mLicense	= PRT_LICENSE;
-    mSource	= name;
+    modInfoMainSet(DAQ_NAME, DAQ_TYPE, DAQ_MVER, DAQ_AUTHORS, DAQ_DESCR, DAQ_LICENSE, name);
 
     mNode = grpAdd("n_");
 

@@ -57,13 +57,7 @@ TTpContr::TTpContr(string name) :
 {
     mod = this;
 
-    mName = DAQ_NAME;
-    mType = DAQ_TYPE;
-    mVers = DAQ_MVER;
-    mAuthor = DAQ_AUTHORS;
-    mDescr = DAQ_DESCR;
-    mLicense = DAQ_LICENSE;
-    mSource = name;
+    modInfoMainSet(DAQ_NAME, DAQ_TYPE, DAQ_MVER, DAQ_AUTHORS, DAQ_DESCR, DAQ_LICENSE, name);
 }
 
 TTpContr::~TTpContr()
