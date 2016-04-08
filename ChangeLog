@@ -1,6 +1,98 @@
+2016-04-07 Roman
+- DB.LibsDB.OscadaLibs.db: DAQ template "base.anUnif" expanded by attribute "Connection lost detect delay, s"
+    for prevent blinks into hosts in redundancy or so one.
+- Archives: pthread_mutex_t resources allocation moved to ResMtx and it's space decreased exclusively to local buffers access and
+    prevent some racecondition at the arcivators access.
+- DAQ.ModBus: "Value" field of templates set to use as default link, on first enable.
+
+
+2016-04-06 Roman
+- DB.LibsDB.vcaBase.db: Left graphics group fix to "name" attribute.
+- !!:Archives: messPut() and messGet() expanded to archivators list allow instead single.
+    User API function messGet() expanded by argument "upTo", for the timeout direct control allow.
+- FIX:DB.PostgreSQL: Fix cycling at unsuccessful a table's structure correction.
+- UI.VCAEngine: To messages reading by repeating tags of primitive "Document" added attribute "docAMessArchs" to allow read only archivators.
+
+
+2016-04-04 Roman
+- SYS: TSYS::strEncode() in variant SQL expanded by doubling method of pointed symbols.
+- DB.{PostgreSQL,SQLite}: TSYS::strEncode() in doubling method used.
+- UI.VCAEngine: Manual creation mark for pages is added. Mostly for modification of childs clean up and it's inheritance storing prevent
+    by it is spare and sometime problematic on the parent update, like messages about impossible to enable a widget.
+- FIX:DB.PostgreSQL: Fixed for symbols "'" '"' encoding by it replace to the doubling method.
+
+
+2016-04-03 Roman
+- UI.{Vision,WebVision}: For primitive "Diagram" to data block "data:<dt/>" option "Aproximation (aprox)" is added.
+- !!:DAQ.DCON: Some cleaned. Adapted and enabled hierarchical parameters. Pass to real requests at the first and last iterations.
+    enRes and reqRes resources lockators moved from Res to ResMtx.
+- !:DAQ.{ModBus,Siemens}: Pass to real requests at the first and last iterations, only the procedures execution.
+
+
+2016-04-01 Roman
+- FIX:DB.{SQLite,MySQL,PostgreSQL,FireBird}: Previous scaned value getting prevented on the original value setting to clear all extended structure of translated value.
+    Detected on UI,VCAEngine users attributes seek.
+- Protocol.SelfSystem: Attribute "remoteSrcAddr" of the root node set/reserve to the remoted host's address.
+- FIX:UI.VCAEngine: Mostly information messages from information level moved to debug.
+    User API functions mess{Debug,Info,Note,Warning,Err,Crit,Alert,Emerg}() appended to the run-time widget and included the widget path as category.
+    FIX: setNoTransl() at the attributes loading disabled by some problematic and no a sence.
+    The note messages is added: "User is changed to ...", "User is connected ...", "User is disconnected ...".
+- UI.{VCAEngine,Vision}: To view "Table" of the primitive FormEl into root tag "tbl" added attribute "sortEn" to direct sorting by columns.
+- FIX:UI.Vision: For the attribute inspector labels of the attributes the ToolTip is added to long names (>20).
+    FIX: The palette restoring to visibleCheck function is added for prevent FormEl's artifacts at last.
+    The view "Table" of the primitive FormEl mostly adapted to sorting by the columns.
+
+
+2016-03-23 Roman
+- FIX:Archive: Group messages archives request timeout, for common, fix into get().
+- Archive.DBArch: Quick messages obtain by separated field "DT" set compatible but the field "TM" left to store full time.
+- FIX:UI.Vision: Mouse events at all enabled for "FormEl" primitive and some artifications like ticks lost into Slider
+    but mostly into Table detected and fixed.
+
+
+2016-03-21 Roman
+- DB.LibsDB.vcaBase.db: Main.ElCadr: Field of description checking to EVAL is added for empty value place.
+- !!:FIX:SYS: TCntrNode::nodeDis() fixed to prevent attach to the node at it disabling and result crash.
+- TConfig: Moved to ResMtx from direct pthread_mutex_t.
+- FIX:Archive: m_start, run_st, m_db were renamed to mStart, runSt, mDB. Time limit for get() messages fix.
+- !!!!:FIX:Archive.DBArch: New options of the messages archiver are added: "Store time as pure integer", "Scan by days threshold in seconds".
+    "Archive size (hours)" for both values and messages adapted for set to zero (<0.1) and disable the limit at all.
+    Table structure's for value and messages set adaptive and moved to the objects TMArchivator and ModVArchEl.
+    By the option "Scan by days threshold in seconds" enabled separation the "datatime" row to "date" and "time" with allow significant rise
+	the performance of reading message's big parts by day's blocks scan/seek and decrease the scan/seek by seconds.
+- UI.{VCAEngine,Vision}: Logical groups separator of Widget's attributes is changed from ":" to ": " everywhere, mostly for allow
+    the user attribute value's items separtion and description it with the symbol ":". Some like user attributes will not now grouped before fix!
+
+
+2016-03-16 Roman
+- !!:FIX:DB.{MySQL,}: Prevented the "BEGIN;" and "COMMIT;" request's sequence breakage on high concurrency access activity.
+    "connRes" moved from pthread_mutex direct to ResMtx wrapper.
+
+
+2016-03-12 Roman
+- DAQ.OPC_UA: Some spare error messages removed.
+- UI.Vision: Primitive "Diagram" updated period limited to one second in the development mode.
+- FIX:Special.FLibSYS: IO.pos for string fixed. Single integer and real reading fixed on the position seek.
+- FIX:UI.Vision: Context menu problem for views List, Tree and Table is fixed, for allow the right mouse button's event come to the system functions.
+
+
+2016-03-03 Roman
+- Archive: TArchives::messPut() expanded by the argument "arch" to allow direct to the archiver writing.
+    Same expanded the user API function messPut().
+- !!!:FIX:Archive.FSArch: Check for duplicate as equal time, category, level and it prevent is added.
+    Check for duplicated at all fixed. Time into cache changed from time_t to int64_t (in microseconds).
+- UI.{VCAEngine,Vision}: Primitive's "Diagram" attribute "trcPer" type changed from "Integer" to "Real".
+    UI.Vision also adapted for update the "Diagram" down to 0.01 ms.
+- !!!!:UI.Vision: View "Table" of the primitive "FormEl" significant expanded by: global table's attributes: "hHdrVis", "vHdrVis";
+	row attributes "colorText", "font"; column attributes "color", "colorText", "font".
+    Context menu support enabled for views: List, Tree and Table.
+- FIX:UI.{Vision,WebVision}: Mode "XY" of the primitive "Diagram" fixed for build by sorting by 'X' disable, only the hierarchical order.
+
+
 2016-02-29 fido_max
 - DAQ.FT3: B_BIP updated, logic side implemented (tmHandler, cmdGet, cmdSet), version rise to 0.2.0.
 - Protocol.FT3: Version rise to 0.2.0.
+
 
 2016-02-28 Roman
 - DB.Model.{AGLKS.vca.db,Boiler.St.db}: Visualizer's UI.Vision specific attributes moved to the project's root-page.

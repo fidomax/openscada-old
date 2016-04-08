@@ -34,7 +34,7 @@
 #define MOD_NAME	_("DB MySQL")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"2.4.1"
+#define MOD_VER		"2.4.3"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("BD module. Provides support of the BD MySQL.")
 #define MOD_LICENSE	"GPL2"
@@ -86,20 +86,14 @@ void BDMod::load_( )	{ }
 //************************************************
 //* BDMySQL::MBD				 *
 //************************************************
-MBD::MBD( string iid, TElem *cf_el ) : TBD(iid, cf_el), reqCnt(0), reqCntTm(0), trOpenTm(0)
+MBD::MBD( string iid, TElem *cf_el ) : TBD(iid, cf_el), reqCnt(0), reqCntTm(0), trOpenTm(0), connRes(true)
 {
-    pthread_mutexattr_t attrM;
-    pthread_mutexattr_init(&attrM);
-    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&connRes, &attrM);
-    pthread_mutexattr_destroy(&attrM);
-
     setAddr("localhost;root;123456;test;;;utf8");
 }
 
 MBD::~MBD( )
 {
-    pthread_mutex_destroy(&connRes);
+
 }
 
 void MBD::postDisable( int flag )
@@ -123,7 +117,7 @@ void MBD::postDisable( int flag )
 
 void MBD::enable( )
 {
-    MtxAlloc resource(connRes, true);
+    MtxAlloc resource(connRes.mtx(), true);
     if(enableStat())	return;
 
     //Address parse
@@ -181,7 +175,7 @@ void MBD::enable( )
 
 void MBD::disable( )
 {
-    MtxAlloc resource(connRes, true);
+    MtxAlloc resource(connRes.mtx(), true);
     if(!enableStat())	return;
 
     //Last commit
@@ -218,10 +212,11 @@ void MBD::sqlReq( const string &ireq, vector< vector<string> > *tbl, char intoTr
 
     string req = Mess->codeConvOut(cd_pg.c_str(), ireq);
 
+    MtxAlloc resource(connRes.mtx(), true);	//!! Moved before the transaction checking for prevent the "BEGIN;" and "COMMIT;"
+						//   request's sequence breakage on high concurrency access activity
+
     if(intoTrans && intoTrans != EVAL_BOOL) transOpen();
     else if(!intoTrans && reqCnt) transCommit();
-
-    MtxAlloc resource(connRes, true);
 
     int irez, eNRez;
     rep:
@@ -279,22 +274,22 @@ void MBD::transOpen( )
     //Check for limit into one trinsaction
     if(reqCnt > 1000) transCommit();
 
-    pthread_mutex_lock(&connRes);
+    connRes.lock();
     bool begin = !reqCnt;
     if(begin) trOpenTm = SYS->sysTm();
     reqCnt++;
     reqCntTm = SYS->sysTm();
-    pthread_mutex_unlock(&connRes);
+    connRes.unlock();
 
     if(begin) sqlReq("BEGIN;");
 }
 
 void MBD::transCommit( )
 {
-    pthread_mutex_lock(&connRes);
+    connRes.lock();
     bool commit = reqCnt;
     reqCnt = reqCntTm = 0;
-    pthread_mutex_unlock(&connRes);
+    connRes.unlock();
 
     if(commit) sqlReq("COMMIT;");
 }
@@ -821,8 +816,10 @@ void MTable::setVal( TCfg &cf, const string &val, bool tr )
 		if(!tr && cf.fld().flg()&TCfg::TransltText && !cf.noTransl()) Mess->translReg(val, "db:"+fullDBName()+"#"+cf.name());
 	    }
 	    else {
-		cf.setS(val, (tr?TCfg::ExtValTwo:TCfg::ExtValOne));
-		if(!tr) cf.setS("db:"+fullDBName()+"#"+cf.name(), TCfg::ExtValThree);
+		if(!tr) {
+		    cf.setS(val);	//!! Sets no flag instead the TCfg::ExtValOne for clean up from previous the Two, Three
+		    cf.setS("db:"+fullDBName()+"#"+cf.name(), TCfg::ExtValThree);
+		} else cf.setS(val, TCfg::ExtValTwo);
 	    }
 	    break;
 	default: cf.setS(val); break;
