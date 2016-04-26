@@ -249,7 +249,7 @@ string TSYS::uint2str( unsigned val, IntView view )
     return buf;
 }
 
-string TSYS::ll2str( int64_t val, IntView view )
+string TSYS::ll2str( long long val, IntView view )
 {
     char buf[NSTR_BUF_LEN];
     switch(view) {
@@ -644,8 +644,9 @@ void TSYS::save_( )
 
 int TSYS::start( )
 {
-    //High priority service task creation
+    //High priority service task and redundancy start
     taskCreate("SYS_HighPriority", 20, TSYS::HPrTask, this);
+    taskCreate("SYS_Redundancy", 5, TSYS::RdTask, this);
 
     //Subsystems starting
     vector<string> lst;
@@ -658,9 +659,6 @@ int TSYS::start( )
 	    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 	    mess_err(nodePath().c_str(),_("Error start subsystem '%s'."),lst[i_a].c_str());
 	}
-
-    //Redundant task start
-    taskCreate("SYS_Redundancy", 5, TSYS::RdTask, this);
 
     cfgFileScan(true);
 
@@ -708,7 +706,7 @@ int TSYS::start( )
 	    mess_err(nodePath().c_str(),_("Error stop subsystem '%s'."),lst[i_a].c_str());
 	}
 
-    //High priority service task stop
+    //High priority service task and redundancy stop
     taskDestroy("SYS_Redundancy");
     taskDestroy("SYS_HighPriority");
 
@@ -2176,7 +2174,7 @@ TVariant TSYS::objFuncCall( const string &iid, vector<TVariant> &prms, const str
 	return string("0");
     }
     // int sleep(real tm, int ntm = 0) - call for task sleep to <tm> seconds and <ntm> nanoseconds.
-    //  tm - wait time in seconds, no more to 100 seconds
+    //  tm - wait time in seconds (precised up to nanoseconds), up to STD_INTERF_TM(5 seconds)
     //  ntm - wait time part in nanoseconds
     if(iid == "sleep" && prms.size() >= 1) {
 	struct timespec sp_tm;
