@@ -87,13 +87,13 @@ class TSYS : public TCntrNode
 	class SStat {
 	    public:
 		SStat( int8_t ilev, bool iisLive = false, float icnt = 0 ) :
-		    lev(ilev), isLive(iisLive), cnt(icnt) { }
-		SStat( ) : lev(-1), isLive(false), cnt(0) { }
+		    lev(ilev), isLive(iisLive), isLivePrev(iisLive), cnt(icnt) { }
+		SStat( ) : lev(-1), isLive(false), isLivePrev(false), cnt(0) { }
 
 		bool isActive( )	{ return (lev >= 0 && isLive); }
 
 		int8_t	lev;
-		bool	isLive;
+		bool	isLive, isLivePrev;
 		float	cnt;
 	};
 
@@ -210,12 +210,12 @@ class TSYS : public TCntrNode
 	void setRdTaskPer( float vl )	{ mRdTaskPer = vmin(255,vmax(0.1,vl)); modif(); }
 	int rdRestConnTm( )		{ return mRdRestConnTm; }
 	void setRdRestConnTm( int vl )	{ mRdRestConnTm = vmin(255,vmax(0,vl)); modif(); }
-	string rdStRequest( XMLNode &req, const string &st = "" );	//Request to a remote station if <st> is empty or force
+	string rdStRequest( XMLNode &req, const string &st = "", bool toScan = false );	//Request to a remote station if <st> is empty or force
 
 	// Convert value to string
 	static string int2str( int val, IntView view = Dec );
 	static string uint2str( unsigned val, IntView view = Dec );
-	static string ll2str( int64_t val, IntView view = Dec );
+	static string ll2str( long long val, IntView view = Dec );
 	static string real2str( double val, int prec = 15, char tp = 'g' );
 	static double realRound( double val, int dig = 0, bool toint = false ) {
 	    double rez = floor(val*pow(10,dig)+0.5)/pow(10,dig);
