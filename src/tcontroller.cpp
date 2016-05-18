@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tcontroller.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -31,7 +31,7 @@ using namespace OSCADA;
 TController::TController( const string &id_c, const string &daq_db, TElem *cfgelem ) :
     TConfig(cfgelem), enSt(false), runSt(false),
     mId(cfg("ID")), mMessLev(cfg("MESS_LEV")), mAEn(cfg("ENABLE").getBd()), mAStart(cfg("START").getBd()),
-    mDB(daq_db), mRedntSt(dataRes()), mRedntUse(false)
+    mDB(daq_db), mRedntSt(dataRes()), mRedntUse(true), mRedntFirst(true)
 {
     mId = id_c;
     mPrm = grpAdd("prm_");
@@ -155,6 +155,8 @@ void TController::load_( )
     cfgViewAll(true);
     SYS->db().at().dataGet(fullDB(),owner().nodePath()+"DAQ",*this);
 
+    mRedntUse = owner().redntAllow() && (bool)redntMode();
+
     LoadParmCfg();
 
     if(!enSt && enSt_prev)	enable();
@@ -205,8 +207,6 @@ void TController::enable( )
 
 	//Enable for children
 	enable_();
-
-	mRedntUse = owner().redntAllow() && (bool)redntMode();
     }
 
     bool enErr = false;
@@ -310,20 +310,6 @@ void TController::add( const string &name, unsigned type )	{ chldAdd(mPrm, Param
 
 TParamContr *TController::ParamAttach( const string &name, int type)	{ return new TParamContr(name, &owner().tpPrmAt(type)); }
 
-TController::Redundant TController::redntMode( )	{ return (TController::Redundant)cfg("REDNT").getI(); }
-
-void TController::setRedntMode( Redundant vl )		{ cfg("REDNT").setI(vl); modif(); }
-
-string TController::redntRun( )				{ return cfg("REDNT_RUN").getS(); }
-
-void TController::setRedntRun( const string &vl )	{ cfg("REDNT_RUN").setS(vl); modif(); }
-
-void TController::setRedntUse( bool vl )
-{
-    if(mRedntUse == vl) return;
-    mRedntUse = vl;
-}
-
 void TController::redntDataUpdate( )
 {
     vector<string> pls;
@@ -331,13 +317,13 @@ void TController::redntDataUpdate( )
 
     //Prepare group request to parameters
     AutoHD<TParamContr> prm;
-    XMLNode req("CntrReqs"); req.setAttr("path",nodePath(0,true));
+    XMLNode req("CntrReqs"); req.setAttr("path",nodePath());
     req.childAdd("get")->setAttr("path","/%2fcntr%2fst%2fstatus");
-    for(int i_p = 0; i_p < (int)pls.size(); i_p++) {
-	prm = at(pls[i_p]);
-	if(!prm.at().enableStat()) { pls.erase(pls.begin()+i_p); i_p--; continue; }
+    for(int iP = 0; iP < (int)pls.size(); iP++) {
+	prm = at(pls[iP]);
+	if(!prm.at().enableStat()) { pls.erase(pls.begin()+iP); iP--; continue; }
 
-	XMLNode *prmNd = req.childAdd("get")->setAttr("path","/prm_"+pls[i_p]+"/%2fserv%2fattr");
+	XMLNode *prmNd = req.childAdd("get")->setAttr("path","/prm_"+pls[iP]+"/%2fserv%2fattr");
 
 	// Prepare individual attributes list
 	prmNd->setAttr("sepReq", "1");
@@ -360,21 +346,21 @@ void TController::redntDataUpdate( )
     }
 
     //Send request to first active station for this controller
-    if(owner().owner().rdStRequest(workId(),req).empty()) return;
+    if(owner().owner().rdStRequest(workId(),req,"",!mRedntFirst).empty()) return;
+    mRedntFirst = false;
 
     //Write data to parameters
     if(req.childSize()) mRedntSt.setVal(req.childGet(0)->text());
-    for(unsigned i_p = 0; i_p < pls.size(); i_p++) {
-	prm = at(pls[i_p]);
-	for(unsigned i_a = 0; i_a < req.childGet(i_p+1)->childSize(); i_a++) {
-	    XMLNode *aNd = req.childGet(i_p+1)->childGet(i_a);
+    for(unsigned iP = 0; iP < pls.size(); iP++) {
+	prm = at(pls[iP]);
+	for(unsigned i_a = 0; i_a < req.childGet(iP+1)->childSize(); i_a++) {
+	    XMLNode *aNd = req.childGet(iP+1)->childGet(i_a);
 	    if(!prm.at().vlPresent(aNd->attr("id"))) continue;
 	    AutoHD<TVal> vl = prm.at().vlAt(aNd->attr("id"));
 
 	    if(aNd->name() == "el")
 	    { vl.at().setS(aNd->text(),atoll(aNd->attr("tm").c_str()),true); vl.at().setReqFlg(false); }
-	    else if(aNd->name() == "ael" && !vl.at().arch().freeStat() && aNd->childSize())
-	    {
+	    else if(aNd->name() == "ael" && !vl.at().arch().freeStat() && aNd->childSize()) {
 		int64_t btm = atoll(aNd->attr("tm").c_str());
 		int64_t per = atoll(aNd->attr("per").c_str());
 		TValBuf buf(vl.at().arch().at().valType(),0,per,false,true);

@@ -133,7 +133,7 @@ void TCntrNode::cntrCmd( XMLNode *opt, int lev, const string &ipath, int off )
 	    if(!chNd.freeStat()) chNd.at().cntrCmd(opt, 0, path, off);
 	    return;
 	}
-	//Post command to node
+	//Post the command to the node
 	if(opt->name() == "CntrReqs")
 	    for(unsigned i_n = 0; i_n < opt->childSize(); i_n++) {
 		XMLNode *nChld = opt->childGet(i_n);
@@ -142,10 +142,17 @@ void TCntrNode::cntrCmd( XMLNode *opt, int lev, const string &ipath, int off )
 		nChld->attrDel("user");
 	    }
 	else {
-	    opt->setAttr("path",s_br);
+	    opt->setAttr("path", s_br);
 	    cntrCmdProc(opt);
 	    if(opt->attr("rez") != "0")
 		throw TError("ContrItfc",_("%s:%s:> Control element '%s' error!"),opt->name().c_str(),(nodePath()+path).c_str(),s_br.c_str());
+
+	    // Check and put the command to the redundant stations
+	    if(SYS->rdPrimCmdTr() && SYS->rdEnable() && SYS->rdActive() && s2i(opt->attr("primaryCmd"))) {
+		string aNm = opt->name(), lstStat;
+		opt->setAttr("path", nodePath()+"/"+TSYS::strEncode(s_br,TSYS::PathEl))->setAttr("primaryCmd", "");
+		while((lstStat=SYS->rdStRequest(*opt,lstStat,true)).size()) ;
+	    }
 	}
     }
     catch(TError err) {
