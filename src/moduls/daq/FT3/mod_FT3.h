@@ -64,9 +64,13 @@ namespace FT3
      uint8_t h;
      uint16_t ms100;
      };*/
+
+#define mlD 252
+#define nBE 400
+
     typedef struct sMsg  // FT3 message
     {
-	uint8_t D[252]; // data
+	uint8_t D[mlD]; // data
 	uint8_t L; // length
 	uint8_t C; // command
 	uint8_t A; // destination address
@@ -96,9 +100,6 @@ namespace FT3
     {
 	TaskNone = 0, TaskIdle = 1, TaskRefresh = 2, TaskSet = 3
     } ModeTask;
-
-#define mlD 252
-#define nBE 400
 
     struct blockEvents
     {
