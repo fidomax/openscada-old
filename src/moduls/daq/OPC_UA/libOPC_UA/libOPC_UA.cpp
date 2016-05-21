@@ -764,19 +764,19 @@ void UA::oDataValue( string &buf, uint8_t eMsk, const string &vl, uint8_t vEMsk,
 	    case OpcUa_IntAuto: {
 		int64_t tVl = llabs(strtoll(vl.c_str(),NULL,10));
 		uint8_t vTp = OpcUa_SByte;
-		if(tVl >= (1ll<<31))	vTp = OpcUa_Int64;
+		if(tVl >= (1ll<<31))		vTp = OpcUa_Int64;
 		else if(tVl >= (1ll<<15))	vTp = OpcUa_Int32;
 		else if(tVl >= (1ll<<7))	vTp = OpcUa_Int16;
-		vEMsk = vEMsk&(~OpcUa_VarMask) | vTp;
+		vEMsk = (vEMsk&(~OpcUa_VarMask)) | vTp;
 		break;
 	    }
 	    case OpcUa_UIntAuto: {
 		uint64_t tVl = strtoull(vl.c_str(), NULL, 10);
 		uint8_t vTp = OpcUa_Byte;
-		if(tVl >= (1ll<<32))	vTp = OpcUa_UInt64;
+		if(tVl >= (1ll<<32))		vTp = OpcUa_UInt64;
 		else if(tVl >= (1ll<<16))	vTp = OpcUa_UInt32;
 		else if(tVl >= (1ll<<8))	vTp = OpcUa_UInt16;
-		vEMsk = vEMsk&(~OpcUa_VarMask) | vTp;
+		vEMsk = (vEMsk&(~OpcUa_VarMask)) | vTp;
 		break;
 	    }
 	}
@@ -1492,7 +1492,9 @@ void Client::protIO( XML_N &io )
 			oNodeId(mReq, NodeId::fromAddr(nd->attr("nodeId")));			//nodeId
 			oNu(mReq, strtoul(nd->attr("attributeId").c_str(),NULL,0), 4);		//attributeId (Value)
 			oS(mReq, "");								//indexRange
-			oDataValue(mReq, 0x0D, nd->text(), atoi(nd->attr("VarTp").c_str()));	//value
+			oDataValue(mReq, 0x01 /*0x0D*/, nd->text(), atoi(nd->attr("VarTp").c_str()));	//value,
+												//!!: TimeStamps disabled but some servers tell
+												//    0x80730000 (OpcUa_BadWriteNotSupported)
 		    }
 		}
 		else if(io.attr("id") == "Browse") {

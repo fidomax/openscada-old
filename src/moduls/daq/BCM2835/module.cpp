@@ -38,7 +38,7 @@
 #define MOD_NAME	_("BCM 2835")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.0.0"
+#define MOD_VER		"1.1.1"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Broadcom BCM 2835 GPIO and other. Mostly for and used in Raspberry Pi.")
 #define LICENSE		"GPL2"
@@ -154,6 +154,7 @@ void TMdPrm::postEnable( int flag )
     if(flag&TCntrNode::NodeRestore) return;
 
     //Reg functions
+    fReg(new GPIO_mode());
     fReg(new GPIO_get());
     fReg(new GPIO_put());
 
@@ -202,7 +203,7 @@ void TMdPrm::enable( )
     //Init to direction and the reverse flag load
     vector<string> ls;
     pEl.fldList(ls);
-    for(int iEl = 0; iEl < ls.size(); iEl++) {
+    for(unsigned iEl = 0; iEl < ls.size(); iEl++) {
 	if(ls[iEl].compare(0,4,"gpio") != 0) continue;
 	int pin = atoi(ls[iEl].c_str()+4);
 	AutoHD<TVal> cVl = vlAt(ls[iEl]);
@@ -250,7 +251,7 @@ void TMdPrm::disable( )
     //Set EVAL to the parameter attributes
     vector<string> ls;
     elem().fldList(ls);
-    for(int iEl = 0; iEl < ls.size(); iEl++)
+    for(unsigned iEl = 0; iEl < ls.size(); iEl++)
 	vlAt(ls[iEl]).at().setS(EVAL_STR, 0, true);
 
     //Functions stop
@@ -347,7 +348,7 @@ void TMdPrm::cntrCmdProc( XMLNode *opt )
 	if(ctrMkNode("area",opt,-1,"/cfg",_("Configuration"))) {
 	    vector<string> ls;
 	    elem().fldList(ls);
-	    for(int iL = 0; iL < ls.size(); iL++) {
+	    for(unsigned iL = 0; iL < ls.size(); iL++) {
 		if(ls[iL].compare(0,4,"gpio") != 0) continue;
 		int pin = atoi(ls[iL].c_str()+4);
 		ctrMkNode("fld",opt,-1,TSYS::strMess("/cfg/gpioMode%d",pin).c_str(),TSYS::strMess(_("GPIO %d output and reverse"),pin).c_str(),
@@ -380,6 +381,31 @@ void TMdPrm::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR))	setModPrm(TSYS::strMess("GPIOrev%d",pin), opt->text());
     }
     else TParamContr::cntrCmdProc(opt);
+}
+
+//*************************************************
+//* GPIO mode                                     *
+//*************************************************
+void GPIO_mode::calc( TValFunc *v ) {
+    int pin = v->getI(1);
+    switch(v->getI(2)) {
+	case 1:
+	    bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
+	    bcm2835_gpio_set_pud(pin, BCM2835_GPIO_PUD_OFF);
+	    break;
+	case 2:
+	    bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
+	    bcm2835_gpio_set_pud(pin, BCM2835_GPIO_PUD_UP);
+	    break;
+	case 3:
+	    bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
+	    bcm2835_gpio_set_pud(pin, BCM2835_GPIO_PUD_DOWN);
+	    break;
+	case 4:
+	    bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_OUTP);
+	    break;
+    }
+    v->setI(0, 0);
 }
 
 //*************************************************
