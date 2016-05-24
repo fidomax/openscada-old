@@ -610,7 +610,7 @@ void B_BTR::setTU(uint8_t tu)
 {
     uint8_t vl = tu >> 7;
     uint8_t n = tu & 0x7F;
-    if((n > 0) && (n < count_nu)) {
+    if((n > 0) && (n <= count_nu)) {
 	STUchannel &TU = TUdata[n - 1];
 	currTU = n;
 	if(vl) {
