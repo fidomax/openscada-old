@@ -37,7 +37,7 @@
 #define MOD_NAME	_("MMS(IEC-9506)")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.3.3"
+#define MOD_VER		"1.3.5"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("MMS(IEC-9506) client implementation.")
 #define LICENSE		"GPL2"
@@ -81,7 +81,7 @@ void TTpContr::postEnable( int flag )
     //Controler's bd structure
     fldAdd(new TFld("PRM_BD",_("Parameteres table"),TFld::String,TFld::NoFlag,"30",""));
     fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
-    fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;99"));
+    fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
     fldAdd(new TFld("TM_REST",_("Restore timeout (s)"),TFld::Integer,TFld::NoFlag,"4","10","1;3600"));
     fldAdd(new TFld("SYNCPER",_("Sync inter remote station period (s)"),TFld::Integer,TFld::NoFlag,"4","0","0;1000"));
     fldAdd(new TFld("ADDR",_("Server address"),TFld::String,TFld::NoFlag,"50","localhost:102"));
@@ -224,7 +224,7 @@ string TMdContr::getNameList( const string &domain )
     //Check cache
     MtxAlloc res(dataRes(), true);
     map<string, NamesCacheEl>::iterator cEl = namesCache.find(domain);
-    if(cEl != namesCache.end() && (!syncPer() || SYS->sysTm() < (cEl->second.tm+syncPer()) && (cEl->second.nms.size() || (startStat() && !connOK()))))
+    if(cEl != namesCache.end() && (!syncPer() || SYS->sysTm() < (cEl->second.tm+syncPer())) && (cEl->second.nms.size() || (startStat() && !connOK())))
 	return cEl->second.nms;
     res.unlock();
 
