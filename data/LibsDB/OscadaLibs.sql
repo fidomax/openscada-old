@@ -4316,6 +4316,7 @@ else {
 				else for(iEl = 0, iOff = 12; iEl < ASDU_els; iEl++, iOff+=6) {
 					IOA = (bufIn.charCodeAt(iOff+2)<<16) + (bufIn.charCodeAt(iOff+1)<<8) + bufIn.charCodeAt(iOff);
 					val = (bufIn.charCodeAt(iOff+4)<<8) + bufIn.charCodeAt(iOff+3);
+					if(val > 32767) val -= 65536;
 					SIQ = bufIn.charCodeAt(iOff+5);
 					aid = "ai"+IOA;
 
@@ -4450,7 +4451,7 @@ if(t_err.length) {
 	}
 	f_err = t_err;
 }
-else f_err = "0";','','',1449949770);
+else f_err = "0";','','',1463575281);
 CREATE TABLE 'tmplib_PrescrTempl' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"PROGRAM" TEXT DEFAULT '' ,"uk#PROGRAM" TEXT DEFAULT '' ,"ru#PROGRAM" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "tmplib_PrescrTempl" VALUES('timer','Timer','Таймер','Таймер','Typical timer. Hold run up to time elapse.','Типовий таймер. Утримує виконання до завершення часу.','Типовой таймер. Удерживает выполнение до завершения времени.',10,0,'JavaLikeCalc.JavaScript
 //Reset to default
@@ -4478,18 +4479,19 @@ INSERT INTO "tmplib_base" VALUES('digAlarm','Alarm digital','Сигн. диск�
 if(f_start) {
 	f_err = "0", prevVar = EVAL_REAL;
 	//Prepare data for preprocessing
+	inPrcId = this.nodePath("_");
 	inPrcLng = "JavaLikeCalc.JavaScript";
 	inPrcArgs = new Object();
 	inPrcArgs.this = this;
-	inPrcArgs.f_frq = f_frq;
-	cnt = 0;
+	inPrcArgs.ctx = new Object();
+	return;
 }
 
 //Call a specific preprocessing procedure
 if(inProc.length)	{
-	inPrcArgs.cnt = cnt;
+	inPrcArgs.f_frq = f_frq;
 	inPrcArgs.in = in;
-	SYS.DAQ.funcCall(inPrcLng, inPrcArgs, inProc);
+	SYS.DAQ.funcCall(inPrcLng, inPrcArgs, inProc, inPrcId);
 	in = inPrcArgs.in;
 }
 
@@ -4511,8 +4513,7 @@ if(tErr.toInt() && tErr.toInt() != f_err.toInt())
 	this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tErr.parse(1,":"), levErr, SHIFR);
 else if(f_err.toInt() && !tErr.toInt())
 	this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tr("NORMA"), 1, SHIFR);
-f_err = tErr;
-cnt++;','','',1462378029);
+f_err = tErr;','','',1463998184);
 INSERT INTO "tmplib_base" VALUES('simleBoard','Analog alarm by borders','Сигн. аналог. за границями','Сигн. аналог. по границам','The template of simple parameter included boders and dimension variable.','Шаблон простого параметру з перевіркою границь та одиницею виміру.','Шаблон простого параметра с проверкой границ и единицей измерения.',10,1,'JavaLikeCalc.JavaScript
 var=iMult*(in+iAdd);
 if(var>max)			f_err="1:Upper work border violation";
@@ -4628,9 +4629,11 @@ if(f_start) {
 	prevVar = EVAL_REAL;
 	conDelay_ = 0;
 	//Prepare data for preprocessing
+	inPrcId = this.nodePath("_");
 	inPrcLng = "JavaLikeCalc.JavaScript";
 	inPrcArgs = new Object();
 	inPrcArgs.this = this;
+	inPrcArgs.ctx = new Object();
 	return;
 }
 if(f_stop) return;
@@ -4648,10 +4651,11 @@ if(plcImit) {	//Data imitation
 
 //Call specific preprocessing procedure
 if(inProc.length)	{
+	inPrcArgs.f_frq = f_frq;
 	inPrcArgs.in = in; inPrcArgs.min = min; inPrcArgs.max = max;
 	inPrcArgs.plcMin = pMin; inPrcArgs.plcMax = pMax;
 	inPrcArgs.plcImit = plcImit; inPrcArgs.plcImitIn = plcImitIn;
-	SYS.DAQ.funcCall(inPrcLng, inPrcArgs, inProc);
+	SYS.DAQ.funcCall(inPrcLng, inPrcArgs, inProc, inPrcId);
 	in = inPrcArgs.in;
 }
 
@@ -4711,7 +4715,7 @@ else {
 		this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tr("NORMA"), 1, SHIFR);
 	f_err = tErr;
 }
-conDelay_ = 0;','','',1461135488);
+conDelay_ = 0;','','',1463998305);
 INSERT INTO "tmplib_base" VALUES('digitBlockUnif','Diskret block (Unif)','Блок дискретних (Уніф)','Блок дискр. (Униф)','The block for union of Diskret parameters for one device control.','Блок поєднання дискретних сигналів контролю одним пристроєм.','Блок для дискретных параметров управляющих одним аппаратом.',10,0,'JavaLikeCalc.JavaScript
 set = false;
 if(!com.isEVal() && com && last_cmd != 1)		last_cmd = 1, set = true;
@@ -4778,9 +4782,11 @@ if(f_start) {
 	prevVar = EVAL_REAL;
 	conDelay_ = 0;
 	//Prepare data for preprocessing
+	inPrcId = this.nodePath("_");
 	inPrcLng = "JavaLikeCalc.JavaScript";
 	inPrcArgs = new Object();
 	inPrcArgs.this = this;
+	inPrcArgs.ctx = new Object();
 	return;
 }
 if(f_stop) return;
@@ -4798,10 +4804,11 @@ if(plcImit) {	//Data imitation
 
 //Call specific preprocessing procedure
 if(inProc.length)	{
+	inPrcArgs.f_frq = f_frq;
 	inPrcArgs.in = in; inPrcArgs.min = min; inPrcArgs.max = max;
 	inPrcArgs.plcMin = pMin; inPrcArgs.plcMax = pMax;
 	inPrcArgs.plcImit = plcImit; inPrcArgs.plcImitIn = plcImitIn;
-	SYS.DAQ.funcCall(inPrcLng, inPrcArgs, inProc);
+	SYS.DAQ.funcCall(inPrcLng, inPrcArgs, inProc, inPrcId);
 	in = inPrcArgs.in;
 }
 
@@ -4864,7 +4871,7 @@ else {
 		this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tr("NORMA"), 1, SHIFR);
 	f_err = tErr;
 }
-conDelay_ = 0;','','',1461135847);
+conDelay_ = 0;','','',1463998358);
 INSERT INTO "tmplib_base" VALUES('pidUnif','PID sign. (Unif, stats)','ПІД сигнал (Уніф, стани)','ПИД сигнал (Униф, состояния)','The unified template for process analog signals with properties PID.','Уніфікований шаблон для обробки аналогового сигналу з властивостями ПІД.','Унифицированный шаблон обработки аналогового сигнала со свойствами ПИД.',10,0,'JavaLikeCalc.JavaScript
 if(f_start) f_err = "0";
 
@@ -7051,7 +7058,7 @@ for(i = 0; i < tries; i++) {
 	if((vl=read())) {
 		hum = (vl>>32)&0xFF; tmp = (vl>>16)&0xFF;
 		if(((hum+tmp)&0xFF) == (vl&0xFF))
-			return hum.toString() + ":" + tmp.toString();
+			return (hum+20).toString() + ":" + tmp.toString();
 	}
-}',1463511759);
+}',1463575062);
 COMMIT;
