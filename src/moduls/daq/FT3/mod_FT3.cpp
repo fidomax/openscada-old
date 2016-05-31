@@ -369,9 +369,6 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	    list(lst);
 	    rc = 0;
 	    rc = cmdGet(id, Channels[msg->B].resp3.D + n);
-	    if(rc != 0) {
-		n += rc;
-	    }
 	    if(rc == 0) {
 		l = msg->L - 3;
 		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("AddrReq ID not found! %04X"), id);
