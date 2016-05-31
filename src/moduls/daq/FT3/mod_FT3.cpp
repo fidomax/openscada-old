@@ -1,6 +1,6 @@
 //OpenSCADA system module DAQ.FT3 file: mod_FT3.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -369,6 +369,9 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	    list(lst);
 	    rc = 0;
 	    rc = cmdGet(id, Channels[msg->B].resp3.D + n);
+	    if(rc != 0) {
+		n += rc;
+	    }
 	    if(rc == 0) {
 		l = msg->L - 3;
 		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("AddrReq ID not found! %04X"), id);
@@ -377,7 +380,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	    }
 	    if(rc > (mlD - n)) {
 		l = msg->L - 3;
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Ne vlezaet v paket %04X"), id);
+		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Too much data to answer %04X"), id);
 		Channels[msg->B].resp3.C = 9;
 		break;
 	    }
