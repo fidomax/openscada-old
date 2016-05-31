@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.Transport.Sockets 1.5.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-20 16:42+0300\n"
+"POT-Creation-Date: 2016-05-29 20:49+0300\n"
 "PO-Revision-Date: 2007-10-19 18:04+0300\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <ru@li.org>\n"
@@ -40,8 +40,8 @@ msgstr ""
 "Закрыто соединений по лимиту %d."
 
 #, c-format
-msgid "Error create '%s' socket!"
-msgstr "Ошибка создания сокета '%s'!"
+msgid "Create %s socket error: '%s (%d)'!"
+msgstr "Ошибка создания %s сокета: '%s (%d)'!"
 
 #, c-format
 msgid "Socket type '%s' error!"
@@ -68,28 +68,12 @@ msgid "Unknown error code from gethostbyname_r for '%s'!"
 msgstr "Неизвестная ошибка gethostbyname_r для '%s'!"
 
 #, c-format
-msgid "Connect to Internet socket error: '%s (%d)'!"
-msgstr "Ошибка подключения к Internet сокету: '%s (%d)'!"
+msgid "Connect to %s socket error: '%s (%d)'!"
+msgstr "Ошибка подключения к %s сокету: '%s (%d)'!"
 
 #, c-format
-msgid "TCP socket doesn't bind to '%s'!"
-msgstr "TCP сокет не подключился к '%s'!"
-
-#, c-format
-msgid "UDP socket doesn't bind to '%s'!"
-msgstr "UDP сокет не подключился к '%s'!"
-
-#, c-format
-msgid "Connect to UNIX error: '%s (%d)'!"
-msgstr "Ошибка подключения к UNIX сокету: '%s (%d)'!"
-
-#, c-format
-msgid "UNIX socket doesn't bind to '%s'!"
-msgstr "UNIX сокет не подключился к '%s'!"
-
-#, c-format
-msgid "RAWCAN socket doesn't bind to '%s'!"
-msgstr "RAWCAN сокет не подключился к '%s'!"
+msgid "Bind to %s socket error: '%s (%d)'!"
+msgstr "Ошибка связывания с %s сокетом: '%s (%d)'!"
 
 #, c-format
 msgid "RAWCAN socket binded '%s'!"
@@ -299,8 +283,24 @@ msgid "Connect by timeout %s error: '%s (%d)'"
 msgstr "Ошибка подключения по таймауту %s: '%s (%d)'"
 
 #, c-format
+msgid "Connect to Internet socket error: '%s (%d)'!"
+msgstr "Ошибка подключения к Internet сокету: '%s (%d)'!"
+
+#, c-format
 msgid "Error creation UNIX socket: '%s (%d)'!"
 msgstr "Ошибка создания UNIX сокета: '%s (%d)'!"
+
+#, c-format
+msgid "Connect to UNIX error: '%s (%d)'!"
+msgstr "Ошибка подключения к UNIX сокету: '%s (%d)'!"
+
+#, c-format
+msgid "Error create '%s' socket!"
+msgstr "Ошибка создания сокета '%s'!"
+
+#, c-format
+msgid "RAWCAN socket doesn't bind to '%s'!"
+msgstr "RAWCAN сокет не подключился к '%s'!"
 
 msgid "Unknown error"
 msgstr "Неизвестная ошибка"
@@ -311,6 +311,9 @@ msgstr "Транспорт не запущен!"
 #, c-format
 msgid "Request error: %s"
 msgstr "Ошибка запроса: %s"
+
+msgid "No data wrote"
+msgstr "Не записаны данные"
 
 #, c-format
 msgid "Write error: %s"
@@ -325,6 +328,13 @@ msgstr "Время ожидания чтения истекло!"
 
 msgid "Timeouted!"
 msgstr "Время ожидания истекло!"
+
+#, c-format
+msgid "Read (select) error: %s"
+msgstr "Ошибка чтения (select): %s"
+
+msgid "No data"
+msgstr "Нет данных"
 
 #, c-format
 msgid "Read error: %s"

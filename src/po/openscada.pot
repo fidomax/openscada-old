@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-26 20:55+0300\n"
+"POT-Creation-Date: 2016-05-29 19:30+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -96,6 +96,9 @@ msgid "Buffer in hard time grid"
 msgstr ""
 
 msgid "Buffer in high time resolution"
+msgstr ""
+
+msgid "Fill pass points to a last value"
 msgstr ""
 
 msgid "Process into archivators"
@@ -255,6 +258,9 @@ msgstr ""
 msgid "Get data task priority level"
 msgstr ""
 
+msgid "Variable timestamp force to current time"
+msgstr ""
+
 msgid "Number"
 msgstr ""
 
@@ -373,6 +379,22 @@ msgid "Buffer begin"
 msgstr ""
 
 msgid "Archive DB"
+msgstr ""
+
+msgid ""
+"The values buffer size have to much enough for archivators periodicity.\n"
+"Typical the value automatic adjusts to the archive period and archivators periodicity in 60 seconds."
+msgstr ""
+
+msgid "Typical for fastest processing of values archivation."
+msgstr ""
+
+msgid "Set for the values periodicity lesser to seconds."
+msgstr ""
+
+msgid ""
+"Mostly the pass values fill by EVAL but sometime\n"
+"the source's data periodicity greater to the archive's one and it is normal."
 msgstr ""
 
 msgid "Start"
@@ -1036,9 +1058,10 @@ msgstr ""
 
 msgid ""
 "Task priority level (-1...99), where:\n"
-"  -1     - lowest priority batch policy;\n"
-"  0      - standard userspace priority;\n"
-"  1...99 - realtime priority level (round-robin), often allowed only for \"root\"."
+"  -1        - lowest priority batch policy;\n"
+"  0         - standard userspace priority;\n"
+"  1...99    - realtime priority level (round-robin), often allowed only for \"root\";\n"
+"  100...199 - realtime priority level (FIFO), often allowed only for \"root\"."
 msgstr ""
 
 msgid "Modules scheduler"
@@ -1688,6 +1711,9 @@ msgstr ""
 msgid "Restore connection timeout (s)"
 msgstr ""
 
+msgid "Local primary commands transfer"
+msgstr ""
+
 msgid "Stations"
 msgstr ""
 
@@ -1792,6 +1818,9 @@ msgstr ""
 msgid "Standard"
 msgstr ""
 
+msgid "RT FIFO"
+msgstr ""
+
 msgid "RT Round-robin"
 msgstr ""
 
@@ -1830,6 +1859,9 @@ msgid "Request user"
 msgstr ""
 
 msgid "Request password"
+msgstr ""
+
+msgid "Uprising level"
 msgstr ""
 
 msgid "Search and create new input transports error."
@@ -1881,6 +1913,9 @@ msgstr ""
 msgid "New external host"
 msgstr ""
 
+msgid "Uprising hosts not allowed here for its management!"
+msgstr ""
+
 msgid "Input transport"
 msgstr ""
 
@@ -1901,6 +1936,10 @@ msgid "Input transport: "
 msgstr ""
 
 msgid "Transport DB"
+msgstr ""
+
+#, c-format
+msgid "Established: %s. "
 msgstr ""
 
 #, c-format

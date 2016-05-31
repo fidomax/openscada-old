@@ -74,7 +74,7 @@ using namespace QTCFG;
 //* ConfApp                                       *
 //*************************************************
 ConfApp::ConfApp( string open_user ) : reqPrgrs(NULL),
-    pgInfo("info"), genReqs("CntrReqs"), root(&pgInfo), copyBuf("0"), queSz(20), tblInit(false), inHostReq(0)
+    pgInfo("info"), genReqs("CntrReqs"), root(&pgInfo), copyBuf("0"), queSz(20), inHostReq(0), tblInit(false)
 {
     //Main window settings
     setAttribute(Qt::WA_DeleteOnClose, true);
@@ -2299,6 +2299,12 @@ int ConfApp::cntrIfCmd( XMLNode &node )
 
 int ConfApp::cntrIfCmdHosts( XMLNode &node )
 {
+    //Mark commands in "primaryCmd", for redundant hosts mostly transfer
+    // !!! Move further to the command's source
+    if(node.name() == "set" || node.name() == "add" || node.name() == "ins" || node.name() == "del" || node.name() == "move" ||
+	    node.name() == "load" || node.name() == "save")
+	node.setAttr("primaryCmd", "1");
+
     string hostId = TSYS::pathLev(node.attr("path"), 0);
     SCADAHost *iHost = hosts[hostId];
 
@@ -2369,14 +2375,14 @@ string ConfApp::getPrintVal( const string &vl )
 
 void ConfApp::initHosts( )
 {
-    vector<string> stls;
+    vector<TTransportS::ExtHost> stls;
     SYS->transport().at().extHostList(wUser->user().toStdString(), stls);
-    stls.insert(stls.begin(), SYS->id());
+    stls.insert(stls.begin(), TTransportS::ExtHost("",SYS->id()));
 
     //Remove no present hosts
     for(unsigned iTop = 0, iH; iTop < (unsigned)CtrTree->topLevelItemCount(); ) {
 	for(iH = 0; iH < stls.size(); iH++)
-	    if(stls[iH] == TSYS::pathLev(CtrTree->topLevelItem(iTop)->text(2).toStdString(),0))
+	    if(stls[iH].id == TSYS::pathLev(CtrTree->topLevelItem(iTop)->text(2).toStdString(),0))
 		break;
 	if(iH >= stls.size()) {
 	    // Remove the host thread
@@ -2393,37 +2399,34 @@ void ConfApp::initHosts( )
 
     //Add/update hosts
     bool emptyTree = !CtrTree->topLevelItemCount();
-    for(unsigned i_st = 0; i_st < stls.size(); i_st++) {
-	int errCon = 0;
-
+    for(unsigned iSt = 0; iSt < stls.size(); iSt++) {
 	QTreeWidgetItem *nit = NULL;
 	if(!emptyTree)
 	    for(int iTop = 0; iTop < CtrTree->topLevelItemCount(); iTop++)
-		if(stls[i_st] == TSYS::pathLev(CtrTree->topLevelItem(iTop)->text(2).toStdString(),0))
+		if(stls[iSt].id == TSYS::pathLev(CtrTree->topLevelItem(iTop)->text(2).toStdString(),0))
 		{ nit = CtrTree->topLevelItem(iTop); break; }
 	if(!nit) {
 	    nit = new QTreeWidgetItem(CtrTree);
 
 	    // Append the host thread
-	    if(hosts.find(stls[i_st]) == hosts.end()) {
-		hosts[stls[i_st]] = new SCADAHost(stls[i_st].c_str(), wUser->user(), (stls[i_st]!=SYS->id()), this);
-		connect(hosts[stls[i_st]], SIGNAL(setSt(const QString&,int,const QImage&,const QStringList&,const QString&)),
+	    if(hosts.find(stls[iSt].id) == hosts.end()) {
+		hosts[stls[iSt].id] = new SCADAHost(stls[iSt].id.c_str(), wUser->user(), (stls[iSt].id!=SYS->id()), this);
+		connect(hosts[stls[iSt].id], SIGNAL(setSt(const QString&,int,const QImage&,const QStringList&,const QString&)),
 			this, SLOT(hostStSet(const QString&,int,const QImage&,const QStringList&,const QString&)));
-		hosts[stls[i_st]]->start();
+		hosts[stls[iSt].id]->start();
 	    }
 	}
-	if(stls[i_st] == SYS->id()) {
+	if(stls[iSt].id == SYS->id()) {
 	    nit->setText(0, trU(SYS->name(),wUser->user().toStdString()).c_str());
 	    nit->setText(1, _("Local station"));
 	    nit->setText(2, ("/"+SYS->id()).c_str());
 	}
 	else {
-	    TTransportS::ExtHost host = SYS->transport().at().extHostGet(wUser->user().toStdString(),stls[i_st]);
-	    nit->setText(0, trU(host.name,wUser->user().toStdString()).c_str());
+	    nit->setText(0, trU(stls[iSt].name,wUser->user().toStdString()).c_str());
 	    nit->setText(1, _("Remote station"));
-	    nit->setText(2, ("/"+host.id).c_str());
+	    nit->setText(2, ("/"+stls[iSt].id).c_str());
 	}
-	if(hosts[stls[i_st]]) hosts[stls[i_st]]->userSet(wUser->user());
+	if(hosts[stls[iSt].id]) hosts[stls[iSt].id]->userSet(wUser->user());
     }
 }
 
@@ -3149,7 +3152,7 @@ void SCADAHost::run( )
 
 		lnkOK = true;
 	    }
-	    else if(rez == 10) {
+	    else if(rez/* == 10*/) {
 		img = imgDisConnect;
 		toolTip = req.text().c_str();
 	    }
@@ -3192,5 +3195,6 @@ int SCADAHost::cntrIfCmd( XMLNode &node, const QString &iuser )
 	node.setAttr("mcat",err.cat)->setAttr("rez","10")->setText(err.mess);
 	tm = 0;		//Check the link immediately
     }
+
     return s2i(node.attr("rez"));
 }

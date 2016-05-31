@@ -60,7 +60,7 @@ void TTpContr::postEnable( int flag )
     fldAdd(new TFld("PRM_BD",_("Parameters table"),TFld::String,TFld::NoFlag,"30",""));
     fldAdd(new TFld("PRM_BD_L",_("Logical parameters table"),TFld::String,TFld::NoFlag,"30",""));
     fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
-    fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;99"));
+    fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
     fldAdd(new TFld("PROT",_("Modbus protocol"),TFld::String,TFld::Selected,"5","TCP","TCP;RTU;ASCII",_("TCP/IP;RTU;ASCII")));
     fldAdd(new TFld("ADDR",_("Transport address"),TFld::String,TFld::NoFlag,"41",""));
     fldAdd(new TFld("NODE",_("Destination node"),TFld::Integer,TFld::NoFlag,"20","1","0;255"));
@@ -1345,7 +1345,7 @@ TVariant TMdPrm::objFuncCall( const string &iid, vector<TVariant> &prms, const s
     //  selValsNms - two lines with values in first and it's names in first (separated by ";").
     if(iid == "attrAdd" && prms.size() >= 1) {
 	if(!enableStat() || !isLogic())	return false;
-	TFld::Type tp;
+	TFld::Type tp = TFld::Real;
 	string stp, stp_ = (prms.size() >= 3) ? prms[2].getS() : "real";
 	stp.resize(stp_.length());
 	std::transform(stp_.begin(), stp_.end(), stp.begin(), ::tolower);

@@ -37,7 +37,7 @@
 #define MOD_TYPE	SUI_ID
 #define VER_TYPE	SUI_VER
 #define SUB_TYPE	"WWW"
-#define MOD_VER		"0.9.5"
+#define MOD_VER		"0.9.6"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides dynamic WEB based configurator. Uses XHTML, CSS and JavaScript technology.")
 #define LICENSE		"GPL2"
@@ -324,19 +324,14 @@ void TWEB::HttpGet( const string &urli, string &page, const string &sender, vect
 		string gbr = (prmEl!=ses.prm.end()) ? prmEl->second : "";
 		// Get information about allow stations
 		if(zero_lev.empty()) {
-		    vector<string> stls;
-		    SYS->transport().at().extHostList(ses.user,stls);
-		    stls.insert(stls.begin(),SYS->id());
-		    for(unsigned i_st = 0; i_st < stls.size(); i_st++) {
-			XMLNode *chN;
-			if(stls[i_st] == SYS->id())
-			    chN = req.childAdd("el")->setAttr("id",SYS->id())->setText(SYS->name());
-			else {
-			    TTransportS::ExtHost host = SYS->transport().at().extHostGet(ses.user,stls[i_st]);
-			    chN = req.childAdd("el")->setAttr("id",host.id)->setText(host.name);
-			}
+		    vector<TTransportS::ExtHost> stls;
+		    SYS->transport().at().extHostList(ses.user, stls);
+		    stls.insert(stls.begin(), TTransportS::ExtHost("",SYS->id()));
+		    for(unsigned iSt = 0; iSt < stls.size(); iSt++) {
+			XMLNode *chN = req.childAdd("el")->setAttr("id",stls[iSt].id)->
+							   setText((stls[iSt].id==SYS->id())?SYS->name():stls[iSt].name);
 			//  Check icon
-			XMLNode reqIco("get"); reqIco.setAttr("path","/"+stls[i_st]+"/%2fico");
+			XMLNode reqIco("get"); reqIco.setAttr("path","/"+stls[iSt].id+"/%2fico");
 			if(mod->cntrIfCmd(reqIco,ses.user)) chN->setAttr("icoSize","1000");
 			else chN->setAttr("icoSize",i2s(reqIco.text().size()));
 			//  Process groups
@@ -477,6 +472,11 @@ string TWEB::trMessReplace( const string &tsrc )
 
 int TWEB::cntrIfCmd( XMLNode &node, const string &user )
 {
+    //Mark commands in "primaryCmd", for redundant hosts mostly transfer
+    // !!! Move further to the command's source
+    if(node.name() == "set" || node.name() == "add" || node.name() == "ins" || node.name() == "del" || node.name() == "move" ||
+	    node.name() == "load" || node.name() == "save")
+	node.setAttr("primaryCmd", "1");
     try { return SYS->transport().at().cntrIfCmd(node,"UIWebCfg",user); }
     catch(TError err) { node.setAttr("mcat",err.cat)->setAttr("rez","10")->setText(err.mess); }
 

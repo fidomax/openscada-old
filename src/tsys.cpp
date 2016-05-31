@@ -58,7 +58,7 @@ TSYS::TSYS( int argi, char ** argb, char **env ) : argc(argi), argv((const char 
     mUser("root"), mConfFile(sysconfdir_full"/oscada.xml"), mId("EmptySt"), mName(_("Empty Station")),
     mModDir(oscd_moddir_full), mIcoDir("icons;"oscd_datadir_full"/icons"), mDocDir("docs;"oscd_datadir_full"/docs"),
     mWorkDB(DB_CFG), mSaveAtExit(false), mSavePeriod(0), rootModifCnt(0), sysModifFlgs(0), mStopSignal(-1), mN_CPU(1),
-    mainPthr(0), mSysTm(time(NULL)), mRdStLevel(0), mRdRestConnTm(10), mRdTaskPer(1), mRdPrcTm(0)
+    mainPthr(0), mSysTm(time(NULL)), mRdStLevel(0), mRdRestConnTm(10), mRdTaskPer(1), mRdPrcTm(0), mRdPrimCmdTr(false)
 {
     finalKill = false;
     SYS = this;		//Init global access value
@@ -555,6 +555,7 @@ void TSYS::cfgPrmLoad( )
     setRdStLevel(s2i(TBDS::genDBGet(nodePath()+"RdStLevel",i2s(rdStLevel()))));
     setRdTaskPer(s2r(TBDS::genDBGet(nodePath()+"RdTaskPer",r2s(rdTaskPer()))));
     setRdRestConnTm(s2i(TBDS::genDBGet(nodePath()+"RdRestConnTm",i2s(rdRestConnTm()))));
+    setRdPrimCmdTr(s2i(TBDS::genDBGet(nodePath()+"RdPrimCmdTr",i2s(rdPrimCmdTr()))));
     string stLs = TBDS::genDBGet(nodePath()+"RdStList"), stId;
     mRdRes.lock(true);
     for(int off = 0; (stId=TSYS::strSepParse(stLs,0,';',&off)).size(); )
@@ -632,6 +633,7 @@ void TSYS::save_( )
     TBDS::genDBSet(nodePath()+"RdStLevel", i2s(rdStLevel()), "root", TBDS::OnlyCfg);
     TBDS::genDBSet(nodePath()+"RdTaskPer", r2s(rdTaskPer()), "root", TBDS::OnlyCfg);
     TBDS::genDBSet(nodePath()+"RdRestConnTm", i2s(rdRestConnTm()), "root", TBDS::OnlyCfg);
+    TBDS::genDBSet(nodePath()+"RdPrimCmdTr", i2s(rdPrimCmdTr()), "root", TBDS::OnlyCfg);
     mRdRes.lock(false);
     string stLs;
     for(map<string,TSYS::SStat>::iterator sit = mSt.begin(); sit != mSt.end(); sit++)
@@ -645,7 +647,7 @@ void TSYS::save_( )
 int TSYS::start( )
 {
     //High priority service task and redundancy start
-    taskCreate("SYS_HighPriority", 20, TSYS::HPrTask, this);
+    taskCreate("SYS_HighPriority", 120, TSYS::HPrTask, this);
     taskCreate("SYS_Redundancy", 5, TSYS::RdTask, this);
 
     //Subsystems starting
@@ -1655,7 +1657,7 @@ void TSYS::taskCreate( const string &path, int priority, void *(*start_routine)(
     htsk.taskArg = arg;
     htsk.flgs = 0;
     htsk.thr = 0;
-    htsk.prior = priority;
+    htsk.prior = priority%100;
     res.release();
 
     if(pAttr) pthr_attr = pAttr;
@@ -1672,8 +1674,9 @@ void TSYS::taskCreate( const string &path, int priority, void *(*start_routine)(
     if(priority < 0)	policy = SCHED_BATCH;
 #endif
     if(priority > 0)	policy = SCHED_RR;
+    if(priority >= 100)	policy = SCHED_FIFO;
     pthread_attr_setschedpolicy(pthr_attr, policy);
-    prior.sched_priority = vmax(sched_get_priority_min(policy),vmin(sched_get_priority_max(policy),priority));
+    prior.sched_priority = vmax(sched_get_priority_min(policy),vmin(sched_get_priority_max(policy),priority%100));
     pthread_attr_setschedparam(pthr_attr, &prior);
 
     try {
@@ -1864,7 +1867,7 @@ void *TSYS::RdTask( void *param )
 		// Prepare request to a remote station
 		req.clear()->setAttr("path", "/"+sit->first);
 		req.childAdd("st")->setAttr("path","/%2fserv%2fredundant");
-		for(int iSub = 0; iSub < subLs.size(); iSub++)
+		for(unsigned iSub = 0; iSub < subLs.size(); iSub++)
 		    req.childAdd("st")->setAttr("path","/"+subLs[iSub]+"/%2fserv%2fredundant");
 		try {
 		    if(SYS->transport().at().cntrIfCmd(req,"redundant")) continue;
@@ -1872,7 +1875,7 @@ void *TSYS::RdTask( void *param )
 		    sit->second.isLive = true;
 
 		    // State request
-		    for(int iL = 0, iReq = 1; iL < subLs.size() && iReq < req.childSize(); iL++, iReq++) {
+		    for(int iL = 0, iReq = 1; iL < (int)subLs.size() && iReq < (int)req.childSize(); iL++, iReq++) {
 			XMLNode *subPrt = req.childGet(iReq);
 			subPrt->setAttr("StId", sit->first);
 			if(!s2i(subPrt->attr("inProc")) || !SYS->at(subLs[iL]).at().rdProcess(subPrt))
@@ -1899,7 +1902,7 @@ void *TSYS::RdTask( void *param )
 	res.release();
 
 	//Call to main service request
-	for(int iL = 0; iL < subLs.size(); iL++)
+	for(int iL = 0; iL < (int)subLs.size(); iL++)
 	    if(!SYS->at(subLs[iL]).at().rdProcess())
 		subLs.erase(subLs.begin()+(iL--));
 
@@ -2479,6 +2482,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("fld",opt,-1,"/redund/statLev",_("Station level"),RWRWR_,"root","root",1,"tp","dec");
 	    ctrMkNode("fld",opt,-1,"/redund/tskPer",_("Redundant task period (s)"),RWRWR_,"root","root",1,"tp","real");
 	    ctrMkNode("fld",opt,-1,"/redund/restConn",_("Restore connection timeout (s)"),RWRWR_,"root","root",1,"tp","dec");
+	    ctrMkNode("fld",opt,-1,"/redund/primCmdTr",_("Local primary commands transfer"),RWRWR_,"root","root",1,"tp","bool");
 	    if(ctrMkNode("table",opt,-1,"/redund/sts",_("Stations"),RWRWR_,"root","root",2,"key","st","s_com","add,del")) {
 		ctrMkNode("list",opt,-1,"/redund/sts/st",_("ID"),RWRWR_,"root","root",3,"tp","str","dest","select","select","/redund/lsSt");
 		ctrMkNode("list",opt,-1,"/redund/sts/name",_("Name"),R_R_R_,"root","root",1,"tp","str");
@@ -2665,6 +2669,10 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(i2s(rdRestConnTm()));
 	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setRdRestConnTm(s2i(opt->text()));
     }
+    else if(a_path == "/redund/primCmdTr") {
+	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(i2s(rdPrimCmdTr()));
+	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setRdPrimCmdTr(s2i(opt->text()));
+    }
     else if(a_path == "/redund/sts") {
 	ResAlloc res(mRdRes, true);
 	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD)) {
@@ -2691,10 +2699,10 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	}
     }
     else if(a_path == "/redund/lsSt" && ctrChkNode(opt)) {
-	vector<string> hls;
-	SYS->transport().at().extHostList("*",hls);
-	for(unsigned i_h = 0; i_h < hls.size(); i_h++)
-	    opt->childAdd("el")->setText(hls[i_h]);
+	vector<TTransportS::ExtHost> hls;
+	SYS->transport().at().extHostList("*", hls);
+	for(unsigned iH = 0; iH < hls.size(); iH++)
+	    opt->childAdd("el")->setText(hls[iH].id);
     }
     else if(a_path == "/redund/hostLnk" && ctrChkNode(opt,"get",0660,"root","Transport",SEC_RD)) opt->setText("/Transport");
     else if(a_path == "/tasks/tasks") {
@@ -2729,9 +2737,10 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		}
 		if(n_plc) {
 		    string plcVl = _("Standard");
-		    if(it->second.policy == SCHED_RR) plcVl = _("RT Round-robin");
+		    if(it->second.policy == SCHED_FIFO)		plcVl = _("RT FIFO");
+		    else if(it->second.policy == SCHED_RR)	plcVl = _("RT Round-robin");
 #if __GLIBC_PREREQ(2,4)
-		    if(it->second.policy == SCHED_BATCH) plcVl = _("Style \"batch\"");
+		    else if(it->second.policy == SCHED_BATCH)	plcVl = _("Style \"batch\"");
 #endif
 		    n_plc->childAdd("el")->setText(plcVl);
 		}

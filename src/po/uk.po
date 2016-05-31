@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-04-26 20:55+0300\n"
+"POT-Creation-Date: 2016-05-29 19:30+0300\n"
 "PO-Revision-Date: 2004-10-05 19:25+0300\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <uk@li.org>\n"
@@ -101,6 +101,9 @@ msgstr "Жорстка сітка часу буфера"
 
 msgid "Buffer in high time resolution"
 msgstr "Висока роздільна здатність часу буфера"
+
+msgid "Fill pass points to a last value"
+msgstr "Заповнення прохідних точок останнім значенням"
 
 msgid "Process into archivators"
 msgstr "Обслуговувати у архіваторах"
@@ -284,6 +287,9 @@ msgstr "Період отримання даних (мс)"
 msgid "Get data task priority level"
 msgstr "Рівень пріоритету задачі отримання даних"
 
+msgid "Variable timestamp force to current time"
+msgstr "Примусово встановлювати мітку часу у поточний час"
+
 msgid "Number"
 msgstr "Кількість"
 
@@ -413,6 +419,30 @@ msgstr "Початок буферу"
 
 msgid "Archive DB"
 msgstr "БД архіву"
+
+msgid ""
+"The values buffer size have to much enough for archivators periodicity.\n"
+"Typical the value automatic adjusts to the archive period and archivators "
+"periodicity in 60 seconds."
+msgstr ""
+"Розмір буферу значень має бути достатньо великим для періодичності "
+"архіваторів.\n"
+"Типово це значення автоматично налаштовується на періодичність цього архіву "
+"та періодичність архіваторів у 60 секунд."
+
+msgid "Typical for fastest processing of values archivation."
+msgstr "Типово для швидкої обробки архівації значень."
+
+msgid "Set for the values periodicity lesser to seconds."
+msgstr "Встановити у випадку періодичності значень менш за секунди."
+
+msgid ""
+"Mostly the pass values fill by EVAL but sometime\n"
+"the source's data periodicity greater to the archive's one and it is normal."
+msgstr ""
+"Переважно прохідні значення заповнюються EVAL однак інколи\n"
+"періодичність значень джерела більша за періодичність цього архіву та це "
+"нормально."
 
 msgid "Start"
 msgstr "Запущено"
@@ -1146,16 +1176,20 @@ msgstr ""
 
 msgid ""
 "Task priority level (-1...99), where:\n"
-"  -1     - lowest priority batch policy;\n"
-"  0      - standard userspace priority;\n"
-"  1...99 - realtime priority level (round-robin), often allowed only for "
-"\"root\"."
+"  -1        - lowest priority batch policy;\n"
+"  0         - standard userspace priority;\n"
+"  1...99    - realtime priority level (round-robin), often allowed only for "
+"\"root\";\n"
+"  100...199 - realtime priority level (FIFO), often allowed only for \"root"
+"\"."
 msgstr ""
 "Рівень пріоритету задачі (-1...99), де:\n"
-"  -1     - мінімальний пріоритет, фонова політика;\n"
-"  0      - стандартний користувацький пріоритет;\n"
-"  1...99 - рівень пріоритету реального часу (round-robin), часто доступно "
-"тілько для \"root\"."
+"  -1        - мінімальний пріоритет, фонова політика;\n"
+"  0         - стандартний користувацький пріоритет;\n"
+"  1...99    - рівень пріоритету реального часу (round-robin), часто доступно "
+"тілько для \"root\";\n"
+"  100...199 - рівень пріоритету реального часу (FIFO), часто доступно тілько "
+"для \"root\"."
 
 msgid "Modules scheduler"
 msgstr "Керування модулями"
@@ -1903,6 +1937,9 @@ msgstr "Період задачі резервування (с)"
 msgid "Restore connection timeout (s)"
 msgstr "Час відновлення підключення (с)"
 
+msgid "Local primary commands transfer"
+msgstr "Передача локальних первинних команд"
+
 msgid "Stations"
 msgstr "Станції"
 
@@ -2021,8 +2058,11 @@ msgstr ""
 msgid "Standard"
 msgstr "Стандарт"
 
+msgid "RT FIFO"
+msgstr "РЧ FIFO"
+
 msgid "RT Round-robin"
-msgstr ""
+msgstr "РЧ Round-robin"
 
 msgid "Style \"batch\""
 msgstr "Стиль \"batch\""
@@ -2060,6 +2100,9 @@ msgstr "Користувач запиту"
 
 msgid "Request password"
 msgstr "Пароль запиту"
+
+msgid "Uprising level"
+msgstr "Рівень підняття"
 
 msgid "Search and create new input transports error."
 msgstr "Помилка пошуку та створення нових вхідних транспортів."
@@ -2112,6 +2155,9 @@ msgstr "Корист.;Системн.;Корист. та Системн."
 msgid "New external host"
 msgstr "Новий зовнішній хост"
 
+msgid "Uprising hosts not allowed here for its management!"
+msgstr "Підняті хости недоступні для контролю тут!"
+
 msgid "Input transport"
 msgstr "Вхідний транспорт"
 
@@ -2133,6 +2179,10 @@ msgstr "Вхідний транспорт: "
 
 msgid "Transport DB"
 msgstr "БД транспорту"
+
+#, c-format
+msgid "Established: %s. "
+msgstr "Встановлено: %s. "
 
 #, c-format
 msgid "Transport protocol '%s' no present"
