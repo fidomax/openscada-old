@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.LogicLev file: logiclev.cpp
 /***************************************************************************
- *   Copyright (C) 2006-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2006-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -39,7 +39,7 @@
 #define MOD_NAME	_("Logic level")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.5.4"
+#define MOD_VER		"1.5.6"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides the logical level of parameters.")
 #define LICENSE		"GPL2"
@@ -123,16 +123,10 @@ TController *TTpContr::ContrAttach( const string &name, const string &daq_db )	{
 //*************************************************
 //* TMdContr                                      *
 //*************************************************
-TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem) : ::TController(name_c,daq_db,cfgelem),
+TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem) : ::TController(name_c,daq_db,cfgelem), enRes(true),
     mPerOld(cfg("PERIOD").getId()), mPrior(cfg("PRIOR").getId()),
     prcSt(false), callSt(false), endrunReq(false), mPer(1e9)
 {
-    pthread_mutexattr_t attrM;
-    pthread_mutexattr_init(&attrM);
-    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&enRes, &attrM);
-    pthread_mutexattr_destroy(&attrM);
-
     cfg("PRM_BD").setS("LogLevPrm_"+name_c);
     cfg("PRM_BD_REFL").setS("LogLevPrmRefl_"+name_c);
 }
@@ -140,8 +134,6 @@ TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem) : ::T
 TMdContr::~TMdContr( )
 {
     if(startStat()) stop();
-
-    pthread_mutex_destroy(&enRes);
 }
 
 void TMdContr::postDisable(int flag)
@@ -224,11 +216,11 @@ void *TMdContr::Task( void *icntr )
 	//Update controller's data
 	if(!cntr.redntUse()) {
 	    if(!cntr.period())	t_cnt = TSYS::curTime();
-	    pthread_mutex_lock(&cntr.enRes);
+	    cntr.enRes.lock();
 	    for(unsigned i_p = 0; i_p < cntr.pHd.size(); i_p++)
 		try { cntr.pHd[i_p].at().calc(is_start, is_stop, cntr.period()?(1e9/cntr.period()):(-1e-6*(t_cnt-t_prev))); }
 		catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
-	    pthread_mutex_unlock(&cntr.enRes);
+	    cntr.enRes.unlock();
 	    t_prev = t_cnt;
 	}
 
@@ -247,27 +239,41 @@ void TMdContr::redntDataUpdate( )
 {
     TController::redntDataUpdate();
 
-    vector<string> pls; list(pls);
-
-    //Request for template's attributes values
+    vector<RedntStkEl> hst;
+    //Prepare a group of a hierarchy request to the parameters
+    AutoHD<TParamContr> prm, prmC;
     XMLNode req("CntrReqs"); req.setAttr("path",nodePath(0,true));
-    for(unsigned i_p = 0; i_p < pls.size(); i_p++) {
-	if(!at(pls[i_p]).at().enableStat()) continue;
-	req.childAdd("get")->setAttr("path","/prm_"+pls[i_p]+"/%2fserv%2ftmplAttr");
+    //XMLNode reqUsrAttrs("CntrReqs"); req.setAttr("path",nodePath(0,true));
+
+    hst.push_back(RedntStkEl());
+    list(hst.back().ls);
+    string addr;
+    while(true) {
+	if(hst.back().pos >= hst.back().ls.size()) {
+	    if(!hst.back().addr.size()) break;
+	    hst.pop_back(); hst.back().pos++;
+	    prm = AutoHD<TParamContr>((TParamContr*)prm.at().nodePrev(true));
+	    continue;
+	}
+	prmC = prm.freeStat() ? TController::at(hst.back().ls[hst.back().pos]) : prm.at().at(hst.back().ls[hst.back().pos]);
+	addr = hst.back().addr + "/prm_"+hst.back().ls[hst.back().pos];
+	if(prmC.at().enableStat()) {
+	    req.childAdd("get")->setAttr("path", addr + "/%2fserv%2ftmplAttr");
+	}
+	hst.push_back(RedntStkEl(addr));
+	prmC.at().list(hst.back().ls);
+	prm = prmC;
     }
 
     //Send request to first active station for this controller
     if(owner().owner().rdStRequest(workId(),req).empty()) return;
 
     //Redirect respond to local parameters
-    req.setAttr("path","/");
-    for(unsigned i_prm = 0; i_prm < req.childSize(); ) {
-	if(s2i(req.childGet(i_prm)->attr("err"))) {
-	    req.childDel(i_prm);
-	    continue;
-	}
-	req.childGet(i_prm)->setName("set");
-	i_prm++;
+    req.setAttr("path", "/");
+    for(unsigned iPrm = 0; iPrm < req.childSize(); ) {
+	if(s2i(req.childGet(iPrm)->attr("err"))) { req.childDel(iPrm); continue; }
+	req.childGet(iPrm)->setName("set");
+	iPrm++;
     }
     cntrCmd(&req);
 }
@@ -441,13 +447,13 @@ void TMdPrm::enable( )
     catch(...){ disable(); throw; }
 
     //Check for delete DAQ parameter's attributes
-    for(int i_p = 0; isProc && i_p < (int)pEl.fldSize(); i_p++) {
+    for(int iP = 0; isProc && iP < (int)pEl.fldSize(); iP++) {
 	unsigned i_l;
 	for(i_l = 0; i_l < als.size(); i_l++)
-	    if(pEl.fldAt(i_p).name() == als[i_l])
+	    if(pEl.fldAt(iP).name() == als[i_l])
 		break;
 	if(i_l >= als.size())
-	    try{ pEl.fldDel(i_p); i_p--; }
+	    try{ pEl.fldDel(iP); iP--; }
 	    catch(TError err){ mess_warning(err.cat.c_str(),err.mess.c_str()); }
     }
 

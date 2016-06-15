@@ -42,7 +42,7 @@ using namespace OSCADA;
 TArchiveS::TArchiveS( ) :
     TSubSYS(SARH_ID,"Archives",true), elMess(""), elVal(""), elAval(""), bufErr(0), mMessPer(10), prcStMess(false), mRes(true),
     headBuf(0), vRes(true), mValPer(1000), mValPrior(10), mValForceCurTm(false),
-    prcStVal(false), endrunReqVal(false), toUpdate(false), mRedntFirst(true)
+    prcStVal(false), endrunReqVal(false), toUpdate(false), mRdRestDtOverTm(0), mRdFirst(true)
 {
     mAval = grpAdd("va_");
 
@@ -117,6 +117,7 @@ void TArchiveS::load_( )
     setValPeriod(s2i(TBDS::genDBGet(nodePath()+"ValPeriod",i2s(valPeriod()))));
     setValPrior(s2i(TBDS::genDBGet(nodePath()+"ValPriority",i2s(valPrior()))));
     setValForceCurTm(s2i(TBDS::genDBGet(nodePath()+"ValForceCurTm",i2s(valForceCurTm()))));
+    setRdRestDtOverTm(s2r(TBDS::genDBGet(nodePath()+"RdRestDtOverTm",r2s(rdRestDtOverTm()))));
 
     //LidDB
     // Message archivators load
@@ -236,6 +237,7 @@ void TArchiveS::save_( )
     TBDS::genDBSet(nodePath()+"ValPeriod", i2s(valPeriod()));
     TBDS::genDBSet(nodePath()+"ValPriority", i2s(valPrior()));
     TBDS::genDBSet(nodePath()+"ValForceCurTm",i2s(valForceCurTm()));
+    TBDS::genDBSet(nodePath()+"RdRestDtOverTm",r2s(rdRestDtOverTm()));
 }
 
 void TArchiveS::valAdd( const string &iid, const string &idb )
@@ -252,10 +254,9 @@ string TArchiveS::optDescr(  )
 	"------------ Parameters of section '%s' in config-file -----------\n"
 	"MessBufSize   <items>       Messages buffer size.\n"
 	"MessPeriod    <sec>         Message archiving period.\n"
-	"ValPeriod     <msec>        Values archiving period.\n"
-	"ValPriority   <level>	     Values task priority level.\n"
-	"MaxReqMess    <items>       Maximum request messages.\n"
-	"MaxReqVals    <items>       Maximum request values.\n\n"
+	"ValPeriod     <msec>        Values active archiving period.\n"
+	"ValPriority   <level>	     Values task priority level of active archiving.\n"
+	"RdRestDtOverTm <hours>      Overtime of the reserve history reload at start in hours.\n\n"
 	), nodePath().c_str());
 
     return buf;
@@ -415,7 +416,7 @@ void TArchiveS::messPut( time_t tm, int utm, const string &categ, int8_t level, 
     string tVl;
     for(int off = 0; (tVl=TSYS::strParse(arch,0,";",&off)).size(); ) archMap[tVl] = true;
 
-    MtxAlloc res(mRes.mtx());
+    MtxAlloc res(mRes);
     if(archMap.empty() || archMap[BUF_ARCH_NM]) {
 	res.lock();
 	//Put message to buffer
@@ -484,7 +485,7 @@ void TArchiveS::messGet( time_t b_tm, time_t e_tm, vector<TMess::SRec> & recs,
     TRegExp re(category, "p");
 
     //Get records from buffer
-    MtxAlloc res(mRes.mtx(), true);
+    MtxAlloc res(mRes, true);
     unsigned i_buf = headBuf;
     while(level >= 0 && (archMap.empty() || archMap[BUF_ARCH_NM]) && SYS->sysTm() < upTo) {
 	if(mBuf[i_buf].time >= b_tm && mBuf[i_buf].time != 0 && mBuf[i_buf].time <= e_tm &&
@@ -528,7 +529,7 @@ void TArchiveS::messGet( time_t b_tm, time_t e_tm, vector<TMess::SRec> & recs,
 time_t TArchiveS::messBeg( const string &arch )
 {
     time_t rez = 0;
-    MtxAlloc res(mRes.mtx(), true);
+    MtxAlloc res(mRes, true);
     if(arch.empty() || arch == BUF_ARCH_NM) {
 	unsigned i_buf = headBuf;
 	while(!arch.size() || arch == BUF_ARCH_NM) {
@@ -559,7 +560,7 @@ time_t TArchiveS::messBeg( const string &arch )
 time_t TArchiveS::messEnd( const string &arch )
 {
     time_t rez = 0;
-    MtxAlloc res(mRes.mtx(), true);
+    MtxAlloc res(mRes, true);
     if(arch.empty() || arch == BUF_ARCH_NM) {
 	unsigned i_buf = headBuf;
 	while(!arch.size() || arch == BUF_ARCH_NM) {
@@ -600,10 +601,10 @@ bool TArchiveS::rdProcess( XMLNode *reqSt )
     }
 
     //Alarms initial obtain
-    if(mRedntFirst) {
+    if(mRdFirst) {
 	XMLNode req("get"); req.setAttr("path", nodePath()+"/%2fserv%2fmess")->setAttr("lev","-1");
 	if(SYS->rdStRequest(req).size()) {
-	    mRedntFirst = false;
+	    mRdFirst = false;
 	    // Process the result
 	    for(unsigned iEl = 0; iEl < req.childSize(); ++iEl) {
 		XMLNode *el = req.childGet(iEl);
@@ -722,7 +723,7 @@ string TArchiveS::rdStRequest( const string &arch, XMLNode &req, const string &p
 
 void TArchiveS::setMessBufLen( unsigned len )
 {
-    MtxAlloc res(mRes.mtx(), true);
+    MtxAlloc res(mRes, true);
     len = vmin(BUF_SIZE_MAX, vmax(BUF_SIZE_DEF,len));
     while(mBuf.size() > len) {
 	mBuf.erase(mBuf.begin() + headBuf);
@@ -741,7 +742,7 @@ void TArchiveS::setActMess( TMArchivator *a, bool val )
 {
     unsigned iArch;
 
-    MtxAlloc res(mRes.mtx(), true);
+    MtxAlloc res(mRes, true);
     for(iArch = 0; iArch < actMess.size(); iArch++)
 	if(actMess[iArch].at().id() == a->id() && actMess[iArch].at().owner().modId() == a->owner().modId()) break;
 
@@ -753,7 +754,7 @@ void TArchiveS::setActVal( TVArchive *a, bool val )
 {
     unsigned iArch;
 
-    MtxAlloc res(vRes.mtx(), true);
+    MtxAlloc res(vRes, true);
     for(iArch = 0; iArch < actVal.size(); iArch++)
 	if(actVal[iArch].at().id() == a->id()) break;
 
@@ -774,7 +775,7 @@ void *TArchiveS::ArhMessTask( void *param )
     while(true) {
 	if(TSYS::taskEndRun()) isLast = true;
 	//Message buffer read
-	MtxAlloc res(arh.mRes.mtx(), true);
+	MtxAlloc res(arh.mRes, true);
 	for(unsigned iM = 0; iM < arh.actMess.size(); iM++) {
 	    AutoHD<TMArchivator> mArh = arh.actMess[iM];
 	    int &messHead = mArh.at().messHead;
@@ -945,6 +946,7 @@ void TArchiveS::cntrCmdProc( XMLNode *opt )
 	TSubSYS::cntrCmdProc(opt);
 	ctrMkNode("grp",opt,-1,"/br/va_",_("Value archive"),RWRWR_,"root",SARH_ID,2,"idm",OBJ_NM_SZ,"idSz","20");
 	if(SYS->rdEnable() && ctrMkNode("area",opt,0,"/redund",_("Redundancy"))) {
+	    ctrMkNode("fld",opt,-1,"/redund/restDtOverTm",_("Overtime of the reserve history reload at start, hours"),RWRWR_,"root",SARH_ID,1, "tp","real");
 	    if(ctrMkNode("table",opt,-1,"/redund/mArch",_("Message archivators"),RWRWR_,"root",SARH_ID,1,"key","id")) {
 		ctrMkNode("list",opt,-1,"/redund/mArch/id",_("Archivator"),R_R_R_,"root",SARH_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/redund/mArch/nm",_("Name"),R_R_R_,"root",SARH_ID,1,"tp","str");
@@ -1099,6 +1101,10 @@ void TArchiveS::cntrCmdProc( XMLNode *opt )
 	}
 	if(ctrChkNode(opt,"del",RWRWR_,"root",SARH_ID,SEC_WR))	chldDel(mAval,opt->attr("id"),-1,1);
     }
+    else if(a_path == "/redund/restDtOverTm") {
+	if(ctrChkNode(opt,"get",RWRWR_,"root",SARH_ID,SEC_RD))	opt->setText(r2s(rdRestDtOverTm()));
+	if(ctrChkNode(opt,"set",RWRWR_,"root",SARH_ID,SEC_WR))	setRdRestDtOverTm(s2r(opt->text()));
+    }
     else if(a_path == "/redund/mArch") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SDAQ_ID,SEC_RD)) {
 	    XMLNode *nId	= ctrMkNode("list",opt,-1,"/redund/mArch/id","",R_R_R_,"root",SARH_ID);
@@ -1217,7 +1223,7 @@ void TTypeArchivator::cntrCmdProc( XMLNode *opt )
 //************************************************
 TMArchivator::TMArchivator(const string &iid, const string &idb, TElem *cf_el) :
     TConfig(cf_el), runSt(false), messHead(-1), mId(cfg("ID")), mLevel(cfg("LEVEL")), mStart(cfg("START").getBd()),
-    mDB(idb), mRedntUse(true), mRedntFirst(true)
+    mDB(idb), mRdUse(true), mRdFirst(true)
 {
     mId = iid;
 }
@@ -1266,7 +1272,7 @@ void TMArchivator::load_( )
     if(!SYS->chkSelDB(DB()))	throw TError();
     SYS->db().at().dataGet(fullDB(), SYS->archive().at().nodePath()+tbl(), *this);
 
-    mRedntUse = redntMode();
+    mRdUse = redntMode();
 }
 
 void TMArchivator::save_( )	{ SYS->db().at().dataSet(fullDB(), SYS->archive().at().nodePath()+tbl(), *this); }
@@ -1275,10 +1281,13 @@ void TMArchivator::redntDataUpdate( )
 {
     //Prepare and call request for messages
     // end()+1 used for decrease traffic by request end() messages in each cycle. The messages in <= end() will transfer direct.
-    XMLNode req("get"); req.setAttr("path", nodePath()+"/%2fserv%2fmess")->setAttr("bTm",ll2s(end()+1));
+    XMLNode req("get");
+    req.setAttr("path", nodePath()+"/%2fserv%2fmess")->
+	setAttr("bTm", ll2s(end()+1-(mRdFirst?owner().owner().rdRestDtOverTm()*3600:0)));
 
     //Send request to first active station for this controller
-    if(owner().owner().rdStRequest(workId(),req,"",!mRedntFirst).empty()) return;
+    if(owner().owner().rdStRequest(workId(),req,"",!mRdFirst).empty()) return;
+    mRdFirst = false;
 
     //printf("TEST 00: end=%s; '%s': %s\n", tm2s(end(),"").c_str(), id().c_str(), req.save().c_str());
 
