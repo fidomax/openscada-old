@@ -39,7 +39,7 @@
 #define MOD_NAME	_("Logic level")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.5.5"
+#define MOD_VER		"1.5.6"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides the logical level of parameters.")
 #define LICENSE		"GPL2"
@@ -239,27 +239,41 @@ void TMdContr::redntDataUpdate( )
 {
     TController::redntDataUpdate();
 
-    vector<string> pls; list(pls);
-
-    //Request for template's attributes values
+    vector<RedntStkEl> hst;
+    //Prepare a group of a hierarchy request to the parameters
+    AutoHD<TParamContr> prm, prmC;
     XMLNode req("CntrReqs"); req.setAttr("path",nodePath(0,true));
-    for(unsigned i_p = 0; i_p < pls.size(); i_p++) {
-	if(!at(pls[i_p]).at().enableStat()) continue;
-	req.childAdd("get")->setAttr("path","/prm_"+pls[i_p]+"/%2fserv%2ftmplAttr");
+    //XMLNode reqUsrAttrs("CntrReqs"); req.setAttr("path",nodePath(0,true));
+
+    hst.push_back(RedntStkEl());
+    list(hst.back().ls);
+    string addr;
+    while(true) {
+	if(hst.back().pos >= hst.back().ls.size()) {
+	    if(!hst.back().addr.size()) break;
+	    hst.pop_back(); hst.back().pos++;
+	    prm = AutoHD<TParamContr>((TParamContr*)prm.at().nodePrev(true));
+	    continue;
+	}
+	prmC = prm.freeStat() ? TController::at(hst.back().ls[hst.back().pos]) : prm.at().at(hst.back().ls[hst.back().pos]);
+	addr = hst.back().addr + "/prm_"+hst.back().ls[hst.back().pos];
+	if(prmC.at().enableStat()) {
+	    req.childAdd("get")->setAttr("path", addr + "/%2fserv%2ftmplAttr");
+	}
+	hst.push_back(RedntStkEl(addr));
+	prmC.at().list(hst.back().ls);
+	prm = prmC;
     }
 
     //Send request to first active station for this controller
     if(owner().owner().rdStRequest(workId(),req).empty()) return;
 
     //Redirect respond to local parameters
-    req.setAttr("path","/");
-    for(unsigned i_prm = 0; i_prm < req.childSize(); ) {
-	if(s2i(req.childGet(i_prm)->attr("err"))) {
-	    req.childDel(i_prm);
-	    continue;
-	}
-	req.childGet(i_prm)->setName("set");
-	i_prm++;
+    req.setAttr("path", "/");
+    for(unsigned iPrm = 0; iPrm < req.childSize(); ) {
+	if(s2i(req.childGet(iPrm)->attr("err"))) { req.childDel(iPrm); continue; }
+	req.childGet(iPrm)->setName("set");
+	iPrm++;
     }
     cntrCmd(&req);
 }
@@ -433,13 +447,13 @@ void TMdPrm::enable( )
     catch(...){ disable(); throw; }
 
     //Check for delete DAQ parameter's attributes
-    for(int i_p = 0; isProc && i_p < (int)pEl.fldSize(); i_p++) {
+    for(int iP = 0; isProc && iP < (int)pEl.fldSize(); iP++) {
 	unsigned i_l;
 	for(i_l = 0; i_l < als.size(); i_l++)
-	    if(pEl.fldAt(i_p).name() == als[i_l])
+	    if(pEl.fldAt(iP).name() == als[i_l])
 		break;
 	if(i_l >= als.size())
-	    try{ pEl.fldDel(i_p); i_p--; }
+	    try{ pEl.fldDel(iP); iP--; }
 	    catch(TError err){ mess_warning(err.cat.c_str(),err.mess.c_str()); }
     }
 
