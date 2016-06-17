@@ -48,17 +48,17 @@ void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
 	    || tmpfl[10].f != Adjust.vl) {
 	Period.s = 0;
 	Period.Update(tmp);
-	Sens.Update(tmpfl[0].f,0);
-	MinS.Update(tmpfl[1].f,0);
-	MaxS.Update(tmpfl[2].f,0);
-	MinPV.Update(tmpfl[3].f,0);
-	MaxPV.Update(tmpfl[4].f,0);
-	MinA.Update(tmpfl[5].f,0);
-	MaxA.Update(tmpfl[6].f,0);
-	MinW.Update(tmpfl[7].f,0);
-	MaxW.Update(tmpfl[8].f,0);
-	Factor.Update(tmpfl[9].f,0);
-	Adjust.Update(tmpfl[10].f,0);
+	Sens.Update(tmpfl[0].f, 0);
+	MinS.Update(tmpfl[1].f, 0);
+	MaxS.Update(tmpfl[2].f, 0);
+	MinPV.Update(tmpfl[3].f, 0);
+	MaxPV.Update(tmpfl[4].f, 0);
+	MinA.Update(tmpfl[5].f, 0);
+	MaxA.Update(tmpfl[6].f, 0);
+	MinW.Update(tmpfl[7].f, 0);
+	MaxW.Update(tmpfl[8].f, 0);
+	Factor.Update(tmpfl[9].f, 0);
+	Adjust.Update(tmpfl[10].f, 0);
 	uint8_t E[46] = { 0, tmp, tmpfl[0].b[0], tmpfl[0].b[1], tmpfl[0].b[2], tmpfl[0].b[3], tmpfl[1].b[0], tmpfl[1].b[1], tmpfl[1].b[2], tmpfl[1].b[3],
 		tmpfl[2].b[0], tmpfl[2].b[1], tmpfl[2].b[2], tmpfl[2].b[3], tmpfl[3].b[0], tmpfl[3].b[1], tmpfl[3].b[2], tmpfl[3].b[3], tmpfl[4].b[0],
 		tmpfl[4].b[1], tmpfl[4].b[2], tmpfl[4].b[3], tmpfl[5].b[0], tmpfl[5].b[1], tmpfl[5].b[2], tmpfl[5].b[3], tmpfl[6].b[0], tmpfl[6].b[1],
@@ -223,6 +223,43 @@ uint16_t KA_BVT::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
+    switch(uc) {
+    case TaskRefresh:
+	NeedInit = false;
+	Msg.L = 5;
+	Msg.C = AddrReq;
+	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+	if(mPrm.owner().DoCmd(&Msg)) {
+	    if(Msg.C == GOOD3) {
+		rc = 1;
+		for(int i = 1; i <= count_n; i++) {
+		    if(chan_err[i].state == 1) continue;
+		    Msg.L = 5;
+		    Msg.C = AddrReq;
+		    *((uint16_t *) Msg.D) = PackID(ID, i, 1); //value
+		    if(with_params) {
+			Msg.L += 2;
+			*((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 2); //params
+		    }
+		    if(mPrm.owner().DoCmd(&Msg)) {
+			if(Msg.C == GOOD3) {
+			    chan_err[i].state = 1;
+			    rc = 1;
+			} else {
+			    rc = 0;
+			    chan_err[i].state = 2;
+			    NeedInit = true;
+			}
+		    } else {
+			rc = 0;
+			chan_err[i].state = 3;
+			NeedInit = true;
+		    }
+		}
+	    }
+	}
+	break;
+    }
     return rc;
 }
 uint16_t KA_BVT::HandleEvent(int64_t tm, uint8_t * D)
@@ -230,6 +267,59 @@ uint16_t KA_BVT::HandleEvent(int64_t tm, uint8_t * D)
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
     if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
+    switch(ft3ID.k) {
+    case 0:
+	switch(ft3ID.n) {
+	case 0:
+	    mPrm.vlAt("state").at().setI(D[2], tm, true);
+	    l = 3;
+	    break;
+	case 1:
+	    l = 4;
+	    break;
+	case 2:
+	    l = 2 + count_n * 5;
+	    for(int j = 0; j < count_n; j++) {
+		mPrm.vlAt(TSYS::strMess("state_%d", j).c_str()).at().setI(D[j * 5 + 2], tm, true);
+		mPrm.vlAt(TSYS::strMess("value_%d", j).c_str()).at().setR(TSYS::getUnalignFloat(D + j * 5 + 3), tm, true);
+	    }
+	    break;
+	}
+	break;
+    default:
+	if(ft3ID.k && (ft3ID.k <= count_n)) {
+	    switch(ft3ID.n) {
+	    case 0:
+		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().setI(D[2], tm, true);
+		mPrm.vlAt(TSYS::strMess("value_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), tm, true);
+		l = 7;
+		break;
+	    case 1:
+		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+		l = 4;
+		break;
+	    case 2:
+		if(with_params) {
+		    mPrm.vlAt(TSYS::strMess("period_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+		    mPrm.vlAt(TSYS::strMess("sens_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 4), tm, true);
+		    mPrm.vlAt(TSYS::strMess("minS_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 8), tm, true);
+		    mPrm.vlAt(TSYS::strMess("maxS_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 12), tm, true);
+		    mPrm.vlAt(TSYS::strMess("minPV_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 16), tm, true);
+		    mPrm.vlAt(TSYS::strMess("maxPV_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 20), tm, true);
+		    mPrm.vlAt(TSYS::strMess("minA_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 24), tm, true);
+		    mPrm.vlAt(TSYS::strMess("maxA_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 28), tm, true);
+		    mPrm.vlAt(TSYS::strMess("minW_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 32), tm, true);
+		    mPrm.vlAt(TSYS::strMess("maxW_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 36), tm, true);
+		    mPrm.vlAt(TSYS::strMess("factor_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 40), tm, true);
+		    mPrm.vlAt(TSYS::strMess("adjust_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalignFloat(D + 44), tm, true);
+		}
+		l = 48;
+		break;
+
+	    }
+	}
+    }
+
     return l;
 }
 
