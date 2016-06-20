@@ -409,7 +409,8 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 //* TTpContr                                      *
 //*************************************************
 
-TTpContr::TTpContr(string name) : TTypeDAQ(MOD_ID)
+TTpContr::TTpContr(string name) :
+	TTypeDAQ(MOD_ID)
 {
     mod = this;
 
@@ -603,15 +604,17 @@ bool TMdContr::DoCmd(tagMsg * pMsg)
 		    n += 2;
 		    list(lst);
 		    for(int i_l = 0; !m && i_l < lst.size(); i_l++) {
+			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("---l:%d n:%d"), l,n);
 			AutoHD<TMdPrm> t = at(lst[i_l]);
 			m = t.at().HandleEvent(((int64_t) DateTimeToTime_t(pMsg->D)) * 1000000, pMsg->D + n);
-
+			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("%d bytes handled"), m);
 		    }
 		    if(m) {
-			if(!(TSYS::getUnalign16(pMsg->D + n))) pMsg->D[n + 2] = 0;
+			//if(!(TSYS::getUnalign16(pMsg->D + n))) pMsg->D[n + 2] = 0;
 			l -= m;
 			n += m;
 			m = 0;
+			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("l:%d n:%d"), l,n);
 		    } else {
 			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Unhandled data  %04X at %d"), TSYS::getUnalign16(pMsg->D + n), n);
 			if(mess_lev() == TMess::Debug) {
@@ -639,22 +642,22 @@ bool TMdContr::Transact(tagMsg * pMsg)
 
     uint16_t l = 0;
     uint8_t Cmd = pMsg->C;
+    pMsg->A = devAddr;
+    pMsg->B = 2;
     string data_s = "";
     char io_buf[4096];
     switch(Cmd) {
     case SetData:
-	pMsg->C |= (Channels[pMsg->B].FCB2 | 0x10);
+	pMsg->C |= Channels[pMsg->B].FCB2;
 	break;
     case ReqData1:
     case ReqData2:
-	pMsg->C |= (Channels[pMsg->B].FCB2 | 0x10);
+	pMsg->C |= Channels[pMsg->B].FCB3;
 	break;
     case ReqData:
-	if(pMsg->L != 1) pMsg->C |= (Channels[pMsg->B].FCB2 | 0x10);
+	if(pMsg->L != 1) pMsg->C |= Channels[pMsg->B].FCB3;
 	break;
     }
-    pMsg->A = devAddr;
-    pMsg->B = 2;
     uint16_t rc;
     MakePacket(pMsg, io_buf, &l);
     try {
@@ -737,16 +740,16 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	if(pMsg->L) switch(Cmd) {
 	case Reset:
 	case ResetChan:
-	    Channels[pMsg->B].FCB2 = 0x20;
+	    Channels[pMsg->A].FCB2 = 0x20;
 	    break;
 	case SetData:
-	    Channels[pMsg->B].FCB2 ^= 0x20;
+	    Channels[pMsg->A].FCB2 ^= 0x20;
 	    break;
 	case ReqData1:
 	case ReqData2:
 	case ReqData:
 
-	    Channels[pMsg->B].FCB3 ^= 0x20;
+	    Channels[pMsg->A].FCB3 ^= 0x20;
 	    break;
 
 	}
@@ -768,7 +771,7 @@ void TMdContr::MakePacket(tagMsg *msg, char *io_buf, uint16_t *len)
 	//full packet
 	*(uint16_t *) io_buf = 0x6405;
 	io_buf[2] = msg->L;
-	io_buf[3] = msg->C | 0x40;
+	io_buf[3] = msg->C | 0x50;
 	io_buf[4] = msg->A;
 	io_buf[5] = msg->B;
 	*(uint16_t *) (io_buf + 6) = CRC(io_buf + 2, 4);
@@ -952,6 +955,10 @@ void TMdContr::start_()
     //> Start the gathering data task
     if(!prc_st) {
 	if(cfg("CTRTYPE").getS() == "DAQ") {
+	    for(int i = 0; i <= nChannel; i++) {
+		Channels[i].FCB2 = 0x20;
+		Channels[i].FCB3 = 0x20;
+	    }
 	    SYS->taskCreate(nodePath('.', true), mPrior, TMdContr::DAQTask, this);
 	} else {
 	    if(cfg("CTRTYPE").getS() == "Logic") {

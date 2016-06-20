@@ -124,6 +124,7 @@ KA_BVT::~KA_BVT()
 
 void KA_BVT::AddChannel(uint8_t iid)
 {
+    chan_err.insert(chan_err.end(),SDataRec());
     data.push_back(SKATTchannel(iid, this));
     AddAttr(data.back().State.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
     AddAttr(data.back().Value.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
@@ -236,7 +237,7 @@ uint16_t KA_BVT::Task(uint16_t uc)
 		    if(chan_err[i].state == 1) continue;
 		    Msg.L = 5;
 		    Msg.C = AddrReq;
-		    *((uint16_t *) Msg.D) = PackID(ID, i, 1); //value
+		    *((uint16_t *) Msg.D) = PackID(ID, i, 0); //value
 		    if(with_params) {
 			Msg.L += 2;
 			*((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 2); //params
@@ -262,6 +263,7 @@ uint16_t KA_BVT::Task(uint16_t uc)
     }
     return rc;
 }
+
 uint16_t KA_BVT::HandleEvent(int64_t tm, uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
@@ -449,6 +451,7 @@ B_BVT::~B_BVT()
 
 void B_BVT::AddChannel(uint8_t iid)
 {
+    chan_err.insert(chan_err.end(),SDataRec());
     data.push_back(STTchannel(iid, this));
     AddAttr(data.back().State.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
     AddAttr(data.back().Value.lnk, TFld::Real, TFld::NoWrite, TSYS::strMess("%d:1", iid + 1));
@@ -644,6 +647,7 @@ uint16_t B_BVT::Task(uint16_t uc)
     }
     return rc;
 }
+
 uint16_t B_BVT::HandleEvent(int64_t tm, uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
