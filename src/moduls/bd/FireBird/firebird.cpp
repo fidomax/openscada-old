@@ -31,7 +31,7 @@
 #define MOD_NAME	_("DB FireBird")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"1.3.0"
+#define MOD_VER		"1.3.2"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("DB module. Provides support of the DB FireBird.")
 #define LICENSE		"GPL2"
@@ -197,8 +197,11 @@ TTable *MBD::openTable( const string &inm, bool create )
 	    "CONSTRAINT \"pk_" + mod->sqlReqCode(inm,'"') + "\" PRIMARY KEY(\"<<empty>>\") )'; END";
 	sqlReq(req);
     }
+    vector< vector<string> > tblStrct;
+    getStructDB(inm, tblStrct);
+    if(tblStrct.size() <= 1) throw TError(nodePath().c_str(), _("Table '%s' is not present."), name().c_str());
 
-    return new MTable(inm, this);
+    return new MTable(inm, this, &tblStrct);
 }
 
 string MBD::getErr( ISC_STATUS_ARRAY status )
@@ -386,8 +389,7 @@ void MBD::sqlReq( const string &ireq, vector< vector<string> > *tbl, char intoTr
 	    stmt = trans = 0;
 	    throw TError(nodePath().c_str(), _("DSQL close transaction error: %s"), getErr(status).c_str());
 	}
-    }
-    catch(...) {
+    } catch(...) {
 	if(stmt) isc_dsql_free_statement(status, &stmt, DSQL_drop);
 	if(trans && !htrans) isc_commit_transaction(status, &trans);
 	free(out_sqlda);
@@ -404,6 +406,29 @@ string MBD::clrEndSpace( const string &vl )
     int i = vl.size()-1;
     while(i >= 0 && (vl[i] == ' ' || vl[i] == '\t' || vl[i] == '\n')) i--;
     return vl.substr(0, i+1);
+}
+
+void MBD::getStructDB( const string &nm, vector< vector<string> > &tblStrct )
+{
+    //Get generic data structure
+    //owner().transCommit(/*&trans*/);
+    sqlReq("SELECT R.RDB$FIELD_NAME, F.RDB$FIELD_TYPE, F.RDB$FIELD_LENGTH "
+	"FROM RDB$FIELDS F, RDB$RELATION_FIELDS R where F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE and "
+	"R.RDB$SYSTEM_FLAG = 0 and R.RDB$RELATION_NAME = '"+mod->sqlReqCode(nm)+"'", &tblStrct, false);
+    if(tblStrct.size() > 1) {
+	//Get keys
+	vector< vector<string> > keyLst;
+	sqlReq("SELECT I.RDB$FIELD_NAME, C.RDB$CONSTRAINT_TYPE "
+	    "FROM RDB$RELATION_CONSTRAINTS C, RDB$INDEX_SEGMENTS I "
+	    "WHERE C.RDB$INDEX_NAME = I.RDB$INDEX_NAME AND C.RDB$RELATION_NAME = '"+
+	    mod->sqlReqCode(name())+"'", &keyLst, false);
+	tblStrct[0].push_back("Key");
+	for(unsigned i_f = 1, i_k; i_f < tblStrct.size(); i_f++) {
+	    for(i_k = 1; i_k < keyLst.size(); i_k++)
+		if(tblStrct[i_f][0] == keyLst[i_k][0]) break;
+	    tblStrct[i_f].push_back((i_k<keyLst.size()) ? keyLst[i_k][1] : "");
+	}
+    }
 }
 
 void MBD::cntrCmdProc( XMLNode *opt )
@@ -426,13 +451,15 @@ void MBD::cntrCmdProc( XMLNode *opt )
 //************************************************
 //* FireBird::Table				 *
 //************************************************
-MTable::MTable( string inm, MBD *iown ) : TTable(inm)
+MTable::MTable( string inm, MBD *iown, vector< vector<string> > *itblStrct ) : TTable(inm)
 {
     setNodePrev(iown);
 
     //Get table structure description
-    try { getStructDB(tblStrct); } catch(...) { }
-    //if(tblStrct.size() <= 1) throw TError(nodePath().c_str(), _("Table '%s' is not present."), name().c_str());
+    try {
+	if(itblStrct) tblStrct = *itblStrct;
+	else owner().getStructDB(name(), tblStrct);
+    } catch(...) { }
 }
 
 MTable::~MTable( )	{ }
@@ -444,34 +471,13 @@ void MTable::postDisable( int flag )
     owner().transCommit();
     if(flag) {
 	try { owner().sqlReq("DROP TABLE \"" + mod->sqlReqCode(name(),'"') + "\""); }
-	catch(TError err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
+	catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
     }
 }
 
 MBD &MTable::owner( )	{ return (MBD&)TTable::owner(); }
 
-void MTable::getStructDB( vector< vector<string> > &tblStrct )
-{
-    //Get generic data structure
-    //owner().transCommit(/*&trans*/);
-    owner().sqlReq("SELECT R.RDB$FIELD_NAME, F.RDB$FIELD_TYPE, F.RDB$FIELD_LENGTH "
-	"FROM RDB$FIELDS F, RDB$RELATION_FIELDS R where F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE and "
-	"R.RDB$SYSTEM_FLAG = 0 and R.RDB$RELATION_NAME = '"+mod->sqlReqCode(name())+"'", &tblStrct, false);
-    if(tblStrct.size() > 1) {
-	//Get keys
-	vector< vector<string> > keyLst;
-	owner().sqlReq("SELECT I.RDB$FIELD_NAME, C.RDB$CONSTRAINT_TYPE "
-	    "FROM RDB$RELATION_CONSTRAINTS C, RDB$INDEX_SEGMENTS I "
-	    "WHERE C.RDB$INDEX_NAME = I.RDB$INDEX_NAME AND C.RDB$RELATION_NAME = '"+
-	    mod->sqlReqCode(name())+"'", &keyLst, false);
-	tblStrct[0].push_back("Key");
-	for(unsigned i_f = 1, i_k; i_f < tblStrct.size(); i_f++) {
-	    for(i_k = 1; i_k < keyLst.size(); i_k++)
-		if(tblStrct[i_f][0] == keyLst[i_k][0]) break;
-	    tblStrct[i_f].push_back((i_k<keyLst.size()) ? keyLst[i_k][1] : "");
-	}
-    }
-}
+
 
 void MTable::fieldStruct( TConfig &cfg )
 {
@@ -714,7 +720,7 @@ void MTable::fieldSet( TConfig &cfg )
 
     //Query
     try{ owner().sqlReq(req, NULL, true); }
-    catch(TError err) { fieldFix(cfg); owner().sqlReq(req, NULL, true); }
+    catch(TError &err) { fieldFix(cfg); owner().sqlReq(req, NULL, true); }
 }
 
 void MTable::fieldDel( TConfig &cfg )
@@ -834,7 +840,7 @@ void MTable::fieldFix( TConfig &cfg )
 
     if(next) {
 	owner().sqlReq(req, NULL, false);
-	getStructDB(tblStrct);		//Update structure information
+	owner().getStructDB(name(), tblStrct);	//Update structure information
     }
 }
 
