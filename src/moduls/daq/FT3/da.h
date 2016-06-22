@@ -362,7 +362,8 @@ namespace FT3
 	FT3ID UnpackID(uint16_t ID);
 	uint16_t PackID(FT3ID ID);
 	uint16_t PackID(uint8_t g, uint8_t k, uint8_t n);
-
+	uint8_t SerializeF(uint8_t * out, float vl);
+	uint8_t SerializeB(uint8_t * out, uint8_t vl);
     public:
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
 	time_t DateTimeToTime_t(uint8_t *d);
