@@ -34,7 +34,7 @@
 #define MOD_NAME	_("DB by ODBC")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"0.2.0"
+#define MOD_VER		"0.2.2"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("BD module. Provides support of different databases by the ODBC connectors and drivers to the databases.")
 #define MOD_LICENSE	"GPL2"
@@ -210,7 +210,7 @@ void MBD::enable( )
 	if(SQLAllocHandle(SQL_HANDLE_STMT,hdbc,&hstmt) != SQL_SUCCESS)	throw TError(nodePath().c_str(), "SQLAllocHandle: %s", errors().c_str());
 #endif
 	TBD::enable();
-    } catch(TError) { disable(); throw; }
+    } catch(TError&) { disable(); throw; }
 }
 
 void MBD::disable( )
@@ -258,13 +258,13 @@ TTable *MBD::openTable( const string &inm, bool create )
 {
     if(!enableStat()) throw TError(nodePath().c_str(), _("Error open table '%s'. DB is disabled."), inm.c_str());
 
-    if(create) {
-	/*string req = "CREATE TABLE IF NOT EXISTS `"+TSYS::strEncode(owner().bd,TSYS::SQL)+"`.`"+
-	    TSYS::strEncode(inm,TSYS::SQL)+"` (`<<empty>>` char(20) NOT NULL DEFAULT '' PRIMARY KEY)";
-	owner().sqlReq(req);*/
-    }
+    //if(create) owner().sqlReq("CREATE TABLE IF NOT EXISTS `"+TSYS::strEncode(owner().bd,TSYS::SQL)+"`.`"+
+    //				TSYS::strEncode(inm,TSYS::SQL)+"` (`<<empty>>` char(20) NOT NULL DEFAULT '' PRIMARY KEY)");
+    //Get the table structure description and check for it presence
+    vector< vector<string> > tblStrct;
+    //sqlReq("DESCRIBE `" + TSYS::strEncode(bd,TSYS::SQL) + "`.`" + TSYS::strEncode(inm,TSYS::SQL) + "`", &tblStrct);
 
-    return new MTable(inm, this);
+    return new MTable(inm, this, &tblStrct);
 }
 
 void MBD::transOpen( )
@@ -377,8 +377,7 @@ void MBD::sqlReq( const string &req, vector< vector<string> > *tbl, char intoTra
 	    }
 	}
 	//if(sts == SQL_ERROR) throw TError(nodePath().c_str(), "SQLMoreResults: %s", errors().c_str());	//!!!! Only single result support !!!!
-    }
-    catch(TError ier) { err = ier.mess; }
+    } catch(TError &ier) { err = ier.mess; }
 
 #if (ODBCVER < 0x0300)
     SQLFreeStmt(hstmt, SQL_CLOSE);
@@ -410,14 +409,14 @@ void MBD::cntrCmdProc( XMLNode *opt )
 //************************************************
 //* BD_ODBC::Table                                *
 //************************************************
-MTable::MTable( string name, MBD *iown ) : TTable(name)
+MTable::MTable( string name, MBD *iown, vector< vector<string> > *itblStrct ) : TTable(name)
 {
     setNodePrev(iown);
 
     //Get table structure description
     /*try {
-	string req = "DESCRIBE `" + TSYS::strEncode(owner().bd,TSYS::SQL) + "`.`" + TSYS::strEncode(name,TSYS::SQL) + "`";
-	owner().sqlReq(req, &tblStrct);
+	if(itblStrct) tblStrct = *itblStrct;
+	else owner().sqlReq("DESCRIBE `" + TSYS::strEncode(owner().bd,TSYS::SQL) + "`.`" + TSYS::strEncode(name,TSYS::SQL) + "`", &tblStrct);
     } catch(...) { }*/
 }
 
