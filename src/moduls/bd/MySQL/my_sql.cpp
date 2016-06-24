@@ -1,7 +1,7 @@
 
 //OpenSCADA system module BD.MySQL file: my_sql.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -34,7 +34,7 @@
 #define MOD_NAME	_("DB MySQL")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"2.4.3"
+#define MOD_VER		"2.5.2"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("BD module. Provides support of the BD MySQL.")
 #define MOD_LICENSE	"GPL2"
@@ -100,24 +100,26 @@ void MBD::postDisable( int flag )
 {
     TBD::postDisable(flag);
 
-    if(flag && owner().fullDeleteDB()) {
-	MYSQL connect;
+    if(flag && owner().fullDeleteDB())
+	try {
+	    MYSQL connect;
 
-	if(!mysql_init(&connect)) throw TError(nodePath().c_str(), _("Error initializing client."));
-	connect.reconnect = 1;
-	if(!mysql_real_connect(&connect,host.c_str(),user.c_str(),pass.c_str(),"",port,(u_sock.size()?u_sock.c_str():NULL),CLIENT_MULTI_STATEMENTS))
-	    throw TError(nodePath().c_str(), _("Connect to DB error: %s"), mysql_error(&connect));
+	    MtxAlloc resource(connRes, true);
+	    if(!mysql_init(&connect)) throw TError(nodePath().c_str(), _("Error initializing client."));
+	    connect.reconnect = 1;
+	    if(!mysql_real_connect(&connect,host.c_str(),user.c_str(),pass.c_str(),"",port,(u_sock.size()?u_sock.c_str():NULL),CLIENT_MULTI_STATEMENTS))
+		throw TError(nodePath().c_str(), _("Connect to DB error: %s"), mysql_error(&connect));
 
-	string req = "DROP DATABASE `" + bd + "`";
-	if(mysql_real_query(&connect,req.c_str(),req.size())) throw TError(nodePath().c_str(), _("Query to DB error: %s"), mysql_error(&connect));
+	    string req = "DROP DATABASE `" + bd + "`";
+	    if(mysql_real_query(&connect,req.c_str(),req.size())) throw TError(nodePath().c_str(), _("Query to DB error: %s"), mysql_error(&connect));
 
-	mysql_close(&connect);
-    }
+	    mysql_close(&connect);
+	} catch(TError&) { }
 }
 
 void MBD::enable( )
 {
-    MtxAlloc resource(connRes.mtx(), true);
+    MtxAlloc resource(connRes, true);
     if(enableStat())	return;
 
     //Address parse
@@ -159,8 +161,7 @@ void MBD::enable( )
 	if(stChar.size()) req += " CHARACTER SET '"+stChar+"'";
 	if(stColl.size()) req += " COLLATE '"+stColl+"'";
 	sqlReq(req);
-    }
-    catch(...) { }
+    } catch(...) { }
 
     //Sets prepare and perform
     // Charcode and collation
@@ -175,7 +176,7 @@ void MBD::enable( )
 
 void MBD::disable( )
 {
-    MtxAlloc resource(connRes.mtx(), true);
+    MtxAlloc resource(connRes, true);
     if(!enableStat())	return;
 
     //Last commit
@@ -200,7 +201,13 @@ TTable *MBD::openTable( const string &inm, bool create )
 {
     if(!enableStat()) throw TError(nodePath().c_str(), _("Error open table '%s'. DB is disabled."), inm.c_str());
 
-    return new MTable(inm, this, create);
+    if(create) sqlReq("CREATE TABLE IF NOT EXISTS `"+TSYS::strEncode(bd,TSYS::SQL)+"`.`"+
+			TSYS::strEncode(inm, TSYS::SQL)+"` (`<<empty>>` char(20) NOT NULL DEFAULT '' PRIMARY KEY)");
+    //Get the table structure description and check it to presence
+    vector< vector<string> > tblStrct;
+    sqlReq("DESCRIBE `" + TSYS::strEncode(bd,TSYS::SQL) + "`.`" + TSYS::strEncode(inm,TSYS::SQL) + "`", &tblStrct);
+
+    return new MTable(inm, this, &tblStrct);
 }
 
 void MBD::sqlReq( const string &ireq, vector< vector<string> > *tbl, char intoTrans )
@@ -212,8 +219,8 @@ void MBD::sqlReq( const string &ireq, vector< vector<string> > *tbl, char intoTr
 
     string req = Mess->codeConvOut(cd_pg.c_str(), ireq);
 
-    MtxAlloc resource(connRes.mtx(), true);	//!! Moved before the transaction checking for prevent the "BEGIN;" and "COMMIT;"
-						//   request's sequence breakage on high concurrency access activity
+    MtxAlloc resource(connRes, true);	//!! Moved before the transaction checking for prevent the "BEGIN;" and "COMMIT;"
+					//   request's sequence breakage on high concurrency access activity
 
     if(intoTrans && intoTrans != EVAL_BOOL) transOpen();
     else if(!intoTrans && reqCnt) transCommit();
@@ -332,23 +339,18 @@ void MBD::cntrCmdProc( XMLNode *opt )
 //************************************************
 //* MBDMySQL::Table                              *
 //************************************************
-MTable::MTable( string name, MBD *iown, bool create ) : TTable(name)
+MTable::MTable( string name, MBD *iown, vector< vector<string> > *itblStrct ) : TTable(name)
 {
-    string req;
-
     setNodePrev(iown);
 
-    if(create) {
-	req = "CREATE TABLE IF NOT EXISTS `"+TSYS::strEncode(owner().bd,TSYS::SQL)+"`.`"+
-	    TSYS::strEncode(name,TSYS::SQL)+"` (`<<empty>>` char(20) NOT NULL DEFAULT '' PRIMARY KEY)";
-	owner().sqlReq(req);
-    }
-    //Get table structure description
-    req = "DESCRIBE `" + TSYS::strEncode(owner().bd,TSYS::SQL) + "`.`" + TSYS::strEncode(name,TSYS::SQL) + "`";
-    owner().sqlReq(req, &tblStrct);
+    try {
+	//Get the table structure description
+	if(itblStrct) tblStrct = *itblStrct;
+	else owner().sqlReq("DESCRIBE `" + TSYS::strEncode(owner().bd,TSYS::SQL) + "`.`" + TSYS::strEncode(name,TSYS::SQL) + "`", &tblStrct);
 
-    //req = "SELECT * FROM `"+TSYS::strEncode(name,TSYS::SQL)+"` LIMIT 0,1";
-    //owner().sqlReq( req );
+	//req = "SELECT * FROM `"+TSYS::strEncode(name,TSYS::SQL)+"` LIMIT 0,1";
+	//owner().sqlReq(req);
+    } catch(...) { }
 }
 
 MTable::~MTable( )	{ }
@@ -360,7 +362,7 @@ void MTable::postDisable( int flag )
     owner().transCommit();
     if(flag)
 	try { owner().sqlReq("DROP TABLE `"+TSYS::strEncode(owner().bd,TSYS::SQL)+"`.`"+TSYS::strEncode(name(),TSYS::SQL)+"`"); }
-	catch(TError err) { mess_warning(err.cat.c_str(), "%s", err.mess.c_str()); }
+	catch(TError &err) { mess_warning(err.cat.c_str(), "%s", err.mess.c_str()); }
 }
 
 MBD &MTable::owner( )	{ return (MBD&)TTable::owner(); }
@@ -614,7 +616,7 @@ void MTable::fieldSet( TConfig &cfg )
 
     //Query
     try { owner().sqlReq(req, NULL, true); }
-    catch(TError err) {
+    catch(TError &err) {
 	fieldFix(cfg);
 	owner().sqlReq(req, NULL, true);
     }
@@ -640,8 +642,7 @@ void MTable::fieldDel( TConfig &cfg )
     //Main request
     try { owner().sqlReq("DELETE FROM `"+TSYS::strEncode(owner().bd,TSYS::SQL)+"`.`"+
 					 TSYS::strEncode(name(),TSYS::SQL)+"` "+req_where, NULL, true);
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	//Check for present
 	vector< vector<string> > tbl;
 	owner().sqlReq("SELECT 1 FROM `"+TSYS::strEncode(owner().bd,TSYS::SQL)+"`.`"+

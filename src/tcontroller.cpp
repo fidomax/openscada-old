@@ -31,7 +31,7 @@ using namespace OSCADA;
 TController::TController( const string &id_c, const string &daq_db, TElem *cfgelem ) :
     TConfig(cfgelem), enSt(false), runSt(false),
     mId(cfg("ID")), mMessLev(cfg("MESS_LEV")), mAEn(cfg("ENABLE").getBd()), mAStart(cfg("START").getBd()),
-    mDB(daq_db), mRedntSt(dataRes()), mRedntUse(true), mRedntFirst(true)
+    mDB(daq_db), mRdSt(dataRes()), mRdUse(true), mRdFirst(true)
 {
     mId = id_c;
     mPrm = grpAdd("prm_");
@@ -126,7 +126,7 @@ string TController::getStatus( )
 	rez = string("0:")+_("Started. ");
 	if(owner().redntAllow() && redntUse()) {
 	    mess = _("Getting data from remote station: ");
-	    string rSt = mRedntSt.getVal();
+	    string rSt = mRdSt.getVal();
 	    if(!rSt.empty()) {
 		if(rSt.find(mess) == string::npos) {
 		    int rOff = 0;
@@ -155,7 +155,7 @@ void TController::load_( )
     cfgViewAll(true);
     SYS->db().at().dataGet(fullDB(),owner().nodePath()+"DAQ",*this);
 
-    mRedntUse = owner().redntAllow() && (bool)redntMode();
+    mRdUse = owner().redntAllow() && (bool)redntMode();
 
     LoadParmCfg();
 
@@ -216,7 +216,7 @@ void TController::enable( )
     for(unsigned i_prm = 0; i_prm < prm_list.size(); i_prm++)
 	if(at(prm_list[i_prm]).at().toEnable())
 	    try{ at(prm_list[i_prm]).at().enable(); }
-	    catch(TError err) {
+	    catch(TError &err) {
 		mess_warning(err.cat.c_str(),"%s",err.mess.c_str());
 		mess_warning(nodePath().c_str(),_("Enable parameter '%s' error."),prm_list[i_prm].c_str());
 		enErr = true;
@@ -243,7 +243,7 @@ void TController::disable( )
     for(unsigned i_prm = 0; i_prm < prm_list.size(); i_prm++)
 	if(at(prm_list[i_prm]).at().enableStat())
 	    try{ at(prm_list[i_prm]).at().disable(); }
-	    catch(TError err) {
+	    catch(TError &err) {
 		mess_warning(err.cat.c_str(),"%s",err.mess.c_str());
 		mess_warning(nodePath().c_str(),_("Disable parameter '%s' error."),prm_list[i_prm].c_str());
 	    }
@@ -275,14 +275,12 @@ void TController::LoadParmCfg( )
 		    string shfr = c_el.cfg("SHIFR").getS();
 		    if(!present(shfr))	add(shfr, i_tp);
 		    itReg[shfr] = true;
-		}
-		catch(TError err) {
+		} catch(TError &err) {
 		    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 		    mess_err(nodePath().c_str(),_("Add parameter '%s' error."),c_el.cfg("SHIFR").getS().c_str());
 		}
 	    }
-	}
-	catch(TError err) {
+	} catch(TError &err) {
 	    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 	    mess_err(nodePath().c_str(),_("Search and create new parameters error."));
 	}
@@ -312,61 +310,90 @@ TParamContr *TController::ParamAttach( const string &name, int type)	{ return ne
 
 void TController::redntDataUpdate( )
 {
-    vector<string> pls;
-    list(pls);
+    vector<RedntStkEl> hst;
 
-    //Prepare group request to parameters
-    AutoHD<TParamContr> prm;
-    XMLNode req("CntrReqs"); req.setAttr("path",nodePath());
-    req.childAdd("get")->setAttr("path","/%2fcntr%2fst%2fstatus");
-    for(int iP = 0; iP < (int)pls.size(); iP++) {
-	prm = at(pls[iP]);
-	if(!prm.at().enableStat()) { pls.erase(pls.begin()+iP); iP--; continue; }
+    //Prepare a group of a hierarchy request to the parameters
+    AutoHD<TParamContr> prm, prmC;
+    XMLNode req("CntrReqs"); req.setAttr("path", nodePath());
+    req.childAdd("get")->setAttr("path", "/%2fcntr%2fst%2fstatus");
 
-	XMLNode *prmNd = req.childAdd("get")->setAttr("path","/prm_"+pls[iP]+"/%2fserv%2fattr");
-
-	// Prepare individual attributes list
-	prmNd->setAttr("sepReq", "1");
-
-	// Check attributes last present data time into archives
-	vector<string> listV;
-	prm.at().vlList(listV);
-	unsigned rC = 0;
-	for(unsigned iV = 0; iV < listV.size(); iV++) {
-	    AutoHD<TVal> vl = prm.at().vlAt(listV[iV]);
-	    if(!vl.at().arch().freeStat() || vl.at().reqFlg()) { prmNd->childAdd("el")->setAttr("id",listV[iV]); rC++; }
-	    if(!vl.at().arch().freeStat())
-		prmNd->childAdd("ael")->setAttr("id",listV[iV])->setAttr("tm",ll2s(vmax(vl.at().arch().at().end(""),
-						    TSYS::curTime()-(int64_t)(3.6e9*owner().owner().rdRestDtTm()))));
+    hst.push_back(RedntStkEl());
+    list(hst.back().ls);
+    string addr;
+    while(true) {
+	if(hst.back().pos >= hst.back().ls.size()) {
+	    if(!hst.back().addr.size()) break;
+	    hst.pop_back(); hst.back().pos++;
+	    prm = AutoHD<TParamContr>(hst.back().addr.size()?dynamic_cast<TParamContr*>(prm.at().nodePrev(true)):NULL);
+	    continue;
 	}
-	if(rC > listV.size()/2) {
-	    prmNd->childClear("el");
-	    prmNd->setAttr("sepReq", "0");
+	prmC = prm.freeStat() ? at(hst.back().ls[hst.back().pos]) : prm.at().at(hst.back().ls[hst.back().pos]);
+	addr = hst.back().addr + "/prm_"+hst.back().ls[hst.back().pos];
+	if(prmC.at().enableStat()) {
+	    XMLNode *prmNd = req.childAdd("get")->setAttr("path", addr + "/%2fserv%2fattr");
+
+	    // Prepare individual attributes list
+	    prmNd->setAttr("sepReq", "1")->setAttr("prcTm", i2s(prmC.at().mRdPrcTm));
+
+	    // Check attributes last present data time into archives
+	    vector<string> listV;
+	    prmC.at().vlList(listV);
+	    unsigned rC = 0;
+	    for(unsigned iV = 0; iV < listV.size(); iV++) {
+		AutoHD<TVal> vl = prmC.at().vlAt(listV[iV]);
+		if(!vl.at().arch().freeStat() || vl.at().reqFlg()) { prmNd->childAdd("el")->setAttr("id",listV[iV]); rC++; }
+		if(!vl.at().arch().freeStat())
+		    prmNd->childAdd("ael")->setAttr("id",listV[iV])->
+					    setAttr("tm",ll2s(vmax(vl.at().arch().at().end(""),
+								   TSYS::curTime()-(int64_t)(3.6e9*owner().owner().rdRestDtTm()))));
+	    }
+	    if(rC > listV.size()/2) { prmNd->childClear("el"); prmNd->setAttr("sepReq", "0"); }
+	    //if(s2i(prmNd->attr("sepReq")) && !prmNd->childSize()) req.childDel(prmNd);
 	}
+	hst.push_back(RedntStkEl(addr));
+	prmC.at().list(hst.back().ls);
+	prm = prmC;
     }
 
     //Send request to first active station for this controller
-    if(owner().owner().rdStRequest(workId(),req,"",!mRedntFirst).empty()) return;
-    mRedntFirst = false;
+    if(owner().owner().rdStRequest(workId(),req,"",!mRdFirst).empty()) return;
+    mRdFirst = false;
 
-    //Write data to parameters
-    if(req.childSize()) mRedntSt.setVal(req.childGet(0)->text());
-    for(unsigned iP = 0; iP < pls.size(); iP++) {
-	prm = at(pls[iP]);
-	for(unsigned i_a = 0; i_a < req.childGet(iP+1)->childSize(); i_a++) {
-	    XMLNode *aNd = req.childGet(iP+1)->childGet(i_a);
-	    if(!prm.at().vlPresent(aNd->attr("id"))) continue;
-	    AutoHD<TVal> vl = prm.at().vlAt(aNd->attr("id"));
+    //Write the requested data to the parameters
+    for(unsigned iP = 0; iP < req.childSize(); iP++) {
+	XMLNode *p = req.childGet(iP);
+	addr = p->attr("path");
+	if(addr == "/%2fcntr%2fst%2fstatus") { mRdSt.setVal(p->text()); continue; }
+	size_t aPos = addr.rfind("/"); addr = (aPos == string::npos) ? "" : addr.substr(0, aPos);
+	if((prm=nodeAt(addr,0,0,0,true)).freeStat()) continue;
+	prm.at().mRdPrcTm = s2i(p->attr("prcTm"));
+	for(unsigned iA = 0; iA < p->childSize(); iA++) {
+	    XMLNode *aNd = p->childGet(iA);
+	    AutoHD<TVal> vl;
+	    if(prm.at().vlPresent(aNd->attr("id"))) vl = prm.at().vlAt(aNd->attr("id"));
 
-	    if(aNd->name() == "el")
-	    { vl.at().setS(aNd->text(),atoll(aNd->attr("tm").c_str()),true); vl.at().setReqFlg(false); }
-	    else if(aNd->name() == "ael" && !vl.at().arch().freeStat() && aNd->childSize()) {
+	    if(aNd->name() == "el" && !vl.freeStat()) { vl.at().setS(aNd->text(),atoll(aNd->attr("tm").c_str()),true); vl.at().setReqFlg(false); }
+	    else if(aNd->name() == "ael" && !vl.freeStat() && !vl.at().arch().freeStat() && aNd->childSize()) {
 		int64_t btm = atoll(aNd->attr("tm").c_str());
 		int64_t per = atoll(aNd->attr("per").c_str());
 		TValBuf buf(vl.at().arch().at().valType(),0,per,false,true);
 		for(unsigned i_v = 0; i_v < aNd->childSize(); i_v++)
 		    buf.setS(aNd->childGet(i_v)->text(),btm+per*i_v);
 		vl.at().arch().at().setVals(buf,buf.begin(),buf.end(),"");
+	    }
+	    else if(aNd->name() == "del" && prm.at().dynElCntr()) {
+		MtxAlloc res(prm.at().dynElCntr()->resEl(), true);
+		TFld::Type tp = (TFld::Type)s2i(aNd->attr("type"));
+		unsigned flg = s2i(aNd->attr("flg"));
+		if(vl.freeStat()) prm.at().dynElCntr()->fldAdd(new TFld(aNd->attr("id").c_str(),aNd->attr("name").c_str(),tp,flg,"","",
+									aNd->attr("values").c_str(),aNd->attr("selNames").c_str()));
+		else {
+		    unsigned aId = prm.at().dynElCntr()->fldId(aNd->attr("id"), true);
+		    prm.at().dynElCntr()->fldAt(aId).setDescr(aNd->attr("name"));
+		    prm.at().dynElCntr()->fldAt(aId).setFlg(prm.at().dynElCntr()->fldAt(aId).flg()^((prm.at().dynElCntr()->fldAt(aId).flg()^flg)&(TFld::Selected|TFld::SelEdit)));
+		    prm.at().dynElCntr()->fldAt(aId).setValues(aNd->attr("values"));
+		    prm.at().dynElCntr()->fldAt(aId).setSelNames(aNd->attr("selNames"));
+		}
 	    }
 	}
     }

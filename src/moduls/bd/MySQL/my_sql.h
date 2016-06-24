@@ -1,7 +1,7 @@
 
 //OpenSCADA system module BD.MySQL file: my_sql.h
 /***************************************************************************
- *   Copyright (C) 2003-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -43,7 +43,7 @@ class MTable : public TTable
 {
     public:
 	//Public methods
-	MTable( string name, MBD *iown, bool create );
+	MTable( string name, MBD *iown, vector< vector<string> > *tblStrct = NULL );
 	~MTable( );
 
 	//> Field's functions

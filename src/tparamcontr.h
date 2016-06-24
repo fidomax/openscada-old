@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tparamcontr.h
 /***************************************************************************
- *   Copyright (C) 2003-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -76,7 +76,9 @@ class TParamContr : public TConfig, public TValue
 	void del( const string &name, int full = RM_Exit );
 	AutoHD<TParamContr> at( const string &name, const string &who = "th_prm" );
 
-	TTypeParam &type( )	{ return *tipparm; }
+	TTypeParam &type( )		{ return *tpParm; }
+
+	virtual TElem *dynElCntr( )	{ return NULL; }
 
 	virtual void enable( );			// Enable parameter and open access to value
 	virtual void disable( );		// Disable parameter and close access to value
@@ -86,6 +88,9 @@ class TParamContr : public TConfig, public TValue
 	TParamContr &operator=( TParamContr &PrmCntr );
 
 	TController &owner( );
+
+	//Attributes
+	time_t	mRdPrcTm;	//Redundancy processing time, mostly for the dynamic DAQ attributes
 
     protected:
 	//Methods
@@ -117,9 +122,8 @@ class TParamContr : public TConfig, public TValue
 	int8_t	mPrm;		//Included parameters group identifier
 	bool	mEn;
 	string	mId;
-	TElem	el_err;		//Error atributes
 
-	TTypeParam	*tipparm;
+	TTypeParam	*tpParm;
 };
 
 }

@@ -121,10 +121,10 @@ TSYS::~TSYS( )
 
     if(mLev == TMess::Debug) {
 	string cntrsStr;
-	pthread_mutex_lock(&dataRes());
+	dataRes().lock();
 	for(map<string,double>::iterator icnt = mCntrs.begin(); icnt != mCntrs.end(); icnt++)
 	    cntrsStr += TSYS::strMess("%s: %g\n",icnt->first.c_str(),icnt->second);
-	pthread_mutex_unlock(&dataRes());
+	dataRes().unlock();
 	printf(_("System counters on exit: %s"), cntrsStr.c_str());
     }
 
@@ -424,7 +424,12 @@ string TSYS::optDescr( )
 	"Lang2CodeBase <lang>	Base language for variable texts translation, two symbols code.\n"
 	"MainCPUs   <list>	Main used CPUs list (separated by ':').\n"
 	"SaveAtExit <true>	Save the system at exit.\n"
-	"SavePeriod <sec>	Save the system period.\n\n"),
+	"SavePeriod <sec>	Save the system period.\n"
+	"RdStLevel  <lev>	Level of redundancy current station.\n"
+	"RdTaskPer  <s>		Call period of the redundant task.\n"
+	"RdRestConnTm <s>	Restore connection timeout of try to the \"dead\" reserve stations.\n"
+	"RdStList   <list>	Redundant stations list, separated symbol ';' (st1;st2).\n"
+	"RdPrimCmdTr <0|1>	Enable the primary commands transfering to the redundant stations.\n\n"),
 	PACKAGE_NAME,VERSION,buf.sysname,buf.release,nodePath().c_str());
 }
 
@@ -515,8 +520,7 @@ bool TSYS::cfgFileLoad( )
 	    else rootN.clear();
 	    if(!rootN.childSize()) mess_err(nodePath().c_str(),_("Configuration '%s' error!"),mConfFile.c_str());
 	    rootModifCnt = 0;
-	}
-	catch(TError err) { mess_err(nodePath().c_str(),_("Load config-file error: %s"),err.mess.c_str() ); }
+	} catch(TError &err) { mess_err(nodePath().c_str(),_("Load config-file error: %s"),err.mess.c_str() ); }
     }
 
     return cmd_help;
@@ -605,7 +609,7 @@ void TSYS::load_( )
     list(lst);
     for(unsigned i_a = 0; i_a < lst.size(); i_a++)
 	try { at(lst[i_a]).at().load(); }
-	catch(TError err) {
+	catch(TError &err) {
 	    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 	    mess_err(nodePath().c_str(),_("Error load subsystem '%s'."),lst[i_a].c_str());
 	}
@@ -657,7 +661,7 @@ int TSYS::start( )
     mess_info(nodePath().c_str(),_("Start!"));
     for(unsigned i_a = 0; i_a < lst.size(); i_a++)
 	try { at(lst[i_a]).at().subStart(); }
-	catch(TError err) {
+	catch(TError &err) {
 	    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 	    mess_err(nodePath().c_str(),_("Error start subsystem '%s'."),lst[i_a].c_str());
 	}
@@ -692,7 +696,7 @@ int TSYS::start( )
 	if(!(i_cnt%(10*1000/STD_WAIT_DELAY)))
 	    for(unsigned i_a=0; i_a < lst.size(); i_a++)
 		try { at(lst[i_a]).at().perSYSCall(i_cnt/(1000/STD_WAIT_DELAY)); }
-		catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+		catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 
 	sysSleep(STD_WAIT_DELAY*1e-3);
 	i_cnt++;
@@ -703,7 +707,7 @@ int TSYS::start( )
     cfgFileSave();
     for(int i_a = lst.size()-1; i_a >= 0; i_a--)
 	try { at(lst[i_a]).at().subStop(); }
-	catch(TError err) {
+	catch(TError &err) {
 	    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 	    mess_err(nodePath().c_str(),_("Error stop subsystem '%s'."),lst[i_a].c_str());
 	}
@@ -1619,8 +1623,7 @@ string TSYS::rdStRequest( XMLNode &req, const string &st, bool toScan )
 	    SYS->transport().at().cntrIfCmd(req, "redundant");
 	    sit->second.cnt++;
 	    return sit->first;
-	}
-	catch(TError err) {
+	} catch(TError &err) {
 	    sit->second.isLive = false;
 	    sit->second.cnt = rdRestConnTm();
 	    sit->second.lev = 0;
@@ -1702,8 +1705,7 @@ void TSYS::taskCreate( const string &path, int priority, void *(*start_routine)(
 	    if(time(NULL) >= (c_tm+wtm)) throw TError(nodePath().c_str(),_("Task '%s' start timeouted!"),path.c_str());
 	    sysSleep(STD_WAIT_DELAY*1e-3);
 	}
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	if(err.cod) {		//Remove info for pthread_create() but left for other by possible start later
 	    res.request(true);
 	    mTasks.erase(path);
@@ -1823,7 +1825,7 @@ void *TSYS::taskWrap( void *stas )
     //Call work task
     void *rez = NULL;
     try { rez = wTask(wTaskArg); }
-    catch(TError err) {
+    catch(TError &err) {
 	mess_err(err.cat.c_str(),err.mess.c_str());
 	mess_err(SYS->nodePath().c_str(),_("Task %u unexpected terminated by exception."),tsk->thr);
     }
@@ -1881,8 +1883,7 @@ void *TSYS::RdTask( void *param )
 			if(!s2i(subPrt->attr("inProc")) || !SYS->at(subLs[iL]).at().rdProcess(subPrt))
 			    subLs.erase(subLs.begin()+(iL--));
 		    }
-		}
-		catch(TError err) {
+		} catch(TError &err) {
 		    sit->second.isLive = false;
 		    sit->second.lev = 0;
 		    sit->second.cnt = SYS->rdRestConnTm();
@@ -1910,7 +1911,7 @@ void *TSYS::RdTask( void *param )
 
 	//Wait to next iteration
 	TSYS::taskSleep((int64_t)(SYS->rdTaskPer()*1e9));
-    } catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+    } catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 
     return NULL;
 }

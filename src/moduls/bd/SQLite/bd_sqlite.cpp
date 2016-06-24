@@ -33,7 +33,7 @@
 #define MOD_NAME	_("DB SQLite")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"2.1.4"
+#define MOD_VER		"2.2.1"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("BD module. Provides support of the BD SQLite.")
 #define LICENSE		"GPL2"
@@ -121,7 +121,7 @@ void MBD::postDisable( int flag )
 
 void MBD::enable( )
 {
-    MtxAlloc res(connRes.mtx(), true);
+    MtxAlloc res(connRes, true);
     if(enableStat()) return;
 
     cd_pg = codePage().size()?codePage():Mess->charset();
@@ -138,7 +138,7 @@ void MBD::enable( )
 
 void MBD::disable( )
 {
-    MtxAlloc res(connRes.mtx(), true);
+    MtxAlloc res(connRes, true);
     if(!enableStat()) return;
 
     //Last commit
@@ -164,7 +164,10 @@ TTable *MBD::openTable( const string &inm, bool create )
 {
     if(!enableStat()) throw TError(nodePath().c_str(), _("Error open table '%s'. DB is disabled."), inm.c_str());
 
-    return new MTable(inm, this, create);
+    try { sqlReq("SELECT * FROM '" + TSYS::strEncode(inm,TSYS::SQL,"'") + "' LIMIT 0;"); }
+    catch(...) { if(!create) throw; }
+
+    return new MTable(inm, this);
 }
 
 void MBD::sqlReq( const string &req, vector< vector<string> > *tbl, char intoTrans )
@@ -176,8 +179,8 @@ void MBD::sqlReq( const string &req, vector< vector<string> > *tbl, char intoTra
     if(tbl) tbl->clear();
     if(!enableStat())	return;
 
-    MtxAlloc res(connRes.mtx(), true);	//!! Moved before the transaction checking for prevent the "BEGIN;" and "COMMIT;"
-					//   request's sequence breakage on high concurrency access activity
+    MtxAlloc res(connRes, true);//!! Moved before the transaction checking for prevent the "BEGIN;" and "COMMIT;"
+				//   request's sequence breakage on high concurrency access activity
 
     //Commit set
     if(intoTrans && intoTrans != EVAL_BOOL) transOpen();
@@ -266,17 +269,12 @@ void MBD::cntrCmdProc( XMLNode *opt )
 //************************************************
 //* MBDMySQL::Table                              *
 //************************************************
-MTable::MTable( string inm, MBD *iown, bool create ) : TTable(inm)
+MTable::MTable( string inm, MBD *iown ) : TTable(inm)
 {
     setNodePrev(iown);
 
-    try {
-	string req = "SELECT * FROM '" + TSYS::strEncode(name(),TSYS::SQL,"'") + "' LIMIT 0;";	//!! Need for table present checking
-	owner().sqlReq(req);
-	req ="PRAGMA table_info('"+TSYS::strEncode(name(),TSYS::SQL,"'")+"');";
-	owner().sqlReq(req, &tblStrct);
-    }
-    catch(...) { if(!create) throw; }
+    try { owner().sqlReq("PRAGMA table_info('"+TSYS::strEncode(name(),TSYS::SQL,"'")+"');", &tblStrct); }
+    catch(...) { }
 }
 
 MTable::~MTable( )
@@ -289,7 +287,7 @@ void MTable::postDisable( int flag )
     owner().transCommit();
     if(flag)
 	try{ owner().sqlReq("DROP TABLE '"+TSYS::strEncode(name(),TSYS::SQL,"'")+"';"); }
-	catch(TError err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
+	catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 }
 
 MBD &MTable::owner()	{ return (MBD&)TTable::owner(); }
@@ -526,7 +524,7 @@ void MTable::fieldSet( TConfig &cfg )
 
     //Query
     try { owner().sqlReq(req, NULL, true); }
-    catch(TError err) {
+    catch(TError &err) {
 	if((err.cod-100) == SQLITE_READONLY) throw;
 	fieldFix(cfg);
 	owner().sqlReq(req, NULL, true);
@@ -552,7 +550,7 @@ void MTable::fieldDel( TConfig &cfg )
 
     //Main request
     try { owner().sqlReq("DELETE FROM '"+TSYS::strEncode(name(),TSYS::SQL,"'")+"' "+req_where+";", NULL, true); }
-    catch(TError err) {
+    catch(TError &err) {
 	//Check for present
 	vector< vector<string> > tbl;
 	owner().sqlReq("SELECT 1 FROM '"+TSYS::strEncode(name(),TSYS::SQL,"'")+"' "+req_where+";", &tbl, true);

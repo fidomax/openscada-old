@@ -21,7 +21,7 @@
 #ifndef TARCHIVES_H
 #define TARCHIVES_H
 
-#define SARH_VER	10		//ArchiveS type modules version
+#define SARH_VER	11		//ArchiveS type modules version
 #define SARH_ID		"Archive"
 
 #include <string>
@@ -79,8 +79,8 @@ class TMArchivator : public TCntrNode, public TConfig
 
 	// Redundancy
 	//  In redundancy now
-	bool redntUse( )	{ return mRedntUse; }
-	void setRedntUse( bool vl )		{ mRedntUse = vl; }
+	bool redntUse( )	{ return mRdUse; }
+	void setRedntUse( bool vl )		{ mRdUse = vl; }
 	//  Enabled the archiver's redundancy
 	bool redntMode( )	{ return cfg("REDNT").getB(); }
 	void setRedntMode( bool vl )		{ cfg("REDNT").setB(vl); }
@@ -95,7 +95,7 @@ class TMArchivator : public TCntrNode, public TConfig
 	virtual time_t begin( )		{ return 0; }
 	virtual time_t end( )		{ return 0; }
 	virtual bool put( vector<TMess::SRec> &mess, bool force = false );	//<force> mostly used by redundancy to prevent cycling
-	virtual void get( time_t b_tm, time_t e_tm, vector<TMess::SRec> &mess, const string &category = "", char level = 0, time_t upTo = 0 )	{ };
+	virtual time_t get( time_t bTm, time_t eTm, vector<TMess::SRec> &mess, const string &category = "", char level = 0, time_t upTo = 0 )	{ };
 
 	TTypeArchivator &owner( );
 
@@ -129,8 +129,9 @@ class TMArchivator : public TCntrNode, public TConfig
 	char	&mStart;	//Mess arch starting flag
 	string	mDB;
 
-	unsigned mRedntUse	: 1;
-	unsigned mRedntFirst	: 1;
+	unsigned mRdUse  : 1;
+	unsigned mRdFirst: 1;
+	time_t	mRdTm;
 };
 
 //************************************************
@@ -226,13 +227,15 @@ class TArchiveS : public TSubSYS
 	// Message archive function
 	void messPut( time_t tm, int utm, const string &categ, int8_t level, const string &mess, const string &arch = "", bool force = false );
 	void messPut( const vector<TMess::SRec> &recs, const string &arch = "", bool force = false );
-	void messGet( time_t b_tm, time_t e_tm, vector<TMess::SRec> & recs, const string &category = "",
+	time_t messGet( time_t bTm, time_t eTm, vector<TMess::SRec> &recs, const string &category = "",
 	    int8_t level = TMess::Debug, const string &arch = "", time_t upTo = 0 );
 	time_t messBeg( const string &arch = "" );
 	time_t messEnd( const string &arch = "" );
 
 	// Redundancy
 	bool rdProcess( XMLNode *reqSt = NULL );
+	float rdRestDtOverTm( )			{ return mRdRestDtOverTm; }	//In days
+	void setRdRestDtOverTm( float vl )	{ mRdRestDtOverTm = vmin(356,vmax(0,vl)); modif(); }
 	void rdActArchMList( vector<string> &ls, bool isRun = false );
 	string rdStRequest( const string &arch, XMLNode &req, const string &prevSt = "", bool toRun = true );
 
@@ -292,8 +295,9 @@ class TArchiveS : public TSubSYS
 
 	// Redundancy
 	Res	mRdRes;
+	float	mRdRestDtOverTm;	//Overtime of the redundant history reload at start in hours
 	map<string, map<string,bool> > mRdArchM;
-	unsigned mRedntFirst	: 1;
+	unsigned mRdFirst	: 1;
 };
 
 }

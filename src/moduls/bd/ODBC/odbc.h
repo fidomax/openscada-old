@@ -1,7 +1,7 @@
 
 //OpenSCADA system module BD.ODBC file: odbc.h
 /***************************************************************************
- *   Copyright (C) 2015 by Roman Savochenko, <rom_as@oscada.org>           *
+ *   Copyright (C) 2015-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -40,7 +40,7 @@ class MTable : public TTable
 {
     public:
 	//Public methods
-	MTable( string name, MBD *iown, bool create );
+	MTable( string name, MBD *iown, vector< vector<string> > *tblStrct = NULL );
 	~MTable( );
 
 	// Field's functions
@@ -113,7 +113,7 @@ class MBD : public TBD
 
 	int	reqCnt;
 	time_t	reqCntTm, trOpenTm;
-	pthread_mutex_t	connRes;
+	ResMtx	connRes;
 };
 
 //************************************************

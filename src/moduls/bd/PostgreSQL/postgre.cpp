@@ -33,7 +33,7 @@
 #define MOD_NAME	_("DB PostgreSQL")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"1.4.6"
+#define MOD_VER		"1.5.2"
 #define AUTHORS		_("Roman Savochenko, Maxim Lysenko")
 #define DESCRIPTION	_("BD module. Provides support of the BD PostgreSQL.")
 #define MOD_LICENSE	"GPL2"
@@ -101,7 +101,7 @@ void MBD::postDisable( int flag )
     TBD::postDisable(flag);
 
     if(flag && owner().fullDeleteDB()) {
-	MtxAlloc resource(connRes.mtx(), true);
+	MtxAlloc resource(connRes, true);
 	PGconn * connection = NULL;
 	PGresult *res;
 	try {
@@ -121,8 +121,7 @@ void MBD::postDisable( int flag )
 	    }
 	    else PQclear(res);
 	    PQfinish(connection);
-	}
-	catch(...) {
+	} catch(...) {
 	    if(connection) PQfinish(connection);
 	    throw;
 	}
@@ -131,7 +130,7 @@ void MBD::postDisable( int flag )
 
 void MBD::enable( )
 {
-    MtxAlloc resource(connRes.mtx(), true);
+    MtxAlloc resource(connRes, true);
     if(enableStat())	return;
 
     int off = 0;
@@ -178,8 +177,7 @@ nextTry:
 	}
 	PQsetNoticeProcessor(connection, MyNoticeProcessor, NULL);
 	if(!dbCreateTry) TBD::enable();
-    }
-    catch(...) {
+    } catch(...) {
 	if(connection) PQfinish(connection);
 	TBD::disable();
 	throw;
@@ -188,7 +186,7 @@ nextTry:
 
 void MBD::disable( )
 {
-    MtxAlloc resource(connRes.mtx(), true);
+    MtxAlloc resource(connRes, true);
 
     if(!enableStat())  return;
 
@@ -217,10 +215,65 @@ void MBD::allowList( vector<string> &list )
     for(unsigned i_t = 1; i_t < tbl.size(); i_t++) list.push_back(tbl[i_t][0]);
 }
 
-TTable *MBD::openTable( const string &inm, bool create )
+TTable *MBD::openTable( const string &inm, bool icreate )
 {
     if(!enableStat()) throw TError(nodePath().c_str(), _("Error open table '%s'. DB is disabled."), inm.c_str());
-    return new MTable(inm, this, create);
+
+    create(inm, icreate);
+    vector< vector<string> > tblStrct;
+    getStructDB(inm, tblStrct);
+
+    return new MTable(inm, this, &tblStrct);
+}
+
+void MBD::create( const string &nm, bool toCreate )
+{
+    vector< vector<string> > tbl;
+    sqlReq("SELECT count(*) "
+	  "FROM pg_catalog.pg_class c "
+	    "JOIN pg_catalog.pg_roles r ON r.oid = c.relowner "
+	    "LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace "
+	  "WHERE c.relkind IN ('r','v','S','') "
+	    "AND n.nspname <> 'pg_catalog' "
+	    "AND n.nspname !~ '^pg_toast' "
+	    "AND pg_catalog.pg_table_is_visible(c.oid) "
+	    "AND c.relname = '" + TSYS::strEncode(nm,TSYS::SQL,"'") + "'", &tbl);
+    if(toCreate && tbl.size() == 2 && tbl[1][0] == "0")
+	sqlReq("CREATE TABLE \"" + TSYS::strEncode(nm,TSYS::SQL,"\"")+ "\"(\"<<empty>>\" character(20) NOT NULL DEFAULT '' PRIMARY KEY)");
+}
+
+void MBD::getStructDB( const string &nm, vector< vector<string> > &tblStrct )
+{
+    //Get generic data structure
+    sqlReq("SELECT a.attname as \"Field\", pg_catalog.format_type(a.atttypid, a.atttypmod) as \"Type\" "
+	"FROM pg_catalog.pg_attribute a "
+	"WHERE a.attnum > 0 "
+	"AND NOT a.attisdropped "
+	"AND a.attrelid = "
+	"( "
+	    "SELECT c.oid "
+	    "FROM pg_catalog.pg_class c "
+	    "LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace "
+	    "WHERE c.relname ~ '^(" + TSYS::strEncode(nm,TSYS::SQL,"'") + ")$' "
+	    "AND pg_catalog.pg_table_is_visible(c.oid) "
+	")", &tblStrct, false);
+    if(tblStrct.size() > 1) {
+	//Get keys
+	vector< vector<string> > keyLst;
+	sqlReq("SELECT a.attname "
+	    "FROM pg_class c, pg_class c2, pg_index i, pg_attribute a "
+	    "WHERE c.relname = '" + TSYS::strEncode(nm,TSYS::SQL,"'") + "' AND c.oid = i.indrelid AND i.indexrelid = c2.oid "
+	    "AND i.indisprimary AND i.indisunique "
+	    "AND a.attrelid=c2.oid "
+	    "AND a.attnum>0;", &keyLst, false);
+	tblStrct[0].push_back("Key");
+	for(unsigned i_f = 1, i_k; i_f < tblStrct.size(); i_f++) {
+	    for(i_k = 1; i_k < keyLst.size(); i_k++)
+	        if(tblStrct[i_f][0] == keyLst[i_k][0]) break;
+	    tblStrct[i_f].push_back((i_k<keyLst.size())?"PRI":"");
+	}
+    }
+    else throw TError(nodePath().c_str(), _("Table '%s' is not present!"), nm.c_str());
 }
 
 void MBD::transOpen( )
@@ -239,7 +292,7 @@ void MBD::transOpen( )
     if(begin) sqlReq("BEGIN;");
 
 #else
-    MtxAlloc resource(connRes.mtx(), true);
+    MtxAlloc resource(connRes, true);
     PGTransactionStatusType tp;
     tp = PQtransactionStatus(connection);
 
@@ -270,7 +323,7 @@ void MBD::transCommit( )
 
     if(commit) sqlReq("COMMIT;");
 #else
-    MtxAlloc resource(connRes.mtx(), true);
+    MtxAlloc resource(connRes, true);
     PGTransactionStatusType tp;
     tp = PQtransactionStatus(connection);
 
@@ -305,8 +358,8 @@ void MBD::sqlReq( const string &ireq, vector< vector<string> > *tbl, char intoTr
 
     string req = Mess->codeConvOut(cd_pg.c_str(), ireq);
 
-    MtxAlloc resource(connRes.mtx(), true);	//!! Moved before the transaction checking for prevent the "BEGIN;" and "COMMIT;"
-						//   request's sequence breakage on high concurrency access activity
+    MtxAlloc resource(connRes, true);	//!! Moved before the transaction checking for prevent the "BEGIN;" and "COMMIT;"
+					//   request's sequence breakage on high concurrency access activity
 
     if(intoTrans && intoTrans != EVAL_BOOL)	transOpen();
     else if(!intoTrans && reqCnt)		transCommit();
@@ -384,35 +437,19 @@ void MBD::cntrCmdProc( XMLNode *opt )
 //************************************************
 //* BDPostgreSQL::Table                          *
 //************************************************
-MTable::MTable( string name, MBD *iown, bool toCreate ) : TTable(name)
+MTable::MTable( string iname, MBD *iown, vector< vector<string> > *itblStrct ) : TTable(iname)
 {
     setNodePrev(iown);
 
-    create(toCreate);
+    try {
+	if(itblStrct) tblStrct = *itblStrct;
+	else owner().getStructDB(name(), tblStrct);
+    } catch(...) { }
 }
 
 MTable::~MTable( )	{ }
 
-void MTable::create( bool toCreate )
-{
-    vector< vector<string> > tbl;
-    string id;
-    string req = "SELECT count(*) "
-	  "FROM pg_catalog.pg_class c "
-	    "JOIN pg_catalog.pg_roles r ON r.oid = c.relowner "
-	    "LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace "
-	  "WHERE c.relkind IN ('r','v','S','') "
-	    "AND n.nspname <> 'pg_catalog' "
-	    "AND n.nspname !~ '^pg_toast' "
-	    "AND pg_catalog.pg_table_is_visible(c.oid) "
-	    "AND c.relname = '" + TSYS::strEncode(name(),TSYS::SQL,"'") + "'";
-    owner().sqlReq(req, &tbl);
-    if(toCreate && tbl.size() == 2 && tbl[1][0] == "0") {
-	req = "CREATE TABLE \"" + TSYS::strEncode(name(),TSYS::SQL,"\"")+ "\"(\"<<empty>>\" character(20) NOT NULL DEFAULT '' PRIMARY KEY)";
-	owner().sqlReq(req);
-    }
-    getStructDB(name(), tblStrct);
-}
+
 
 bool MTable::isEmpty( )	{ return tblStrct.empty() || tblStrct[1][0] == "<<empty>>"; }
 
@@ -421,47 +458,13 @@ void MTable::postDisable( int flag )
     owner().transCommit();
     if(flag) {
 	try { owner().sqlReq("DROP TABLE \""+TSYS::strEncode(name(),TSYS::SQL,"\"")+"\""); }
-	catch(TError err){ mess_warning(err.cat.c_str(), "%s", err.mess.c_str()); }
+	catch(TError &err) { mess_warning(err.cat.c_str(), "%s", err.mess.c_str()); }
     }
 }
 
 MBD &MTable::owner()	{ return (MBD&)TTable::owner(); }
 
-void MTable::getStructDB( string name, vector< vector<string> > &tblStrct )
-{
-    //Get generic data structure
-    string req = "SELECT a.attname as \"Field\", pg_catalog.format_type(a.atttypid, a.atttypmod) as \"Type\" "
-		 "FROM pg_catalog.pg_attribute a "
-		 "WHERE a.attnum > 0 "
-		 "AND NOT a.attisdropped "
-		 "AND a.attrelid = "
-		 "( "
-		    "SELECT c.oid "
-		    "FROM pg_catalog.pg_class c "
-		    "LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace "
-		    "WHERE c.relname ~ '^(" + TSYS::strEncode(name,TSYS::SQL,"'") + ")$' "
-		    "AND pg_catalog.pg_table_is_visible(c.oid) "
-		 ")";
-    owner().sqlReq(req, &tblStrct, false);
-    if(tblStrct.size() > 1) {
-	//Get keys
-	vector< vector<string> > keyLst;
-	req = "SELECT a.attname "
-	      "FROM pg_class c, pg_class c2, pg_index i, pg_attribute a "
-	      "WHERE c.relname = '" + TSYS::strEncode(name,TSYS::SQL,"'") + "' AND c.oid = i.indrelid AND i.indexrelid = c2.oid "
-	      "AND i.indisprimary AND i.indisunique "
-	      "AND a.attrelid=c2.oid "
-	      "AND a.attnum>0;";
-	owner().sqlReq(req, &keyLst, false);
-	tblStrct[0].push_back("Key");
-	for(unsigned i_f = 1, i_k; i_f < tblStrct.size(); i_f++) {
-	    for(i_k = 1; i_k < keyLst.size(); i_k++)
-	        if(tblStrct[i_f][0] == keyLst[i_k][0]) break;
-	    tblStrct[i_f].push_back((i_k<keyLst.size())?"PRI":"");
-	}
-    }
-    else throw TError(nodePath().c_str(), _("Table is not present!"));
-}
+
 
 void MTable::fieldStruct( TConfig &cfg )
 {
@@ -652,7 +655,7 @@ void MTable::fieldSet( TConfig &cfg )
     if(!isForceUpdt) {
 	req = "SELECT 1 FROM \"" + TSYS::strEncode(name(),TSYS::SQL,"\"") + "\" " + req_where;
 	try { owner().sqlReq(req, &tbl, true); }
-	catch(TError err) { fieldFix(cfg); owner().sqlReq(req, &tbl, true); }
+	catch(TError &err) { fieldFix(cfg); owner().sqlReq(req, &tbl, true); }
 	if(tbl.size() < 2) {
 	    // Add new record
 	    req = "INSERT INTO \"" + TSYS::strEncode(name(),TSYS::SQL,"\"") + "\" ";
@@ -692,7 +695,7 @@ void MTable::fieldSet( TConfig &cfg )
 
     //Query
     try{ owner().sqlReq(req, NULL, true); }
-    catch(TError err) { fieldFix(cfg); owner().sqlReq(req, NULL, true); }
+    catch(TError &err) { fieldFix(cfg); owner().sqlReq(req, NULL, true); }
 }
 
 void MTable::fieldDel( TConfig &cfg )
@@ -715,7 +718,7 @@ void MTable::fieldDel( TConfig &cfg )
 
     //Main request
     try { owner().sqlReq("DELETE FROM \"" + TSYS::strEncode(name(),TSYS::SQL,"\"") + "\" "+req_where, NULL, true); }
-    catch(TError err) {
+    catch(TError &err) {
 	//Check for present
 	vector< vector<string> > tbl;
 	owner().sqlReq("SELECT 1 FROM \""+TSYS::strEncode(name(),TSYS::SQL,"\"")+"\" "+req_where, &tbl, false);
@@ -835,13 +838,14 @@ void MTable::fieldFix( TConfig &cfg, bool recurse )
     if(next) {
 	try {
 	    owner().sqlReq(req, NULL, false);
-	    getStructDB(name(), tblStrct);	//Update structure information
+	    owner().getStructDB(name(), tblStrct);	//Update the table structure information
 	}
 	//Drop unfixable table
-	catch(TError err) {
+	catch(TError &err) {
 	    if(err.cod == MBD::SQL_CONN || recurse) throw;
 	    owner().sqlReq("DROP TABLE \"" + TSYS::strEncode(name(),TSYS::SQL,"\"")+ "\"");
-	    create(true);
+	    owner().create(name(), true);
+	    owner().getStructDB(name(), tblStrct);
 	    fieldFix(cfg, true);
 	}
     }
