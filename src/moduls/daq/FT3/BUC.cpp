@@ -79,9 +79,9 @@ uint16_t KA_BUC::Task(uint16_t uc)
 	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
 	*((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //configuration
 	*((uint16_t *) (Msg.D + 4)) = PackID(ID, 0, 2); //modification
-	*((uint16_t *) (Msg.D + 8)) = PackID(1, 0, 0); //timer state
-	*((uint16_t *) (Msg.D + 10)) = PackID(1, 0, 2); //current time
-	*((uint16_t *) (Msg.D + 12)) = PackID(1, 0, 3); //uptime
+	*((uint16_t *) (Msg.D + 6)) = PackID(1, 0, 0); //timer state
+	*((uint16_t *) (Msg.D + 8)) = PackID(1, 0, 2); //current time
+	*((uint16_t *) (Msg.D + 10)) = PackID(1, 0, 3); //uptime
 	if(mPrm.owner().DoCmd(&Msg)) {
 	    if(mPrm.vlAt("state").at().getI(0, true) != 1) {
 		if(Task(TaskSet) == 1) {
@@ -191,7 +191,7 @@ uint16_t KA_BUC::setVal(TVal &val)
 	    case 0:
 		tagMsg Msg;
 		Msg.L = 6;
-		Msg.D[2] = val.get(NULL, true).getI();
+		Msg.D[2] = val.getI(0, true);
 		break;
 	    }
 	    break;
@@ -203,7 +203,7 @@ uint16_t KA_BUC::setVal(TVal &val)
 	    switch(ft3ID.n) {
 	    case 1:
 		struct tm tm_tm;
-		strptime(val.get(NULL, true).getS().c_str(), "%d.%m.%Y %H:%M:%S", &tm_tm);
+		strptime(val.getS(0, true).c_str(), "%d.%m.%Y %H:%M:%S", &tm_tm);
 		Msg.L = 10;
 		mPrm.owner().Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
 		break;
@@ -220,6 +220,7 @@ uint8_t KA_BUC::cmdGet(uint16_t prmID, uint8_t * out)
     FT3ID ft3ID = UnpackID(prmID);
     time_t rawtime;
     uint l = 0;
+    unsigned long val = 0;
     if(ft3ID.g == ID) {
 	switch(ft3ID.k) {
 	case 0:
@@ -264,6 +265,11 @@ uint8_t KA_BUC::cmdGet(uint16_t prmID, uint8_t * out)
 		break;
 	    case 3:
 		time(&rawtime);
+		FILE *f = fopen("/proc/uptime", "r");
+		if((f != NULL) && (fscanf(f, "%lu", &val) == 1)) {
+		    rawtime -= val;
+		}
+		fclose(f);
 		mPrm.owner().Time_tToDateTime(out, rawtime);
 		l = 5;
 		break;
@@ -492,7 +498,7 @@ uint16_t B_BUC::setVal(TVal &val)
 	case 1:
 	    struct tm tm_tm;
 
-	    strptime(val.get(NULL, true).getS().c_str(), "%d.%m.%Y %H:%M:%S", &tm_tm);
+	    strptime(val.getS(0, true).c_str(), "%d.%m.%Y %H:%M:%S", &tm_tm);
 
 	    Msg.L = 10;
 	    mPrm.owner().Time_tToDateTime(Msg.D + 2, mktime(&tm_tm));
@@ -505,7 +511,7 @@ uint16_t B_BUC::setVal(TVal &val)
 	case 2:
 	    tagMsg Msg;
 	    Msg.L = 6;
-	    Msg.D[2] = val.get(NULL, true).getI();
+	    Msg.D[2] = val.getI(0, true);
 	    break;
 
 	}

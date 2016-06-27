@@ -226,12 +226,12 @@ uint16_t KA_BVT::Task(uint16_t uc)
     uint16_t rc = 0;
     switch(uc) {
     case TaskRefresh:
-	NeedInit = false;
 	Msg.L = 5;
 	Msg.C = AddrReq;
 	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
 	if(mPrm.owner().DoCmd(&Msg)) {
 	    if(Msg.C == GOOD3) {
+		NeedInit = false;
 		rc = 1;
 		for(int i = 1; i <= count_n; i++) {
 		    if(chan_err[i].state == 1) continue;
@@ -257,6 +257,9 @@ uint16_t KA_BVT::Task(uint16_t uc)
 			NeedInit = true;
 		    }
 		}
+	    } else {
+		rc = 0;
+		NeedInit = true;
 	    }
 	}
 	break;
@@ -438,7 +441,7 @@ uint16_t KA_BVT::setVal(TVal &val)
     Msg.L = 2;
     switch(ft3ID.n) {
     case 1:
-	Msg.L += SerializeB(Msg.D + Msg.L,val.getI(0, true));
+	Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
 	break;
     case 2:
 	Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("period_%d", ft3ID.k).c_str()).at().getI(0, true));
@@ -622,12 +625,12 @@ uint16_t B_BVT::Task(uint16_t uc)
     uint16_t rc = 0;
     switch(uc) {
     case TaskRefresh:
-	NeedInit = false;
 	Msg.L = 5;
 	Msg.C = AddrReq;
 	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
 	if(mPrm.owner().DoCmd(&Msg)) {
 	    if(Msg.C == GOOD3) {
+		NeedInit = false;
 		if(with_params) {
 		    for(int i = 1; i <= count_n; i++) {
 			if(chan_err[i].state == 1) continue;
@@ -673,6 +676,9 @@ uint16_t B_BVT::Task(uint16_t uc)
 		} else {
 		    rc = 1;
 		}
+	    } else {
+		rc = 0;
+		NeedInit = true;
 	    }
 	}
 	break;
@@ -1020,7 +1026,7 @@ uint16_t B_BVT::setVal(TVal &val)
     case 9:
     case 12:
 	Msg.L = 6;
-	Msg.D[2] = val.get(NULL, true).getI();
+	Msg.D[2] = val.getI(0, true);
 	break;
     case 3:
     case 8:
