@@ -783,7 +783,7 @@ void TMdContr::MakePacket(tagMsg *msg, char *io_buf, uint16_t *len)
 	    z = l - x;
 	    if(z > 16) z = 16;
 	    w = CRC((char *) (msg->D + x), z);
-	    for(z; z > 0; z--)
+	    for(; z > 0; z--)
 		io_buf[y++] = msg->D[x++];
 	    io_buf[y] = (w) & 0xFF;
 	    io_buf[y + 1] = (w >> 8) & 0xFF;
@@ -885,7 +885,7 @@ uint16_t TMdContr::ParsePacket(char *t, uint16_t l, tagMsg * msg)
 		    z -= 2;
 		else
 		    z = 16;
-		for(z; z > 0; z--)
+		for(; z > 0; z--)
 		    msg->D[y++] = t[x++];
 		x += 2;
 	    }

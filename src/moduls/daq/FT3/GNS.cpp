@@ -170,7 +170,7 @@ uint8_t KA_GNS::SKANSchannel::SetNewFunction(uint8_t addr, uint16_t prmID, uint8
 		if(newF && (newF < 5))
 			if((Function.vl & 0x0F) == newF) {
 				rc = 3;
-			} else if(!Function.vl && ((State.vl & 0x0F) == NAS_REP) || (((State.vl & 0x0F) == NAS_REP) && (newF > 2))){
+			} else if(!Function.vl && (((State.vl & 0x0F) == NAS_REP) || (((State.vl & 0x0F) == NAS_REP) && (newF > 2)))){
 					if ((newF > 2) || TURemote.vl) t = 0xC0;
 					else if (TUOn.vl) t = 0x40;
 					if(t) Function.Set(t);
