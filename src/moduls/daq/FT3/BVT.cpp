@@ -458,7 +458,7 @@ uint16_t KA_BVT::setVal(TVal &val)
 	Msg.L += SerializeF(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("adjust_%d", ft3ID.k).c_str()).at().getR(0, true));
 	break;
     }
-    if(Msg.L) {
+    if(Msg.L > 2) {
 	Msg.L += 3;
 	mPrm.owner().DoCmd(&Msg);
     }

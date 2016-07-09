@@ -1,6 +1,6 @@
 //OpenSCADA system module DAQ.FT3 file: BVTC.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -121,8 +121,8 @@ uint16_t KA_BVTC::Task(uint16_t uc)
 		    if(with_params) {
 			Msg.L = 3 + count_n * 2;
 			Msg.C = AddrReq;
-			for(int i = 1; i < count_n; i++) {
-			    *((uint16_t *) (Msg.D + (i-1) * 2)) = PackID(ID, i, 1); //маски ТC
+			for(int i = 1; i <= count_n; i++) {
+			    *((uint16_t *) (Msg.D + (i - 1) * 2)) = PackID(ID, i, 1); //маски ТC
 			}
 			if(mPrm.owner().DoCmd(&Msg)) {
 			    rc = 1;
@@ -144,7 +144,42 @@ uint16_t KA_BVTC::HandleEvent(int64_t tm, uint8_t * D)
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
     if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
-    //TODO
+    switch(ft3ID.k) {
+    case 0:
+	switch(ft3ID.n) {
+	case 0:
+	    mPrm.vlAt("state").at().setI(D[2], tm, true);
+	    l = 3;
+	    break;
+	case 1:
+	    l = 4;
+	    break;
+	case 2:
+	    l = 2 + count_n * 2;
+	    for(int j = 1; j <= count_n; j++) {
+		mPrm.vlAt(TSYS::strMess("TC_%d", j).c_str()).at().setI(D[j * 2 + 1], tm, true);
+	    }
+	    break;
+	}
+	break;
+    default:
+	switch(ft3ID.n) {
+	case 0:
+	    l = 4;
+	    if(ft3ID.k > count_n) break;
+	    mPrm.vlAt(TSYS::strMess("TC_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+	    break;
+	case 1:
+	    l = 5;
+	    if(with_params) {
+		if(ft3ID.k > count_n) break;
+		mPrm.vlAt(TSYS::strMess("Period_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+		mPrm.vlAt(TSYS::strMess("Count_%d", ft3ID.k).c_str()).at().setI(D[4], tm, true);
+	    }
+	    break;
+	}
+	break;
+    }
     return l;
 }
 
@@ -216,7 +251,30 @@ uint8_t KA_BVTC::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_BVTC::setVal(TVal &val)
 {
-    //TODO
+    int off = 0;
+    FT3ID ft3ID;
+    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
+    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    ft3ID.g = ID;
+    if((ft3ID.k >= 1) && (ft3ID.k <= count_n)) {
+	tagMsg Msg;
+	Msg.C = SetData;
+	*((uint16_t *) Msg.D) = PackID(ft3ID);
+	Msg.L = 2;
+	switch(ft3ID.n) {
+	case 0:
+	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
+	    break;
+	case 1:
+	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Period_%d", ft3ID.k).c_str()).at().getI(0, true));
+	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Count_%d", ft3ID.k).c_str()).at().getR(0, true));
+	    break;
+	}
+	if(Msg.L > 2) {
+	    Msg.L += 3;
+	    mPrm.owner().DoCmd(&Msg);
+	}
+    }
     return 0;
 }
 
