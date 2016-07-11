@@ -1,3 +1,19 @@
+2016-07-10 Roman
+- !:DAQ: DAQ redundancy mode OnlyAlarms is added.
+- FIX:DB.{FireBird,MySQL,PostgreSQL,SQLite}: Field seek is fixed for full request force on "row" = 0.
+- !!!!:FIX:DAQ.JavaLikeCalc: Second argument's type changing at compile is fixed but it is dynamic now mostly,
+	detected on problems with some string operations.
+    Doubled string constants detection is fixed.
+- UI.QTStarter: Expanded by command line argument "--noX11" for allow the Qt disabling.
+
+
+2016-07-06 Roman
+- Archive: The option's "Overtime of the reserve history reload" description is fixed.
+- !!:FIX:UI.Vision: Status line configuration set and update is fixed only for the master-page and it's items immediately removing.
+    Session restoring moved to prior pages removing but that is some faster, safer and cleaner then updating.
+    Some debug counters are added.
+
+
 2016-07-05 Roman
 - DB.LibsDB.OscadaLibs.db: ParamTemplLibs.{anUnif,anUnifSt}: Expand to alarms modes: 0-force NORMA, 1-suppress, 2-save on change.
 - SYS: To prepare the translations table used the preloaded seek.
