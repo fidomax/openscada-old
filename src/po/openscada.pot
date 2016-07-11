@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-01 11:04+0300\n"
+"POT-Creation-Date: 2016-07-08 12:52+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -168,7 +168,7 @@ msgstr ""
 msgid "Redundancy"
 msgstr ""
 
-msgid "Overtime of the reserve history reload at start, hours"
+msgid "Overtime of the reserve history reload at start, days"
 msgstr ""
 
 msgid "Message archivators"
@@ -875,6 +875,9 @@ msgid "Depth time of restoring data at start, hours"
 msgstr ""
 
 msgid "Controllers"
+msgstr ""
+
+msgid "Off;Asymmetric;Only alarms"
 msgstr ""
 
 msgid "Template libraries"
