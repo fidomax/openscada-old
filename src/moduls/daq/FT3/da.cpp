@@ -93,7 +93,7 @@ uint8_t DA::SetNew28Val(ui8Data& d1, ui8Data& d2, uint8_t addr, uint16_t prmID, 
 	d1.Set(val1);
 	d2.s = addr;
 	d2.Set(val2);
-	uint8_t E[3] = { addr, d1.vl };
+	uint8_t E[3] = { addr, d1.vl, d2.vl };
 	PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 2;
     } else {

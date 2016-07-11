@@ -267,7 +267,7 @@ uint16_t KA_BVTC::setVal(TVal &val)
 	    break;
 	case 1:
 	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Period_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Count_%d", ft3ID.k).c_str()).at().getR(0, true));
+	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Count_%d", ft3ID.k).c_str()).at().getI(0, true));
 	    break;
 	}
 	if(Msg.L > 2) {
