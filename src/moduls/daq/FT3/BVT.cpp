@@ -29,7 +29,7 @@ using namespace FT3;
 
 void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
 {
-    ui8fl tmpfl[10];
+    ui8fl tmpfl[11];
     uint8_t tmp;
     tmp = Period.Get();
     tmpfl[0].f = Sens.Get();
