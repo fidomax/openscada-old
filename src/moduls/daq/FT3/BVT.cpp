@@ -127,7 +127,7 @@ void KA_BVT::AddChannel(uint8_t iid)
     chan_err.insert(chan_err.end(), SDataRec());
     data.push_back(SKATTchannel(iid, this));
     AddAttr(data.back().State.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-    AddAttr(data.back().Value.lnk, TFld::Real, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
+    AddAttr(data.back().Value.lnk, TFld::Real,  TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
     if(with_params) {
 	AddAttr(data.back().Period.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
 	AddAttr(data.back().Sens.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
@@ -435,11 +435,27 @@ uint16_t KA_BVT::setVal(TVal &val)
     ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
     ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
     ft3ID.g = ID;
+
+    off = 0;
+    FT3ID stateft3ID;
+    stateft3ID.k = strtol((TSYS::strParse(mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
+    stateft3ID.n = strtol((TSYS::strParse(mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
+    stateft3ID.g = ID;
+
     tagMsg Msg;
+    Msg.L = 0;
     Msg.C = SetData;
-    *((uint16_t *) Msg.D) = PackID(ft3ID);
-    Msg.L = 2;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
     switch(ft3ID.n) {
+    case 0:
+	Msg.L = 0;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(stateft3ID));
+	Msg.L += SerializeB(Msg.D + Msg.L, 4);
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
+	Msg.L += SerializeF(Msg.D + Msg.L, val.getR(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(stateft3ID));
+	Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().getI(0, true));
+	break;
     case 1:
 	Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
 	break;

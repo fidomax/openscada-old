@@ -312,6 +312,19 @@ uint8_t DA::SerializeF(uint8_t * out, float vl)
     return 4;
 }
 
+uint8_t DA::SerializeUi16(uint8_t * out, uint16_t vl)
+{
+    union
+    {
+	uint16_t v;
+	uint8_t c[2];
+    } dt;
+    dt.v = vl;
+    for(uint8_t j = 0; j < 2; j++)
+	out[j] = dt.c[j];
+    return 2;
+}
+
 uint8_t DA::SerializeB(uint8_t * out, uint8_t vl)
 {
     out[0] = vl;
