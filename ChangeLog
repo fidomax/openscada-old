@@ -1,3 +1,19 @@
+2016-07-19 Roman
+- DB.LibsDB.OscadaLibs: Template PCF8591 is added to the library DevLib. PCF8591 is I2C 8-bit A/D and D/A converter.
+- Transport: User API function messIO() is expanded by the input buffer size.
+    The input buffer size was also added to the manual request dialog of output transports.
+- Transport.Serial: Checking for allowed I2C_SLAVE definition is added, and to build for Nokia N800.
+- UI.QTCfg: Checking for integer input field's range is added.
+
+
+2016-07-18 Roman
+- !!!:FIX:DB: DBs loading interruption is prevented after loading with the ready configuration and an error here.
+- !!:FIX:DAQ.BlockCalc: For IO presenting check was used uninterrupted ioId() of the function object.
+- !!:Transport.Serial: Output transport expanded for I2C check and use.
+- !!:Transport.Sockets: Output transport's reading reply after false FD_ISSET is expanded by socket's SO_ERROR reading and
+    the wait interruption on any socket error. Allow early broken pipe detection and like ones for sockets.
+
+
 2016-07-17 Roman
 - Transport.Serial: Some cleaned about the RTS toggle (true/false) flow control and echo filtering and the translations update.
 - UI.Vision: Direct access check for root is restored at "userIsRoot" miss.
