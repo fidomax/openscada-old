@@ -63,6 +63,9 @@ class TMdPrm : public TParamContr
 
 	void calc( bool first, bool last, double frq );	//Calc template's algoritmes
 
+	//Attributes
+	float tmCalc, tmCalcMax;
+
     protected:
 	//Methods
 	void postEnable( int flag );
@@ -115,7 +118,7 @@ class TMdPrm : public TParamContr
 	TElem	pEl;				//Work atribute elements
 
 	bool	chkLnkNeed;			//Check lnk need flag
-	Res	calcRes;			//Resource
+	ResRW	calcRes;			//Resource
 	int	idFreq, idStart, idStop,
 		idErr, idSh, idNm, idDscr;	//Fixed system attributes identifiers
 };
@@ -147,7 +150,7 @@ class TMdContr: public TController
 	void load_( );
 	void start_( );
 	void stop_( );
-	void cntrCmdProc( XMLNode *opt );       //Control interface command process
+	void cntrCmdProc( XMLNode *opt );	//Control interface command process
 
     private:
 	//Methods
@@ -156,12 +159,12 @@ class TMdContr: public TController
 
 	//Attributes
 	ResMtx	enRes;				//Resource for enable params
-	int64_t	&mPerOld,			// ms
-		&mPrior;			// Process task priority
+	int64_t	&mPerOld,			//ms
+		&mPrior;			//Process task priority
 
-	bool	prcSt,				// Process task active
-		callSt,				// Calc now stat
-		endrunReq;			// Request to stop of the Process task
+	bool	prcSt,				//Process task active
+		callSt,				//Calc now stat
+		endrunReq;			//Request to stop of the Process task
 	vector< AutoHD<TMdPrm> > pHd;
 
 	double	mPer;

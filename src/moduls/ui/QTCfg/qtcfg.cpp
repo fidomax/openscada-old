@@ -1308,7 +1308,7 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 			    thd_it->setData(Qt::UserRole,elms);
 			}
 			else if(t_linf->attr("tp") == "time")
-			    thd_it->setData(Qt::DisplayRole, tm2s(s2i(t_linf->childGet(i_el)->text()),"%d-%m-%Y %H:%M:%S").c_str());
+			    thd_it->setData(Qt::DisplayRole, atm2s(s2i(t_linf->childGet(i_el)->text()),"%d-%m-%Y %H:%M:%S").c_str());
 			else thd_it->setData(Qt::DisplayRole, getPrintVal(t_linf->childGet(i_el)->text()).c_str());
 
 			//   Set access
@@ -2322,8 +2322,8 @@ int ConfApp::cntrIfCmdHosts( XMLNode &node )
 	//Wait for the request done
 	time_t stTm = SYS->sysTm();
 	while(iHost->reqBusy()) {
-	    reqPrgrsSet(SYS->sysTm()-stTm);
-	    if(reqPrgrs->wasCanceled()) iHost->sendSIGALRM();
+	    reqPrgrsSet(vmax(0,SYS->sysTm()-stTm));
+	    if(reqPrgrs && reqPrgrs->wasCanceled()) iHost->sendSIGALRM();
 	    qApp->processEvents();
 	}
     }
@@ -3076,7 +3076,7 @@ bool SCADAHost::reqDo( XMLNode &node )
     reqDone = false;
     req = &node;
     cond.wakeOne();
-    cond.wait(&mtx, 100);
+    cond.wait(mtx, 100);
     if(!reqDone) { mtx.unlock(); return false; }
     req = NULL;
     reqDone = false;
@@ -3158,7 +3158,7 @@ void SCADAHost::run( )
 
 	//Interface's requests processing
 	mtx.lock();
-	if(!req || (req && reqDone)) cond.wait(&mtx, 1000);
+	if(!req || (req && reqDone)) cond.wait(mtx, 1000);
 	if(req && !reqDone) {
 	    wuser = user;
 	    mtx.unlock();
