@@ -39,7 +39,7 @@
 #define MOD_NAME	_("AMR devices")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"0.6.7"
+#define MOD_VER		"0.6.9"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides access to automatic meter reading devices. Supported devices: Kontar (http://www.mzta.ru).")
 #define LICENSE		"GPL2"
@@ -173,9 +173,9 @@ string TMdContr::getStatus( )
 {
     string val = TController::getStatus();
     if(startStat()) {
-	if(period()) val += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-3*period()).c_str());
-	else val += TSYS::strMess(_("Call next by cron '%s'. "), tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	val += TSYS::strMess(_("Spent time: %s."), tm2s(tm_gath).c_str());
+	if(period()) val += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-9*period()).c_str());
+	else val += TSYS::strMess(_("Call next by cron '%s'. "), atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	val += TSYS::strMess(_("Spent time: %s."), tm2s(1e-6*tm_gath).c_str());
     }
     return val;
 }
@@ -201,7 +201,7 @@ void TMdContr::stop_( )
 
 void TMdContr::prmEn( const string &id, bool val )
 {
-    ResAlloc res(en_res, true);
+    ResAlloc res(enRes, true);
 
     unsigned i_prm;
     for(i_prm = 0; i_prm < p_hd.size(); i_prm++)
@@ -223,15 +223,15 @@ void *TMdContr::Task( void *icntr )
 	int64_t t_cnt = TSYS::curTime();
 
 	//Update controller's data
-	cntr.en_res.resRequestR( );
+	cntr.enRes.resRequestR( );
 	for(unsigned i_p = 0; i_p < cntr.p_hd.size(); i_p++)
 	    try { cntr.p_hd[i_p].at().type().getVals(&cntr.p_hd[i_p].at()); }
 	    catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
-	cntr.en_res.resRelease( );
+	cntr.enRes.resRelease( );
 
 	cntr.tm_gath = TSYS::curTime()-t_cnt;
 
-	TSYS::taskSleep(cntr.period(),cntr.period() ? 0 : TSYS::cron(cntr.cron()));
+	TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
     }
 
     cntr.prc_st = false;
