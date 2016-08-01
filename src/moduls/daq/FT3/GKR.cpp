@@ -51,17 +51,17 @@ void B_GKR::AddChannel(uint8_t iid)
 {
     data.push_back(SKRchannel(iid, this));
     AddAttr(data.back().State.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
-    AddAttr(data.back().On.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
-    AddAttr(data.back().Off.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
-    AddAttr(data.back().Run.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
-    AddAttr(data.back().Reset.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
-    AddAttr(data.back().Lock.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
-    AddAttr(data.back().Lubrication.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:0", iid + 1));
+    AddAttr(data.back().On.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:1", iid + 1));
+    AddAttr(data.back().Off.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:1", iid + 1));
+    AddAttr(data.back().Run.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:2", iid + 1));
+    AddAttr(data.back().Reset.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:2", iid + 1));
+    AddAttr(data.back().Lock.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:3", iid + 1));
+    AddAttr(data.back().Lubrication.lnk, TFld::Integer, TFld::NoWrite, TSYS::strMess("%d:4", iid + 1));
     if(with_params) {
-	AddAttr(data.back().Time.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().ExTime.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:3", iid + 1));
-	AddAttr(data.back().Time_Lub.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:4", iid + 1));
-	AddAttr(data.back().Timeout_PO.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:5", iid + 1));
+	AddAttr(data.back().Time.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:5", iid + 1));
+	AddAttr(data.back().ExTime.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:6", iid + 1));
+	AddAttr(data.back().Time_Lub.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:7", iid + 1));
+	AddAttr(data.back().Timeout_PO.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:8", iid + 1));
     }
 }
 string B_GKR::getStatus(void)
@@ -120,11 +120,13 @@ void B_GKR::saveIO()
 
 void B_GKR::tmHandler(void)
 {
-    for(int i = 0; i < count_n; i++) {
-	UpdateParamW(data[i].Time, PackID(ID, i + 1, 5), 1);
-	UpdateParam8(data[i].ExTime, PackID(ID, i + 1, 6), 1);
-	UpdateParamW(data[i].Time_Lub, PackID(ID, i + 1, 7), 1);
-	UpdateParam8(data[i].Timeout_PO, PackID(ID, i + 1, 8), 1);
+    if(with_params) {
+	for(int i = 0; i < count_n; i++) {
+	    UpdateParamW(data[i].Time, PackID(ID, i + 1, 5), 1);
+	    UpdateParam8(data[i].ExTime, PackID(ID, i + 1, 6), 1);
+	    UpdateParamW(data[i].Time_Lub, PackID(ID, i + 1, 7), 1);
+	    UpdateParam8(data[i].Timeout_PO, PackID(ID, i + 1, 8), 1);
+	}
     }
     NeedInit = false;
 }
@@ -246,13 +248,13 @@ uint8_t B_GKR::cmdSet(uint8_t * req, uint8_t addr)
 		l = SetNewWVal(data[ft3ID.k - 1].Time, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 6:
-		l = SetNew8Val(data[ft3ID.k - 1].ExTime, addr, prmID, TSYS::getUnalign16(req + 2));
+		l = SetNewWVal(data[ft3ID.k - 1].ExTime, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 7:
 		l = SetNewWVal(data[ft3ID.k - 1].Time_Lub, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    case 8:
-		l = SetNew8Val(data[ft3ID.k - 1].Timeout_PO, addr, prmID, TSYS::getUnalign16(req + 2));
+		l = SetNewWVal(data[ft3ID.k - 1].Timeout_PO, addr, prmID, TSYS::getUnalign16(req + 2));
 		break;
 	    }
 	}

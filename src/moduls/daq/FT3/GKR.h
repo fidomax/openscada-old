@@ -69,8 +69,7 @@ namespace FT3
 	    uint8_t id;
 
 	    ui8Data State, On, Off, Run, Reset, Lock, Lubrication;
-	    ui16Data Time, Time_Lub;
-	    ui8Data ExTime,  Timeout_PO;
+	    ui16Data Time, Time_Lub, ExTime,  Timeout_PO;
 	};
 	vector<SKRchannel> data;
 

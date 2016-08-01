@@ -450,6 +450,7 @@ void TTpContr::postEnable(int flag)
     fldAdd(new TFld("PRM_BD_ODOR", _("ODOR Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_GZD", _("GZD Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_GNS", _("GNS Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_GKR", _("GKR Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_TANK", _("TANK Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PERIOD", _("Gather data period (s)"), TFld::Integer, TFld::NoFlag, "3", "1", "0;100"));
     fldAdd(new TFld("PRIOR", _("Gather task priority"), TFld::Integer, TFld::NoFlag, "2", "0", "-1;199"));
@@ -529,6 +530,11 @@ void TTpContr::postEnable(int flag)
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count NS"), TFld::Integer, TCfg::NoVal, "3", "1", "0;16"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
+    t_prm = tpParmAdd("tp_GKR", "PRM_BD_GKR", _("GKR"));
+    tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "15", "0;15"));
+    tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count KR"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
+    tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
+
     t_prm = tpParmAdd("tp_TANK", "PRM_BD_TANK", _("TANK"));
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "7", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count TANK"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
@@ -564,6 +570,7 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
     cfg("PRM_BD_ODOR").setS("FT3Prm_ODOR_" + name_c);
     cfg("PRM_BD_GZD").setS("FT3Prm_GZD_" + name_c);
     cfg("PRM_BD_GNS").setS("FT3Prm_GNS_" + name_c);
+    cfg("PRM_BD_GKR").setS("FT3Prm_GKR_" + name_c);
     cfg("PRM_BD_TANK").setS("FT3Prm_TANK_" + name_c);
 
     MtxAlloc res(eventRes, true);
@@ -1157,6 +1164,7 @@ void TMdPrm::enable()
 	    mDA = new B_BTR(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNTU").getI(), cfg("CHAN_COUNTR").getI(), cfg("WITH_PARAMS").getB());
 	if(type().name == "tp_BTE") mDA = new B_BTE(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	if(type().name == "tp_ODOR") mDA = new B_ODOR(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_GKR") mDA = new B_GKR(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     }
     if(mDA == NULL) throw TError(nodePath().c_str(), _("No one device selected."));
 
