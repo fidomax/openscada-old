@@ -57,12 +57,12 @@ namespace FT3
 		    Run(TSYS::strMess("run_%d", id + 1), TSYS::strMess(_("Run %d"), id + 1)),
 		    Reset(TSYS::strMess("reset_%d", id + 1), TSYS::strMess(_("Reset %d"), id + 1)),
 		    Lock(TSYS::strMess("lock_%d", id + 1), TSYS::strMess(_("Lock %d"), id + 1)),
-		    Lubrication(TSYS::strMess("reset_%d", id + 1), TSYS::strMess(_("Lubrication %d"), id + 1)),
+		    Lubrication(TSYS::strMess("lub_%d", id + 1), TSYS::strMess(_("Lubrication %d"), id + 1)),
 
 		    Time(TSYS::strMess("time_%d", id + 1), TSYS::strMess(_("Time %d"), id + 1)),
 		    ExTime(TSYS::strMess("extime_%d", id + 1), TSYS::strMess(_("ExTime %d"), id + 1)),
-		    Time_Lub(TSYS::strMess("time_%d", id + 1), TSYS::strMess(_("Time_Lub %d"), id + 1)),
-		    Timeout_PO(TSYS::strMess("extime_%d", id + 1), TSYS::strMess(_("Timeout_PO %d"), id + 1))
+		    Time_Lub(TSYS::strMess("timelub_%d", id + 1), TSYS::strMess(_("Time_Lub %d"), id + 1)),
+		    Timeout_PO(TSYS::strMess("timeout_po_%d", id + 1), TSYS::strMess(_("Timeout_PO %d"), id + 1))
 	    {
 	    }
 	    DA* da;

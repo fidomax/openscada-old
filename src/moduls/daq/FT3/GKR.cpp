@@ -120,9 +120,9 @@ void B_GKR::saveIO()
 
 void B_GKR::tmHandler(void)
 {
-    if(int i = 0; i < count_n; i++) {
+    for(int i = 0; i < count_n; i++) {
 	UpdateParam8(data[i].State, PackID(ID, i + 1, 0), 1);
-	for(with_params) {
+	if(with_params) {
 	    UpdateParamW(data[i].Time, PackID(ID, i + 1, 5), 1);
 	    UpdateParamW(data[i].ExTime, PackID(ID, i + 1, 6), 1);
 	    UpdateParamW(data[i].Time_Lub, PackID(ID, i + 1, 7), 1);
