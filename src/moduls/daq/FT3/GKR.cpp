@@ -121,7 +121,7 @@ void B_GKR::saveIO()
 void B_GKR::tmHandler(void)
 {
     for(int i = 0; i < count_n; i++) {
-	UpdateParam8(data[i].State, PackID(ID, i + 1, 0), 1);
+	data[i].UpdateState(PackID(ID, (i + 1), 0), 1);
 	if(with_params) {
 	    UpdateParamW(data[i].Time, PackID(ID, i + 1, 5), 1);
 	    UpdateParamW(data[i].ExTime, PackID(ID, i + 1, 6), 1);
@@ -308,6 +308,17 @@ void B_GKR::runTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 	    PushInBE(1, sizeof(E), prmID, E);
 	    TU.On.vl = TU.Off.vl = 0;
 	}
+    }
+}
+
+void B_GKR::SKRchannel::UpdateState(uint16_t ID, uint8_t cl)
+{
+    uint8_t tmpui8;
+    tmpui8 = State.Get();
+    if(tmpui8 != State.vl) {
+	State.Update(tmpui8);
+	uint8_t E[1] = { tmpui8 };
+	da->PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
