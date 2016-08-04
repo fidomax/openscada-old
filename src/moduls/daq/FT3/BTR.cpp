@@ -35,6 +35,10 @@ KA_BTU::KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params) :
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
+    if(mPrm.owner().cfg("PRTTYPE").getS() == "KA") {
+	mPrm.p_el.fldAdd(fld = new TFld("execution", _("Execution"), TFld::Integer, TVal::DirWrite));
+	fld->setReserve("0:2");
+    }
     for(int i = 0; i < count_nu; i++) {
 	AddChannel(i);
     }
@@ -109,6 +113,47 @@ uint16_t KA_BTU::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
+    switch(uc) {
+    case TaskRefresh:
+	Msg.L = 5;
+	Msg.C = AddrReq;
+	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
+	if(mPrm.owner().DoCmd(&Msg)) {
+	    if(Msg.C == GOOD3) {
+		rc = 1;
+		Msg.L = 5;
+		Msg.C = AddrReq;
+		*((uint16_t *) (Msg.D)) = PackID(ID, 0, 2); //исполнение
+		mPrm.owner().DoCmd(&Msg);
+		if(with_params) {
+		    for(int i = 1; i <= count_nu; i++) {
+			Msg.L = 5;
+			Msg.C = AddrReq;
+			*((uint16_t *) Msg.D) = PackID(ID, i, 0); //линия ТУ
+			for(int j = 1; j <= 16; j++) {
+			    Msg.L += 2;
+			    *((uint16_t *) (Msg.D + Msg.L - 5)) = PackID(ID, i, j); //Параметры реле
+			}
+			if(mPrm.owner().DoCmd(&Msg)) {
+			    if(Msg.C == GOOD3) {
+				rc = 1;
+			    } else {
+				rc = 0;
+				break;
+			    }
+			} else {
+			    rc = 0;
+			    break;
+			}
+
+		    }
+		}
+
+	    }
+	}
+	if(rc) NeedInit = false;
+	break;
+    }
     return rc;
 }
 uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)
@@ -116,6 +161,57 @@ uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
     if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
+    if(ft3ID.k == 0) {
+	switch(ft3ID.n) {
+	case 0:
+	    mPrm.vlAt("state").at().setI(D[2], tm, true);
+	    l = 3;
+	    break;
+	case 1:
+	    l = 4;
+	    break;
+	case 2:
+	    mPrm.vlAt(TSYS::strMess("execution").c_str()).at().setI(D[3], tm, true);
+	    l = 4;
+	    break;
+	}
+    } else {
+	if(count_nu && (ft3ID.k <= count_nu)) {
+	    switch(ft3ID.n) {
+	    case 0:
+		mPrm.vlAt(TSYS::strMess("Line_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+		l = 4;
+		break;
+	    case 1:
+	    case 2:
+	    case 3:
+	    case 4:
+	    case 5:
+	    case 6:
+	    case 7:
+	    case 8:
+	    case 9:
+	    case 10:
+	    case 11:
+	    case 12:
+	    case 13:
+	    case 14:
+	    case 15:
+	    case 16:
+		if(with_params) {
+		    mPrm.vlAt(TSYS::strMess("Time%d_%d", ft3ID.n, ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		}
+		l = 5;
+		break;
+	    case 32:
+		if(with_params) {
+		    mPrm.vlAt(TSYS::strMess("line_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		}
+		l = 5;
+		break;
+	    }
+	}
+    }
     return l;
 }
 
@@ -275,6 +371,49 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_BTU::setVal(TVal &val)
 {
+    int off = 0;
+    FT3ID ft3ID;
+    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
+    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
+    ft3ID.g = ID;
+
+    tagMsg Msg;
+    uint8_t run;
+    Msg.L = 0;
+    Msg.C = SetData;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
+    if(ft3ID.k == 0) {
+	switch(ft3ID.n) {
+	case 2:
+	    run = val.getI(0, true);
+	    if(run == 170) {
+		Msg.L += SerializeB(Msg.D + Msg.L, 0);
+	    } else {
+		if(run == 85) {
+		    Msg.L += SerializeB(Msg.D + Msg.L, run);
+		} else {
+		    Msg.L = 0;
+		}
+	    }
+	    break;
+	}
+    } else {
+	if(count_nu && (ft3ID.k <= count_nu)) {
+	    if(ft3ID.k == 0) {
+		Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
+	    } else {
+		if(ft3ID.n <= 16) {
+		    Msg.L += SerializeUi16(Msg.D + Msg.L, val.getI(0, true));
+		} else {
+		    Msg.L = 0;
+		}
+	    }
+	}
+    }
+    if(Msg.L > 2) {
+	Msg.L += 3;
+	mPrm.owner().DoCmd(&Msg);
+    }
     return 0;
 }
 
