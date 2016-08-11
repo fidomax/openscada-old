@@ -399,7 +399,7 @@ uint16_t KA_BTU::setVal(TVal &val)
 	}
     } else {
 	if(count_nu && (ft3ID.k <= count_nu)) {
-	    if(ft3ID.k == 0) {
+	    if(ft3ID.n == 0) {
 		Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
 	    } else {
 		if(ft3ID.n <= 16) {
