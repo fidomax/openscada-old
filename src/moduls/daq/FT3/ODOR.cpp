@@ -230,7 +230,7 @@ uint8_t B_ODOR::cmdGet(uint16_t prmID, uint8_t * out)
 	    break;
 	case 1:
 
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    //value
 	    for(uint8_t i = 0; i < count_n; i++) {
