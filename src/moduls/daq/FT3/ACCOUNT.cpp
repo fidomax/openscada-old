@@ -30,8 +30,8 @@ using namespace FT3;
 uint8_t B_ACCOUNT::SACchannel::SetNewPeriod(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
     uint8_t start[5] = { val[0], val[1], val[2], 0, 0 };
-    StartDate.Update(da->DateTimeToTime_t(start),0);
-    EndDate.Update(StartDate.vl + TSYS::getUnalign16(val + 3) * 3600,0);
+    StartDate.Update(da->DateTimeToTime_t(start), 0);
+    EndDate.Update(StartDate.vl + TSYS::getUnalign16(val + 3) * 3600, 0);
     uint8_t E[6] = { addr, val[0], val[1], val[2], val[3], val[4] };
     da->PushInBE(1, sizeof(E), prmID, E);
     return 5 + 2;
@@ -41,6 +41,7 @@ B_ACCOUNT::B_ACCOUNT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), ID(id), count_n(n), with_params(has_params)
 {
     mTypeFT3 = GRS;
+    blkID = 0;
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
@@ -588,7 +589,7 @@ uint8_t B_ACCOUNT::cmdGet(uint16_t prmID, uint8_t * out)
 	switch(ft3ID.n) {
 	case 0:
 	    //state
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    break;
 	case 1:

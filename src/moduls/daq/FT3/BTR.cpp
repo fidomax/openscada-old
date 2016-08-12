@@ -423,7 +423,11 @@ B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params
 {
     mTypeFT3 = GRS;
     TFld * fld;
-
+    if (count_nr){
+	blkID = 70;
+    } else {
+	blkID = 30;
+    }
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
     if(count_nu) {
@@ -659,7 +663,7 @@ uint8_t B_BTR::cmdGet(uint16_t prmID, uint8_t * out)
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 0:
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    break;
 	case 1:

@@ -67,7 +67,7 @@ namespace FT3
     public:
 	//Methods
 	DA(TMdPrm& prm) :
-		mPrm(prm), NeedInit(true)
+		mPrm(prm), NeedInit(true), blkID(0)
 	{
 	}
 	virtual ~DA()
@@ -336,6 +336,7 @@ namespace FT3
 	//Attributes
 	TypeFT3 mTypeFT3;
 	TMdPrm &mPrm;
+	uint8_t blkID;
 	bool NeedInit;
 	void AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex);
 	void loadLnk(SLnk& lnk);

@@ -284,6 +284,7 @@ B_BVTC::B_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), count_n(n), ID(id), with_params(has_params)
 {
     mTypeFT3 = GRS;
+    blkID = 0x00;
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
@@ -467,7 +468,7 @@ uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 	switch(ft3ID.n) {
 	case 0:
 	    //state
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    break;
 	case 1:

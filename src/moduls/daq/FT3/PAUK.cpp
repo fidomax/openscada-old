@@ -31,6 +31,7 @@ B_PAUK::B_PAUK(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), ID(id), count_n(n), with_params(has_params)
 {
     mTypeFT3 = GRS;
+    blkID = 0;
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
@@ -124,7 +125,7 @@ uint16_t B_PAUK::HandleEvent(int64_t tm, uint8_t * D)
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
     if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
-    switch (ft3ID.k) {
+    switch(ft3ID.k) {
     case 0:
 	switch(ft3ID.n) {
 	case 0:

@@ -31,6 +31,7 @@ B_ODOR::B_ODOR(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	DA(prm), ID(id), count_n(n), with_params(has_params)
 {
     mTypeFT3 = GRS;
+    blkID = 0;
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
@@ -224,7 +225,7 @@ uint8_t B_ODOR::cmdGet(uint16_t prmID, uint8_t * out)
 	switch(ft3ID.n) {
 	case 0:
 	    //state
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    break;
 	case 1:
@@ -310,7 +311,6 @@ uint8_t B_ODOR::cmdSet(uint8_t * req, uint8_t addr)
     }
     return l;
 }
-
 
 uint16_t B_ODOR::setVal(TVal &val)
 {

@@ -485,6 +485,7 @@ B_BVT::B_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_k, 
 	DA(prm), ID(id), count_n(n), with_params(has_params), with_k(has_k), with_rate(has_rate)
 {
     mTypeFT3 = GRS;
+    blkID = 0x10;
     chan_err.clear();
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
@@ -844,7 +845,7 @@ uint8_t B_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 	switch(ft3ID.n) {
 	case 0:
 	    //state
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    break;
 	case 1:

@@ -31,6 +31,7 @@ B_BVI::B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_ext
 	DA(prm), ID(id), count_n(n), with_params(has_params), ext_period(has_ext_period)
 {
     mTypeFT3 = GRS;
+    blkID = 0x20;
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
@@ -258,7 +259,7 @@ uint8_t B_BVI::cmdGet(uint16_t prmID, uint8_t * out)
 	switch(ft3ID.n) {
 	case 0:
 	    //state
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    break;
 	case 1:
