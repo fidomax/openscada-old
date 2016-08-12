@@ -472,7 +472,7 @@ uint8_t B_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 	    l = 1;
 	    break;
 	case 1:
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    //value
 	    for(uint8_t i = 0; i < nTC; i++) {

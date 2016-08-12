@@ -282,7 +282,7 @@ uint8_t B_BIP::cmdGet(uint16_t prmID, uint8_t * out)
 	    break;
 	case 1:
 
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    //value
 	    for(uint8_t i = 0; i < count_n; i++) {
@@ -406,7 +406,6 @@ uint8_t B_BIP::cmdSet(uint8_t * req, uint8_t addr)
     }
     return l;
 }
-
 
 uint16_t B_BIP::setVal(TVal &val)
 {

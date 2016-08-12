@@ -115,7 +115,7 @@ void B_BVI::tmHandler(void)
 	    float f;
 	} tmpfl, tmpfl1;
 	if(with_params) {
-	    if (ext_period) {
+	    if(ext_period) {
 		UpdateParamW(data[i].Period, PackID(ID, (i + 1), 2), 1);
 	    } else {
 		UpdateParam8(data[i].Period, PackID(ID, (i + 1), 2), 1);
@@ -211,7 +211,7 @@ uint16_t B_BVI::HandleEvent(int64_t tm, uint8_t * D)
 		break;
 	    case 2:
 		if(with_params) {
-		    if (ext_period) {
+		    if(ext_period) {
 			mPrm.vlAt(TSYS::strMess("period_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
 			l = 5;
 		    } else {
@@ -264,7 +264,7 @@ uint8_t B_BVI::cmdGet(uint16_t prmID, uint8_t * out)
 	    break;
 	case 1:
 
-	    out[0] = 0;
+	    out[0] = 0 | blkID;
 	    l = 1;
 	    //value
 	    for(uint8_t i = 0; i < count_n; i++) {
