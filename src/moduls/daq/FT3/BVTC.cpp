@@ -193,7 +193,7 @@ uint8_t KA_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 0:
-	    out[0] = 0;
+	    out[0] = 1;
 	    l = 1;
 	    break;
 	case 1:

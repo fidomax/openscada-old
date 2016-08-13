@@ -56,7 +56,7 @@ void KA_BTU::AddChannel(uint8_t iid)
     AddAttr(TUdata.back().Line.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
     if(with_params) {
 	for(int i = 0; i < 16; i++) {
-	    AddAttr(TUdata.back().Time[i].lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+	    AddAttr(TUdata.back().Time[i].lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:%d", iid + 1, i + 1));
 	}
     }
 }
@@ -103,7 +103,7 @@ void KA_BTU::tmHandler(void)
 {
     for(int i = 0; i < count_nu; i++) {
 	for(int j = 0; j < 16; j++) {
-	    UpdateParamW(TUdata[i].Time[j], PackID(ID, i + 1, 1), 1);
+	    UpdateParamW(TUdata[i].Time[j], PackID(ID, i + 1, j + 1), 1);
 	}
     }
     NeedInit = false;
@@ -223,7 +223,7 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 0:
-	    out[0] = 0;
+	    out[0] = 1;
 	    l = 1;
 	    break;
 	case 1:
@@ -423,7 +423,7 @@ B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params
 {
     mTypeFT3 = GRS;
     TFld * fld;
-    if (count_nr){
+    if(count_nr) {
 	blkID = 70;
     } else {
 	blkID = 30;
