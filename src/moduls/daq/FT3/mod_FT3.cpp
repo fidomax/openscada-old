@@ -684,6 +684,13 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	ResAlloc resN(tr.at().nodeRes(), true);
 	pMsg->L = 0;
 
+	data_s = "";
+	for(int i = 0; i < l; i++) {
+	    data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
+	}
+	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("request: %s"), data_s.c_str());
+
+
 	int resp_len = tr.at().messIO(io_buf, l, io_buf, 8, 0, true);
 	l = resp_len;
 	while(resp_len) {
@@ -716,6 +723,7 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	} else {
 	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("bad header found!"));
 	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("l %d"), l);
+	    data_s = "";
 	    for(int i = 0; i < l; i++) {
 		data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
 	    }
@@ -724,6 +732,12 @@ bool TMdContr::Transact(tagMsg * pMsg)
 
 	}
 	errPresent = false;
+	data_s = "";
+	for(int i = 0; i < l; i++) {
+	    data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
+	}
+	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("response: %s"), data_s.c_str());
+
 	if(l) {
 	    rc = VerifyPacket(io_buf, &l);
 	    if(!rc) {
