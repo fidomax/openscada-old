@@ -690,7 +690,6 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	}
 	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("request: %s"), data_s.c_str());
 
-
 	int resp_len = tr.at().messIO(io_buf, l, io_buf, 8, 0, true);
 	l = resp_len;
 	while(resp_len) {
@@ -800,7 +799,11 @@ void TMdContr::MakePacket(tagMsg *msg, char *io_buf, uint16_t *len)
 	//full packet
 	*(uint16_t *) io_buf = 0x6405;
 	io_buf[2] = msg->L;
-	io_buf[3] = msg->C | 0x50;
+	if((cfg("PRTTYPE").getS() == "KA") && ((msg->C & 0x0F) == 0)) {
+	    io_buf[3] = msg->C | 0x40;
+	} else {
+	    io_buf[3] = msg->C | 0x50;
+	}
 	io_buf[4] = msg->A;
 	io_buf[5] = msg->B;
 	*(uint16_t *) (io_buf + 6) = CRC(io_buf + 2, 4);
