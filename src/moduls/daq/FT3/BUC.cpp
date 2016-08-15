@@ -189,7 +189,6 @@ uint16_t KA_BUC::setVal(TVal &val)
 	case 0:
 	    switch(ft3ID.n) {
 	    case 0:
-		tagMsg Msg;
 		Msg.L = 6;
 		Msg.D[2] = val.getI(0, true);
 		break;
@@ -199,9 +198,9 @@ uint16_t KA_BUC::setVal(TVal &val)
     }
     if(ft3ID.g == clockID) {
 	switch(ft3ID.k) {
-	case 2:
+	case 0:
 	    switch(ft3ID.n) {
-	    case 1:
+	    case 2:
 		struct tm tm_tm;
 		strptime(val.getS(0, true).c_str(), "%d.%m.%Y %H:%M:%S", &tm_tm);
 		Msg.L = 10;
