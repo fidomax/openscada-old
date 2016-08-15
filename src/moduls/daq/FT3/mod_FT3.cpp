@@ -799,7 +799,7 @@ void TMdContr::MakePacket(tagMsg *msg, char *io_buf, uint16_t *len)
 	//full packet
 	*(uint16_t *) io_buf = 0x6405;
 	io_buf[2] = msg->L;
-	if((cfg("PRTTYPE").getS() == "KA") && ((msg->C & 0x0F) == 0)) {
+	if((cfg("PRTTYPE").getS() == "KA") && ((msg->C & 0x0E) == 0)) {
 	    io_buf[3] = msg->C | 0x40;
 	} else {
 	    io_buf[3] = msg->C | 0x50;
