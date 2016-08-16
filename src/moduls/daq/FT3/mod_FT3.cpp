@@ -239,7 +239,7 @@ uint8_t TMdContr::cmdSet(uint8_t * req, uint8_t addr)
 
 bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 {
-//    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Process message___"));
+//    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Process message___"));
     uint8_t l;
     uint8_t n;
     uint16_t tm;
@@ -249,7 +249,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
     MtxAlloc res(eventRes, true);
     resp->L = 0;
     if(msg->L == 1) {
-	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ProcessMessage one byte req A %02X"), msg->A);
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("ProcessMessage one byte req A %02X"), msg->A);
 	// One byte req from first block event
 	resp->L = 1;
 	resp->C = msg->A & 0x3F;
@@ -263,7 +263,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
     }
     switch(msg->C & 0x0F) {
     case ResetChan:
-	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ResetChan"));
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("ResetChan"));
 	Channels[msg->B].FCB2 = Channels[msg->B].FCB3 = 0xFF;
 	resp->L = 3;
 	resp->C = Channels[msg->B].FCB3 & 0x20;
@@ -277,23 +277,23 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	    case ReqData1:
 		pC = &(Channels[msg->B].C1);
 
-//		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("%d ReqData1 C1 %08X %08X"), msg->B, pC, pC->head);
+//		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("%d ReqData1 C1 %08X %08X"), msg->B, pC, pC->head);
 		break;
 	    case ReqData2:
 		pC = &(Channels[msg->B].C2);
-//		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("%d ReqData1 C2 %08X %08X"), msg->B, pC, pC->head);
+//		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("%d ReqData1 C2 %08X %08X"), msg->B, pC, pC->head);
 		break;
 	    default:
 		if(Channels[msg->B].C1.head) {
 		    pC = &(Channels[msg->B].C1);
-//		    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("default ReqData C1 %08X %08X"), pC, pC->head);
+//		    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("default ReqData C1 %08X %08X"), pC, pC->head);
 		} else {
 		    pC = &(Channels[msg->B].C2);
-//		    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("default ReqData C2 %08X %08X"), pC, pC->head);
+//		    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("default ReqData C2 %08X %08X"), pC, pC->head);
 		}
 	    }
 	    if((pC == NULL) || (pC->head == NULL)) {
-//		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("%d empty %08X %08X"), msg->B, pC, pC->head);
+//		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("%d empty %08X %08X"), msg->B, pC, pC->head);
 		Channels[msg->B].resp3.L = 3;
 		Channels[msg->B].resp3.C = 9;
 	    } else {
@@ -313,21 +313,21 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 		Channels[msg->B].resp3.C |= 0x20;
 	    }
 	} else {
-	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ReqData BAD FCB!!!"));
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("ReqData BAD FCB!!!"));
 	}
 	memcpy(resp, &Channels[msg->B].resp3, sizeof(tagMsg));
 	break;
     case SetData:
-	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("SetData FCB2 %02X newFCB2 %02X"), Channels[msg->B].FCB2, msg->C);
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("SetData FCB2 %02X newFCB2 %02X"), Channels[msg->B].FCB2, msg->C);
 	if(cfg("IGNORE_FCB2").getB() || (Channels[msg->B].FCB2 != msg->C)) {
 	    Channels[msg->B].FCB2 = msg->C;
 	    l = msg->L - 3;
 	    if(l < 3) l = -1;
 	    n = 0;
 	    while(l > 1) {
-//		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("l before %d"), l);
+//		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l before %d"), l);
 		rc = cmdSet(msg->D + n, msg->B);
-//		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("rc after %d"), rc);
+//		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("rc after %d"), rc);
 		if(rc) {
 		    l -= rc;
 		    n += rc;
@@ -335,23 +335,23 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 		    l = 1;
 		}
 	    }
-//	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("l after %d"), l);
+//	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l after %d"), l);
 	    if(l) {
-//		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("XXXXXXXX"));
+//		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("XXXXXXXX"));
 		Channels[msg->B].resp2.L = 3;
 		Channels[msg->B].resp2.C = 1;
 	    } else {
-//		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("OOOOOOOO"));
+//		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("OOOOOOOO"));
 		Channels[msg->B].resp2.L = 3;
 		Channels[msg->B].resp2.C = 0;
 	    }
 	} else {
-	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("SetData BAD FCB!!!"));
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("SetData BAD FCB!!!"));
 	}
 	memcpy(resp, &Channels[msg->B].resp2, sizeof(tagMsg));
 	break;
     case AddrReq:
-	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("AddrReq"));
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("AddrReq"));
 	Channels[msg->B].resp3.C = 8;
 	time_t rawtime;
 	time(&rawtime);
@@ -372,13 +372,13 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	    rc = cmdGet(id, Channels[msg->B].resp3.D + n);
 	    if(rc == 0) {
 		l = msg->L - 3;
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("AddrReq ID not found! %04X"), id);
+		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("AddrReq ID not found! %04X"), id);
 		Channels[msg->B].resp3.C = 9;
 		break;
 	    }
 	    if(rc > (mlD - n)) {
 		l = msg->L - 3;
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Too much data to answer %04X"), id);
+		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Too much data to answer %04X"), id);
 		Channels[msg->B].resp3.C = 9;
 		break;
 	    }
@@ -392,7 +392,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	memcpy(resp, &Channels[msg->B].resp3, sizeof(tagMsg));
 	break;
     case ResData2:
-	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("ResData2"));
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("ResData2"));
 	//Channels[msg->B].FCB2 = 0;
 	resp->L = 3;
 	resp->C = 0; //Channels[msg->B].FCB3;
@@ -608,7 +608,7 @@ bool TMdContr::DoCmd(tagMsg * pMsg)
 		    for(int i = 0; i < (pMsg->L - 3); i++) {
 			dump += TSYS::strMess("%02X ", pMsg->D[i]);
 		    }
-		    mess_debug(nodePath().c_str(), _("data arrived L:%d %s"), (pMsg->L - 3), dump.c_str());
+		    mess_sys(TMess::Debug, _("data arrived L:%d %s"), (pMsg->L - 3), dump.c_str());
 		}
 		uint16_t l = pMsg->L - 6, m = 0, n = 3;
 		while(l) {
@@ -619,25 +619,25 @@ bool TMdContr::DoCmd(tagMsg * pMsg)
 		    n += 2;
 		    list(lst);
 		    for(int i_l = 0; !m && i_l < lst.size(); i_l++) {
-			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("---l:%d n:%d"), l, n);
+			if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("---l:%d n:%d"), l, n);
 			AutoHD<TMdPrm> t = at(lst[i_l]);
 			m = t.at().HandleEvent(((int64_t) DateTimeToTime_t(pMsg->D)) * 1000000, pMsg->D + n);
-			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("%d bytes handled"), m);
+			if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("%d bytes handled"), m);
 		    }
 		    if(m) {
 			//if(!(TSYS::getUnalign16(pMsg->D + n))) pMsg->D[n + 2] = 0;
 			l -= m;
 			n += m;
 			m = 0;
-			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("l:%d n:%d"), l, n);
+			if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l:%d n:%d"), l, n);
 		    } else {
-			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Unhandled data  %04X at %d"), TSYS::getUnalign16(pMsg->D + n), n);
+			if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Unhandled data  %04X at %d"), TSYS::getUnalign16(pMsg->D + n), n);
 			if(mess_lev() == TMess::Debug) {
 			    string dump;
 			    for(int i = 0; i < (pMsg->L - 3); i++) {
 				dump += TSYS::strMess("%02X ", pMsg->D[i]);
 			    }
-			    mess_debug(nodePath().c_str(), _("%d, %s"), (pMsg->L - 3), dump.c_str());
+			    mess_sys(TMess::Debug, _("%d, %s"), (pMsg->L - 3), dump.c_str());
 			}
 			break;
 		    }
@@ -688,7 +688,7 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	for(int i = 0; i < l; i++) {
 	    data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
 	}
-	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("request: %s"), data_s.c_str());
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("request: %s"), data_s.c_str());
 
 	int resp_len = tr.at().messIO(io_buf, l, io_buf, 8, 0, true);
 	l = resp_len;
@@ -720,14 +720,14 @@ bool TMdContr::Transact(tagMsg * pMsg)
 		} while(resp_len);
 	    }
 	} else {
-	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("bad header found!"));
-	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("l %d"), l);
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("bad header found!"));
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), l);
 	    data_s = "";
 	    for(int i = 0; i < l; i++) {
 		data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
 	    }
-	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("io_buf: %s"), data_s.c_str());
-	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("CRC %04X"), CRC(io_buf + 2, 4));
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("io_buf: %s"), data_s.c_str());
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("CRC %04X"), CRC(io_buf + 2, 4));
 
 	}
 	errPresent = false;
@@ -735,7 +735,7 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	for(int i = 0; i < l; i++) {
 	    data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
 	}
-	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("response: %s"), data_s.c_str());
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("response: %s"), data_s.c_str());
 
 	if(l) {
 	    rc = VerifyPacket(io_buf, &l);
@@ -743,25 +743,25 @@ bool TMdContr::Transact(tagMsg * pMsg)
 		rc = ParsePacket(io_buf, l, pMsg);
 
 		if(rc == 1) {
-		    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Parse error %d"), rc);
+		    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Parse error %d"), rc);
 		    pMsg->L = 0;
 		} else {
 
 		}
 
 	    } else {
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Verify error %d"), rc);
+		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Verify error %d"), rc);
 		data_s = "";
 		for(int i = 0; i < l; i++) {
 		    data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
 		}
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("io_buf: %s"), data_s.c_str());
-		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("l %d"), l);
+		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("io_buf: %s"), data_s.c_str());
+		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), l);
 		pMsg->L = 0;
 	    }
 
 	} else {
-	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Receive error %d"), l);
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Receive error %d"), l);
 	    pMsg->L = 0;
 	}
 
@@ -782,7 +782,7 @@ bool TMdContr::Transact(tagMsg * pMsg)
 
 	}
     } catch (...) {
-	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("messIO error"));
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("messIO error"));
     }
     return pMsg->L;
 }
@@ -852,13 +852,13 @@ bool TMdContr::VerCRC(char *p, uint16_t l)
 uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 {
     uint16_t raslen;
-//    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("in VerifyPacket l %d"), *l);
+//    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("in VerifyPacket l %d"), *l);
     string data_s = "";
     for(int i = 0; i < *l; i++) {
 	data_s += TSYS::int2str((uint8_t) t[i], TSYS::Hex) + " ";
     }
-    //   if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("in VerifyPacket io_buf: %s"), data_s.c_str());
-    //   if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("l %d"), *l);
+    //   if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("in VerifyPacket io_buf: %s"), data_s.c_str());
+    //   if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), *l);
     if((*l == 1)) {
 	//one byte req
 	return 0;
@@ -867,15 +867,15 @@ uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 	if(*l > 7) {
 
 	    if((t[0] == 0x05) && (t[0] != 0x64)) {
-//		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Len -%d"), Len((uint8_t )t[2]));
-//		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("VerCRC -%d"), VerCRC(t, *l));
+//		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Len -%d"), Len((uint8_t )t[2]));
+//		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("VerCRC -%d"), VerCRC(t, *l));
 		if(!((raslen = Len((uint8_t) t[2])) == *l && VerCRC(t, *l))) {
-		    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("good header"));
+		    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("good header"));
 		    if(!(*l > raslen && VerCRC(t, raslen))) {
-			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("bad packet"));
+			if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("bad packet"));
 			return 2;    //wrong packet
 		    } else {
-			if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("cutting packet"));
+			if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("cutting packet"));
 			*l = raslen; //corrupted end of packet
 		    }
 		}
@@ -1262,7 +1262,7 @@ uint8_t TMdPrm::cmdSet(uint8_t * req, uint8_t addr)
 
 void TMdPrm::vlSet(TVal &vo, const TVariant &vl, const TVariant &pvl)
 {
-    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("TMdPrm::vlSet name %s "), vo.name().c_str());
+    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("TMdPrm::vlSet name %s "), vo.name().c_str());
     if(!enableStat() || !owner().startStat()) vo.setS(EVAL_STR, 0, true);
 
     if(vl.isEVal() || vl == pvl) return;

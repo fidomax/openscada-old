@@ -253,7 +253,7 @@ void DA::UpdateParam28(ui8Data& param1, ui8Data& param2, uint16_t ID, uint8_t cl
 
 FT3ID DA::UnpackID(uint16_t ID)
 {
-    if(mess_lev() == TMess::Debug) mess_debug(mPrm.nodePath().c_str(), _("UnpackID %d"), ID);
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, _("UnpackID %d"), ID);
     FT3ID rc;
     switch(mTypeFT3) {
     case GRS:
@@ -267,7 +267,7 @@ FT3ID DA::UnpackID(uint16_t ID)
 	rc.n = (ID >> 10) & 0x3F;
 	break;
     }
-    if(mess_lev() == TMess::Debug) mess_debug(mPrm.nodePath().c_str(), _("g %d k %d n %d"), rc.g, rc.k, rc.n);
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, _("g %d k %d n %d"), rc.g, rc.k, rc.n);
     return rc;
 }
 

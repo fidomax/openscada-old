@@ -843,7 +843,7 @@ uint8_t B_ACCOUNT::cmdSet(uint8_t * req, uint8_t addr)
     FT3ID ft3ID = UnpackID(prmID);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
-//    mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
+//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     if((ft3ID.k > 0) && (ft3ID.k <= count_n)) {
 	switch(ft3ID.n) {
 	case 2:

@@ -185,9 +185,8 @@ uint16_t KA_BVTC::HandleEvent(int64_t tm, uint8_t * D)
 
 uint8_t KA_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 {
-//    mess_info("KA_BVTC", "cmdGet %04X", prmID);
     FT3ID ft3ID = UnpackID(prmID);
-//    mess_info("KA_BVTC", "ID %d ft3ID g%d k%d n%d ", ID, ft3ID.g, ft3ID.k, ft3ID.n);
+//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "ID %d ft3ID g%d k%d n%d ", ID, ft3ID.g, ft3ID.k, ft3ID.n);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
     if(ft3ID.k == 0) {
@@ -234,7 +233,7 @@ uint8_t KA_BVTC::cmdSet(uint8_t * req, uint8_t addr)
     uint16_t prmID = TSYS::getUnalign16(req);
     FT3ID ft3ID = UnpackID(prmID);
     if(ft3ID.g != ID) return 0;
-//    mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
+//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     uint l = 0;
     if((ft3ID.k > 0) && (ft3ID.k <= count_n)) {
 	switch(ft3ID.n) {

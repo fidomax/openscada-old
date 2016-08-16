@@ -313,7 +313,7 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
     if(ft3ID.g != ID) return 0;
     uint l = 0;
     uint8_t E[2];
-//    mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
+//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 2:
@@ -715,7 +715,7 @@ uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
     FT3ID ft3ID = UnpackID(prmID);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
-//    mess_info(mPrm.nodePath().c_str(), "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
+//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 1:
@@ -742,7 +742,7 @@ uint8_t B_BTR::cmdSet(uint8_t * req, uint8_t addr)
 	    }
 	}
 	if(count_nr && ((ft3ID.k > count_nu) && (ft3ID.k <= count_nr + count_nu))) {
-//	    mess_info(mPrm.nodePath().c_str(), "cmdSet Val");
+//	    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet Val");
 	    l = SetNewflVal(TRdata[ft3ID.k - 1 - count_nu].Value, addr, prmID, TSYS::getUnalignFloat(req + 2));
 	}
     }
