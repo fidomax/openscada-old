@@ -148,9 +148,10 @@ class TCntrNode
 						//Allowed for using by heirs into data resources allocation
 						//  not for long-term functions-tasks resources allocation!
 	virtual const char *nodeName( ) = 0;
+	virtual const char *nodeNameSYSM( )	{ return ""; }
 	string nodePath( char sep = 0, bool from_root = true );
 
-	void nodeList( vector<string> &list, const string& gid = "" );				//Full node list
+	void nodeList( vector<string> &list, const string& gid = "" );	//Full node list
 	AutoHD<TCntrNode> nodeAt( const string &path, int lev = 0, char sep = 0, int off = 0, bool noex = false );	//Get node for full path
 	void nodeDel( const string &path, char sep = 0, int flag = 0 );	//Delete node at full path
 	static void nodeCopy( const string &src, const string &dst, const string &user = "root" );
@@ -174,6 +175,10 @@ class TCntrNode
 	// Connections counter
 	virtual void AHDConnect( );
 	virtual bool AHDDisConnect( );
+
+	void mess_sys( int8_t level, const char *fmt,  ... );
+	TError err_sys( const char *fmt,  ... );
+	TError err_sys( int cod, const char *fmt,  ... );
 
 	// User object access
 	virtual TVariant objPropGet( const string &id );
