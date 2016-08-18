@@ -522,7 +522,7 @@ void TTpContr::postEnable(int flag)
 
     t_prm = tpParmAdd("tp_GZD", "PRM_BD_GZD", _("GZD"));
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "6", "0;15"));
-    tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count ZD"), TFld::Integer, TCfg::NoVal, "3", "1", "0;16"));
+    tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count ZD"), TFld::Integer, TCfg::NoVal, "3", "1", "0;48"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
     t_prm = tpParmAdd("tp_GNS", "PRM_BD_GNS", _("GNS"));
