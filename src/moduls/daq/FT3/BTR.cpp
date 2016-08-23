@@ -171,7 +171,7 @@ uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)
 	    l = 4;
 	    break;
 	case 2:
-	    mPrm.vlAt(TSYS::strMess("execution").c_str()).at().setI(D[3], tm, true);
+	    mPrm.vlAt(TSYS::strMess("execution")).at().setI(D[3], tm, true);
 	    l = 4;
 	    break;
 	}
@@ -179,7 +179,7 @@ uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)
 	if(count_nu && (ft3ID.k <= count_nu)) {
 	    switch(ft3ID.n) {
 	    case 0:
-		mPrm.vlAt(TSYS::strMess("Line_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+		mPrm.vlAt(TSYS::strMess("Line_%d", ft3ID.k)).at().setI(D[3], tm, true);
 		l = 4;
 		break;
 	    case 1:
@@ -199,13 +199,13 @@ uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)
 	    case 15:
 	    case 16:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("Time%d_%d", ft3ID.n, ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		    mPrm.vlAt(TSYS::strMess("Time%d_%d", ft3ID.n, ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
 		}
 		l = 5;
 		break;
 	    case 32:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("line_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		    mPrm.vlAt(TSYS::strMess("line_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
 		}
 		l = 5;
 		break;
@@ -373,8 +373,8 @@ uint16_t KA_BTU::setVal(TVal &val)
 {
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
+    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
     ft3ID.g = ID;
 
     tagMsg Msg;
@@ -611,11 +611,11 @@ uint16_t B_BTR::HandleEvent(int64_t tm, uint8_t * D)
 	    l = 3;
 	    break;
 	case 1:
-	    mPrm.vlAt(TSYS::strMess("selection").c_str()).at().setI(D[3], tm, true);
+	    mPrm.vlAt(TSYS::strMess("selection")).at().setI(D[3], tm, true);
 	    l = 4;
 	    break;
 	case 2:
-	    mPrm.vlAt(TSYS::strMess("execution").c_str()).at().setI(D[3], tm, true);
+	    mPrm.vlAt(TSYS::strMess("execution")).at().setI(D[3], tm, true);
 	    l = 4;
 	    break;
 	}
@@ -623,19 +623,19 @@ uint16_t B_BTR::HandleEvent(int64_t tm, uint8_t * D)
     if(count_nu && (ft3ID.k <= count_nu)) {
 	switch(ft3ID.n) {
 	case 0:
-	    mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k).c_str()).at().setR(TSYS::getUnalign16(D + 3), tm, true);
+	    mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
 	    l = 5;
 	    break;
 
 	case 1:
 	    if(with_params) {
-		mPrm.vlAt(TSYS::strMess("tc_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		mPrm.vlAt(TSYS::strMess("tc_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
 	    }
 	    l = 5;
 	    break;
 	case 2:
 	    if(with_params) {
-		mPrm.vlAt(TSYS::strMess("extime_%d", ft3ID.k).c_str()).at().setR(D[3], tm, true);
+		mPrm.vlAt(TSYS::strMess("extime_%d", ft3ID.k)).at().setI(D[3], tm, true);
 		;
 	    }
 	    l = 4;
@@ -646,7 +646,7 @@ uint16_t B_BTR::HandleEvent(int64_t tm, uint8_t * D)
     if(count_nr && ((ft3ID.k > count_nu) && (ft3ID.k <= count_nr + count_nu))) {
 	switch(ft3ID.n) {
 	case 0:
-	    mPrm.vlAt(TSYS::strMess("value_%d", ft3ID.k - count_nu).c_str()).at().setR(TSYS::getUnalignFloat(D + 3), tm, true);
+	    mPrm.vlAt(TSYS::strMess("value_%d", ft3ID.k - count_nu)).at().setR(TSYS::getUnalignFloat(D + 3), tm, true);
 	    l = 7;
 	    break;
 
@@ -760,13 +760,13 @@ void B_BTR::setTU(uint8_t tu)
 	    if(TU.On.lnk.Connected()) {
 		//on
 		TU.On.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.On.lnk.prmName.c_str()).at().setI(1, 0, true);
+		mPrm.vlAt(TU.On.lnk.prmName).at().setI(1, 0, true);
 	    }
 	} else {
 	    if(TUdata[n - 1].Off.lnk.Connected()) {
 		//off
 		TU.Off.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Off.lnk.prmName.c_str()).at().setI(1, 0, true);
+		mPrm.vlAt(TU.Off.lnk.prmName).at().setI(1, 0, true);
 	    }
 	}
     }
@@ -778,7 +778,7 @@ void B_BTR::runTU(uint8_t tu)
 	STUchannel &TU = TUdata[currTU - 1];
 	if((tu == 0x55) && (TU.Run.lnk.Connected())) {
 	    TU.Run.lnk.aprm.at().setI(1);
-	    mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(1, 0, true);
+	    mPrm.vlAt(TU.Run.lnk.prmName).at().setI(1, 0, true);
 	    currTU = 0;
 	}
     }
@@ -787,7 +787,7 @@ void B_BTR::runTU(uint8_t tu)
 	    STUchannel & TU = TUdata[i];
 	    if((TU.Reset.lnk.Connected())) {
 		TU.Reset.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
+		mPrm.vlAt(TU.Reset.lnk.prmName).at().setI(1, 0, true);
 	    }
 	}
 	currTU = 0;
@@ -798,21 +798,30 @@ uint16_t B_BTR::setVal(TVal &val)
 {
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
     ft3ID.g = ID;
+
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = SetData;
-    *((uint16_t *) Msg.D) = PackID(ft3ID);
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
+    uint8_t run;
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 1:
+	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
+	    break;
 	case 2:
-	    Msg.L = 6;
-	    Msg.D[2] = val.get(NULL, true).getI();
-	    if((ft3ID.n == 2) && (Msg.D[2] != 0x55)) {
-		Msg.D[2] = 0;
+	    run = val.getI(0, true);
+	    if(run == 170) {
+		Msg.L += SerializeB(Msg.D + Msg.L, 0);
+	    } else {
+		if(run == 85) {
+		    Msg.L += SerializeB(Msg.D + Msg.L, run);
+		} else {
+		    Msg.L = 0;
+		}
 	    }
 	    break;
 	}
@@ -820,29 +829,28 @@ uint16_t B_BTR::setVal(TVal &val)
 	if(count_nu && (ft3ID.k <= count_nu)) {
 	    switch(ft3ID.n) {
 	    case 0:
-		Msg.L = 7;
-		*(uint16_t *) (Msg.D + 2) = (uint16_t) (val.get(NULL, true).getR());
+		Msg.L += SerializeUi16(Msg.D + Msg.L, val.getI(0, true));
 		break;
 	    case 1:
-		Msg.L = 7;
-		*(uint16_t *) (Msg.D + 2) = (uint16_t) val.get(NULL, true).getI();
+		Msg.L += SerializeUi16(Msg.D + Msg.L, val.getI(0, true));
 		break;
 	    case 2:
-		Msg.L = 6;
-		Msg.D[2] = val.get(NULL, true).getR();
+		Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
 		break;
 	    }
 	}
 	if(count_nr && ((ft3ID.k > count_nu) && (ft3ID.k <= count_nr + count_nu))) {
 	    switch(ft3ID.n) {
 	    case 0:
-		Msg.L = 9;
-		*(float *) (Msg.D + 2) = (float) val.get(NULL, true).getR();
+		Msg.L += SerializeF(Msg.D + Msg.L, val.getR(0, true));
 		break;
 	    }
 	}
     }
-    if(Msg.L) mPrm.owner().DoCmd(&Msg);
+    if(Msg.L > 2) {
+	Msg.L += 3;
+	mPrm.owner().DoCmd(&Msg);
+    }
     return 0;
 }
 

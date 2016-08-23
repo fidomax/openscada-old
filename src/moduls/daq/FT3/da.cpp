@@ -1,6 +1,6 @@
 //OpenSCADA system module DAQ.FT3 file: da.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -31,7 +31,7 @@ void DA::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
 {
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld(param.prmName.c_str(), param.prmDesc.c_str(), type, flg));
-    param.vlattr = mPrm.vlAt(param.prmName.c_str());
+    param.vlattr = mPrm.vlAt(param.prmName);
     fld->setReserve(ex);
 }
 
@@ -324,6 +324,20 @@ uint8_t DA::SerializeUi16(uint8_t * out, uint16_t vl)
 	out[j] = dt.c[j];
     return 2;
 }
+
+uint8_t DA::SerializeUi32(uint8_t * out, uint32_t vl)
+{
+    union
+    {
+	uint32_t v;
+	uint8_t c[4];
+    } dt;
+    dt.v = vl;
+    for(uint8_t j = 0; j < 4; j++)
+	out[j] = dt.c[j];
+    return 4;
+}
+
 
 uint8_t DA::SerializeB(uint8_t * out, uint8_t vl)
 {

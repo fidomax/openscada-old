@@ -1,6 +1,6 @@
 //OpenSCADA system module DAQ.FT3 file: da.h
 /***************************************************************************
- *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -365,6 +365,7 @@ namespace FT3
 	uint16_t PackID(uint8_t g, uint8_t k, uint8_t n);
 	uint8_t SerializeF(uint8_t * out, float vl);
 	uint8_t SerializeUi16(uint8_t * out, uint16_t vl);
+	uint8_t SerializeUi32(uint8_t * out, uint32_t vl);
 	uint8_t SerializeB(uint8_t * out, uint8_t vl);
     public:
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);

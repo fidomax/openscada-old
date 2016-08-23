@@ -1,6 +1,6 @@
 //OpenSCADA system module DAQ.FT3 file: GZD.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -373,7 +373,7 @@ uint16_t KA_GZD::HandleEvent(int64_t tm, uint8_t * D)
 	case 2:
 	    l = 2 + count_n * 2;
 	    for(int j = 0; j < count_n; j++) {
-		mPrm.vlAt(TSYS::strMess("state_%d", j).c_str()).at().setI(D[j * 2 + 3], tm, true);
+		mPrm.vlAt(TSYS::strMess("state_%d", j)).at().setI(D[j * 2 + 3], tm, true);
 	    }
 	    break;
 	}
@@ -382,36 +382,36 @@ uint16_t KA_GZD::HandleEvent(int64_t tm, uint8_t * D)
 	if(ft3ID.k && (ft3ID.k <= count_n)) {
 	    switch(ft3ID.n) {
 	    case 0:
-		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k)).at().setI(D[3], tm, true);
 		l = 4;
 		break;
 	    case 1:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("TUopen_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeOpen_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 5), tm, true);
-		    mPrm.vlAt(TSYS::strMess("TUclose_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 7), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeClose_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 9), tm, true);
-		    mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 11), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 13), tm, true);
-		    mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 15), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 17), tm, true);
-		    mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 19), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 21), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TUopen_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		    mPrm.vlAt(TSYS::strMess("timeOpen_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TUclose_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
+		    mPrm.vlAt(TSYS::strMess("timeClose_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 9), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 11), tm, true);
+		    mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 13), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 15), tm, true);
+		    mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 17), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 19), tm, true);
+		    mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 21), tm, true);
 		}
 		l = 3 + 20;
 		break;
 	    case 2:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("tcOpen_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
-		    mPrm.vlAt(TSYS::strMess("tcClose_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 5), tm, true);
-		    mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 7), tm, true);
-		    mPrm.vlAt(TSYS::strMess("tcOpenErr_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 9), tm, true);
-		    mPrm.vlAt(TSYS::strMess("tcCloseErr_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 11), tm, true);
+		    mPrm.vlAt(TSYS::strMess("tcOpen_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		    mPrm.vlAt(TSYS::strMess("tcClose_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
+		    mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
+		    mPrm.vlAt(TSYS::strMess("tcOpenErr_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 9), tm, true);
+		    mPrm.vlAt(TSYS::strMess("tcCloseErr_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 11), tm, true);
 		}
 		l = 3 + 10;
 		break;
 	    case 3:
-		mPrm.vlAt(TSYS::strMess("function_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+		mPrm.vlAt(TSYS::strMess("function_%d", ft3ID.k)).at().setI(D[3], tm, true);
 		l = 4;
 		break;
 
@@ -533,8 +533,8 @@ uint16_t KA_GZD::setVal(TVal &val)
 {
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
+    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
     ft3ID.g = ID;
 
     tagMsg Msg;
@@ -547,24 +547,24 @@ uint16_t KA_GZD::setVal(TVal &val)
 	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
 	    break;
 	case 1:
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUopen_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeOpen_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUclose_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeClose_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k).c_str()).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUopen_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeOpen_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUclose_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeClose_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k)).at().getI(0, true));
 	    break;
 	case 2:
 
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcOpen_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcClose_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcOpenErr_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcCloseErr_%d", ft3ID.k).c_str()).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcOpen_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcClose_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcOpenErr_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcCloseErr_%d", ft3ID.k)).at().getI(0, true));
 	    break;
 	case 3:
 	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));

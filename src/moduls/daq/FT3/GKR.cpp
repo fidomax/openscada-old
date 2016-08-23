@@ -1,6 +1,6 @@
 //OpenSCADA system module DAQ.FT3 file: GKR.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -270,7 +270,7 @@ void B_GKR::setTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 	    if(TU.On.lnk.Connected()) {
 		//on
 		TU.On.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.On.lnk.prmName.c_str()).at().setI(k, 0, true);
+		mPrm.vlAt(TU.On.lnk.prmName).at().setI(k, 0, true);
 		uint8_t E[2] = { addr, val };
 		PushInBE(1, sizeof(E), prmID, E);
 	    }
@@ -278,7 +278,7 @@ void B_GKR::setTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 	    if(TU.Off.lnk.Connected()) {
 		//off
 		TU.Off.lnk.aprm.at().setI(1);
-		mPrm.vlAt(TU.Off.lnk.prmName.c_str()).at().setI(k, 0, true);
+		mPrm.vlAt(TU.Off.lnk.prmName).at().setI(k, 0, true);
 		uint8_t E[2] = { addr, val };
 		PushInBE(1, sizeof(E), prmID, E);
 	    }
@@ -294,7 +294,7 @@ void B_GKR::runTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 	if((val == 0x55) && (TU.Run.lnk.Connected())) {
 	    TU.Run.s = addr;
 	    TU.Run.lnk.aprm.at().setI(1);
-	    mPrm.vlAt(TU.Run.lnk.prmName.c_str()).at().setI(0, 0, true);
+	    mPrm.vlAt(TU.Run.lnk.prmName).at().setI(0, 0, true);
 	    uint8_t E[2] = { addr, 0 };
 	    PushInBE(1, sizeof(E), prmID, E);
 	    TU.On.vl = TU.Off.vl = 0;
@@ -302,7 +302,7 @@ void B_GKR::runTU(uint8_t k, uint8_t val, uint8_t addr, uint16_t prmID)
 	if((!val) && (TU.Reset.lnk.Connected())) {
 	    TU.Reset.s = addr;
 	    TU.Reset.lnk.aprm.at().setI(1);
-	    mPrm.vlAt(TU.Reset.lnk.prmName.c_str()).at().setI(1, 0, true);
+	    mPrm.vlAt(TU.Reset.lnk.prmName).at().setI(1, 0, true);
 	    uint8_t E[2] = { addr, 0 };
 	    PushInBE(1, sizeof(E), prmID, E);
 	    TU.On.vl = TU.Off.vl = 0;

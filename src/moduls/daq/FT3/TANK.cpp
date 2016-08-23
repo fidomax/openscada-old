@@ -303,7 +303,7 @@ uint16_t KA_TANK::HandleEvent(int64_t tm, uint8_t * D)
 	case 2:
 	    l = 2 + count_n * 2;
 	    for(int j = 1; j <= count_n; j++) {
-		mPrm.vlAt(TSYS::strMess("state_%d", j).c_str()).at().setI(D[j * 2 + 1], tm, true);
+		mPrm.vlAt(TSYS::strMess("state_%d", j)).at().setI(D[j * 2 + 1], tm, true);
 	    }
 	    break;
 	}
@@ -313,38 +313,38 @@ uint16_t KA_TANK::HandleEvent(int64_t tm, uint8_t * D)
 	case 0:
 	    l = 4;
 	    if(ft3ID.k > count_n) break;
-	    mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+	    mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k)).at().setI(D[3], tm, true);
 	    break;
 	case 2:
 	    l = 21;
 	    if(with_params) {
 		if(ft3ID.k > count_n) break;
-		mPrm.vlAt(TSYS::strMess("TCSens1_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
-		mPrm.vlAt(TSYS::strMess("TCSens1Not_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 5), tm, true);
-		mPrm.vlAt(TSYS::strMess("TCSens2_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 7), tm, true);
-		mPrm.vlAt(TSYS::strMess("TCSens2Not_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 9), tm, true);
-		mPrm.vlAt(TSYS::strMess("TULight_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 11), tm, true);
-		mPrm.vlAt(TSYS::strMess("TUSound_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 13), tm, true);
-		mPrm.vlAt(TSYS::strMess("TURlOff_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 15), tm, true);
-		mPrm.vlAt(TSYS::strMess("TimeDelay_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 17), tm, true);
-		mPrm.vlAt(TSYS::strMess("TimeFalseAlarm_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 19), tm, true);
+		mPrm.vlAt(TSYS::strMess("TCSens1_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		mPrm.vlAt(TSYS::strMess("TCSens1Not_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
+		mPrm.vlAt(TSYS::strMess("TCSens2_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
+		mPrm.vlAt(TSYS::strMess("TCSens2Not_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 9), tm, true);
+		mPrm.vlAt(TSYS::strMess("TULight_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 11), tm, true);
+		mPrm.vlAt(TSYS::strMess("TUSound_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 13), tm, true);
+		mPrm.vlAt(TSYS::strMess("TURlOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 15), tm, true);
+		mPrm.vlAt(TSYS::strMess("TimeDelay_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 17), tm, true);
+		mPrm.vlAt(TSYS::strMess("TimeFalseAlarm_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 19), tm, true);
 	    }
 	    break;
 	case 3:
 	    l = 4;
 	    if(with_params) {
 		if(ft3ID.k > count_n) break;
-		mPrm.vlAt(TSYS::strMess("function_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+		mPrm.vlAt(TSYS::strMess("function_%d", ft3ID.k)).at().setI(D[3], tm, true);
 	    }
 	    break;
 	case 4:
 	    l = 11;
 	    if(with_params) {
 		if(ft3ID.k > count_n) break;
-		mPrm.vlAt(TSYS::strMess("StateTCSens1_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 3), tm, true);
-		mPrm.vlAt(TSYS::strMess("StateTCSens1Not_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 5), tm, true);
-		mPrm.vlAt(TSYS::strMess("StateTCSens2_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 7), tm, true);
-		mPrm.vlAt(TSYS::strMess("StateTCSens2Not_%d", ft3ID.k).c_str()).at().setI(TSYS::getUnalign16(D + 9), tm, true);
+		mPrm.vlAt(TSYS::strMess("StateTCSens1_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		mPrm.vlAt(TSYS::strMess("StateTCSens1Not_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
+		mPrm.vlAt(TSYS::strMess("StateTCSens2_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
+		mPrm.vlAt(TSYS::strMess("StateTCSens2Not_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 9), tm, true);
 	    }
 	    break;
 	}
@@ -356,7 +356,6 @@ uint16_t KA_TANK::HandleEvent(int64_t tm, uint8_t * D)
 uint8_t KA_TANK::cmdGet(uint16_t prmID, uint8_t * out)
 {
     FT3ID ft3ID = UnpackID(prmID);
-//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "ID %d ft3ID g%d k%d n%d ", ID, ft3ID.g, ft3ID.k, ft3ID.n);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
     if(ft3ID.k == 0) {
@@ -436,7 +435,6 @@ uint8_t KA_TANK::cmdSet(uint8_t * req, uint8_t addr)
     FT3ID ft3ID = UnpackID(prmID);
     if(ft3ID.g != ID) return 0;
     uint l = 0;
-//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     if(ft3ID.k <= count_n) {
 	switch(ft3ID.n) {
 	case 0:
@@ -457,8 +455,8 @@ uint16_t KA_TANK::setVal(TVal &val)
 {
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
     ft3ID.g = ID;
     if((ft3ID.k >= 1) && (ft3ID.k <= count_n)) {
 	tagMsg Msg;
@@ -470,15 +468,15 @@ uint16_t KA_TANK::setVal(TVal &val)
 	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
 	    break;
 	case 2:
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCSens1_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCSens1Not_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCSens2_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCSens2Not_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TULight_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUSound_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TURlOff_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TimeDelay_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TimeFalseAlarm_%d", ft3ID.k).c_str()).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCSens1_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCSens1Not_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCSens2_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCSens2Not_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TULight_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUSound_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TURlOff_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TimeDelay_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TimeFalseAlarm_%d", ft3ID.k)).at().getI(0, true));
 	    break;
 	}
 	if(Msg.L > 2) {

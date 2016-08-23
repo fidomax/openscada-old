@@ -1,6 +1,6 @@
 //OpenSCADA system module DAQ.BUC file: BUC.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2015 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -177,9 +177,10 @@ uint16_t KA_BUC::setVal(TVal &val)
 {
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.g = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
+    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.g = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = SetData;
@@ -484,9 +485,9 @@ uint16_t B_BUC::setVal(TVal &val)
 {
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0);
-    ft3ID.g = ID;
+    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.g = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = SetData;

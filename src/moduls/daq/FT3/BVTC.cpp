@@ -157,7 +157,7 @@ uint16_t KA_BVTC::HandleEvent(int64_t tm, uint8_t * D)
 	case 2:
 	    l = 2 + count_n * 2;
 	    for(int j = 1; j <= count_n; j++) {
-		mPrm.vlAt(TSYS::strMess("TC_%d", j).c_str()).at().setI(D[j * 2 + 1], tm, true);
+		mPrm.vlAt(TSYS::strMess("TC_%d", j)).at().setI(D[j * 2 + 1], tm, true);
 	    }
 	    break;
 	}
@@ -167,14 +167,14 @@ uint16_t KA_BVTC::HandleEvent(int64_t tm, uint8_t * D)
 	case 0:
 	    l = 4;
 	    if(ft3ID.k > count_n) break;
-	    mPrm.vlAt(TSYS::strMess("TC_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
+	    mPrm.vlAt(TSYS::strMess("TC_%d", ft3ID.k)).at().setI(D[3], tm, true);
 	    break;
 	case 1:
 	    l = 5;
 	    if(with_params) {
 		if(ft3ID.k > count_n) break;
-		mPrm.vlAt(TSYS::strMess("Period_%d", ft3ID.k).c_str()).at().setI(D[3], tm, true);
-		mPrm.vlAt(TSYS::strMess("Count_%d", ft3ID.k).c_str()).at().setI(D[4], tm, true);
+		mPrm.vlAt(TSYS::strMess("Period_%d", ft3ID.k)).at().setI(D[3], tm, true);
+		mPrm.vlAt(TSYS::strMess("Count_%d", ft3ID.k)).at().setI(D[4], tm, true);
 	    }
 	    break;
 	}
@@ -252,28 +252,30 @@ uint16_t KA_BVTC::setVal(TVal &val)
 {
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
     ft3ID.g = ID;
+
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
     if((ft3ID.k >= 1) && (ft3ID.k <= count_n)) {
-	tagMsg Msg;
-	Msg.C = SetData;
-	*((uint16_t *) Msg.D) = PackID(ft3ID);
-	Msg.L = 2;
 	switch(ft3ID.n) {
 	case 0:
 	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
 	    break;
 	case 1:
-	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Period_%d", ft3ID.k).c_str()).at().getI(0, true));
-	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Count_%d", ft3ID.k).c_str()).at().getI(0, true));
+	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Period_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Count_%d", ft3ID.k)).at().getI(0, true));
 	    break;
 	}
-	if(Msg.L > 2) {
-	    Msg.L += 3;
-	    mPrm.owner().DoCmd(&Msg);
-	}
     }
+    if(Msg.L > 2) {
+	Msg.L += 3;
+	mPrm.owner().DoCmd(&Msg);
+    }
+
     return 0;
 }
 
@@ -428,9 +430,9 @@ uint16_t B_BVTC::HandleEvent(int64_t tm, uint8_t * D)
 	    mPrm.vlAt("state").at().setI(D[2], tm, true);
 	    l = 3 + count_n / 4;
 	    for(int j = 1; j <= count_n; j++) {
-		mPrm.vlAt(TSYS::strMess("TC_%d", j).c_str()).at().setB((D[((j - 1) >> 3) + 3] >> (j % 8)) & 1, tm, true);
+		mPrm.vlAt(TSYS::strMess("TC_%d", j)).at().setB((D[((j - 1) >> 3) + 3] >> (j % 8)) & 1, tm, true);
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("Mask_%d", j).c_str()).at().setB((D[((j - 1) >> 3) + 3 + count_n / 8] >> (j % 8)) & 1, tm, true);
+		    mPrm.vlAt(TSYS::strMess("Mask_%d", j)).at().setB((D[((j - 1) >> 3) + 3 + count_n / 8] >> (j % 8)) & 1, tm, true);
 		}
 	    }
 	    break;
@@ -440,7 +442,7 @@ uint16_t B_BVTC::HandleEvent(int64_t tm, uint8_t * D)
 	l = 3;
 	for(int i = 0; i < 8; i++) {
 	    if((1 + (ft3ID.n << 3) + i) > count_n) break;
-	    mPrm.vlAt(TSYS::strMess("TC_%d", 1 + (ft3ID.n << 3) + i).c_str()).at().setB((D[2] >> i) & 1, tm, true);
+	    mPrm.vlAt(TSYS::strMess("TC_%d", 1 + (ft3ID.n << 3) + i)).at().setB((D[2] >> i) & 1, tm, true);
 	}
 	break;
     case 2:
@@ -448,7 +450,7 @@ uint16_t B_BVTC::HandleEvent(int64_t tm, uint8_t * D)
 	if(with_params) {
 	    for(int i = 0; i < 8; i++) {
 		if((1 + (ft3ID.n << 3) + i) > count_n) break;
-		mPrm.vlAt(TSYS::strMess("Mask_%d", 1 + (ft3ID.n << 3) + i).c_str()).at().setB((D[3] >> i) & 1, tm, true);
+		mPrm.vlAt(TSYS::strMess("Mask_%d", 1 + (ft3ID.n << 3) + i)).at().setB((D[3] >> i) & 1, tm, true);
 	    }
 	}
 	break;
@@ -553,23 +555,27 @@ uint16_t B_BVTC::setVal(TVal &val)
 {
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.k = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер объекта
-    ft3ID.n = strtol((TSYS::strParse(val.fld().reserve(), 0, ":", &off)).c_str(), NULL, 0); // номер параметра
+    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
     ft3ID.g = ID;
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = SetData;
-    *((uint16_t *) Msg.D) = PackID(ft3ID);
 
-    Msg.D[2] = 0;
     uint16_t st = ft3ID.n * 8 + 1;
     uint16_t en = (ft3ID.n + 1) * 8;
     if(en > count_n) en = count_n;
-    Msg.L = 6;
+
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
+    uint8_t mask = 0;
     for(int i = st; i <= en; i++) {
-	Msg.D[2] |= ((mPrm.vlAt(TSYS::strMess("Mask_%d", i).c_str()).at().getB(0, true)) << ((i - 1) % 8));
+	mask |= ((mPrm.vlAt(TSYS::strMess("Mask_%d", i)).at().getB(0, true)) << ((i - 1) % 8));
     }
-    mPrm.owner().DoCmd(&Msg);
+    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
+    if(Msg.L > 2) {
+	Msg.L += 3;
+	mPrm.owner().DoCmd(&Msg);
+    }
     return 0;
 }
 
