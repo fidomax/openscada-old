@@ -107,8 +107,6 @@ uint8_t KA_GNS::SKANSchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_
 {
     if(TUOn.lnk.Connected() || TimeOn.lnk.Connected() || TUOff.lnk.Connected() || TimeOff.lnk.Connected() || TUStop.lnk.Connected() || TimeOn.lnk.Connected()
 	    || TUManual.lnk.Connected() || TimeManual.lnk.Connected() || TURemote.lnk.Connected() || TimeRemote.lnk.Connected()) {
-	return 0;
-    } else {
 	TUOn.s = addr;
 	TUOn.Set(TSYS::getUnalign16(val));
 	TimeOn.Set(TSYS::getUnalign16(val + 2));
@@ -126,14 +124,14 @@ uint8_t KA_GNS::SKANSchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_
 	memcpy(E + 1, val, 20);
 	da->PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 20;
+    } else {
+	return 0;
     }
 }
 
 uint8_t KA_GNS::SKANSchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
     if(TCOn.lnk.Connected() || TCOff.lnk.Connected() || TCMode.lnk.Connected()) {
-	return 0;
-    } else {
 	TCOn.s = addr;
 	TCOn.Set(TSYS::getUnalign16(val));
 	TCOff.Set(TSYS::getUnalign16(val + 2));
@@ -144,6 +142,8 @@ uint8_t KA_GNS::SKANSchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_
 	memcpy(E + 1, val, 6);
 	da->PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 10;
+    } else {
+	return 0;
     }
 }
 
@@ -336,7 +336,7 @@ uint16_t KA_GNS::Task(uint16_t uc)
 			*((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 1); //Адреса ТУ
 			*((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 2); //Адреса ТС
 			*((uint16_t *) (Msg.D + 6)) = PackID(ID, i, 3); //Функция
-			*((uint16_t *) (Msg.D + 6)) = PackID(ID, i, 4); //Моторесурс
+			*((uint16_t *) (Msg.D + 8)) = PackID(ID, i, 4); //Моторесурс
 
 			if(mPrm.owner().DoCmd(&Msg)) {
 			    if(Msg.C == GOOD3) {
@@ -369,9 +369,70 @@ uint16_t KA_GNS::Task(uint16_t uc)
 uint16_t KA_GNS::HandleEvent(int64_t tm, uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
-    if(ft3ID.g != ID) return 0;
-    uint16_t l = 0;
-    return l;
+     if(ft3ID.g != ID) return 0;
+     uint16_t l = 0;
+     switch(ft3ID.k) {
+     case 0:
+ 	switch(ft3ID.n) {
+ 	case 0:
+ 	    mPrm.vlAt("state").at().setI(D[2], tm, true);
+ 	    l = 3;
+ 	    break;
+ 	case 1:
+ 	    l = 4;
+ 	    break;
+ 	case 2:
+ 	    l = 2 + count_n * 2;
+ 	    for(int j = 0; j < count_n; j++) {
+ 		mPrm.vlAt(TSYS::strMess("state_%d", j)).at().setI(D[j * 2 + 3], tm, true);
+ 	    }
+ 	    break;
+ 	}
+ 	break;
+     default:
+ 	if(ft3ID.k && (ft3ID.k <= count_n)) {
+ 	    switch(ft3ID.n) {
+ 	    case 0:
+ 		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k)).at().setI(D[3], tm, true);
+ 		l = 4;
+ 		break;
+ 	    case 1:
+ 		if(with_params) {
+ 		    mPrm.vlAt(TSYS::strMess("TUOn_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("TimeOn_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("TUOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("TimeOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 9), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 11), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 13), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 15), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 17), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 19), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 21), tm, true);
+ 		}
+ 		l = 3 + 20;
+ 		break;
+ 	    case 2:
+ 		if(with_params) {
+ 		    mPrm.vlAt(TSYS::strMess("TCOn_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("TCOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
+ 		    mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
+ 		}
+ 		l = 3 + 6;
+ 		break;
+ 	    case 3:
+ 		mPrm.vlAt(TSYS::strMess("function_%d", ft3ID.k)).at().setI(D[3], tm, true);
+ 		l = 4;
+ 		break;
+ 	    case 4:
+ 		mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k)).at().setI(TSYS::getUnalign32(D + 3), tm, true);
+ 		l = 7;
+ 		break;
+
+ 	    }
+ 	}
+     }
+
+     return l;
 }
 
 uint8_t KA_GNS::cmdGet(uint16_t prmID, uint8_t * out)
@@ -492,5 +553,50 @@ uint8_t KA_GNS::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_GNS::setVal(TVal &val)
 {
+    int off = 0;
+    FT3ID ft3ID;
+    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.g = ID;
+
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
+    if(count_n && (ft3ID.k <= count_n)) {
+	switch(ft3ID.n) {
+	case 0:
+	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
+	    break;
+	case 1:
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUOn_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TimeOn_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUOff_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TimeOff_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k)).at().getI(0, true));
+	    break;
+	case 2:
+
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCOn_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCOff_%d", ft3ID.k)).at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().getI(0, true));
+	    break;
+	case 3:
+	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
+	    break;
+	case 4:
+	    Msg.L += SerializeUi32(Msg.D + Msg.L, val.getI(0, true));
+	    break;
+	}
+    }
+    if(Msg.L > 2) {
+	Msg.L += 3;
+	mPrm.owner().DoCmd(&Msg);
+    }
     return 0;
 }
