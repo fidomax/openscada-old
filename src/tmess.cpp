@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tmess.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -48,14 +48,8 @@ using namespace OSCADA;
 //* TMess                                         *
 //*************************************************
 TMess::TMess( ) : IOCharSet("UTF-8"), mMessLevel(Info), mLogDir(DIR_STDOUT|DIR_ARCHIVE),
-    mConvCode(true), mIsUTF8(true), mTranslDyn(false), mTranslDynPlan(false), mTranslEnMan(false), mTranslSet(false)
+    mConvCode(true), mIsUTF8(true), mTranslDyn(false), mTranslDynPlan(false), mTranslEnMan(false), mTranslSet(false), mRes(true)
 {
-    pthread_mutexattr_t attrM;
-    pthread_mutexattr_init(&attrM);
-    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&mRes, &attrM);
-    pthread_mutexattr_destroy(&attrM);
-
     openlog(PACKAGE, 0, LOG_USER);
 
     setenv("LC_NUMERIC", "C", 1);
@@ -79,8 +73,6 @@ TMess::TMess( ) : IOCharSet("UTF-8"), mMessLevel(Info), mLogDir(DIR_STDOUT|DIR_A
 TMess::~TMess( )
 {
     closelog();
-
-    pthread_mutex_destroy(&mRes);
 }
 
 void TMess::setMessLevel( int level )
@@ -160,8 +152,8 @@ void TMess::putArg( const char *categ, int8_t level, const char *fmt, va_list ap
 	}
 	syslog(level_sys, "%s", sMess.c_str());
     }
-    if(mLogDir&DIR_STDOUT)	fprintf(stdout, "%s %s\n", tm2s(SYS->sysTm(),"%Y-%m-%dT%H:%M:%S").c_str(), sMess.c_str());
-    if(mLogDir&DIR_STDERR)	fprintf(stderr, "%s %s\n", tm2s(SYS->sysTm(),"%Y-%m-%dT%H:%M:%S").c_str(), sMess.c_str());
+    if(mLogDir&DIR_STDOUT)	fprintf(stdout, "%s %s\n", atm2s(SYS->sysTm(),"%Y-%m-%dT%H:%M:%S").c_str(), sMess.c_str());
+    if(mLogDir&DIR_STDERR)	fprintf(stderr, "%s %s\n", atm2s(SYS->sysTm(),"%Y-%m-%dT%H:%M:%S").c_str(), sMess.c_str());
     if((mLogDir&DIR_ARCHIVE) && SYS->present("Archive"))
 	SYS->archive().at().messPut(ctm/1000000, ctm%1000000, categ, level, mess);
 }
@@ -198,7 +190,7 @@ void TMess::setTranslEnMan( bool vl, bool passive )
     mTranslEnMan = vl;
     if(!passive) {
 	if(vl) {
-	    SYS->load(true);		//Built messages load
+	    SYS->modifG(); SYS->load();	//Built messages load
 	    translReg("", "uapi:");	//User API messages load
 	}
 	else trMessIdx.clear();
@@ -260,6 +252,7 @@ string TMess::translGet( const string &base, const string &lang, const string &s
 	    map<string, map<string,string> >::iterator im = trMessIdx.find(base);
 	    if(im != trMessIdx.end()) {
 		TConfig req;
+		vector<vector<string> > full;
 		for(map<string,string>::iterator is = im->second.begin(); rez.empty() && is != im->second.end(); ++is) {
 		    string trSrc = TSYS::strParse(is->first,0,"#"), trFld = TSYS::strParse(is->first,1,"#"), reqFld;
 		    bool isCfg = false;
@@ -276,8 +269,8 @@ string TMess::translGet( const string &base, const string &lang, const string &s
 			//  Get from config file or DB source
 			bool seekRez = false;
 			for(int inst = 0; rez.empty(); inst++) {
-			    seekRez = isCfg ? SYS->db().at().dataSeek("", trSrc.substr(4), inst, req)
-					    : SYS->db().at().dataSeek(trSrc.substr(3), "", inst, req);
+			    seekRez = isCfg ? SYS->db().at().dataSeek("", trSrc.substr(4), inst, req, false, &full)
+					    : SYS->db().at().dataSeek(trSrc.substr(3), "", inst, req, false, &full);
 			    if(!seekRez) break;
 			    rez = req.cfg(reqFld).getS();
 			}
@@ -364,15 +357,16 @@ void TMess::translReg( const string &mess, const string &src, const string &prms
 	}
 
 	TConfig req;
+	vector<vector<string> > full;
 	req.elem().fldAdd(new TFld("base","Base",TFld::String,TCfg::Key,"1000"));
 
 	MtxAlloc res(mRes, true);
 	for(unsigned i_l = 0; i_l < ls.size(); i_l++)
 	    if(ls[i_l] == DB_CFG)
-		for(int io_cnt = 0; SYS->db().at().dataSeek("","/"mess_TrUApiTbl,io_cnt++,req); )
+		for(int io_cnt = 0; SYS->db().at().dataSeek("","/"mess_TrUApiTbl,io_cnt++,req,false,&full); )
 		    trMessIdx[req.cfg("base").getS()]["cfg:/"mess_TrUApiTbl] = prms;
 	    else
-		for(int io_cnt = 0; SYS->db().at().dataSeek(ls[i_l]+"."mess_TrUApiTbl,"",io_cnt++,req); )
+		for(int io_cnt = 0; SYS->db().at().dataSeek(ls[i_l]+"."mess_TrUApiTbl,"",io_cnt++,req,false,&full); )
 		    trMessIdx[req.cfg("base").getS()]["db:"+ls[i_l]+"."mess_TrUApiTbl"#base"] = prms;
     }
     else {
@@ -448,7 +442,7 @@ string TMess::codeConv( const string &fromCH, const string &toCH, const string &
 
     hd = iconv_open(toCH.c_str(), fromCH.c_str());
     if(hd == (iconv_t)(-1)) {
-	mess_crit("IConv",_("Error 'iconv' open: %s"),strerror(errno));
+	mess_crit("IConv", _("Error 'iconv' open: %s"), strerror(errno));
 	return mess;
     }
 
@@ -555,7 +549,7 @@ const char *TMess::labSecCRONsel( )	{ return "1;1e-3;* * * * *;10 * * * *;10-20 
 
 const char *TMess::labTaskPrior( )
 {
-    return _("Task priority level (-1...99), where:\n"
+    return _("Task priority level (-1...199), where:\n"
 	     "  -1        - lowest priority batch policy;\n"
 	     "  0         - standard userspace priority;\n"
 	     "  1...99    - realtime priority level (round-robin), often allowed only for \"root\";\n"

@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.LogicLev file: logiclev.h
 /***************************************************************************
- *   Copyright (C) 2006-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2006-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -51,6 +51,8 @@ class TMdPrm : public TParamContr
 	TMdPrm( string name, TTypeParam *tp_prm );
 	~TMdPrm( );
 
+	TElem *dynElCntr( )	{ return &pEl; }
+
 	TCntrNode &operator=( TCntrNode &node );
 
 	bool isStd( );
@@ -60,6 +62,9 @@ class TMdPrm : public TParamContr
 	void disable( );
 
 	void calc( bool first, bool last, double frq );	//Calc template's algoritmes
+
+	//Attributes
+	float tmCalc, tmCalcMax;
 
     protected:
 	//Methods
@@ -113,8 +118,9 @@ class TMdPrm : public TParamContr
 	TElem	pEl;				//Work atribute elements
 
 	bool	chkLnkNeed;			//Check lnk need flag
-	Res	calcRes;			//Resource
-	int	idFreq, idStart, idStop, idErr, idSh, idNm, idDscr;	//Fixed system attributes identifiers
+	ResRW	calcRes;			//Resource
+	int	idFreq, idStart, idStop,
+		idErr, idSh, idNm, idDscr;	//Fixed system attributes identifiers
 };
 
 //*************************************************
@@ -144,7 +150,7 @@ class TMdContr: public TController
 	void load_( );
 	void start_( );
 	void stop_( );
-	void cntrCmdProc( XMLNode *opt );       //Control interface command process
+	void cntrCmdProc( XMLNode *opt );	//Control interface command process
 
     private:
 	//Methods
@@ -152,13 +158,13 @@ class TMdContr: public TController
 	static void *Task( void *icntr );
 
 	//Attributes
-	pthread_mutex_t	enRes;			//Resource for enable params
-	int64_t	&mPerOld,			// ms
-		&mPrior;			// Process task priority
+	ResMtx	enRes;				//Resource for enable params
+	int64_t	&mPerOld,			//ms
+		&mPrior;			//Process task priority
 
-	bool	prcSt,				// Process task active
-		callSt,				// Calc now stat
-		endrunReq;			// Request to stop of the Process task
+	bool	prcSt,				//Process task active
+		callSt,				//Calc now stat
+		endrunReq;			//Request to stop of the Process task
 	vector< AutoHD<TMdPrm> > pHd;
 
 	double	mPer;

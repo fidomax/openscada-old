@@ -21,13 +21,13 @@
 #ifndef TSYS_H
 #define TSYS_H
 
-//> Program constants
+//Program constants
 #define PACKAGE_LICENSE	"GPL v2"
 #define PACKAGE_DESCR	_("Open Supervisory Control And Data Acquisition")
 #define PACKAGE_AUTHOR	_("Roman Savochenko")
 #define PACKAGE_SITE	"http://oscada.org"
 
-//> Other system's constants
+//Other system's constants
 #define OBJ_ID_SZ	"20"	// Typical object's ID size. Warning the size can cause key limit on MySQL like DB.
 #define OBJ_NM_SZ	"100"	// Typical object's NAME size.
 #define USER_FILE_LIMIT	1048576	// Loading and processing files limit into userspace
@@ -82,6 +82,35 @@ class TSYS : public TCntrNode
 	//Data
 	enum Code	{ PathEl, HttpURL, Html, JavaSc, SQL, Custom, base64, FormatPrint, oscdID, Bin, Reverse, ShieldSimb };
 	enum IntView	{ Dec, Oct, Hex };
+
+	// Task structure
+	class STask
+	{
+	    public:
+		//Data
+		enum Flgs	{ Detached = 0x01, FinishTask = 0x02 };
+
+		//Methods
+		STask( ) : thr(0), policy(0), prior(0), tid(0), flgs(0), tm_beg(0), tm_end(0), tm_per(0), tm_pnt(0),
+		    cycleLost(0), lagMax(0), consMax(0)	{ }
+		STask( pthread_t ithr, char ipolicy, char iprior ) :
+		    thr(ithr), policy(ipolicy), prior(iprior), tid(0), flgs(0), tm_beg(0), tm_end(0), tm_per(0), tm_pnt(0),
+		    cycleLost(0), lagMax(0), consMax(0)	{ }
+
+		float consumpt( ) const	{ return tm_beg ? 1e-9*(tm_end-tm_beg) : 0; }
+		float period( ) const	{ return tm_beg ? 1e-9*(tm_per-tm_beg) : 0; }
+
+		//Attributes
+		string		path;
+		pthread_t	thr;
+		uint8_t		policy, prior;
+		pid_t		tid;
+		ResString	cpuSet;
+		void *(*task) (void *);
+		void		*taskArg;
+		unsigned	flgs;
+		int64_t		tm_beg, tm_end, tm_per, tm_pnt, cycleLost, lagMax, consMax;
+	};
 
 	// Remote station structure
 	class SStat {
@@ -147,14 +176,18 @@ class TSYS : public TCntrNode
 	string	workDB( )	{ return mWorkDB; }
 	string	selDB( )	{ return mSelDB; }
 	string	mainCPUs( )	{ return mMainCPUs; }
-	bool	chkSelDB( const string& wDB, bool isStrong = false );
+	bool	clockRT( )	{ return mClockRT; }
+	bool	saveAtExit( )	{ return mSaveAtExit; }
+	int	savePeriod( )	{ return mSavePeriod; }
+
 	void	setWorkDB( const string &wdb )	{ mWorkDB = wdb; modifG(); }
 	void	setSelDB( const string &vl )	{ mSelDB = vl; }
 	void	setMainCPUs( const string &vl );
-	bool	saveAtExit( )	{ return mSaveAtExit; }
+	void	setClockRT( bool vl )		{ mClockRT = vl; modif(); }
 	void	setSaveAtExit( bool vl )	{ mSaveAtExit = vl; modif(); }
-	int	savePeriod( )	{ return mSavePeriod; }
 	void	setSavePeriod( int vl )		{ mSavePeriod = vmax(0,vl); modif(); }
+
+	bool	chkSelDB( const string& wDB, bool isStrong = false );
 
 	string	optDescr( );	//print comand line options
 
@@ -181,12 +214,13 @@ class TSYS : public TCntrNode
 	// Tasks control
 	void taskCreate( const string &path, int priority, void *(*start_routine)(void *), void *arg, int wtm = 5, pthread_attr_t *pAttr = NULL, bool *startSt = NULL );
 	void taskDestroy( const string &path, bool *endrunCntr = NULL, int wtm = 5, bool noSignal = false, pthread_cond_t *cv = NULL );
-	double taskUtilizTm( const string &path );
-	static bool taskEndRun( );	// Check for the task endrun by signal SIGUSR1
+	double taskUtilizTm( const string &path, bool max = false );
+	static bool taskEndRun( );		// Check for the task endrun by signal SIGUSR1
+	static const STask& taskDescr( );	// Get the current task control structure
 
 	// Sleep task for period grid <per> on ns or to cron time.
 	static int sysSleep( float tm );			//System sleep in seconds down to nanoseconds (1e-9)
-	static void taskSleep( int64_t per, time_t cron = 0, int64_t *lag = NULL );	//<per> in nanoseconds
+	static void taskSleep( int64_t per, const string &cron = "", int64_t *lag = NULL );	//<per> in nanoseconds
 	static time_t cron( const string &vl, time_t base = 0 );
 
 	// Wait event with timeout support
@@ -223,8 +257,8 @@ class TSYS : public TCntrNode
 	    double rez = floor(val*pow(10,dig)+0.5)/pow(10,dig);
 	    return toint ? floor(rez+0.5) : rez;
 	}
-	static string time2str( time_t tm, const string &format );
-	static string time2str( double utm );
+	static string atime2str( time_t tm, const string &format = "" );
+	static string time2str( double tm );
 	static string cpct2str( double cnt );
 
 	// Adress convertors
@@ -303,7 +337,7 @@ class TSYS : public TCntrNode
 	// System control interface functions
 	static void ctrListFS( XMLNode *nd, const string &fsBase, const string &fileExt = "" );	//Inline file system browsing
 
-	Res &cfgRes( )		{ return mCfgRes; }
+	ResRW &cfgRes( )	{ return mCfgRes; }
 
 	//Public attributes
 	static bool finalKill;	//Final object's kill flag. For dead requsted resources
@@ -320,36 +354,9 @@ class TSYS : public TCntrNode
 	//Data
 	enum MdfSYSFlds	{ MDF_WorkDir = 0x01, MDF_IcoDir = 0x02, MDF_ModDir = 0x04, MDF_LANG = 0x08, MDF_DocDir = 0x10 };
 
-	// Task structure
-	class STask
-	{
-	    public:
-		//Data
-		enum Flgs	{ Detached = 0x01, FinishTask = 0x02 };
-
-		//Methods
-		STask( ) : thr(0), policy(0), prior(0), tid(0), flgs(0), tm_beg(0), tm_end(0), tm_per(0), tm_pnt(0),
-		    cycleLost(0), lagMax(0), consMax(0)	{ }
-		STask( pthread_t ithr, char ipolicy, char iprior ) :
-		    thr(ithr), policy(ipolicy), prior(iprior), tid(0), flgs(0), tm_beg(0), tm_end(0), tm_per(0), tm_pnt(0),
-		    cycleLost(0), lagMax(0), consMax(0)	{ }
-
-		//Attributes
-		string		path;
-		pthread_t	thr;
-		uint8_t		policy, prior;
-		pid_t		tid;
-		ResString	cpuSet;
-		void *(*task) (void *);
-		void		*taskArg;
-		unsigned	flgs;
-		int64_t		tm_beg, tm_end, tm_per, tm_pnt, cycleLost;
-		int		lagMax, consMax;
-	};
-
-
 	//Private methods
-	const char *nodeName( )	{ return mId.c_str(); }
+	const char *nodeName( )		{ return mId.c_str(); }
+	const char *nodeNameSYSM( )	{ return mName.c_str(); }
 	bool cfgFileLoad( );
 	void cfgFileSave( );
 	void cfgPrmLoad( );
@@ -391,15 +398,16 @@ class TSYS : public TCntrNode
 	map<string, STask>	mTasks;
 	static pthread_key_t	sTaskKey;
 
-	Res	taskRes, mCfgRes, mRdRes;;
+	ResRW	taskRes, mCfgRes, mRdRes;;
 
-	int	mN_CPU;
+	int		mN_CPU;
 	pthread_t	mainPthr;
 	uint64_t	mSysclc;
 	volatile time_t	mSysTm;
+	bool		mClockRT;	//Used clock REALTIME, else it is MONOTONIC
 
-	map<string, double>	mCntrs;	// Counters
-	map<string, SStat>	mSt;	// Remote stations
+	map<string, double>	mCntrs;	//Counters
+	map<string, SStat>	mSt;	//Remote stations
 
 	unsigned char	mRdStLevel,	//Current station level
 			mRdRestConnTm;	//Redundant restore connection to reserve stations timeout in seconds
@@ -417,8 +425,8 @@ inline string u2s( unsigned val, TSYS::IntView view = TSYS::Dec ){ return TSYS::
 inline string ll2s( long long val, TSYS::IntView view = TSYS::Dec ){ return TSYS::ll2str(val, view); }
 inline string r2s( double val, int prec = 15, char tp = 'g' )	{ return TSYS::real2str(val, prec, tp); }
 inline double rRnd( double val, int dig = 0, bool toint = false ){ return TSYS::realRound(val, dig, toint); }
-inline string tm2s( time_t tm, const string &format )		{ return TSYS::time2str(tm, format); }
-inline string tm2s( double utm )				{ return TSYS::time2str(utm); }
+inline string atm2s( time_t tm, const string &format = "" )	{ return TSYS::atime2str(tm, format); }
+inline string tm2s( double tm )					{ return TSYS::time2str(tm); }
 
 inline int s2i( const string &val )		{ return atoi(val.c_str()); }
 inline long long s2ll( const string &val )	{ return atoll(val.c_str()); }

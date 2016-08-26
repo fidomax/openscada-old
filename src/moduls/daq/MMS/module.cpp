@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.MMS file: module.cpp
 /***************************************************************************
- *   Copyright (C) 2013-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2013-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -37,7 +37,7 @@
 #define MOD_NAME	_("MMS(IEC-9506)")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.3.5"
+#define MOD_VER		"1.3.10"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("MMS(IEC-9506) client implementation.")
 #define LICENSE		"GPL2"
@@ -115,17 +115,10 @@ void TTpContr::cntrCmdProc( XMLNode *opt )
 //*************************************************
 //* TMdContr                                      *
 //*************************************************
-TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem ) : TController(name_c,daq_db,cfgelem),
+TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem ) : TController(name_c,daq_db,cfgelem), enRes(true), cntrRes(true),
     mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR")), mRestTm(cfg("TM_REST")), mSync(cfg("SYNCPER")), mAddr(cfg("ADDR")), mVarsRdReq(cfg("VARS_RD_REQ")),
     prcSt(false), callSt(false), isReload(false), alSt(-1), acq_err(dataRes()), tmGath(0), tmDelay(0)
 {
-    pthread_mutexattr_t attrM;
-    pthread_mutexattr_init(&attrM);
-    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&enRes, &attrM);
-    pthread_mutex_init(&cntrRes, &attrM);
-    pthread_mutexattr_destroy(&attrM);
-
     cfg("PRM_BD").setS("MMSPrm_"+name_c);
 
     //ParameterCBB
@@ -154,9 +147,6 @@ TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem ) : TC
 TMdContr::~TMdContr( )
 {
     if(startStat()) stop();
-
-    pthread_mutex_destroy(&enRes);
-    pthread_mutex_destroy(&cntrRes);
 }
 
 string TMdContr::getStatus( )
@@ -169,9 +159,9 @@ string TMdContr::getStatus( )
 	}
 	else {
 	    if(callSt)	rez += TSYS::strMess(_("Call now. "));
-	    if(period()) rez += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-3*period()).c_str());
-	    else rez += TSYS::strMess(_("Call next by cron '%s'. "), tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	    rez += TSYS::strMess(_("Spent time: %s. Requests %.6g."), tm2s(tmGath).c_str(),-tmDelay);
+	    if(period()) rez += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-9*period()).c_str());
+	    else rez += TSYS::strMess(_("Call next by cron '%s'. "), atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	    rez += TSYS::strMess(_("Spent time: %s. Requests %.6g."), tm2s(1e-6*tmGath).c_str(),-tmDelay);
 	}
     }
 
@@ -195,7 +185,7 @@ void TMdContr::reqService( MMS::XML_N &io )
     io.setAttr("err", "");
 
     try { tr.at().start((enableStat() && !isReload)?0:1000); }
-    catch(TError err) { io.setAttr("err", TSYS::strMess("10:%s",err.mess.c_str())); reset(); return; }
+    catch(TError &err) { io.setAttr("err", TSYS::strMess("10:%s",err.mess.c_str())); reset(); return; }
 
     Client::reqService(io);
     if(io.attr("err").empty()) tmDelay--;
@@ -207,7 +197,7 @@ void TMdContr::protIO( MMS::XML_N &io )
     ResAlloc resN(tr.at().nodeRes(), true);
     if(messLev() == TMess::Debug) io.setAttr("debug", "1");
     try { Client::protIO(io); }
-    catch(TError er) { io.setAttr("err", TSYS::strMess("%s:%s", _("Remote host error"), er.mess.c_str())); }
+    catch(TError &er) { io.setAttr("err", TSYS::strMess("%s:%s", _("Remote host error"), er.mess.c_str())); }
 }
 
 int TMdContr::messIO( const char *obuf, int len_ob, char *ibuf, int len_ib )
@@ -299,7 +289,7 @@ void TMdContr::start_( )
 	for(unsigned i_p = 0; i_p < pls.size(); i_p++)
 	    if(at(pls[i_p]).at().enableStat()) at(pls[i_p]).at().enable();
 	isReload = false;
-    } catch(TError) { isReload = false; throw; }
+    } catch(TError&) { isReload = false; throw; }
 
     //Start the gathering data task
     SYS->taskCreate(nodePath('.',true), mPrior, TMdContr::Task, this);
@@ -310,7 +300,7 @@ void TMdContr::stop_( )
     //Stop the request and calc data task
     SYS->taskDestroy(nodePath('.',true));
 
-    alarmSet(TSYS::strMess(_("DAQ.%s: connect to data source: %s."),id().c_str(),_("STOP")),TMess::Info);
+    alarmSet(TSYS::strMess(_("DAQ.%s.%s: connect to data source: %s."),owner().modId().c_str(),id().c_str(),_("STOP")),TMess::Info);
     alSt = -1;
 
     //Set EVal
@@ -365,8 +355,8 @@ void *TMdContr::Task( void *icntr )
 			mess_err(cntr.nodePath().c_str(), "%s", cntr.acq_err.getVal().c_str());
 			if(cntr.alSt <= 0) {
 			    cntr.alSt = 1;
-			    cntr.alarmSet(TSYS::strMess(_("DAQ.%s: connect to data source: %s."),
-						cntr.id().c_str(),TRegExp(":","g").replace(cntr.acq_err.getVal(),"=").c_str()));
+			    cntr.alarmSet(TSYS::strMess(_("DAQ.%s.%s: connect to data source: %s."),cntr.owner().modId().c_str(),cntr.id().c_str(),
+								TRegExp(":","g").replace(cntr.acq_err.getVal(),"=").c_str()));
 			}
 			cntr.tmDelay = cntr.restTm();
 		    }
@@ -374,7 +364,8 @@ void *TMdContr::Task( void *icntr )
 			cntr.acq_err.setVal("");
 			if(cntr.alSt != 0) {
 			    cntr.alSt = 0;
-			    cntr.alarmSet(TSYS::strMess(_("DAQ.%s: connect to data source: %s."),cntr.id().c_str(),_("OK")),TMess::Info);
+			    cntr.alarmSet(TSYS::strMess(_("DAQ.%s.%s: connect to data source: %s."),
+							    cntr.owner().modId().c_str(),cntr.id().c_str(),_("OK")),TMess::Info);
 			}
 		    }
 		}
@@ -463,8 +454,8 @@ void *TMdContr::Task( void *icntr )
 			cntr.acq_err.setVal(aPrcErr);
 			if(cntr.alSt <= 0) {
 			    cntr.alSt = 1;
-			    cntr.alarmSet(TSYS::strMess(_("DAQ.%s: connect to data source: %s."),
-				cntr.id().c_str(), (aPrcErr.size()?TRegExp(":","g").replace(cntr.acq_err.getVal(),"=").c_str():_("No data"))));
+			    cntr.alarmSet(TSYS::strMess(_("DAQ.%s.%s: connect to data source: %s."),cntr.owner().modId().c_str(),cntr.id().c_str(),
+						(aPrcErr.size()?TRegExp(":","g").replace(cntr.acq_err.getVal(),"=").c_str():_("No data"))));
 			}
 			cntr.tmDelay = cntr.restTm();
 		    }
@@ -477,15 +468,14 @@ void *TMdContr::Task( void *icntr )
 		    if(!(nId=TSYS::strLine(pVal.at().fld().reserve(),0)).empty()) pVal.at().set(cntr.mVars[nId].val, 0, true);
 		}
 		res.unlock();
-	    }
-	    catch(TError err)	{ mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
+	    } catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 
 	cntr.callSt = firstCall = false;
 	res.unlock();
 	cntr.tmGath = TSYS::curTime()-t_cnt;
 
 	if(TSYS::taskEndRun()) break;
-	TSYS::taskSleep(cntr.period(), (cntr.period()?0:TSYS::cron(cntr.cron())));
+	TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
     }
 
     cntr.prcSt = false;
@@ -560,10 +550,6 @@ void TMdPrm::disable( )
 
     setEval();
 }
-
-void TMdPrm::load_( )	{ TParamContr::load_(); }
-
-void TMdPrm::save_( )	{ TParamContr::save_(); }
 
 string TMdPrm::attrPrc( )
 {
@@ -646,7 +632,7 @@ string TMdPrm::attrPrc( )
 	for(i_p = 0; i_p < als.size(); i_p++)
 	    if(TSYS::strLine(p_el.fldAt(i_a).reserve(),0) == als[i_p]) break;
 	if(i_p >= als.size())
-	    try{ p_el.fldDel(i_a); continue; } catch(TError err) { }
+	    try{ p_el.fldDel(i_a); continue; } catch(TError &err) { }
 	i_a++;
     }
 

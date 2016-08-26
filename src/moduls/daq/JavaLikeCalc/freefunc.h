@@ -379,7 +379,7 @@ class Func : public TConfig, public TFunction
 	bool cfgChange( TCfg &co, const TVariant &pc );
 	void cntrCmdProc( XMLNode *opt );	//Control interface command process
 
-	void load_( );
+	void load_( TConfig *cfg );
 	void save_( );
 
 	void loadIO( );
@@ -406,7 +406,7 @@ class Func : public TConfig, public TFunction
 	vector<Reg*>	mRegs;		//Registers list in action
 	vector<Reg*>	mTmpRegs;	//Constant temporary list
 	deque<Reg*>	fPrmst;		//Function's parameters stack
-	Res		&parseRes;
+	ResRW		&parseRes;
 };
 
 extern Func *pF;

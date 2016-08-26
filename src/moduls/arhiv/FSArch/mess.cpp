@@ -45,12 +45,12 @@ ModMArch::ModMArch( const string &iid, const string &idb, TElem *cf_el ) :
 
 ModMArch::~ModMArch( )
 {
-    try{ stop(); }catch(...){ }
+    try { stop(); } catch(...) { }
 }
 
 void ModMArch::load_( )
 {
-    TMArchivator::load_();
+    //TMArchivator::load_();
 
     try {
 	XMLNode prmNd;
@@ -65,7 +65,7 @@ void ModMArch::load_( )
 	vl = prmNd.attr("PackInfoFiles"); if(!vl.empty()) setPackInfoFiles(s2i(vl));
 	vl = prmNd.attr("PrevDbl");	if(!vl.empty()) setPrevDbl(s2i(vl));
 	vl = prmNd.attr("PrevDblTmCatLev"); if(!vl.empty()) setPrevDblTmCatLev(s2i(vl));
-    } catch(...){ }
+    } catch(...) { }
 }
 
 void ModMArch::save_( )
@@ -127,7 +127,7 @@ bool ModMArch::put( vector<TMess::SRec> &mess, bool force )
 
     ResAlloc res(mRes, false);
 
-    if(!runSt) throw TError(nodePath().c_str(),_("Archive is not started!"));
+    if(!runSt) throw err_sys(_("Archive is not started!"));
 
     bool wrOK = true;
     for(unsigned i_m = 0; i_m < mess.size(); i_m++) {
@@ -140,8 +140,7 @@ bool ModMArch::put( vector<TMess::SRec> &mess, bool force )
 		    (mess[i_m].time >= files[iF]->begin()+mTimeSize*24*60*60))) break;
 		try {
 		    wrOK = files[iF]->put(mess[i_m]) && wrOK;
-		}
-		catch(TError err) { mess_err(err.cat.c_str(),err.mess.c_str()); continue; }
+		} catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); continue; }
 		iF = -1;
 		break;
 	    }
@@ -154,7 +153,7 @@ bool ModMArch::put( vector<TMess::SRec> &mess, bool force )
 	    if(iF && files[iF-1]->begin() > f_beg && (files[iF-1]->begin()-f_beg) < (mTimeSize*24*60*60*2/3))
 		f_beg = files[iF-1]->begin()-mTimeSize*24*60*60;
 	    // Create new Archive
-	    string f_name = TSYS::time2str(f_beg,"/%F %T.msg");
+	    string f_name = atm2s(f_beg, "/%F %T.msg");
 	    try {
 		MFileArch *f_obj = new MFileArch(addr()+f_name, f_beg, this, Mess->charset(), useXML());
 		//Remove new error created file mostly by store space lack
@@ -167,9 +166,8 @@ bool ModMArch::put( vector<TMess::SRec> &mess, bool force )
 		if(iF == (int)files.size()) files.push_back(f_obj);
 		else if(iF < (int)files.size()) files.insert(files.begin()+iF, f_obj);
 		else { delete f_obj; return true; }
-	    }
-	    catch(TError err) {
-		mess_crit(nodePath().c_str(),_("Error create new archive file '%s'!"),(addr()+f_name).c_str() );
+	    } catch(TError &err) {
+		mess_sys(TMess::Crit, _("Error create new archive file '%s'!"), (addr()+f_name).c_str());
 		return false;
 	    }
 	    // Allow parallel read access
@@ -182,19 +180,23 @@ bool ModMArch::put( vector<TMess::SRec> &mess, bool force )
     return wrOK;
 }
 
-void ModMArch::get( time_t b_tm, time_t e_tm, vector<TMess::SRec> &mess, const string &category, char level, time_t upTo )
+time_t ModMArch::get( time_t bTm, time_t eTm, vector<TMess::SRec> &mess, const string &category, char level, time_t upTo )
 {
-    if(e_tm <= b_tm) return;
-    if(!runSt) throw TError(nodePath().c_str(), _("Archive is not started!"));
+    bTm = vmax(bTm, begin());
+    eTm = vmin(eTm, end());
+    if(eTm < bTm) return eTm;
+    if(!runSt) throw err_sys(_("Archive is not started!"));
     if(!upTo) upTo = SYS->sysTm() + STD_INTERF_TM;
 
     ResAlloc res(mRes, false);
+    time_t result = bTm;
     for(int iF = files.size()-1; iF >= 0 && SYS->sysTm() < upTo; iF--) {
 	if(!files[iF]->err() &&
-		!((b_tm < files[iF]->begin() && e_tm < files[iF]->begin()) ||
-		   (b_tm > files[iF]->end() && e_tm > files[iF]->end())))
-	    files[iF]->get(b_tm, e_tm, mess, category, level, upTo);
+		!((bTm < files[iF]->begin() && eTm < files[iF]->begin()) || (bTm > files[iF]->end() && eTm > files[iF]->end())))
+	    result = files[iF]->get(bTm, eTm, mess, category, level, upTo);
     }
+
+    return result;
 }
 
 void ModMArch::checkArchivator( bool now )
@@ -203,7 +205,7 @@ void ModMArch::checkArchivator( bool now )
 	DIR *IdDir = opendir(addr().c_str());
 	if(IdDir == NULL) {
 	    if(mkdir(addr().c_str(),0777))
-		throw TError(nodePath().c_str(),_("Can not create directory '%s'."),addr().c_str());
+		throw err_sys(_("Can not create directory '%s'."), addr().c_str());
 	    IdDir = opendir(addr().c_str());
 	}
 	//Clean scan flag
@@ -369,7 +371,7 @@ void ModMArch::cntrCmdProc( XMLNode *opt )
     string a_path = opt->attr("path");
     if(a_path == "/prm/cfg/dirList" && ctrChkNode(opt))		TSYS::ctrListFS(opt, addr());
     else if(a_path == "/prm/st/fsz" && ctrChkNode(opt))		opt->setText(TSYS::cpct2str(size()));
-    else if(a_path == "/prm/st/tarch" && ctrChkNode(opt))	opt->setText(TSYS::time2str(tmCalc));
+    else if(a_path == "/prm/st/tarch" && ctrChkNode(opt))	opt->setText(tm2s(1e-6*tmCalc));
     else if(a_path == "/prm/add/xml") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SARH_ID,SEC_RD))	opt->setText(useXML() ? "1" : "0");
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SARH_ID,SEC_WR))	setUseXML(s2i(opt->text()));
@@ -451,7 +453,7 @@ MFileArch::MFileArch( const string &iname, time_t ibeg, ModMArch *iowner, const 
 
     int hd = open(name().c_str(), O_RDWR|O_CREAT|O_TRUNC, 0666);
     if(hd <= 0) {
-	mess_err(owner().nodePath().c_str(), _("File '%s' creation error: %s(%d)."), name().c_str(), strerror(errno), errno);
+	owner().mess_sys(TMess::Error, _("File '%s' creation error: %s(%d)."), name().c_str(), strerror(errno), errno);
 	mErr = true;
 	return;
     }
@@ -477,7 +479,7 @@ MFileArch::MFileArch( const string &iname, time_t ibeg, ModMArch *iowner, const 
 	fOK = (write(hd,s_buf,strlen(s_buf)) == (int)strlen(s_buf));
     }
     close(hd);
-    //if(!fOK) throw TError(owner().nodePath().c_str(), _("Write to file '%s' error"), name().c_str());
+    //if(!fOK) throw owner().err_sys(_("Write to file '%s' error"), name().c_str());
     if(fOK) {
 	mLoad = true;
 	mAcces = time(NULL);
@@ -548,7 +550,7 @@ void MFileArch::attach( const string &iname, bool full )
 		return;
 	    }
 
-	    try { mName = mod->unPackArch(name()); } catch(TError){ mErr = true; return; }
+	    try { mName = mod->unPackArch(name()); } catch(TError&) { mErr = true; return; }
 	    mPack = false;
 	}
 
@@ -558,7 +560,7 @@ void MFileArch::attach( const string &iname, bool full )
 	char s_char[100];
 	//Check to plain text archive
 	if(fgets(buf,sizeof(buf),f) == NULL)
-	    throw TError(owner().nodePath().c_str(),_("File '%s' header error!"),name().c_str());
+	    throw owner().err_sys(_("File '%s' header error!"), name().c_str());
 	string s_tmpl = mod->modId()+"%*s %99s %x %x";
 	if(sscanf(buf,s_tmpl.c_str(),s_char,&mBeg,&mEnd) == 3) {
 	    // Attach plain text archive file
@@ -589,7 +591,7 @@ void MFileArch::attach( const string &iname, bool full )
 		// Parse full file
 		mNode->load(s_buf);
 		if(mNode->name() != mod->modId()) {
-		    mess_err(owner().nodePath().c_str(),_("Archive file: '%s' is not mine."),name().c_str());
+		    owner().mess_sys(TMess::Error, _("Archive file: '%s' is not mine."), name().c_str());
 		    mNode->clear();
 		    mErr = true;
 		    return;
@@ -611,7 +613,7 @@ void MFileArch::attach( const string &iname, bool full )
 		do {
 		    while((c=fgetc(f)) != '<' && c != EOF);
 		    if(c == EOF) {
-			mess_err(owner().nodePath().c_str(),_("Archive '%s' file error."),name().c_str());
+			owner().mess_sys(TMess::Error, _("Archive '%s' file error."), name().c_str());
 			mErr = true;
 			fclose(f);
 			return;
@@ -619,7 +621,7 @@ void MFileArch::attach( const string &iname, bool full )
 		    prm.clear();
 		    while((c=fgetc(f)) != ' ' && c != '\t' && c != '>' && c != EOF) prm += c;
 		    if(c == EOF) {
-			mess_err(owner().nodePath().c_str(),_("Archive '%s' file error."),name().c_str());
+			owner().mess_sys(TMess::Error, _("Archive '%s' file error."), name().c_str());
 			mErr = true;
 			fclose(f);
 			return;
@@ -647,8 +649,7 @@ void MFileArch::attach( const string &iname, bool full )
 		return;
 	    }
 	}
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	mess_err(err.cat.c_str(), "%s", err.mess.c_str());
 	if(mNode) delete mNode;
 	mNode = NULL;
@@ -659,12 +660,12 @@ void MFileArch::attach( const string &iname, bool full )
 
 bool MFileArch::put( TMess::SRec mess )
 {
-    if(mErr) throw TError(owner().nodePath().c_str(),_("Inserting message to an error Archive file!"));
+    if(mErr) throw owner().err_sys(_("Inserting message to an error Archive file!"));
 
     ResAlloc res(mRes, true);
 
     if(mPack) {
-	try { mName = mod->unPackArch(name()); } catch(TError err) { mErr = true; throw; }
+	try { mName = mod->unPackArch(name()); } catch(TError &err) { mErr = true; throw; }
 	mPack = false;
     }
 
@@ -674,7 +675,7 @@ bool MFileArch::put( TMess::SRec mess )
 	res.release(); attach(mName); res.request(true);
 	if(mErr || !mLoad) {
 	    mErr = true;
-	    throw TError(owner().nodePath().c_str(),_("Archive file '%s' isn't attached!"),mName.c_str());
+	    throw owner().err_sys(_("Archive file '%s' isn't attached!"), mName.c_str());
 	}
     }
 
@@ -812,7 +813,7 @@ bool MFileArch::put( TMess::SRec mess )
 	fseek(f, 0, SEEK_END);
 	mSize = ftell(f);
 	fclose(f);
-	if(!fOK) mess_err(owner().nodePath().c_str(), _("Write to the archive file '%s' error: %s(%d)"), mName.c_str(), strerror(errno), errno);
+	if(!fOK) owner().mess_sys(TMess::Error, _("Write to the archive file '%s' error: %s(%d)"), mName.c_str(), strerror(errno), errno);
 
 	return fOK;
     }
@@ -820,17 +821,17 @@ bool MFileArch::put( TMess::SRec mess )
     return true;
 }
 
-void MFileArch::get( time_t b_tm, time_t e_tm, vector<TMess::SRec> &mess, const string &category, char level, time_t upTo )
+time_t MFileArch::get( time_t bTm, time_t eTm, vector<TMess::SRec> &mess, const string &category, char level, time_t upTo )
 {
-    TMess::SRec b_rec;
+    TMess::SRec bRec;
 
-    if(mErr) throw TError(owner().nodePath().c_str(),_("Getting messages from an error Archive file!"));
+    if(mErr) throw owner().err_sys(_("Getting messages from an error Archive file!"));
 
     ResAlloc res(mRes, false);
     if(!upTo) upTo = time(NULL) + STD_INTERF_TM;
 
     if(mPack) {
-	try { mName = mod->unPackArch(name()); } catch(TError err) { mErr = true; throw; }
+	try { mName = mod->unPackArch(name()); } catch(TError &err) { mErr = true; throw; }
 	mPack = false;
     }
 
@@ -838,33 +839,39 @@ void MFileArch::get( time_t b_tm, time_t e_tm, vector<TMess::SRec> &mess, const 
 
     if(!mLoad) {
 	res.release(); attach(mName); res.request(false);
-	if(mErr || !mLoad) throw TError(owner().nodePath().c_str(),_("Archive file isn't attached!"));
+	if(mErr || !mLoad) throw owner().err_sys(_("Archive file isn't attached!"));
     }
 
     TRegExp re(category, "p");
 
+    bTm = vmax(bTm, begin());
+    eTm = vmin(eTm, end());
+    time_t result = bTm;
     if(xmlM()) {
-	for(unsigned i_ch = 0; i_ch < mNode->childSize() && time(NULL) < upTo; i_ch++) {
+	for(unsigned iCh = 0; iCh < mNode->childSize() && time(NULL) < upTo; iCh++) {
 	    //Find messages
-	    b_rec.time  = strtol(mNode->childGet(i_ch)->attr("tm").c_str(), (char**)NULL, 16);
-	    b_rec.utime  = s2i(mNode->childGet(i_ch)->attr("tmu"));
-	    b_rec.categ = mNode->childGet(i_ch)->attr("cat");
-	    b_rec.level = (TMess::Type)s2i(mNode->childGet(i_ch)->attr("lv"));
-	    b_rec.mess  = mNode->childGet(i_ch)->text();
-	    if(b_rec.time >= b_tm && b_rec.time <= e_tm && abs(b_rec.level) >= level && re.test(b_rec.categ)) {
+	    bRec.time = strtol(mNode->childGet(iCh)->attr("tm").c_str(), (char**)NULL, 16);
+	    if(bRec.time > eTm) break;
+	    if(bRec.time >= bTm) {
+		result = bRec.time;
+		bRec.level = (TMess::Type)s2i(mNode->childGet(iCh)->attr("lv"));
+		bRec.categ = mNode->childGet(iCh)->attr("cat");
+		if(abs(bRec.level) < level || !re.test(bRec.categ)) continue;
+		bRec.utime = s2i(mNode->childGet(iCh)->attr("tmu"));
+		bRec.mess  = mNode->childGet(iCh)->text();
 		bool equal = false;
 		int i_p = mess.size();
 		for(int i_m = mess.size()-1; i_m >= 0; i_m--) {
-		    if(FTM(mess[i_m]) > FTM(b_rec)) i_p = i_m;
-		    else if(FTM(mess[i_m]) == FTM(b_rec) && b_rec.level == mess[i_m].level &&
-			    (owner().prevDblTmCatLev() || b_rec.mess == mess[i_m].mess)) {
-			if(owner().prevDblTmCatLev()) mess[i_m] = b_rec;	//Replace previous as the archieved is priority
+		    if(FTM(mess[i_m]) > FTM(bRec)) i_p = i_m;
+		    else if(FTM(mess[i_m]) == FTM(bRec) && bRec.level == mess[i_m].level &&
+			    (owner().prevDblTmCatLev() || bRec.mess == mess[i_m].mess)) {
+			if(owner().prevDblTmCatLev()) mess[i_m] = bRec;	//Replace previous as the archieved is priority
 			equal = true;
 			break;
 		    }
-		    else if(FTM(mess[i_m]) < FTM(b_rec)) break;
+		    else if(FTM(mess[i_m]) < FTM(bRec)) break;
 		}
-		if(!equal) mess.insert(mess.begin()+i_p, b_rec);
+		if(!equal) mess.insert(mess.begin()+i_p, bRec);
 	    }
 	}
     }
@@ -872,11 +879,11 @@ void MFileArch::get( time_t b_tm, time_t e_tm, vector<TMess::SRec> &mess, const 
 	char buf[STR_BUF_LEN];
 	//Open file
 	FILE *f = fopen(mName.c_str(), "r");
-	if(f == NULL) { mErr = true; return; }
+	if(f == NULL) { mErr = true; return eTm; }
 
 	//Get want position
 	bool rdOK = true;
-	long c_off = cacheGet((int64_t)b_tm*1000000);
+	long c_off = cacheGet((int64_t)bTm*1000000);
 	if(c_off) fseek(f, c_off, SEEK_SET);
 	else rdOK = (fgets(buf,sizeof(buf),f) != NULL);
 	//Check mess records
@@ -885,39 +892,42 @@ void MFileArch::get( time_t b_tm, time_t e_tm, vector<TMess::SRec> &mess, const 
 	while((rdOK=(fgets(buf,sizeof(buf),f)!=NULL)) && time(NULL) < upTo) {
 	    char stm[51]; int off = 0, bLev;
 	    sscanf(buf, "%50s %d", stm, &bLev);
-	    b_rec.level = (TMess::Type)bLev;
-	    b_rec.time = strtol(TSYS::strSepParse(stm,0,':',&off).c_str(),NULL,16);
-	    b_rec.utime = s2i(TSYS::strSepParse(stm,0,':',&off));
-	    if(b_rec.time >= e_tm) break;
-	    if(b_rec.time >= b_tm) {
-		if(abs(b_rec.level) < level) continue;
+	    bRec.level = (TMess::Type)bLev;
+	    bRec.time = strtol(TSYS::strSepParse(stm,0,':',&off).c_str(),NULL,16);
+	    bRec.utime = s2i(TSYS::strSepParse(stm,0,':',&off));
+	    if(bRec.time > eTm) break;
+	    if(bRec.time >= bTm) {
+		result = bRec.time;
+		if(abs(bRec.level) < level) continue;
 		char m_cat[1001], m_mess[100001];
 		sscanf(buf, "%*x:%*d %*d %1000s %100000s", m_cat, m_mess);
-		b_rec.categ = TSYS::strDecode(Mess->codeConvIn(mChars,m_cat), TSYS::HttpURL);
-		b_rec.mess  = TSYS::strDecode(Mess->codeConvIn(mChars,m_mess), TSYS::HttpURL);
-		if(!re.test(b_rec.categ)) continue;
+		bRec.categ = TSYS::strDecode(Mess->codeConvIn(mChars,m_cat), TSYS::HttpURL);
+		bRec.mess  = TSYS::strDecode(Mess->codeConvIn(mChars,m_mess), TSYS::HttpURL);
+		if(!re.test(bRec.categ)) continue;
 		// Check to equal messages and inserting
 		bool equal = false;
 		int i_p = mess.size();
 		for(int i_m = mess.size()-1; i_m >= 0; i_m--)
-		    if(FTM(mess[i_m]) > FTM(b_rec)) i_p = i_m;
-		    else if(FTM(mess[i_m]) == FTM(b_rec) && b_rec.level == mess[i_m].level &&
-			    (owner().prevDblTmCatLev() || b_rec.mess == mess[i_m].mess)) {
-			if(owner().prevDblTmCatLev()) mess[i_m] = b_rec;	//Replace previous as the archieved is priority
+		    if(FTM(mess[i_m]) > FTM(bRec)) i_p = i_m;
+		    else if(FTM(mess[i_m]) == FTM(bRec) && bRec.level == mess[i_m].level &&
+			    (owner().prevDblTmCatLev() || bRec.mess == mess[i_m].mess)) {
+			if(owner().prevDblTmCatLev()) mess[i_m] = bRec;	//Replace previous as the archieved is priority
 			equal = true;
 			break;
 		    }
-		    else if(FTM(mess[i_m]) < FTM(b_rec)) break;
-		if(!equal) mess.insert(mess.begin()+i_p,b_rec);
+		    else if(FTM(mess[i_m]) < FTM(bRec)) break;
+		if(!equal) mess.insert(mess.begin()+i_p,bRec);
 	    }
-	    else if((pass_cnt++) > CACHE_POS && b_rec.time != last_tm) {
-		cacheSet(FTM(b_rec), ftell(f)-strlen(buf));
+	    else if((pass_cnt++) > CACHE_POS && bRec.time != last_tm) {
+		cacheSet(FTM(bRec), ftell(f)-strlen(buf));
 		pass_cnt = 0;
 	    }
-	    last_tm = b_rec.time;
+	    last_tm = bRec.time;
 	}
 	fclose(f);
     }
+
+    return result;
 }
 
 void MFileArch::check( bool free )
@@ -930,7 +940,7 @@ void MFileArch::check( bool free )
 		string x_cf = mNode->save(XMLNode::XMLHeader|XMLNode::BrOpenPrev);
 		mSize = x_cf.size();
 		mWrite = !(write(hd,x_cf.c_str(),mSize) == mSize);
-		if(mWrite) mess_err(mod->nodePath().c_str(), _("Write to '%s' error!"), mName.c_str());
+		if(mWrite) owner().mess_sys(TMess::Error, _("Write to '%s' error!"), mName.c_str());
 		close(hd);
 	    }
 	}
@@ -941,8 +951,7 @@ void MFileArch::check( bool free )
 	}
     }
     //Check for pack archive file
-    if(!mErr && !mPack && owner().packTm() && time(NULL) > (mAcces+owner().packTm()*60) && ((xmlM() && !mLoad) || !xmlM()))
-    {
+    if(!mErr && !mPack && owner().packTm() && time(NULL) > (mAcces+owner().packTm()*60) && ((xmlM() && !mLoad) || !xmlM())) {
 	mName = mod->packArch(name());
 	mPack = true;
 	// Get file size
@@ -963,7 +972,7 @@ void MFileArch::check( bool free )
 	    // Write info to info file
 	    string si = TSYS::strMess("%lx %lx %s %d",begin(),end(),charset().c_str(),xmlM());
 	    if(write(hd,si.data(),si.size()) != (int)si.size())
-		mess_err(mod->nodePath().c_str(), _("Write to '%s' error!"), (name()+".info").c_str());
+		mod->mess_sys(TMess::Error, _("Write to '%s' error!"), (name()+".info").c_str());
 	    close(hd);
 	}
     }

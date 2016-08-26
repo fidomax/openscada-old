@@ -162,6 +162,23 @@ class TestDB : public TFunction
 		}
 		mod->mess(id(),_("Got %d records for time %f sec."),experem,1e-6*(TSYS::curTime()-ctime));
 
+		//Seek all records
+		mod->mess(id(), _("Seek records."));
+		ctime = TSYS::curTime();
+		bd_cfg.cfg("name").setKeyUse(false);
+		int pos = 0;
+		while(tbl.at().fieldSeek(pos,bd_cfg)) pos++;
+		mod->mess(id(), _("Sought %d records for time %f sec."), pos, 1e-6*(TSYS::curTime()-ctime));
+
+		//Seek in preload all records
+		mod->mess(id(), _("Seek records."));
+		ctime = TSYS::curTime();
+		vector< vector<string> > full;
+		pos = 0;
+		while(tbl.at().fieldSeek(pos,bd_cfg,&full)) pos++;
+		bd_cfg.cfg("name").setKeyUse(true);
+		mod->mess(id(), _("Sought %d records in preload for time %f sec."), pos, 1e-6*(TSYS::curTime()-ctime));
+
 		//Check for fix structure
 		mod->mess(id(),_("Change DB structure."));
 		//Add column

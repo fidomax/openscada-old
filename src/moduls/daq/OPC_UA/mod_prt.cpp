@@ -149,30 +149,31 @@ void TProt::load_( )
 {
     //Load DB
     try {
-	TConfig g_cfg(&endPntEl());
-	g_cfg.cfgViewAll(false);
-	vector<string> db_ls;
+	TConfig gCfg(&endPntEl());
+	//gCfg.cfgViewAll(false);
+	vector<string> dbLs;
 	map<string, bool> itReg;
+	vector<vector<string> > full;
 
 	// Search into DB
-	SYS->db().at().dbList(db_ls,true);
-	db_ls.push_back(DB_CFG);
-	for(unsigned i_db = 0; i_db < db_ls.size(); i_db++)
-	    for(int fld_cnt = 0; SYS->db().at().dataSeek(db_ls[i_db]+"."+modId()+"_ep",nodePath()+modId()+"_ep",fld_cnt++,g_cfg); ) {
-		string id = g_cfg.cfg("ID").getS();
-		if(!epPresent(id)) epAdd(id,(db_ls[i_db]==SYS->workDB())?"*.*":db_ls[i_db]);
+	SYS->db().at().dbList(dbLs, true);
+	dbLs.push_back(DB_CFG);
+	for(unsigned iDb = 0; iDb < dbLs.size(); iDb++)
+	    for(int fldCnt = 0; SYS->db().at().dataSeek(dbLs[iDb]+"."+modId()+"_ep",nodePath()+modId()+"_ep",fldCnt++,gCfg,false,&full); ) {
+		string id = gCfg.cfg("ID").getS();
+		if(!epPresent(id)) epAdd(id,(dbLs[iDb]==SYS->workDB())?"*.*":dbLs[iDb]);
+		epAt(id).at().load(&gCfg);
 		itReg[id] = true;
 	    }
 
 	// Check for remove items removed from DB
 	if(!SYS->selDB().empty()) {
-	    epList(db_ls);
-	    for(unsigned i_it = 0; i_it < db_ls.size(); i_it++)
-		if(itReg.find(db_ls[i_it]) == itReg.end() && SYS->chkSelDB(epAt(db_ls[i_it]).at().DB()))
-		    epDel(db_ls[i_it]);
+	    epList(dbLs);
+	    for(unsigned i_it = 0; i_it < dbLs.size(); i_it++)
+		if(itReg.find(dbLs[i_it]) == itReg.end() && SYS->chkSelDB(epAt(dbLs[i_it]).at().DB()))
+		    epDel(dbLs[i_it]);
 	}
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 	mess_err(nodePath().c_str(),_("Search and create new server error."));
     }
@@ -307,8 +308,8 @@ void *OPCEndPoint::Task( void *iep )
 
     for(unsigned cntr = 0; !TSYS::taskEndRun(); cntr++) {
 	try { ep.subScrCycle(cntr); }
-	catch(OPCError err)	{ mess_err(ep.nodePath().c_str(), err.mess.c_str()); }
-	catch(TError err)	{ mess_err(err.cat.c_str(), err.mess.c_str()); }
+	catch(OPCError &err)	{ mess_err(ep.nodePath().c_str(), err.mess.c_str()); }
+	catch(TError &err)	{ mess_err(err.cat.c_str(), err.mess.c_str()); }
 
 	TSYS::taskSleep((int64_t)(ep.subscrProcPer()*1000000));
     }
@@ -317,11 +318,15 @@ void *OPCEndPoint::Task( void *iep )
 }
 #endif
 
-void OPCEndPoint::load_( )
+void OPCEndPoint::load_( TConfig *icfg )
 {
     if(!SYS->chkSelDB(DB())) throw TError();
-    cfgViewAll(true);
-    SYS->db().at().dataGet(fullDB(), owner().nodePath()+tbl(), *this);
+
+    if(icfg) *(TConfig*)this = *icfg;
+    else {
+	//cfgViewAll(true);
+	SYS->db().at().dataGet(fullDB(), owner().nodePath()+tbl(), *this);
+    }
 
     //Security policies parse
     string sp = cfg("SecPolicies").getS();
@@ -339,7 +344,7 @@ void OPCEndPoint::load_( )
 	vl = prmNd.attr("LimSubScr");		if(!vl.empty()) setLimSubScr(s2i(vl));
 	vl = prmNd.attr("LimMonitItms");	if(!vl.empty()) setLimMonitItms(s2i(vl));
 	vl = prmNd.attr("LimRetrQueueTm");	if(!vl.empty()) setLimRetrQueueTm(s2i(vl));
-    } catch(...){ }
+    } catch(...) { }
 }
 
 void OPCEndPoint::save_( )

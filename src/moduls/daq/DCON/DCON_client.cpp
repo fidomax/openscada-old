@@ -2,7 +2,7 @@
 //OpenSCADA system module DAQ.DCON file: DCON_client.cpp
 /***************************************************************************
  *   Copyright (C) 2008-2011 by Almaz Karimov                              *
- *		   2008-2014,2016 by Roman Savochenko, rom_as@oscada.org   *
+ *		   2008-2016 by Roman Savochenko, rom_as@oscada.org        *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -39,7 +39,7 @@
 #define MOD_NAME	_("DCON client")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.2.1"
+#define MOD_VER		"1.2.5"
 #define AUTHORS		_("Roman Savochenko, Almaz Karimov")
 #define DESCRIPTION	_("Provides an implementation of DCON-client protocol. Supports I-7000 DCON protocol.")
 #define LICENSE		"GPL2"
@@ -164,9 +164,9 @@ string TMdContr::getStatus( )
 
     if(startStat() && !redntUse()) {
 	if(callSt)	rez += TSYS::strMess(_("Call now. "));
-	if(period())	rez += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-3*period()).c_str());
-	else rez += TSYS::strMess(_("Call next by cron '%s'. "),tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	rez += TSYS::strMess(_("Spent time: %s. "),tm2s(tmGath).c_str());
+	if(period())	rez += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-9*period()).c_str());
+	else rez += TSYS::strMess(_("Call next by cron '%s'. "),atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	rez += TSYS::strMess(_("Spent time: %s. "),tm2s(1e-6*tmGath).c_str());
     }
 
     return rez;
@@ -179,10 +179,10 @@ void TMdContr::load_( )
 {
     if(!SYS->chkSelDB(DB())) throw TError();
 
-    TController::load_( );
+    //TController::load_( );
 
     //Check for get old period method value
-    if(mPerOld) { cfg("SCHEDULE").setS(i2s(mPerOld)); mPerOld = 0; }
+    if(mPerOld) { cfg("SCHEDULE").setS(i2s(mPerOld)); mPerOld = 0; modif(true); }
 }
 
 void TMdContr::disable_( )
@@ -203,7 +203,7 @@ void TMdContr::start_( )
     //Establish connection
     AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(addr(),0,'.')).at().outAt(TSYS::strSepParse(addr(),1,'.'));
     try { tr.at().start(); }
-    catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+    catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 
     //Start the gathering data task
     SYS->taskCreate(nodePath('.',true), mPrior, TMdContr::Task, this);
@@ -215,7 +215,7 @@ void TMdContr::stop_( )
     if(prcSt) SYS->taskDestroy(nodePath('.',true), &endrunReq);
 
     //Clear process parameters list
-    MtxAlloc res(enRes.mtx(), true);
+    MtxAlloc res(enRes, true);
     pHd.clear();
 }
 
@@ -225,7 +225,7 @@ void TMdContr::prmEn( TMdPrm *prm, bool val )
 {
     unsigned i_prm;
 
-    MtxAlloc res(enRes.mtx(), true);
+    MtxAlloc res(enRes, true);
     for(i_prm = 0; i_prm < pHd.size(); i_prm++)
 	if(&pHd[i_prm].at() == prm) break;
 
@@ -242,7 +242,7 @@ string TMdContr::DCONCRC( string str )
 
 string TMdContr::DCONReq( string &pdu, bool CRC, unsigned acqLen, char resOK )
 {
-    MtxAlloc res(reqRes.mtx(), true);
+    MtxAlloc res(reqRes, true);
     char buf[1000];
     string rez, err;
 
@@ -262,11 +262,10 @@ string TMdContr::DCONReq( string &pdu, bool CRC, unsigned acqLen, char resOK )
 
 		//Wait tail
 		while(resp_len && (rez.size() < 2 || rez[rez.size()-1] != '\r')) {
-		    try{ resp_len = tr.at().messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError er){ break; }
+		    try{ resp_len = tr.at().messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError &er) { break; }
 		    rez.append(buf, resp_len);
 		}
-	    }
-	    catch(TError er) {	//By possible the send request breakdown and no response
+	    } catch(TError &er) {	//By possible the send request breakdown and no response
 		if(err.empty()) err = _("10:Transport error: ") + er.mess;
 		else if(err.find(er.mess) == string::npos) err += "; " + er.mess;
 		continue;
@@ -285,8 +284,7 @@ string TMdContr::DCONReq( string &pdu, bool CRC, unsigned acqLen, char resOK )
 	    err = "0";
 	    break;
 	}
-    }
-    catch(TError er) { err = _("10:Transport error: ")+er.mess; }
+    } catch(TError &er) { err = _("10:Transport error: ")+er.mess; }
 
     if(err != "0") {
 	if(messLev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("ERR -> '%s': %s"), pdu.c_str(), err.c_str());
@@ -315,7 +313,7 @@ void *TMdContr::Task( void *icntr )
 		int64_t t_cnt = TSYS::curTime();
 
 		//Update controller's data
-		MtxAlloc res(cntr.enRes.mtx(), true);
+		MtxAlloc res(cntr.enRes, true);
 		for(unsigned i_p = 0; i_p < cntr.pHd.size(); i_p++) {
 		    if(cntr.endrunReq) break;
 		    //Reset errors
@@ -657,13 +655,12 @@ void *TMdContr::Task( void *icntr )
 
 	    if(isStop) break;
 
-	    TSYS::taskSleep((int64_t)cntr.period(), (cntr.period()?0:TSYS::cron(cntr.cron())));
+	    TSYS::taskSleep((int64_t)cntr.period(), cntr.period() ? "" : cntr.cron());
 
 	    if(cntr.endrunReq) isStop = true;
 	    isStart = false;
 	}
-    }
-    catch(TError err)	{ mess_err(err.cat.c_str(), err.mess.c_str()); }
+    } catch(TError &err) { mess_err(err.cat.c_str(), err.mess.c_str()); }
 
     cntr.prcSt = false;
 
@@ -736,7 +733,7 @@ void TMdPrm::enable()
     //Delete DAQ parameter's attributes
     for(unsigned i_f = 0; i_f < pEl.fldSize(); ) {
 	try { pEl.fldDel(i_f); continue; }
-	catch(TError err) { mess_warning(err.cat.c_str(),err.mess.c_str()); }
+	catch(TError &err) { mess_warning(err.cat.c_str(),err.mess.c_str()); }
 	i_f++;
     }
 

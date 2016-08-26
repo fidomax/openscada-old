@@ -70,8 +70,8 @@ class Session : public TCntrNode
 	void setEnable( bool val );
 	void setStart( bool val );
 	void setBackgrnd( bool val )		{ mBackgrnd = val; }
-	void connect( )				{ mConnects++; }
-	void disconnect( )			{ if(mConnects>0) mConnects--; }
+	int connect( );
+	void disconnect( int conId = 0 );
 	void stlCurentSet( int sid );
 
 	bool modifChk( unsigned int tm, unsigned int iMdfClc );
@@ -86,8 +86,6 @@ class Session : public TCntrNode
 	vector<string> openList( );
 	void openReg( const string &id );
 	void openUnreg( const string &id );
-
-	ResMtx	&dataMtx( )		{ return dataM; }
 
 	void uiComm( const string &com, const string &prm, SessWdg *src = NULL );
 
@@ -111,6 +109,7 @@ class Session : public TCntrNode
     protected:
 	//Methods
 	const char *nodeName( )		{ return mId.c_str(); }
+	const char *nodeNameSYSM( )	{ return mId.c_str(); }
 	void cntrCmdProc( XMLNode *opt );				//Control interface command process
 
 	TVariant objFuncCall( const string &id, vector<TVariant> &prms, const string &user );
@@ -201,17 +200,17 @@ class Session : public TCntrNode
 	static void *Task( void *contr );
 
 	//Attributes
-	ResMtx	dataM,
-		mAlrmRes,			//Alarms resource
+	ResMtx	mAlrmRes,			//Alarms resource
 		mCalcRes;			//Calc resource
 	int	mPage;
 	const string mId;
 	string	mPrjnm, mOwner, mGrp;
 	MtxString mUser;
 	int	mPer, mPermit;
-	bool	mEnable, mStart, endrun_req;	//Enabled, Started and endrun stats
+	bool	mEnable, mStart, endrunReq;	//Enabled, Started and endrun stats
 	bool	mBackgrnd;			//Backgrounded execution of a session
 	int	mConnects;			//Connections counter
+	map<int, bool> mCons;			//Identifiers of the connections
 
 	unsigned	mCalcClk;		//Calc clock
 	time_t		mReqTm;
@@ -250,7 +249,7 @@ class SessWdg : public Widget, public TValFunc
 	int	calcPer( );
 	bool	process( )	{ return mProc; }		//Process stat
 
-	void setEnable( bool val );
+	void setEnable( bool val, bool force = false );
 	virtual void setProcess( bool val, bool lastFirstCalc = true );
 
 	virtual void prcElListUpdate( );
@@ -311,7 +310,7 @@ class SessWdg : public Widget, public TValFunc
 	string		mWorkProg;
 	unsigned int	mMdfClc;
 	unsigned int	&mCalcClk;
-	pthread_mutex_t	mCalcRes;
+	ResMtx		mCalcRes;
 
 	vector<string>	mWdgChldAct,	//Active childs widget's list
 			mAttrLnkLs;	//Linked attributes list
@@ -369,6 +368,7 @@ class SessPage : public SessWdg
 	//Attributes
 	unsigned mPage		: 4;		//Pages container identifier
 	unsigned mClosePgCom	: 1;
+	unsigned mDisMan	: 1;		//Disable the page enabling at request by it's disabling in manual
 	ResMtx	mFuncM;
 };
 

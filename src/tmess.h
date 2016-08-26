@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tmess.h
 /***************************************************************************
- *   Copyright (C) 2003-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -124,6 +124,7 @@ class TMess
 
 	void put( const char *categ, int8_t level, const char *fmt,  ... );
 	void put_( const char *categ, int8_t level, const char *fmt,  ... );
+	void putArg( const char *categ, int8_t level, const char *fmt, va_list ap );
 	void get( time_t b_tm, time_t e_tm, vector<TMess::SRec> &recs, const string &category = "", int8_t level = Debug );
 
 	// Internal messages translations
@@ -165,9 +166,6 @@ class TMess
 		string	val;
 	};
 
-	//Methods
-	void putArg( const char *categ, int8_t level, const char *fmt, va_list ap );
-
 	//Attributes
 	string	IOCharSet;		//Internal charset
 	unsigned mMessLevel	:3;	//Work messages level
@@ -188,7 +186,7 @@ class TMess
 	map<string, map<string,string> > trMessIdx;
 	map<string, CacheEl>	trMessCache;
 
-	pthread_mutex_t	mRes;
+	ResMtx	mRes;
 };
 
 extern TMess *Mess;

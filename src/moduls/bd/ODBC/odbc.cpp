@@ -1,7 +1,7 @@
 
 //OpenSCADA system module BD.ODBC file: odbc.cpp
 /***************************************************************************
- *   Copyright (C) 2015 by Roman Savochenko, <rom_as@oscada.org>           *
+ *   Copyright (C) 2015-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -34,7 +34,7 @@
 #define MOD_NAME	_("DB by ODBC")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"0.1.1"
+#define MOD_VER		"0.2.3"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("BD module. Provides support of different databases by the ODBC connectors and drivers to the databases.")
 #define MOD_LICENSE	"GPL2"
@@ -88,18 +88,14 @@ TBD *BDMod::openBD( const string &name )	{ return new MBD(name, &owner().openDB_
 //* BD_ODBC::MBD				 *
 //************************************************
 MBD::MBD( string iid, TElem *cf_el ) :
-    TBD(iid, cf_el), henv(SQL_NULL_HANDLE), hdbc(SQL_NULL_HANDLE), hstmt(SQL_NULL_HANDLE), reqCnt(0), reqCntTm(0), trOpenTm(0)
+    TBD(iid, cf_el), henv(SQL_NULL_HANDLE), hdbc(SQL_NULL_HANDLE), hstmt(SQL_NULL_HANDLE), reqCnt(0), reqCntTm(0), trOpenTm(0), connRes(true)
 {
-    pthread_mutexattr_t attrM;
-    pthread_mutexattr_init(&attrM);
-    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&connRes, &attrM);
-    pthread_mutexattr_destroy(&attrM);
+
 }
 
 MBD::~MBD( )
 {
-    pthread_mutex_destroy(&connRes);
+
 }
 
 void MBD::postDisable( int flag )
@@ -214,7 +210,7 @@ void MBD::enable( )
 	if(SQLAllocHandle(SQL_HANDLE_STMT,hdbc,&hstmt) != SQL_SUCCESS)	throw TError(nodePath().c_str(), "SQLAllocHandle: %s", errors().c_str());
 #endif
 	TBD::enable();
-    } catch(TError) { disable(); throw; }
+    } catch(TError&) { disable(); throw; }
 }
 
 void MBD::disable( )
@@ -262,7 +258,13 @@ TTable *MBD::openTable( const string &inm, bool create )
 {
     if(!enableStat()) throw TError(nodePath().c_str(), _("Error open table '%s'. DB is disabled."), inm.c_str());
 
-    return new MTable(inm, this, create);
+    //if(create) owner().sqlReq("CREATE TABLE IF NOT EXISTS `"+TSYS::strEncode(owner().bd,TSYS::SQL)+"`.`"+
+    //				TSYS::strEncode(inm,TSYS::SQL)+"` (`<<empty>>` char(20) NOT NULL DEFAULT '' PRIMARY KEY)");
+    //Get the table structure description and check for it presence
+    vector< vector<string> > tblStrct;
+    //sqlReq("DESCRIBE `" + TSYS::strEncode(bd,TSYS::SQL) + "`.`" + TSYS::strEncode(inm,TSYS::SQL) + "`", &tblStrct);
+
+    return new MTable(inm, this, &tblStrct);
 }
 
 void MBD::transOpen( )
@@ -270,22 +272,22 @@ void MBD::transOpen( )
     //Check for limit into one trinsaction
     if(reqCnt > 1000) transCommit();
 
-    pthread_mutex_lock(&connRes);
+    connRes.lock();
     bool begin = !reqCnt;
     if(begin) trOpenTm = SYS->sysTm();
     reqCnt++;
     reqCntTm = SYS->sysTm();
-    pthread_mutex_unlock(&connRes);
+    connRes.unlock();
 
     if(begin) sqlReq("BEGIN;");
 }
 
 void MBD::transCommit( )
 {
-    pthread_mutex_lock(&connRes);
+    connRes.lock();
     bool commit = reqCnt;
     reqCnt = reqCntTm = 0;
-    pthread_mutex_unlock(&connRes);
+    connRes.unlock();
 
     if(commit) sqlReq("COMMIT;");
 }
@@ -375,8 +377,7 @@ void MBD::sqlReq( const string &req, vector< vector<string> > *tbl, char intoTra
 	    }
 	}
 	//if(sts == SQL_ERROR) throw TError(nodePath().c_str(), "SQLMoreResults: %s", errors().c_str());	//!!!! Only single result support !!!!
-    }
-    catch(TError ier) { err = ier.mess; }
+    } catch(TError &ier) { err = ier.mess; }
 
 #if (ODBCVER < 0x0300)
     SQLFreeStmt(hstmt, SQL_CLOSE);
@@ -408,21 +409,15 @@ void MBD::cntrCmdProc( XMLNode *opt )
 //************************************************
 //* BD_ODBC::Table                                *
 //************************************************
-MTable::MTable( string name, MBD *iown, bool create ) : TTable(name)
+MTable::MTable( string name, MBD *iown, vector< vector<string> > *itblStrct ) : TTable(name)
 {
-    string req;
-
     setNodePrev(iown);
 
-    if(create) {
-	/*req = "CREATE TABLE IF NOT EXISTS `"+TSYS::strEncode(owner().bd,TSYS::SQL)+"`.`"+
-	    TSYS::strEncode(name,TSYS::SQL)+"` (`<<empty>>` char(20) NOT NULL DEFAULT '' PRIMARY KEY)";
-	owner().sqlReq(req);*/
-    }
-
     //Get table structure description
-    //req = "DESCRIBE `" + TSYS::strEncode(owner().bd,TSYS::SQL) + "`.`" + TSYS::strEncode(name,TSYS::SQL) + "`";
-    //owner().sqlReq(req, &tblStrct);
+    /*try {
+	if(itblStrct) tblStrct = *itblStrct;
+	else owner().sqlReq("DESCRIBE `" + TSYS::strEncode(owner().bd,TSYS::SQL) + "`.`" + TSYS::strEncode(name,TSYS::SQL) + "`", &tblStrct);
+    } catch(...) { }*/
 }
 
 MTable::~MTable( )	{ }
@@ -489,7 +484,7 @@ void MTable::fieldStruct( TConfig &cfg )
     }
 }
 
-bool MTable::fieldSeek( int row, TConfig &cfg )
+bool MTable::fieldSeek( int row, TConfig &cfg, vector< vector<string> > *full )
 {
 
 }

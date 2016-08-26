@@ -89,6 +89,7 @@ typedef hash_map<const char*, TCntrNode*, __gnu_cxx::hash<string> > TMap;
 //* TCntrNode - Controll node					*
 //***************************************************************
 class TVariant;
+class TConfig;
 
 //#pragma pack(push,1)
 class TCntrNode
@@ -143,13 +144,14 @@ class TCntrNode
 	enum ModifFlag	{ Self = 0x01, Child = 0x02, All = 0x03 };
 
 	//Methods
-	pthread_mutex_t &dataRes( )	{ return mDataM; }	//Generic node's data mutex
-								//Allowed for using by heirs into data resources allocation
-								//  not for long-term functions-tasks resources allocation!
+	ResMtx &dataRes( ) { return mDataM; }	//Generic node's data mutex
+						//Allowed for using by heirs into data resources allocation
+						//  not for long-term functions-tasks resources allocation!
 	virtual const char *nodeName( ) = 0;
+	virtual const char *nodeNameSYSM( )	{ return ""; }
 	string nodePath( char sep = 0, bool from_root = true );
 
-	void nodeList( vector<string> &list, const string& gid = "" );				//Full node list
+	void nodeList( vector<string> &list, const string& gid = "" );	//Full node list
 	AutoHD<TCntrNode> nodeAt( const string &path, int lev = 0, char sep = 0, int off = 0, bool noex = false );	//Get node for full path
 	void nodeDel( const string &path, char sep = 0, int flag = 0 );	//Delete node at full path
 	static void nodeCopy( const string &src, const string &dst, const string &user = "root" );
@@ -167,12 +169,16 @@ class TCntrNode
 	void modifG( );					//Set group modify
 	void modifClr( bool save = false );		//Clear modify
 	void modifGClr( );				//Modify group clear
-	void load( bool force = false, string *errs = NULL );	//Load node, if modified
+	void load( TConfig *cfg = NULL, string *errs = NULL );	//Load node, if modified
 	void save( unsigned lev = 0, string *errs = NULL );	//Save node, if modified
 
 	// Connections counter
 	virtual void AHDConnect( );
 	virtual bool AHDDisConnect( );
+
+	void mess_sys( int8_t level, const char *fmt,  ... );
+	TError err_sys( const char *fmt,  ... );
+	TError err_sys( int cod, const char *fmt,  ... );
 
 	// User object access
 	virtual TVariant objPropGet( const string &id );
@@ -217,6 +223,7 @@ class TCntrNode
 	virtual void preDisable( int flag )	{ }
 	virtual void postDisable( int flag )	{ }
 
+	virtual void load_( TConfig *cfg )	{ }
 	virtual void load_( )			{ }
 	virtual void save_( )			{ }
 
@@ -228,7 +235,7 @@ class TCntrNode
 	} prev;
 
 	//Attributes
-	pthread_mutex_t	mChM, mDataM;	//Childs and generic data mutexes
+	ResMtx	mChM, mDataM;		//Childs and generic data mutexes
 
 	// Childs
 	vector<GrpEl>		*chGrp;	//Childs groups

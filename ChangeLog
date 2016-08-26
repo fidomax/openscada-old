@@ -1,3 +1,267 @@
+2016-08-25 Roman
+- !!!!:FIX:DB.LibsDB.OscadaLibs: DAQ template DevLib.oneWire renamed to DevLib.1W_DS9097 and some simplified.
+    New DAQ template DevLib.1W_DS9097U is added for allow OneWire support by an adapter DS9097U, based on the chip DS2480.
+    DAQ template DevLib.SSCP expanded for types "dt" and "time" support and the allowed to selection variables list moving to RO text attribute.
+- !!:DB.LibsDB.vcaBase: Groups of graphics and the control panel expanded to visualizer UI.Vision specific feature of selection/scalling
+    by window drawn by mouse. The attribute "enForce" naming of ElViewGraph fix.
+- FIX:UI.VCAEngine: setEnable() of widget and it's succession was expanded by the argument "force" like to pages.
+    FIX:Primitives force activation for not loaded active attributes is added after the widgets loading try, into the widgets libraries.
+    FIX:Units removing after the preloaded seek is fixed.
+    FIX:Session's pages force enabling, at a request, is prevented after it's manual disable.
+    FIX:User attribute ID set to empty prevented.
+    Visualizer specific atributes activation expanded for only present atributes activation, no a creation.
+- !!:UI.Vision: Allowed visualizer specific attributes by the primitives.
+    To primitive diagram the user-specific attribute "sclWin" added and used for trends view scale by window drawn by mouse.
+
+
+2016-08-25 fido_max
+- DAQ.FT3: General cleanup and refactoring of source code. KA DAQ implemented (BTU, BVT, BVTC, GZD, GNS). KA TANK object added.
+           Translation fixed. Major erros fixed.
+
+2016-08-16 Roman
+- UI.Vision: To primitive "Diagram" of mode "Trend" added sliding by mouse in the time axis.
+
+
+2016-08-15 Roman
+- !!!!:SYS: To object TCntrNode added function mess_sys() for create system messages with the node path into the category
+	and the node's location into the message begin, by the function nodeNameSYSM().
+    To object TCntrNode added function err_sys() for create error objects with the node path and the node's location.
+    The new TCntrNode object's functions were used everywhere into the OpenSCADA core.
+    Some of system messages moved to the debug category.
+- Archive.FSArch, UI.VCAEngine: The module moved to use the functions TCntrNode::{mess_sys,err_sys}().
+
+
+2016-08-11 Roman
+- FIX:DB.LibsDB.OscadaLibs: DevLib.SSCP some fixed for type "real" process and messages.
+- !!:FIX:Special.FLibSYS: IO object was fixed for byte orders of type "real" using as the integer bytes, but not native.
+
+
+2016-08-07 Roman
+- !!!!:DB.LibsDB.OscadaLibs: To the templates library "DevLib" new template "SSCP" is added for implement Shark Slave Communication Protocol.
+    !!!:DAQ template DevLib.oneWire: fix to the search algorithm and it's tested for 13 sensors on the bus;
+	appended by the devices support: DS2413 (tested), DS1822, DS1820/DS18S20/DS1920.
+    DAQ template DevLib.PCF8591 some fixed for set values to EVAL on errors and stability.
+- FIX:SYS.XML: Crashes on empty string encoding try fixed.
+- !!:FIX:DAQ.JavaLikeCalc: Free of a function test execution is added on the function stop, for some crashes on exit prevent.
+    !:FIX:Return of included functions fix for the string constant "" override.
+- !!:FIX:Special.FLibSYS: The system functions were appended by the Message Digest 5 (MD5) calculation function by OpenSSL.
+    FIX: IO object was fixed for type "char" (1 byte) counted reading.
+
+
+2016-08-02 Roman
+- !!!!:DB.LibsDB.OscadaLibs: To the templates library "DevLib" new template "oneWire" is added for implement OneWire bus by DS9097 and for DS1820.
+    Template DevLib.PCF8591 expanded by the AI set to EVAL on errors.
+- SYS: For user API TVal::set() prevented writing to no writable values of configurations.
+    New user API function TVal::isCfg() added.
+- DAQ.ICP_DAS: SDK was updated to last version of "ICP DAS".
+- DAQ.JavaLikeCalc: Syntax highlight expanded to the command "~".
+- Transport.Serial: The timeout "symbol" was expanded by "the next request's multiplicator to the {symbol} time, 4 by default".
+
+
+2016-07-27 Roman
+- SYS: taskUtilizTm() is expanded by the argument "max" for the maximum value obtain and the value changed to seconds.
+    The function taskDescr() is added for link get to the current task description structure.
+- DAQ.{BlockCalc,LogicLev,ModBus,Siemens}: The task's execution status was expanded by the maximum consumption value.
+- !!!:DAQ.LogicLev: Moved for set the attribute "f_frq" to the real (instantaneous) frequency, taken from the task description structure.
+    The parameters task's consumption measurement is added, into attribute "err", into the Debug mode of the controller object.
+
+
+2016-07-24 Roman
+- !!!!:SYS: The RW resources allocation object "Res" renamed to "ResRW".
+    Conditional variable management object "CondVar" is added.
+    FIX: ResRW::{resRequestW,resRequestR}() in wait timeout are forced to CLOCK_REALTIME but the pthread_rwlock unallowed to use any other.
+    The object ResString moved from the direct mutex managing to the ResMtx.
+- !!:UI.QTCfg: Moved from QMutex and QWaitCondition to ResMtx and CondVar, mostly for prevent here hangs on the system time changing.
+
+
+2016-07-23 Roman
+- !!!!:SYS: The system option clockRT is added for select the tasks planning clock as CLOCK_REALTIME but else it is CLOCK_MONOTONIC (default now).
+    time2str() and tm2s() of the astronomic time were renamed to atime2str() and atm2s().
+    time2str() and tm2s() of the relative time were moved from microseconds to seconds origin.
+    taskSleep() in the cron argument is moved to it's pure (string) representing for the origin point hold for
+	the astronomic clock changing detect and cron's target correction then and also for the consumption meassuring by the taskUtilizTm().
+- DAQ.{BlockCalc,DCON,LogicLev,Siemens}: The deprecated property "PERIOD" processing fix for allow it's replace next by
+    the propery "SCHEDULE" forcing to rewrite and "PERIOD" to clean.
+- DAQ: The unfinished module "EPICS" was removed but the project "YAPU" forbidden.
+- FIX:UI.QTCfg: Crash prevented for system's time change.
+
+
+2016-07-21 Roman
+- !!:Transport.Sockets: Output transport's reading reply in check to SO_ERROR moved to step 2 for take some time for delayed read
+    but same SO_ERROR reading somtime long.
+
+
+2016-07-19 Roman
+- DB.LibsDB.OscadaLibs: Template PCF8591 is added to the library DevLib. PCF8591 is I2C 8-bit A/D and D/A converter.
+- Transport: User API function messIO() is expanded by the input buffer size.
+    The input buffer size was also added to the manual request dialog of output transports.
+- Transport.Serial: Checking for allowed I2C_SLAVE definition is added, and to build for Nokia N800.
+- UI.QTCfg: Checking for integer input field's range is added.
+
+
+2016-07-18 Roman
+- !!!:FIX:DB: DBs loading interruption is prevented after loading with the ready configuration and an error here.
+- !!:FIX:DAQ.BlockCalc: For IO presenting check was used uninterrupted ioId() of the function object.
+- !!:Transport.Serial: Output transport expanded for I2C check and use.
+- !!:Transport.Sockets: Output transport's reading reply after false FD_ISSET is expanded by socket's SO_ERROR reading and
+    the wait interruption on any socket error. Allow early broken pipe detection and like ones for sockets.
+
+
+2016-07-17 Roman
+- Transport.Serial: Some cleaned about the RTS toggle (true/false) flow control and echo filtering and the translations update.
+- UI.Vision: Direct access check for root is restored at "userIsRoot" miss.
+
+
+2016-07-15 fido_max
+- Transport.Serial: Appended by RTS toggle (true/false) flow control and echo filtering.
+
+
+2016-07-13 Roman
+- UI.{VCAEngine,Vision}: To the "connect" service added checking the user for root by attribute "userIsRoot" and use for menu visible.
+- DB.LibsDB.{OscadaLibs,vcaTest}.db: CREATE TABLE cleaned from default values like '''''''''.
+- !!!!:SYS: Node's function load() and load_() expanded by argument TConfig *cfg for allow direct loading after the seeking request.
+    All parts adapted to the new argument "cfg" of loading functions, preloaded dataSeek() and the direct loading after the seeking request.
+    Overall loading time decresed from 36% (Core) to 15% (VCAEngine) and some parts down to 80%.
+    Argument "force" of the node function load() was removed and relaced by modifG() pre-call.
+    Modules version of the subsystem "DB", "DAQ", "Archive", "Protocol", "UI" rose to 12.
+    Modules version of the subsystem "Transport" rose to 13.
+    Primary commands transmission by "rdStRequest()" prevented from exceptions.
+- FIX:DB.{FireBird,MySQL,PostgreSQL,SQLite}: Fix to original translated message set into value "One" of the extended value and value "Two" clean up.
+- DAQ.BlockCalc: IO of blocks loading was moved to using the seek request.
+- DAQ.LogicLev: IO of parameters loading was moved to using the seek request.
+- UI.VCAEngine: User attribute's value translation into the user attributes loading is fixed.
+
+
+2016-07-10 Roman
+- !:DAQ: DAQ redundancy mode OnlyAlarms is added.
+- FIX:DB.{FireBird,MySQL,PostgreSQL,SQLite}: Field seek is fixed for full request force on "row" = 0.
+- !!!!:FIX:DAQ.JavaLikeCalc: Second argument's type changing at compile is fixed but it is dynamic now mostly,
+	detected on problems with some string operations.
+    Doubled string constants detection is fixed.
+- UI.QTStarter: Expanded by command line argument "--noX11" for allow the Qt disabling.
+
+
+2016-07-06 Roman
+- Archive: The option's "Overtime of the reserve history reload" description is fixed.
+- !!:FIX:UI.Vision: Status line configuration set and update is fixed only for the master-page and it's items immediately removing.
+    Session restoring moved to prior pages removing but that is some faster, safer and cleaner then updating.
+    Some debug counters are added.
+
+
+2016-07-05 Roman
+- DB.LibsDB.OscadaLibs.db: ParamTemplLibs.{anUnif,anUnifSt}: Expand to alarms modes: 0-force NORMA, 1-suppress, 2-save on change.
+- SYS: To prepare the translations table used the preloaded seek.
+- UI.VCAEngine: To user's attributes loading used the preloaded seek.
+
+
+2016-07-04 Roman
+- !!!:DB.{*,FireBird,MySQL,PostgreSQL,SQLite}:
+    Preloading scanning mode is added to functions fieldSeek() and dataSeek() for significant performance rise here.
+- Archive.DBArch: Messages get switched to use the preloading scanning mode.
+- Special.SystemTests: To the DB tests pool added a test of the preloading scanning mode.
+- FIX:UI.Vision: Pages including into the pages container is fixed for adjust at it's scale change.
+
+
+2016-07-01 Roman
+- Archive: First start replay of the local archive for redundancy active messages is added, into depth "rdRestDtOverTm".
+- SYS: A prefix with the station name is added to most significant system's messages.
+- FIX:UI.VCAEngine: Visualiser specific attributes force to modify at it's activation.
+- UI.Vision: Lock for main window run mode change at the session update-reconnect.
+
+
+2016-06-29 Roman
+- Archive: messPut() expanded for alarms set and processing in first order and allow ignore new but equal ones in redundancy.
+- DAQ.{BFN,DAQGate,MMS,ModBus,OPC_UA,Siemens}: Name of parameter of alarm messages expanded by the module name.
+- FIX:DAQ.DAQGate: No removing archives at the parameter removing is fixed for first-level parameters.
+- DAQ.LogicLev: The system IO "f_err" allowed for redundancy.
+- DAQ.OPC_UA.libOPC_UA: Noncrashed NaN publish interval processing added.
+- DAQ.SNMP: Local "dataRes" removed.
+- Protocol.SelfSystem: Local "sesRes" removed.
+- !!:UI.VCAEngine: Session local dataMtx() is replaced by generic dataRes() of node.
+    Connections management by it's connection ID is added, mostly for detect remoted VCAServer change and re-iniate needs then.
+- !!:UI.Vision: Help's field "Developers" is removed by merging it to the field "Author".
+    Using of connection ID is added.
+    Force to widgets update and restoring openned pages at a reconnection is added.
+
+
+2016-06-23 Roman
+- !!!:Archive,*: To messages get functions added a time result of the finished processing.
+    Mostly for allow fast continue from the point after long terminated by the timeout requests.
+    The limit rdRestDtOverTm rise to days and up to 356.
+- Archive.DBArch: The property "maxSize" is expanded from hours to days.
+    The used table closing after any put request is disabled.
+- Archive.{DBArch,FSArch}: Get messages request for equal begin and end time is allowed.
+- Archive.FSArch: Get from XML set some optimal. Get from plain allowed for the messages time equal to end.
+- Special.SystemTests: The DB tests are expanded by a seek test.
+
+
+2016-06-21 Roman
+- !!!!:SYS: For some productivity rise the exceptions catch moved from the object copy to it's reference,
+    thanks Max Kochetkov (fido_max) for the hint.
+- SYS:data/openscada_start.in adapted to gettext by use the aliase "GETTEXT".
+- !!!!:FIX:DB.{FireBird,MySQL,ODBC,PostgreSQL}: Fix and checked the moving to open table without exceptions into the table object constructor.
+- FIX:TUIS::docGet(): Force documents to background is added.
+
+
+2016-06-20 Roman
+- !!!!:FIX:SYS.TCntrNode: Free of locked nodes and attach to disabled ones are prevented by propper resource locking to mUse.
+- SYS:data/openscada_start.in is adapted to working without "gettext", mostly for N800.
+    data/{debian,debian_mod}/changelog: Author set to OpenSCADA <oscada@oscada.org>, mostly for allow the sign after build by that key.
+- DB: Resource's of the DB allocation TBD::resTbls is added. For now that is experimental and used in generic functions of the tables open(), close().
+- !!:Archive.DBArch: Get messages algorithm is rewrote to request by minutes in reason of requesting by hours is some too long for PostgreSQL,
+    with the limit about 1500 records.
+- !!!!:DB.*: All DB modules rewrote to open table without exceptions into the table object constructor.
+
+
+2016-06-16 Roman
+- !!!!:TDAQS,DAQ.{LogicLev,ModBus}: Redundancy of the dynamic attributes is added.
+- FIX:TDAQS,DAQ.LogicLev: Hierarchical DAQ parameters processing procedure is fixed.
+    Special and translated IO from config are prevented from the redundancy.
+
+
+2016-06-15 Roman
+- Archive.FSArch: The resources allocation including one to one are prevented. It was caused sometime to hungs before.
+
+
+2016-06-14 Roman
+- TSYS,TArchiveS,TDAQS: Description of arguments of the configuration file is fixed.
+- TArchiveS: New redundancy option "Overtime of the redundant history reload at start in hours" is added.
+- !!:TDAQS,DAQ.LogicLev: Redundancy procedure of DAQ parameters is adapted to it's hierarchy.
+- DB.MySQL: Executions into BD::postDisable() are prevented.
+
+
+2016-06-10 Roman
+- TDAQS: API functions tplE(), tplIOE(), errE() renamed to elTmpl(), elTmplIO(), elErr().
+- FIX:UI.QTCfg: External host's status processing mostly improved and fixed.
+    Timeouts of external host are set configurable by the option "TmConChk".
+    The options StartUser and StartPath are moved under a resource allocation by the type MtxString.
+
+
+2016-06-03 Roman
+- !!!!:SYS,*: MtxAlloc and MtxString moved to the mutex wrapper object ResMtx.
+    All module's subsystems' version rose to one point. CoreLib version rise to 3.5.
+- !:UI.Vision: Timeout of tries of restoring connection to a remote station set to progressive up to the pointed one
+	and the error message display after the timeout value in 3 seconds.
+- !:UI.VCAEngine: To project objects were added a property "EnableByNeed" to control the projects ready after start and prevent long connection
+    by the deferred enabling.
+
+
+2016-06-02 Roman
+- Transport: Listed external host's mode merging from two entries is fixed.
+- FIX:DAQ.Value: Write access to DAQ attributes closed for all into the service request "set".
+- !:Protocol.SelfSystem: Moved to some faster errors placing method. The reforwarding requests' processing set optimal.
+- FIX:UI.QTCfg: Into TextEdit widget added a signals blocking at setPlainText() for prevent the cursor events,
+    status bar update and crash in some cases here.
+- !!!!:FIX:UI.Vision: Too important fixes made in way of adapting to stable work with remote VCA servers:
+    The module's attributes VCAStation, UserStart, UserPass and UserStBar::{user,pass,VCAStation} were moved
+	under resources locking by the MtxString value type using.
+    To both runtime and development parts were added an initial connection with the restore connection timeout,
+	for allow to load the VCA-server resources.
+    In way of authentication as a default user the name takes from the attribute "user" of the session.
+    Processing of the information dialog about a connection lost was moved to a single request (and thread) from updatePage(),
+	for multithread access prevent and crashes (mostly from the notification tasks).
+
+
 2016-05-30 fido_max
 - FIX:DAQ.FT3 flData sensivity deadband processing for event forming fixed. B_BTR:setTU count_nu fixed. TMdContr::ProcessMessage data length for cmdGet answer fixed.
 - FIX:DAQ.Fastwel: TMdPrm::enable module config init fixed.
@@ -5,14 +269,14 @@
 
 2016-05-29 Roman
 - SYS:data/debian: the service's script openscada.init moved to separated package openscada-server.
-- !!!!:SYS,Transport,DAQ.DAQGate,UI.{QTCfg,Vision,WebCfgD}: External host uprise is implemented by the function extHostList() extention;
+- !!!!:SYS,Transport,DAQ.DAQGate,UI.{QTCfg,Vision,WebCfgD}: External host upraise is implemented by the function extHostList() extension;
     the requests reforwarding by function cntrIfCmd() and the input part of the self-system protocol.
 - Transport: Module's subsystems' version set to 11.
     Starting-connection time is added to the output transports.
     Modify property is added to the external host's object for reconnect on it modification.
 - !!:DAQ.BlockCalc: Configuration fields of block unified and moved to TConfig::cntrCmdMake().
     User API functions cntr(), cfg(), cfgSet() are added.
-- FIX:DAQ.Siemens.LibnoDave: gethostbyname() replaced to it's reentrant variants.
+- FIX:DAQ.Siemens.LibnoDave: gethostbyname() replaced to it's reentrant variant.
 - !!!!:Protocol.SelfSystem: Force authentication update by attribute "rqAuthForce" is added.
     Authentication error processing for direct requests is added.
     Authentication errors moved from the connection kind to the request, into the tag attribute "rez" and text.
@@ -20,22 +284,22 @@
 - FIX:Transport.{Serial,Sockets}: Errors on writing in the output part is fixed.
 - FIX:Transport.Sockets: Debug message about connect by timeout in the time is fixed.
 - !!!!:UI.Vision: Requests to an external host moved to using cntrIfCmd().
-    Remote authentication moved to allow use the host autentication by default and the same connection for check it.
+    Remote authentication moved to allow use the host authentication by default and the same connection for check it.
 
 
 2016-05-23 Roman
-- DB.LibsDB.OscadaLibs.db: Templates base.{digAlarm,}: expanded into the input data preprocessing procedure for
+- DB.LibsDB.OscadaLibs.db: Templates base.{digAlarm}: expanded into the input data preprocessing procedure for
     fix the procedure to reusing (more faster), stored context object into "ctx", "f_frq" actual value pass.
 - !!:DAQ: User API function funcCall() significant expanded to fix the result function for reusing and then significant performance rise.
-- TFunction: Virtual function prog() and setProg() is added for alow it's control through an abstract object.
+- TFunction: Virtual function prog() and setProg() is added for allow it's control through an abstract object.
 - DAQ.BlockCalc: Special attribute "this" of the object access set to processing into blocks. Some the source code cleaned.
 
 
 2016-05-21 Roman
 - DB.LibsDB.OscadaLibs.db: IEC-60870-104: M_ME_NB_1 processing fix for signed value.
     "DHT (AOSONG)": Offset to 20 set for humidity of DHT11.
-- !!!:Archive: Values archivation a global option is added for time of taken values force to current and overide it's source from.
-    To archive object an option is added for pass values fill to last value.
+- !!!:Archive: Values archivation a global option is added for time of taken values force to current and override it's source from.
+    To values archive object an option is added for pass values fill to last value.
 - !:Archive:FSArch: Expanded for early limits check and it's check at unpack errors and then prevent
     storages overfull at close limits and small storages. the feature is not tested yet!
 - Transport.Sockets: Wait timeout at read() function's zero set to the next time but that case possible after disconection by peer also.
@@ -60,7 +324,7 @@
 	- same pkg-config used from PKG_CONFIG enviroment which points to the cross variant;
 	- check to Qt expanded by test taken from Qt_MOC and Qt_RCC ones.
 - DAQ.BCM2835: Static function mode() is added for GPIO pins Input/Output modes free control, from needs to DHT11.
-- FIX:DAQ.OPC_UA.libOPC_UA: TimeStamps into "Write" client request's are disabled but some servers tell 0x80730000 (OpcUa_BadWriteNotSupported).
+- FIX:DAQ.OPC_UA.libOPC_UA: TimeStamps into the "Write" client request's are disabled but some servers tell 0x80730000 (OpcUa_BadWriteNotSupported).
 - !!:Transport.{Sockets,Serial}: Possible wrong readings after the select() wrong termination, with marking as a data present (some caused),
     is unified and better adjusted for different modes of the requesting and the not requesting mode of output transport.
 - Transport.Sockets: Input transport's error messages some improved and set more informative.
@@ -75,8 +339,8 @@
 	only for OpcUa_EventFilter at AId_EventNotifier parse.
     Input Variants function iVariant() is added as a separated part of function iDataValue().
     !!!!:FIX: Packages sequence number managing for server part is fixed by separating from the value of input packages.
-    FIX: Packages sequence number managing for input part also unified and fixed to prevent the value repeats.
-    Services CreateMonitoredItems and ModifyMonitoredItems processing merged to singe one.
+    FIX: Packages sequence number managing for the client part also unified and fixed to prevent the value repeats.
+    Services CreateMonitoredItems and ModifyMonitoredItems processing merged to a singe one.
     !!: Early Acknowledgements processing in request "Publish" is added.
     Successful adapting to work with UAExpert 1.4.
 
@@ -94,7 +358,7 @@
 2016-04-28 Roman
 - !!!:SYS,UI.{QTCfg,Vision,WebCfg,WebCfgD}: Transfer local primary commands to redundant host is added, by an option of redundancy.
     As primary commands, which transfered, mean: "set", "add", "ins", "del", "move", "load", "save".
-- !:Protocol.OPC_UA: Works into poll mode of input transport are allowed and enabled by default.
+- !!!!:Protocol.OPC_UA: Works into the poll mode of input transport are allowed and enabled by default.
 - UI.WebCfg: Source code significant cleaned.
 
 
@@ -113,7 +377,7 @@
 - Archive: In redundancy, alarms initial obtain is added.
 - DAQ: Initialization of redundancy of TController object some changed to enabled by default. That will next checked into a complex environment.
 - DAQ.BCM2835: Expanded for access to GPIO by static functions which significant faster ones.
-- FIX:DAQ.JavaLikeCalc: setNoTransl() at the attributes value (DB field "DEF") loading disabled by some problematic and no a sence.
+- FIX:DAQ.JavaLikeCalc: setNoTransl() at the attributes value (DB field "DEF") loading disabled by some problematic and no a sense.
 - Special.FLibSYS: The time functions are appended by tmSleep() for faster access to the short sleeping provides.
 - Transport.{SSL,Sockets}: Buffer's size of getservbyname() some decreased.
 - FIX:UI.QTCfg: Read only of selected items are fixed in alignment with other items in single row.
@@ -124,8 +388,8 @@
 - DB.LibsDB.OscadaLibs.db: Templates base.{digAlarm,anUnif,anUnifSign} expanded by prevent main execution into cycles
     of the starting (f_start) and stoping (f_stop). Template base.anUnifSign also expanded for EVAL detection lag into parameter "Tf".
 - DB.Model.AGLKS.St.db: Mostly parameters of LogLevPrm.experiment object of controller set into attribute "Tf" to value 2.
-- !!!!:SYS: Resources locking in RW object "Res" expanded by functions (synonyms) lock(), tryLock() and unlock().
-    All module's subsystems' version set (started) to 10 for the Work version and prevent in casual the modules coonect from LTS and vice versa.
+- !!!!:SYS: Resources locking in RW object "Res" expanded by the functions (synonyms) lock(), tryLock() and unlock().
+    All module's subsystems' version set (started) to 10 for the Work version and prevent in casual the modules connect from LTS and vice versa.
     !!!!:The redundancy significant expanded to moving redundancy hosts management to the system level, from exclusively DAQ subsystem.
     Additional managing time macro FTM2 is added.
     User API function SYS.sleep() expanded to accept first argument of time in seconds as float and allow to set here up to nanoseconds.
@@ -134,7 +398,7 @@
 - !!!!:Archives: Redundancy for message archives added.
     TArchiveS::messPut() expanded to write messages independent to the alarms table.
 - !!:FIX:Transport.{SSL,Sockets}: gethostbyname() and getservbyname() replaced to it's reentrant variants.
-- !:FIX:Transport.{Serial,Sockets}: For result's reading, into output tansport, added wating for data at zero or/and EAGAIN error.
+- !:FIX:Transport.{Serial,Sockets}: For result's reading, into output transport, added waiting for data at zero or/and EAGAIN error.
 
 
 2016-04-13 Roman
@@ -149,7 +413,7 @@
 - DB.LibsDB.OscadaLibs.db: DAQ template's "base.anUnif" attribute "Connection lost detect delay, s" moved to "Tf, s" in the role.
 - Archive.FSArch: Used FTM() for left the messages time.
     Checking to duplicated messages into get() adapted for the option "prevDblTmCatLev".
-- UI.{VCAEngine,Vision}: For view "Table" of primitive "FormEl" header's item option "sort" is added for point to initiate sorting collumn.
+- UI.{VCAEngine,Vision}: For view "Table" of the primitive "FormEl" header's item option "sort" is added for point to initiate sorting column.
 
 
 2016-04-08 fido_max
@@ -162,41 +426,43 @@
 - DB.LibsDB.OscadaLibs.db: DAQ template "base.anUnif" expanded by attribute "Connection lost detect delay, s"
     for prevent blinks into hosts in redundancy or so one.
 - Archives: pthread_mutex_t resources allocation moved to ResMtx and it's space decreased exclusively to local buffers access and
-    prevent some racecondition at the arcivators access.
-- DAQ.ModBus: "Value" field of templates set to use as default link, on first enable.
+    prevent some racecondition at the archivators access.
+- DAQ.ModBus: "Value" field of the templates set to use as a default link, on first enable.
 
 
 2016-04-06 Roman
 - DB.LibsDB.vcaBase.db: Left graphics group fix to "name" attribute.
-- !!:Archives: messPut() and messGet() expanded to archivators list allow instead single.
+- !!:Archives: messPut() and messGet() expanded to archivators list allow instead single one.
     User API function messGet() expanded by argument "upTo", for the timeout direct control allow.
-- FIX:DB.PostgreSQL: Fix cycling at unsuccessful a table's structure correction.
-- UI.VCAEngine: To messages reading by repeating tags of primitive "Document" added attribute "docAMessArchs" to allow read only archivators.
+- FIX:DB.PostgreSQL: Fix cycling after unsuccessful a table's structure correction.
+- UI.VCAEngine: To messages reading by the repeating tags of primitive "Document" added attribute "docAMessArchs"
+    to allow read only pointed archivators.
 
 
 2016-04-04 Roman
-- SYS: TSYS::strEncode() in variant SQL expanded by doubling method of pointed symbols.
-- DB.{PostgreSQL,SQLite}: TSYS::strEncode() in doubling method used.
-- UI.VCAEngine: Manual creation mark for pages is added. Mostly for modification of childs clean up and it's inheritance storing prevent
+- SYS: TSYS::strEncode() in variant SQL expanded by the doubling method of the pointed symbols.
+- DB.{PostgreSQL,SQLite}: TSYS::strEncode() in doubling method is used.
+- UI.VCAEngine: Manual creation mark for pages is added. Mostly for modification of the childs clean up and it's inheritance storing prevent
     by it is spare and sometime problematic on the parent update, like messages about impossible to enable a widget.
 - FIX:DB.PostgreSQL: Fixed for symbols "'" '"' encoding by it replace to the doubling method.
 
 
 2016-04-03 Roman
-- UI.{Vision,WebVision}: For primitive "Diagram" to data block "data:<dt/>" option "Aproximation (aprox)" is added.
-- !!:DAQ.DCON: Some cleaned. Adapted and enabled hierarchical parameters. Pass to real requests at the first and last iterations.
+- UI.{Vision,WebVision}: For primitive "Diagram" to data block "data:<dt/>" option "Approximation (aprox)" is added.
+- !!:DAQ.DCON: Some cleaned. Adapted and enabled hierarchical parameters. Pass of real requests at the first and last iterations.
     enRes and reqRes resources lockators moved from Res to ResMtx.
-- !:DAQ.{ModBus,Siemens}: Pass to real requests at the first and last iterations, only the procedures execution.
+- !:DAQ.{ModBus,Siemens}: Pass of real requests at the first and last iterations, only the procedures execution.
 
 
 2016-04-01 Roman
 - FIX:DB.{SQLite,MySQL,PostgreSQL,FireBird}: Previous scaned value getting prevented on the original value setting to clear all extended structure of translated value.
     Detected on UI.VCAEngine users attributes seek.
 - Protocol.SelfSystem: Attribute "remoteSrcAddr" of the root node set/reserve to the remoted host's address.
-- FIX:UI.VCAEngine: Mostly information messages from information level moved to debug.
-    User API functions mess{Debug,Info,Note,Warning,Err,Crit,Alert,Emerg}() appended to the run-time widget and included the widget path as category.
-    FIX: setNoTransl() at the attributes loading disabled by some problematic and no a sence.
-    The note messages is added: "User is changed to ...", "User is connected ...", "User is disconnected ...".
+- FIX:UI.VCAEngine: Mostly information messages from the information level moved to the debug one.
+    User API functions mess{Debug,Info,Note,Warning,Err,Crit,Alert,Emerg}() appended to the run-time widget and
+	included the widget path as the category.
+    FIX: setNoTransl() at the attributes loading disabled by some problematic and no a sense.
+    The note messages are added: "User is changed to ...", "User is connected ...", "User is disconnected ...".
 - UI.{VCAEngine,Vision}: To view "Table" of the primitive FormEl into root tag "tbl" added attribute "sortEn" to direct sorting by columns.
 - FIX:UI.Vision: For the attribute inspector labels of the attributes the ToolTip is added to long names (>20).
     FIX: The palette restoring to visibleCheck function is added for prevent FormEl's artifacts at last.
@@ -221,7 +487,7 @@
     By the option "Scan by days threshold in seconds" enabled separation the "datatime" row to "date" and "time" with allow significant rise
 	the performance of reading message's big parts by day's blocks scan/seek and decrease the scan/seek by seconds.
 - UI.{VCAEngine,Vision}: Logical groups separator of Widget's attributes is changed from ":" to ": " everywhere, mostly for allow
-    the user attribute value's items separtion and description it with the symbol ":". Some like user attributes will not now grouped before fix!
+    the user attribute value's items separation and description it with the symbol ":". Some like user attributes will not now grouped before fix!
 
 
 2016-03-16 Roman
@@ -259,13 +525,13 @@
 - FIX:SYS: User's space flags to generic nodes (TCntrNode) processing fixed, mostly for "RM_Full" flag and DAQ paramter's archives propper removing.
 - UI.Vision: Global modification mark processing moved to different function modifyGlbStUpdate() and some changed.
 - FIX:UI.Vision: Included to container's pages align processing rewrote to trace on the widget's geometry update and
-    to the misaligned scrol-bars appearing sometime prevent.
+    to the misaligned scroll-bars appearing sometime prevent.
 
 
 2016-02-17 Roman
 - FIX:UI.VCAEngine: Notifications by queue and direct pointed resource is fixed.
 - SYS: CoreLib version rise to 3.5.
-    Security: Adapted to prevent passwors storing in open view as hash instead, for: OpenSCADA host (Transports), Protocol.SelfSystem, UI.Vision.
+    Security: Adapted to prevent passwords storing in open view as hash instead, for: OpenSCADA host (Transports), Protocol.SelfSystem, UI.Vision.
     Security: crypt_r() using enabled only for "__USE_GNU" and the open passwords store instead.
 
 
@@ -298,7 +564,7 @@
 - SYS.{configure.ac,ChangeLog}: Some messages fix.
 - DAQ.JavaLikeCalc: Operation "||" and "&&" formal set to equal priority.
 - DAQ.OPC_UA: Module for client renamed to "Client OPC-UA" and for server to "Server OPC-UA".
-    Protocol: reqData() fixed for "NodeClass" processing of the "Browse" request, motly for forward request to the data model.
+    Protocol: reqData() fixed for "NodeClass" processing of the "Browse" request, mostly for forward request to the data model.
 
 
 2016-01-08 Roman
@@ -1120,7 +1386,7 @@
 
 2015-01-31 Roman
 - !!!!:UI.{VCAEngine,Vision,WebVision}: Type "XY" to primitive "Diagram" support is added, by Y into unpair and X into pair parameters.
-- FIX:UI.Vision: Double free by later restoring user and the password after changing user to unalowed for reading user for the project's session.
+- FIX:UI.Vision: Double free by later restoring user and the password after changing user to unallowed for reading user for the project's session.
 
 
 2015-01-28 Roman
@@ -1436,7 +1702,7 @@
     TFunction,DAQ.{TPrmTmpl,JavaLikeCalc,ModBus},Protocol.UserProtocol,UI.VCAEngine: expanded by storage property for DB place by table "Trs" obtain.
     Translation API exanded function TMess::translGet() for translated to base message obtain, for now only for User API procedure's messages by tr().
 - DB: Object TBD expanded function fullDBName().
-    DB.*: Expanded by new DB's structure flag incomplTblStruct() for prevent remove collumns and only new append.
+    DB.*: Expanded by new DB's structure flag incomplTblStruct() for prevent remove columns and only new append.
     FIX:SQLite: DEFAULT twice wrapping to quotes '', on rereading the from table structure is fixed.
 
 
@@ -1875,7 +2141,7 @@
     setVals() is adapted for allow write unaligned border [beg:end] to period by round here.
 - !!!!:DAQ.{BFN,DAQGate,MMS,ModBus,OPC_UA}: Alarms for connection state to remote sources is made unified.
 - DAQ.MMS: Values read errors processing is added.
-- UI.QTCfg: rows and collumns of a table adjust mechanism set like from UI.Vision primitive FormEl view "Table".
+- UI.QTCfg: rows and columns of a table adjust mechanism set like from UI.Vision primitive FormEl view "Table".
 
 
 2014-04-24 Roman
@@ -1921,8 +2187,8 @@
 
 
 2014-04-17 Roman
-- UI.Vision: To view "Table" of primitive "FormEl" added manual and adaptive the collumns widths control by global attribute
-    colsWdthFit=1 and force collumn width set, into header row items, by attribute "width" (into pixels or percents).
+- UI.Vision: To view "Table" of primitive "FormEl" added manual and adaptive the columns widths control by global attribute
+    colsWdthFit=1 and force column width set, into header row items, by attribute "width" (into pixels or percents).
 
 
 2014-04-15 Roman
@@ -5097,7 +5363,7 @@
 
 
 2011-03-30 Roman
-- DB: Into user API function "SQLreq()" is added set cell value to object property by collumn name, to row Array > 0.
+- DB: Into user API function "SQLreq()" is added set cell value to object property by column name, to row Array > 0.
 - SYS: To user API object TArray is set return null value for wrong indexes.
 - !!:DAQ.JavaLikeCalc: Special symbols write by octal "\041" and hex "\x21" digits is added.
 
@@ -6135,7 +6401,7 @@
 - !!:DAQ.Value: User's API functions get() and set() attribute is added.
 - !!:SYS.TVarObj: The function propList() is added for attributes scan allow.
 - !!!!:DAQ.JavaLikeCalc: Cycle view for object's properties scan is added "for( <i> in <obj> ) <code>;".
-- FIX:DAQ.JavaLikeCalc: Error's collumn position calc is fixed for string constants and object's dots.
+- FIX:DAQ.JavaLikeCalc: Error's column position calc is fixed for string constants and object's dots.
 - !!:DAQ.OPC_UA: Server object and security channel registartion is added. Test prototype realisation finished.
     Integration for OpenSCADA objects is started.
 - FIX:UI.QTCfg. UI.Vision: Automatic RichText is disabled for text fields and information/error messages.
@@ -6583,7 +6849,7 @@
 - FIX:UI.VCAEngine: The attribute "docAMess" of primitive "Document" processing is fixed.
 - !!:UI.Vision, UI.WebVision: Full support the alarms is finished for primitive "Protocol".
 - UI.Vision: Vertical scroll position saving is added for primitive "Document".
-- FIX:UI.Vision: Collumns and rows resizing is fixed for primitive "Protocol".
+- FIX:UI.Vision: Columns and rows resizing is fixed for primitive "Protocol".
 - FIX:UI.Vision, UI.WebVision: Direct light border making is disable for primitive "Box". Use for this script.
 - !!!!:/DOC: OpenSCADA manual documents and API document is updated and release 0.6.4 preview is added. Old version's previews is deleted.
 
@@ -6620,7 +6886,7 @@
 
 
 2009-09-28 Roman
-- SYS.Template: The collumn "Access" is renamed to "Configure".
+- SYS.Template: The column "Access" is renamed to "Configure".
 - !!:DAQ.BlockCalc: Direct links to parameters using is added. 
 - DAQ.JavaLikeCalc: The operation "AND" and "OR" is made EVAL insensitivity.
 

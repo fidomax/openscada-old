@@ -6,7 +6,7 @@ AC_INIT([OpenSCADA],[0.9],[rom_as@oscada.org])
 # Increase major for next Work version.
 # Increase minor after significant changes into API of the Work version
 # Full freeze for LTS stabilisation levels/updates, after the release
-oscd_LIBREVISION="3:5:0"
+oscd_LIBREVISION="3:6:0"
 
 AC_PREFIX_DEFAULT([/usr])
 oscd_modulpref="oscd_"
@@ -274,7 +274,6 @@ AX_MOD_DAQ_EN(OneWire,[enable build module DAQ.OneWire],enable,incl,[
 ])
 AX_MOD_DAQ_EN(MMS,[enable build module DAQ.MMS],enable,[],[],
     [AC_CONFIG_FILES(src/moduls/daq/MMS/libMMS/Makefile)])
-AX_MOD_DAQ_EN(EPICS,[enable build module DAQ.EPICS],enable,[],[],[])
 AX_MOD_DAQ_EN(FT3,[enable build module DAQ.FT3],enable,[],[],[])
 if test $ix86 != yes -a $target_cpu != "ix86"; then enable_Fastwel=no; fi
 AX_MOD_DAQ_EN(Fastwel,[enable build module DAQ.Fastwel],enable,[],[],[])
@@ -365,6 +364,7 @@ AX_MOD_Special_EN(FLibComplex1,[disable or enable[=incl] build module Special.FL
 AX_MOD_Special_EN(FLibMath,[disable or enable[=incl] build module Special.FLibMath],disable,incl)
 AX_MOD_Special_EN(FLibSYS,[disable or enable[=incl] build module Special.FLibSYS],disable,incl,[
     AX_LIB_FFTW3()
+    AX_LIB_OpenSSL()
 ])
 AC_MSG_RESULT(===========================================)
 

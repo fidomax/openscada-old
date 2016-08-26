@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-29 19:30+0300\n"
+"POT-Creation-Date: 2016-08-14 09:09+0300\n"
 "PO-Revision-Date: 2011-07-24 22:47+0400\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -28,6 +28,9 @@ msgstr "Die Ressource versucht den toten Block in den Strom einzusetzen"
 
 msgid "Resource is timeouted!"
 msgstr "Wartezeit der Ressource ist aus"
+
+msgid "Archives"
+msgstr "Aufzeichnungen"
 
 msgid "ID"
 msgstr ""
@@ -128,10 +131,10 @@ msgid ""
 "------------ Parameters of section '%s' in config-file -----------\n"
 "MessBufSize   <items>       Messages buffer size.\n"
 "MessPeriod    <sec>         Message archiving period.\n"
-"ValPeriod     <msec>        Values archiving period.\n"
-"ValPriority   <level>\t     Values task priority level.\n"
-"MaxReqMess    <items>       Maximum request messages.\n"
-"MaxReqVals    <items>       Maximum request values.\n"
+"ValPeriod     <msec>        Values active archiving period.\n"
+"ValPriority   <level>\t     Values task priority level of active archiving.\n"
+"RdRestDtOverTm <hours>      Overtime of the reserve history reload at start "
+"in hours.\n"
 "\n"
 msgstr ""
 "==================== Optionen des Subsystems \"Archive\" "
@@ -142,8 +145,8 @@ msgstr ""
 "MessPeriod    <sec>         Zeitperiode für Archivierung der Nachrichten.\n"
 "ValPeriod     <msec>        Zeitperiode für Archivierung der Werte.\n"
 "ValPriority   <level>       Prioritätsstufe der Werte.\n"
-"MaxReqMess    <items>       Maximale Anzahl der Nachrichten.\n"
-"MaxReqVals    <items>       Maximale Anzahl der Werte.\n"
+"RdRestDtOverTm <Std.>       Überstunden der Reserve Geschichte neu zu laden "
+"beim Start in Stunden.\n"
 "\n"
 
 msgid "Start/update subsystem."
@@ -160,9 +163,6 @@ msgstr "Fehler beim Starten des Wertearchivars '%s'."
 #, c-format
 msgid "Value archive '%s' start error."
 msgstr "Fehler beim Starten des Wertearchivs '%s'."
-
-msgid "Stop subsystem."
-msgstr "Subsystem anhalten."
 
 #, c-format
 msgid "Value archivator '%s' stop error."
@@ -188,6 +188,9 @@ msgstr "Wertearchiv"
 
 msgid "Redundancy"
 msgstr "Redundanz"
+
+msgid "Overtime of the reserve history reload at start, days"
+msgstr "Überstunden der Reserve Geschichte reload beim Start, Tage"
 
 msgid "Message archivators"
 msgstr "Nachrichtarchivare"
@@ -524,9 +527,6 @@ msgstr ""
 "Auswahl der Archivierungs Priorität für \"Alle\" mit Quellen-Modus. Auf Null "
 "einstellen für Voll der Auswahl deaktivieren."
 
-msgid "Archives"
-msgstr "Aufzeichnungen"
-
 msgid "Buffer size"
 msgstr "Speichergrösse"
 
@@ -691,8 +691,7 @@ msgstr "Der Knoten ist abgeschaltet!"
 msgid "Node '%s' no present!"
 msgstr "Der Knoten '%s' ist nicht vorhanden!"
 
-#, c-format
-msgid "Copy from '%s' to '%s' is impossible"
+msgid "Copy from '%s' to '%s' impossible."
 msgstr "Kopieren von '%s' nach '%s' ist nicht zulässig."
 
 msgid "Destination node doesn't have branches."
@@ -726,8 +725,12 @@ msgid "Node is the root or is not connected!"
 msgstr "Knoten ist 'root' oder nicht verbunden!"
 
 #, c-format
-msgid "Element '%s' is not present or disabled!"
-msgstr "Element '%s' ist nicht vorhanden oder abgeschaltet!"
+msgid "Element '%s' is not present!"
+msgstr "Element '%s' ist nicht vorhanden!"
+
+#, c-format
+msgid "Element '%s' is disabled!"
+msgstr "Element '%s' ist abgeschaltet!"
 
 msgid "Too more users for node!!!"
 msgstr "Zu viele Benutzer für Knoten!!!"
@@ -879,7 +882,7 @@ msgstr ""
 "Empfang von Nachrichten für gleiche und höhere Stufe.\n"
 "Wirkt sich auch auf das Erzeugen der Datenquelle Diagnosemeldungen."
 
-msgid "Data acquisition"
+msgid "Data Acquisition"
 msgstr "Datenerfassung"
 
 msgid "Maximum calculate time (sec)"
@@ -916,9 +919,6 @@ msgstr "Fehler beim Laden der Vorlagenbibliotheken."
 msgid "Add controller '%s' error."
 msgstr "Fehler beim Hinzufügen eines Controllers '%s'."
 
-msgid "Start subsystem."
-msgstr "Subsystems starten."
-
 #, c-format
 msgid "Start template library '%s' error."
 msgstr "Fehler beim Starten der Vorlagenbibliothek '%s'."
@@ -951,39 +951,29 @@ msgstr "Spitz Knoten nicht Attribut '%s'."
 msgid ""
 "=================== Subsystem \"Data acquisition\" options ================\n"
 "------------ Parameters of section '%s' in config-file -----------\n"
-"RdStLevel    <lev>  The current station redundant level.\n"
-"RdTaskPer    <s>    The redundant task call period.\n"
-"RdRestConnTm <s>    Restore connection timeout to dead reserve stations.\n"
 "RdRestDtTm   <hour> Restore data archive depth from a reserve station after "
 "deadline.\n"
-"RdStList     <list> Redundant stations list, separated symbol ';' (st1;"
-"st2).\n"
 "\n"
 msgstr ""
 "=================== Optionen des Subsystems \"Datenempfang\" "
 "======================\n"
 "--------------- Parameter der Sektion '%s' in der Konfigurationsdatei "
 "--------------\n"
-"RdStLevel    <уров>   Das Niveau der laufenden Station im "
-"Bereitstellungschema.\n"
-"RdTaskPer    <с>      Die Periodizität des Aufrufes der "
-"Bedinungsaufgabeрезервирования.\n"
-"RdRestConnTm <с>      Zeitinterval der Wiederstellung der Verbindung mit "
-"\"toter\" Reservstation.\n"
-"RdRestDtTm   <час>    Wiederstellungstiefe der Archivdaten aus der "
+"RdRestDtTm   <Stunde> Wiederstellungstiefe der Archivdaten aus der "
 "Reservstation beim Einschalten.\n"
-"RdStList     <список> Liste von Reservstationen, mit dem Symbol getrennt "
-"';' (st1;st2).\n"
 "\n"
 
 msgid "Template library"
 msgstr "Vorlagenbibliothek"
 
-msgid "Restore data depth time (hour)"
-msgstr "Tiefe der Wiederherstellungzeit der Daten (Stunden)"
+msgid "Depth time of restoring data at start, hours"
+msgstr "Tiefe Zeit von Daten beim Start wiederherstellen, Stunden"
 
 msgid "Controllers"
 msgstr "Controller"
+
+msgid "Off;Asymmetric;Only alarms"
+msgstr "Off;Asymmetrisch;Nur Alarme"
 
 msgid "Template libraries"
 msgstr "Vorlagenbibliotheken"
@@ -993,10 +983,6 @@ msgstr "Fehler des Bezeichners!"
 
 msgid "The element container is already attached!"
 msgstr "Elementencontainer ist schon eingeschaltet!"
-
-#, c-format
-msgid "Element '%s' is not present!"
-msgstr "Element '%s' ist nicht vorhanden!"
 
 msgid "Field is not String."
 msgstr "Feld ist kein Text."
@@ -1190,7 +1176,7 @@ msgstr ""
 "  \"* 2-4 * * *\" - für alle Minuten in Stunden von 2 bis 4 (einschließlich)."
 
 msgid ""
-"Task priority level (-1...99), where:\n"
+"Task priority level (-1...199), where:\n"
 "  -1        - lowest priority batch policy;\n"
 "  0         - standard userspace priority;\n"
 "  1...99    - realtime priority level (round-robin), often allowed only for "
@@ -1198,14 +1184,14 @@ msgid ""
 "  100...199 - realtime priority level (FIFO), often allowed only for \"root"
 "\"."
 msgstr ""
-"Task-Priorität (-1...99), wobei:\n"
+"Task-Priorität (-1...199), wobei:\n"
 "  -1        - Niedrigste Priorität, Hintergrund Politik;\n"
 "  0         - Standard-Benutzer Priorität;\n"
 "  1...99    - Die Prioritätsstufe der Echtzeit-(Round-Robin), oft nur für "
 "\"root\";\n"
 "  100...199 - Die Prioritätsstufe der Echtzeit-(FIFO), oft nur für \"root\"."
 
-msgid "Modules scheduler"
+msgid "Modules Scheduler"
 msgstr "Modulsteuerung"
 
 #, c-format
@@ -1319,8 +1305,17 @@ msgstr "Autor"
 msgid "License"
 msgstr "Lizenz"
 
-msgid "Connect module."
-msgstr "Modul verbinden."
+msgid "Enable module."
+msgstr "Aktivieren Modul."
+
+msgid "Disable module."
+msgstr "Disable-Modul."
+
+msgid "Start module."
+msgstr "Startmodul."
+
+msgid "Stop module."
+msgstr "Stopp-Modul."
 
 #, c-format
 msgid "Function '%s' is not present in the module!"
@@ -1436,7 +1431,7 @@ msgstr "Parametervorlagen"
 msgid "Templates"
 msgstr "Vorlagen"
 
-msgid "Transport protocols"
+msgid "Transport Protocols"
 msgstr "Übertragungsprotokolle"
 
 msgid ""
@@ -1542,12 +1537,22 @@ msgid "The subsystem is not modular!"
 msgstr "Das Subsystem ist nicht modular!"
 
 #, c-format
+msgid "Connect module '%s'!"
+msgstr "Verbinden Modul '%s'!"
+
+#, c-format
 msgid "Disconnect module '%s'!"
-msgstr "Verbindung trennen für das Modul '%s'!"
+msgstr "Abklemmen Modul '%s'!"
+
+msgid "Start subsystem."
+msgstr "Subsystems starten."
 
 #, c-format
 msgid "Start module '%s' error."
 msgstr "Fehler beim Starten des Moduls '%s'."
+
+msgid "Stop subsystem."
+msgstr "Subsystem anhalten."
 
 #, c-format
 msgid "Stop module '%s' error."
@@ -1565,7 +1570,7 @@ msgstr "System Zählern an der Ausfahrt: %s"
 
 #, c-format
 msgid ""
-"Change work directory to '%s' error: %s. Perhaps current directory already "
+"Changing work directory to '%s' error: %s. Perhaps current directory already "
 "set correct to '%s'."
 msgstr ""
 "Fehler der Veränderung der Arbeitsdirectory in '%s': %s. Wahrscheinlich ist "
@@ -1664,8 +1669,17 @@ msgid ""
 "Lang2CodeBase <lang>\tBase language for variable texts translation, two "
 "symbols code.\n"
 "MainCPUs   <list>\tMain used CPUs list (separated by ':').\n"
+"ClockRT    <false>\tSet for use REALTIME (else MONOTONIC) clock, some "
+"problematic with the system clock modification.\n"
 "SaveAtExit <true>\tSave the system at exit.\n"
 "SavePeriod <sec>\tSave the system period.\n"
+"RdStLevel  <lev>\tLevel of redundancy current station.\n"
+"RdTaskPer  <s>\t\tCall period of the redundant task.\n"
+"RdRestConnTm <s>\tRestore connection timeout of try to the \"dead\" reserve "
+"stations.\n"
+"RdStList   <list>\tRedundant stations list, separated symbol ';' (st1;st2).\n"
+"RdPrimCmdTr <0|1>\tEnable the primary commands transfering to the redundant "
+"stations.\n"
 "\n"
 msgstr ""
 "***************************************************************************\n"
@@ -1707,8 +1721,19 @@ msgstr ""
 "Lang2CodeBase <Sprache> Grundsprache für die Übersetzung von Textvariablen, "
 "zwei Symbole.\n"
 "MainCPUs   <Liste>\tWichtigsten gebrauchte CPUs Liste (geteilt ':').\n"
+"ClockRT    <falsch>\tStellen Sie für die Verwendung REALTIME (elsa "
+"MONOTONIC) Uhr, einige problematische mit dem Systemtakt Modifikation.\n"
 "SaveAtExit <true>\tSystem beim Beenden Speichern.\n"
 "SavePeriod <sec>\tZeitintervall für Systemspeicherung.\n"
+"RdStLevel  <lev>\tDas Niveau der laufenden Station im Bereitstellungschema.\n"
+"RdTaskPer  <s>\t\tDie Periodizität des Aufrufes der Bedinungsaufgabe.\n"
+"RdRestConnTm <s>\tWiederherstellen Verbindungs-Timeout auf Versuch zu den "
+"\"toten\" Reserve-Stationen.\n"
+"RdStList   <Liste>\tListe von Reservstationen, mit dem Symbol getrennt "
+"';' (st1;st2).\n"
+"RdPrimCmdTr <0|1>\tAktivieren Sie die primären Befehle an die redundanten "
+"Stationen übertragen.\n"
+"\n"
 
 #, c-format
 msgid "Config-file '%s' error: %s"
@@ -1720,8 +1745,8 @@ msgstr "Config-Datei '%s' Ladefehler."
 
 #, c-format
 msgid ""
-"Station '%s' is not present in the config-file. Use '%s' station "
-"configuration!"
+"Station '%s' is not present in the config-file. Using configuration for "
+"station '%s'!"
 msgstr ""
 "Station '%s' fehlt in der Konfigurationsdatei. Konfiguration der Station "
 "'%s' wird verwendet!"
@@ -1741,7 +1766,7 @@ msgstr "Konfigurationsdatei '%s' Fehler: %s"
 msgid "Load!"
 msgstr "Laden!"
 
-msgid "No one module is loaded. Your configuration broken!"
+msgid "No one module is loaded. Your configuration is broken!"
 msgstr "Kein Modul ist geladen. Ihre Konfiguration ist kaput"
 
 #, c-format
@@ -1768,8 +1793,8 @@ msgstr "Anhalten!"
 msgid "Error stop subsystem '%s'."
 msgstr "Fehler beim Anhalten des Subsystems '%s'."
 
-msgid "The Terminate signal is received. Server is being stopped!"
-msgstr "Signal zum Beenden wird empfangen. Server wird angehalten!"
+msgid "Termination signal is received. Stop the station!"
+msgstr "Signal zum Beenden wird empfangen. Stoppen Sie die Station!"
 
 msgid "Floating point exception is caught!"
 msgstr "Fehler bei Fliesskommaoperation abgefangen!"
@@ -1781,8 +1806,8 @@ msgstr "Beenden des Kindprozesses %d!"
 msgid "Segmentation fault signal!"
 msgstr "Fehler Speichersegmentierung!"
 
-msgid "OpenSCADA is aborted!"
-msgstr "OpenSCADA ist abgebrochen!"
+msgid "Program aborted!"
+msgstr "Programmabbruch!"
 
 #, c-format
 msgid "Unknown signal %d!"
@@ -1800,7 +1825,7 @@ msgstr "Aufgabe '%s' ist schon geschafft!"
 
 #, c-format
 msgid ""
-"No permission for create real-time policy for '%s'. Default thread is "
+"No permission for create a real-time policy for '%s'. Default thread is "
 "created!"
 msgstr ""
 "Kein Zugang für das Schaffen der Realzeitpolitik für '%s'. Der Strom ist "
@@ -1815,20 +1840,35 @@ msgid "Task '%s' start timeouted!"
 msgstr "Task-Start '%s' timeouted!"
 
 #, c-format
+msgid "Task '%s' timeouted !!!"
+msgstr "Tasks '%s' Timeout !!!"
+
+#, c-format
 msgid "Task '%s' is not stopped!"
 msgstr "Aufgabe '%s' ist nicht gestoppt!"
+
+#, c-format
+msgid "Wait event of task '%s' ..."
+msgstr "Warten Sie Ereignis von Aufgaben '%s' ..."
+
+msgid "It isn't OpenSCADA task!"
+msgstr "Es ist nicht OpenSCADA Aufgabe!"
 
 #, c-format
 msgid "Task %u unexpected terminated by exception."
 msgstr "Task %u unerwartet beendet durch Ausnahme."
 
 #, c-format
-msgid "Redundancy '%s': station '%s' up."
-msgstr "Redundancy '%s': station '%s' auf."
+msgid "Redundant station '%s' up."
+msgstr "Redundancy station '%s' auf."
 
 #, c-format
-msgid "Redundancy '%s': station '%s' down."
-msgstr "Redundancy '%s': station '%s' abwärts."
+msgid "Redundant station '%s' down."
+msgstr "Redundancy station '%s' abwärts."
+
+#, c-format
+msgid "System clock changed to '%s'. Correction the cron '%s' target!"
+msgstr "Der Systemtakt geändert '%s'. Korrektur der cron '%s' Ziel!"
 
 msgid "1:Request is not object!"
 msgstr "1:Die Anfrage ist kein Objekt!"
@@ -1869,8 +1909,8 @@ msgstr ""
 "dem Symbol ':' getrennt.\n"
 "Prozessorsnummer beginnen mit 0."
 
-msgid "Real-time clock resolution"
-msgstr "Auflösung Echtzeituhr"
+msgid "Tasks planning clock"
+msgstr "Aufgaben Uhr Planung"
 
 msgid "Internal charset"
 msgstr "Interne Kodierung"
@@ -2056,6 +2096,14 @@ msgid "%dx%0.3gGHz"
 msgstr "%dx%0.3gGHz"
 
 #, c-format
+msgid "Real-time %s"
+msgstr "Echtzeit %s"
+
+#, c-format
+msgid "Monotonic %s"
+msgstr "Monotone %s"
+
+#, c-format
 msgid "Spent time: %s."
 msgstr "Verbrauchte Zeit: %s."
 
@@ -2095,7 +2143,10 @@ msgid "CPUs set for the thread error."
 msgstr "Fehler bei der Installation von Prozessoren für den Strom."
 
 msgid "<<<Unmatched sources!!!>>>\n"
-msgstr "<<<Unerreichte Quelle>>>!!!\n"
+msgstr "<<<Unerreichte Quelle!!!>>>\n"
+
+msgid "Transports"
+msgstr "Übertragungen"
 
 msgid "Transport type"
 msgstr "Übertragungstypen"
@@ -2181,9 +2232,6 @@ msgstr "Eingangsübertragung"
 msgid "Output transport"
 msgstr "Ausgangsübertragung"
 
-msgid "Transports"
-msgstr "Übertragungen"
-
 msgid "Stoped. "
 msgstr "Angehalten. "
 
@@ -2229,6 +2277,16 @@ msgstr ""
 "Bei der Installation dieser Flaggewird das Erwarten aller Antwortstückchen, "
 "bis zum Datenfehlen während Transport-Timeout erfüllt."
 
+msgid "Input buffer size, bytes"
+msgstr "Eingangspuffergröße, Bytes"
+
+msgid ""
+"Direct set the input buffer size. Use 0 to disable waiting and reading to a "
+"data, only to write."
+msgstr ""
+"Direktes Setzen der Eingangspuffergröße. Verwenden Sie 0 zu deaktivieren "
+"warten und das Lesen zu einem Daten, nur zu schreiben."
+
 msgid "Answer"
 msgstr "Antwort"
 
@@ -2257,7 +2315,7 @@ msgstr "Modul unterstützt Kompilierung der Programmiersprache nicht."
 msgid "Owner"
 msgstr "Eigentümer"
 
-msgid "User interfaces"
+msgid "User Interfaces"
 msgstr "Benutzerschnittstellen"
 
 msgid ""
@@ -2467,3 +2525,12 @@ msgstr "Stellen Sie den Namen des Projekts an:"
 
 msgid "already started."
 msgstr "begonnen."
+
+#~ msgid "%s: Timeouted !!!"
+#~ msgstr "%s: Zeitüberschreitung !!!"
+
+#~ msgid "%s: Wait event..."
+#~ msgstr "%s: Warte auf Ereignis..."
+
+#~ msgid "Add module '%s'!"
+#~ msgstr "In Modul '%s'!"

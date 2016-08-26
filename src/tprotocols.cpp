@@ -27,7 +27,7 @@ using namespace OSCADA;
 //************************************************
 //* TProtocolS                                   *
 //************************************************
-TProtocolS::TProtocolS( ) : TSubSYS("Protocol", _("Transport protocols"), true)
+TProtocolS::TProtocolS( ) : TSubSYS("Protocol", _("Transport Protocols"), true)
 {
 
 }
@@ -43,7 +43,7 @@ string TProtocolS::optDescr(  )
 	"=============== Subsystem \"Transport protocols\" options =================\n\n"));
 }
 
-void TProtocolS::load_()
+void TProtocolS::load_( )
 {
     //Load parameters from command line
     string argCom, argVl;
@@ -98,7 +98,7 @@ void TProtocol::itemListIn( vector<string> &ls, const string &curIt )	{ ls.clear
 //************************************************
 TProtocolIn::TProtocolIn( const string &name ) : mName(name)
 {
-    modifClr( );
+    modifClr();
 }
 
 TProtocolIn::~TProtocolIn( )

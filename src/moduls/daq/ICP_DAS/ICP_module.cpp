@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.ICP_DAS file: ICP_module.cpp
 /***************************************************************************
- *   Copyright (C) 2010-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2010-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -39,7 +39,7 @@ extern "C"
 #define MOD_NAME	_("ICP DAS hardware")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.7.3"
+#define MOD_VER		"1.8.0"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides implementation for 'ICP DAS' hardware support.\
  Includes main I-87xxx DCON modules, I-8xxx fast modules and boards on ISA bus.")
@@ -155,18 +155,11 @@ DA *TTpContr::daGet( TMdPrm *prm )
 //* TMdContr                                           *
 //******************************************************
 TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
-	TController(name_c, daq_db, cfgelem),
+	TController(name_c, daq_db, cfgelem), reqRes(true), pBusRes(true),
 	mPrior(cfg("PRIOR").getId()), mBus(cfg("BUS").getId()),
 	mBaud(cfg("BAUD").getId()), connTry(cfg("REQ_TRY").getId()), mSched(cfg("SCHEDULE")), mTrOscd(cfg("TR_OSCD")),
 	mPer(100000000), prcSt(false), callSt(false), endRunReq(false), tmGath(0), mCurSlot(-1), numReq(0), numErr(0), numErrResp(0)
 {
-    pthread_mutexattr_t attrM;
-    pthread_mutexattr_init(&attrM);
-    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&reqRes, &attrM);
-    pthread_mutex_init(&pBusRes, &attrM);
-    pthread_mutexattr_destroy(&attrM);
-
     cfg("PRM_BD").setS("ICPDASPrm_"+name_c);
     cfg("BUS").setI(1);
 }
@@ -174,9 +167,6 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
 TMdContr::~TMdContr()
 {
     if(startStat()) stop();
-
-    pthread_mutex_destroy(&reqRes);
-    pthread_mutex_destroy(&pBusRes);
 }
 
 string TMdContr::getStatus( )
@@ -185,9 +175,9 @@ string TMdContr::getStatus( )
 
     if(startStat() && !redntUse()) {
 	if(callSt)	val += TSYS::strMess(_("Call now. "));
-	if(period())	val += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-3*period()).c_str());
-	else val += TSYS::strMess(_("Call next by cron '%s'. "),tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	val += TSYS::strMess(_("Spent time: %s. Serial requests %g, errors %g. "), tm2s(tmGath).c_str(), numReq, numErr);
+	if(period())	val += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-9*period()).c_str());
+	else val += TSYS::strMess(_("Call next by cron '%s'. "),atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	val += TSYS::strMess(_("Spent time: %s. Serial requests %g, errors %g. "), tm2s(1e-6*tmGath).c_str(), numReq, numErr);
     }
 
     return val;
@@ -223,8 +213,7 @@ void TMdContr::start_( )
 
 	//Start the gathering data task
 	SYS->taskCreate(nodePath('.',true), mPrior, TMdContr::Task, this, 10);
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	if(mBus == 0)	{ Close_Slot(9); Close_SlotAll(); }
 	throw;
     }
@@ -240,7 +229,7 @@ void TMdContr::stop_( )
 	if(trOscd() == TrIcpDasNm) Close_Com(mBus?mBus:1);
 	else tr.free();
     }
-    if(mBus == 0) { pthread_mutex_lock(&pBusRes); Close_Slot(9); Close_SlotAll(); pthread_mutex_unlock(&pBusRes); }
+    if(mBus == 0) { pBusRes.lock(); Close_Slot(9); Close_SlotAll(); pBusRes.unlock(); }
 }
 
 bool TMdContr::cfgChange( TCfg &co, const TVariant &pc )
@@ -262,7 +251,7 @@ string TMdContr::DCONCRC( string str )
 string TMdContr::prmLP( const string &prm )
 {
     XMLNode prmNd;
-    try { prmNd.load(cfg("LP_PRMS").getS()); return prmNd.attr(prm); } catch(...){ }
+    try { prmNd.load(cfg("LP_PRMS").getS()); return prmNd.attr(prm); } catch(...) { }
 
     return "";
 }
@@ -270,7 +259,7 @@ string TMdContr::prmLP( const string &prm )
 void TMdContr::setPrmLP( const string &prm, const string &vl )
 {
     XMLNode prmNd("prms");
-    try { prmNd.load(cfg("LP_PRMS").getS()); } catch(...){ }
+    try { prmNd.load(cfg("LP_PRMS").getS()); } catch(...) { }
     prmNd.setAttr(prm,vl);
     cfg("LP_PRMS").setS(prmNd.save(XMLNode::BrAllPast));
     modif();
@@ -331,10 +320,9 @@ void *TMdContr::Task( void *icntr )
 	    cntr.prcSt = true;
 
 	    //Calc next work time and sleep
-	    TSYS::taskSleep(cntr.period(), (cntr.period()?0:TSYS::cron(cntr.cron())));
+	    TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
 	}
-    }
-    catch(TError err)	{ mess_err(err.cat.c_str(), err.mess.c_str()); }
+    } catch(TError &err) { mess_err(err.cat.c_str(), err.mess.c_str()); }
 
     //Watchdog timer disable
     if(cntr.mBus == 0 && wTm > 0) {
@@ -363,10 +351,10 @@ string TMdContr::serReq( string req, char mSlot, bool CRC )
 
     //Request by ICP DAS serial API
     if(mBus == 0 && mSlot != mCurSlot) {
-	pthread_mutex_lock(&pBusRes);
+	pBusRes.lock();
 	ChangeToSlot(mSlot);
 	mCurSlot = mSlot;
-	pthread_mutex_unlock(&pBusRes);
+	pBusRes.unlock();
     }
 
     //Request by OpenSCADA output transport
@@ -385,11 +373,10 @@ string TMdContr::serReq( string req, char mSlot, bool CRC )
 		    rez.assign(buf, resp_len);
 		    // Wait tail
 		    while(resp_len && (rez.size() < 2 || rez[rez.size()-1] != '\r')) {
-			try{ resp_len = tr.at().messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError er){ break; }
+			try{ resp_len = tr.at().messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError &er) { break; }
 			rez.append(buf, resp_len);
 		    }
-		}
-		catch(TError er) {	//By possible the send request breakdown and no response
+		} catch(TError &er) {	//By possible the send request breakdown and no response
 		    if(err.empty()) err = "10:" + er.mess;
 		    else if(err.find(er.mess) == string::npos) err += "; " + er.mess;
 		    continue;
@@ -406,7 +393,7 @@ string TMdContr::serReq( string req, char mSlot, bool CRC )
 
 		return rez;
 	    }
-	} catch(TError er) { err = "10:" + er.mess; }
+	} catch(TError &er) { err = "10:" + er.mess; }
 
 	if(messLev() == TMess::Debug) mess_debug_(nodePath().c_str(), _("ERR -> '%s': %s"), rez.c_str(), err.c_str());
 
@@ -513,7 +500,7 @@ void TMdPrm::enable( )
 		break;
 	if(i_l >= als.size())
 	    try{ pEl.fldDel(i_p); i_p--; }
-	    catch(TError err){ mess_warning(err.cat.c_str(),err.mess.c_str()); }
+	    catch(TError &err) { mess_warning(err.cat.c_str(),err.mess.c_str()); }
     }
 
     owner().prmEn(id(), true);
@@ -556,7 +543,7 @@ string TMdPrm::modPrm( const string &prm, const string &def )
 	for(unsigned i_n = 0; i_n < prmNd.childSize(); i_n++)
 	    if(prmNd.childGet(i_n)->name() == sobj)
 		return (rez=prmNd.childGet(i_n)->attr(sa)).empty()?def:rez;
-    } catch(...){ }
+    } catch(...) { }
 
     return def;
 }
@@ -564,7 +551,7 @@ string TMdPrm::modPrm( const string &prm, const string &def )
 void TMdPrm::setModPrm( const string &prm, const string &val )
 {
     XMLNode prmNd("ModCfg");
-    try { prmNd.load(cfg("MOD_PRMS").getS()); } catch(...){ }
+    try { prmNd.load(cfg("MOD_PRMS").getS()); } catch(...) { }
 
     if(modPrm(prm) != val) modif();
     string sobj = TSYS::strParse(prm,0,":"), sa = TSYS::strParse(prm,1,":");
@@ -626,7 +613,7 @@ void TMdPrm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
     }
     //Direct write
     try { if(da) da->vlSet(this, vo, vl, pvl); }
-    catch(TError err) {
+    catch(TError &err) {
 	mess_err(nodePath().c_str(),_("Write value to attribute '%s' error: %s"),vo.name().c_str(),err.mess.c_str());
 	vo.setS(pvl.getS(), 0, true);
     }

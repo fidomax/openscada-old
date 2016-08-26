@@ -171,9 +171,9 @@ string TMdContr::getStatus( )
     if(startStat() && !redntUse()) {
 	if(!prcSt)	val += TSYS::strMess(_("Task terminated! "));
 	if(callSt)	rez += TSYS::strMess(_("Call now. "));
-	if(period())	rez += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-3*period()).c_str());
-	else rez += TSYS::strMess(_("Call next by cron '%s'. "), tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	rez += TSYS::strMess(_("Spent time: %s."), tm2s(tmGath).c_str());
+	if(period())	rez += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-9*period()).c_str());
+	else rez += TSYS::strMess(_("Call next by cron '%s'. "), atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	rez += TSYS::strMess(_("Spent time: %s."), tm2s(1e-6*tmGath).c_str());
     }
     return rez;
 }
@@ -231,13 +231,13 @@ void *TMdContr::Task( void *icntr )
 	for(unsigned i_p = 0; i_p < cntr.pHD.size() && !cntr.redntUse(); i_p++)
 	    try {
 		//!!! Process parameter code
-	    } catch(TError err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
+	    } catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 	cntr.callSt = false;
 	cntr.enRes.unlock();
 	cntr.tmGath = TSYS::curTime() - t_cnt;
 
 	//!!! Wait for next iteration
-	TSYS::taskSleep(cntr.period(), (cntr.period()?0:TSYS::cron(cntr.cron())));
+	TSYS::taskSleep(cntr.period(), cntr.period()?"":cntr.cron());
     }
 
     cntr.prcSt = false;

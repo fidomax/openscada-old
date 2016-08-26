@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.BFN file: mod_BFN.cpp
 /***************************************************************************
- *   Copyright (C) 2010-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2010-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -36,7 +36,7 @@
 #define MOD_NAME	_("BFN module")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"0.6.2"
+#define MOD_VER		"0.6.6"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Big Farm Net (BFN) modules support for Viper CT/BAS and other from \"Big Dutchman\" (http://www.bigdutchman.com).")
 #define LICENSE		"GPL2"
@@ -302,10 +302,10 @@ string TMdContr::getStatus( )
 	//Display processing
 	if(acq_st) rez += TSYS::strMess(_("Call now. "));
 	//Display schedule
-	if(period()) rez += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-3*period()).c_str());
-	else rez += TSYS::strMess(_("Call next by cron '%s'. "),tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	if(period()) rez += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-9*period()).c_str());
+	else rez += TSYS::strMess(_("Call next by cron '%s'. "),atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
 	//Display spent time
-	if(acq_err.getVal().empty()) rez += TSYS::strMess(_("Spent time: %s."),tm2s(tm_gath).c_str());
+	if(acq_err.getVal().empty()) rez += TSYS::strMess(_("Spent time: %s."),tm2s(1e-6*tm_gath).c_str());
     }
 
     return rez;
@@ -372,7 +372,7 @@ void TMdContr::enable_( )
 		}
 	    }
 	}
-    } catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+    } catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 }
 
 void TMdContr::start_( )
@@ -389,7 +389,7 @@ void TMdContr::stop_( )
     //Stop the request and calc data task
     if(prc_st) SYS->taskDestroy(nodePath('.',true), &endrun_req);
 
-    alarmSet(TSYS::strMess(_("DAQ.%s: connect to data source: %s."),id().c_str(),_("STOP")),TMess::Info);
+    alarmSet(TSYS::strMess(_("DAQ.%s.%s: connect to data source: %s."),owner().modId().c_str(),id().c_str(),_("STOP")), TMess::Info);
     alSt = -1;
 
     //Clear errors and set EVal
@@ -420,7 +420,7 @@ void TMdContr::reqBFN(XMLNode &io)
 
     AutoHD<TTransportOut> tr;
     try{ tr = SYS->transport().at().at(TSYS::strSepParse(addr(),0,'.')).at().outAt(TSYS::strSepParse(addr(),1,'.')); }
-    catch(TError err){ throw TError(nodePath().c_str(),_("Connect to transport '%s' error."),addr().c_str()); }
+    catch(TError &err) { throw TError(nodePath().c_str(),_("Connect to transport '%s' error."),addr().c_str()); }
 
     XMLNode req("POST");
     req.setAttr("URI","/cgi-bin/imwl_ws.cgi");
@@ -452,7 +452,7 @@ void TMdContr::reqBFN(XMLNode &io)
     if(req.attr("err").empty()) {
 	XMLNode rez;
 	try { rez.load(req.text()); }
-	catch(TError err) { throw TError(nodePath().c_str(),_("Respond parsing error. Possible respond incomplete.")); }
+	catch(TError &err) { throw TError(nodePath().c_str(),_("Respond parsing error. Possible respond incomplete.")); }
 	string rCod = rez.childGet("SOAP-ENV:Body")->childGet("imwlws:"+reqName+"Response")->childGet("res")->text();
 	if(s2i(rCod)) io.setAttr("err",rCod);
 	else {
@@ -580,23 +580,24 @@ void *TMdContr::Task( void *icntr )
 		else if(tErr.empty()) tErr = reqAlrms.attr("err");
 		cntr.p_hd[i_p].at().acq_err.setVal(tErr);
 	    }
-	}
-	catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); tErr = err.mess; }
+	} catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); tErr = err.mess; }
 
 	//Generic alarm generate
 	if(tErr.size() && cntr.alSt <= 0) {
 	    cntr.alSt = 1;
-	    cntr.alarmSet(TSYS::strMess(_("DAQ.%s: connect to data source: %s."),cntr.id().c_str(),TRegExp(":","g").replace(tErr,"=").c_str()));
+	    cntr.alarmSet(TSYS::strMess(_("DAQ.%s.%s: connect to data source: %s."),cntr.owner().modId().c_str(),cntr.id().c_str(),
+						TRegExp(":","g").replace(tErr,"=").c_str()));
 	}
 	else if(!tErr.size() && cntr.alSt != 0) {
 	    cntr.alSt = 0;
-	    cntr.alarmSet(TSYS::strMess(_("DAQ.%s: connect to data source: %s."),cntr.id().c_str(),_("OK")),TMess::Info);
+	    cntr.alarmSet(TSYS::strMess(_("DAQ.%s.%s: connect to data source: %s."),cntr.owner().modId().c_str(),cntr.id().c_str(),_("OK")),
+			    TMess::Info);
 	}
 	cntr.acq_err.setVal(tErr);
 
 	cntr.tm_gath = TSYS::curTime()-t_cnt;
 	cntr.acq_st = false;
-	TSYS::taskSleep(cntr.period(),cntr.period()?0:TSYS::cron(cntr.cron()));
+	TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
     }
 
     cntr.prc_st = false;

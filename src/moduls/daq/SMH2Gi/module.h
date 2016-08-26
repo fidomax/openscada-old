@@ -158,9 +158,6 @@ class TMdPrm : public TParamContr
 
     protected:
 	//Methods
-	void load_( );
-	void save_( );
-
 	void cntrCmdProc( XMLNode *opt );	//Control interface command process
 
     private:
@@ -215,9 +212,9 @@ class TMdContr: public TController
 	uint16_t CRC16( const string &mbap );
 
 	//Attributes
-	Res	en_res;		// Resource for enable params
+	ResRW	en_res;		// Resource for enable params
 	int64_t	&m_prior,	// Process task priority
-                &connTry;	// Connections try
+		&connTry;	// Connections try
 	int64_t	mPer;
 
 	bool	prcSt,		// Process task active
@@ -246,7 +243,7 @@ class TTpContr: public TTypeDAQ
 
 	//Attributes
 	map<int, DevMRCFeature>	MRCdevs;
-	Res			MRCdevsRes;
+	ResRW			MRCdevsRes;
 
     protected:
 	//Methods

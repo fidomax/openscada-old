@@ -21,7 +21,7 @@
 #ifndef TTRANSPORTS_H
 #define TTRANSPORTS_H
 
-#define STR_VER		11		//TransportS type modules version
+#define STR_VER		13		//TransportS type modules version
 #define STR_ID		"Transport"
 
 #include <string>
@@ -80,7 +80,7 @@ class TTransportIn : public TCntrNode, public TConfig
 
 	TTypeTransport &owner( );
 
-	Res &nodeRes( )			{ return nRes; }
+	ResRW &nodeRes( )	{ return nRes; }
 
     protected:
 	//Methods
@@ -92,7 +92,7 @@ class TTransportIn : public TCntrNode, public TConfig
 	void postDisable( int flag );		//Delete all DB if flag 1
 	bool cfgChange( TCfg &co, const TVariant &pc );
 
-	void load_( );
+	void load_( TConfig *cfg );
 	void save_( );
 
 	TVariant objFuncCall( const string &id, vector<TVariant> &prms, const string &user );
@@ -108,7 +108,7 @@ class TTransportIn : public TCntrNode, public TConfig
 	TCfg	&mId;
 	char	&mStart;
 	string	mDB;
-	Res	nRes;
+	ResRW	nRes;
 	vector<AutoHD<TTransportOut> >	mAssTrO;
 };
 
@@ -161,7 +161,7 @@ class TTransportOut : public TCntrNode, public TConfig
 
 	TTypeTransport &owner( );
 
-	Res &nodeRes( )			{ return nRes; }
+	ResRW &nodeRes( )			{ return nRes; }
 
     protected:
 	//Methods
@@ -173,7 +173,7 @@ class TTransportOut : public TCntrNode, public TConfig
 
 	TVariant objFuncCall( const string &id, vector<TVariant> &prms, const string &user );
 
-	void load_( );
+	void load_( TConfig *cfg );
 	void save_( );
 
 	//Attributes
@@ -191,7 +191,7 @@ class TTransportOut : public TCntrNode, public TConfig
 	// Reserve parameters
 	time_t	mStartTm;
 	int64_t	mPrm1, mPrm2;
-	Res	nRes;
+	ResRW	nRes;
 };
 
 //************************************************
@@ -307,7 +307,7 @@ class TTransportS : public TSubSYS
 	//Attributes
 	TElem	elIn, elOut, elExt;
 
-	Res	extHostRes;             //External hosts resource
+	ResRW	extHostRes;             //External hosts resource
 	vector<ExtHost> extHostLs;      //External hosts list
 };
 

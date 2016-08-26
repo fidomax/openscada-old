@@ -58,7 +58,7 @@ TSYS::TSYS( int argi, char ** argb, char **env ) : argc(argi), argv((const char 
     mUser("root"), mConfFile(sysconfdir_full"/oscada.xml"), mId("EmptySt"), mName(_("Empty Station")),
     mModDir(oscd_moddir_full), mIcoDir("icons;"oscd_datadir_full"/icons"), mDocDir("docs;"oscd_datadir_full"/docs"),
     mWorkDB(DB_CFG), mSaveAtExit(false), mSavePeriod(0), rootModifCnt(0), sysModifFlgs(0), mStopSignal(-1), mN_CPU(1),
-    mainPthr(0), mSysTm(time(NULL)), mRdStLevel(0), mRdRestConnTm(10), mRdTaskPer(1), mRdPrcTm(0), mRdPrimCmdTr(false)
+    mainPthr(0), mSysTm(time(NULL)), mClockRT(false), mRdStLevel(0), mRdRestConnTm(10), mRdTaskPer(1), mRdPrcTm(0), mRdPrimCmdTr(false)
 {
     finalKill = false;
     SYS = this;		//Init global access value
@@ -121,10 +121,10 @@ TSYS::~TSYS( )
 
     if(mLev == TMess::Debug) {
 	string cntrsStr;
-	pthread_mutex_lock(&dataRes());
+	dataRes().lock();
 	for(map<string,double>::iterator icnt = mCntrs.begin(); icnt != mCntrs.end(); icnt++)
 	    cntrsStr += TSYS::strMess("%s: %g\n",icnt->first.c_str(),icnt->second);
-	pthread_mutex_unlock(&dataRes());
+	dataRes().unlock();
 	printf(_("System counters on exit: %s"), cntrsStr.c_str());
     }
 
@@ -156,8 +156,8 @@ void TSYS::setWorkDir( const string &wdir, bool init )
 {
     if(wdir.empty() || workDir() == wdir) return;
     if(chdir(wdir.c_str()) != 0)
-	mess_warning(nodePath().c_str(),_("Change work directory to '%s' error: %s. Perhaps current directory already set correct to '%s'."),
-	    wdir.c_str(),strerror(errno),workDir().c_str());
+	mess_sys(TMess::Warning, _("Changing work directory to '%s' error: %s. Perhaps current directory already set correct to '%s'."),
+	    wdir.c_str(), strerror(errno),workDir().c_str());
     else if(init) sysModifFlgs &= ~MDF_WorkDir;
     else { sysModifFlgs |= MDF_WorkDir; modif(); }
 }
@@ -222,7 +222,7 @@ void TSYS::modifCfg( bool chkPossibleWR )
     if(chkPossibleWR) {
 	//Check config file for readonly
 	if(access(mConfFile.c_str(),F_OK|W_OK) != 0)
-	    throw TError(nodePath().c_str(), _("Read only access to file '%s'."), mConfFile.c_str());
+	    throw err_sys(_("Read only access to file '%s'."), mConfFile.c_str());
     }
     else rootModifCnt++;
 }
@@ -272,23 +272,23 @@ string TSYS::real2str( double val, int prec, char tp )
     return buf;
 }
 
-string TSYS::time2str( time_t itm, const string &format )
+string TSYS::atime2str( time_t itm, const string &format )
 {
     struct tm tm_tm;
-    localtime_r(&itm,&tm_tm);
+    localtime_r(&itm, &tm_tm);
     char buf[100];
     int ret = strftime(buf, sizeof(buf), format.empty()?"%d-%m-%Y %H:%M:%S":format.c_str(), &tm_tm);
     return (ret > 0) ? string(buf,ret) : string("");
 }
 
-string TSYS::time2str( double utm )
+string TSYS::time2str( double tm )
 {
-    if(utm < 1e-6) return "0";
+    if(tm < 1e-12) return "0";
     int lev = 0;
-    int days = (int)floor(utm/(24*60*60*1e6));
-    int hours = (int)floor(utm/(60*60*1e6))%24;
-    int mins = (int)floor(utm/(60*1e6))%60;
-    double usec = utm - 1e6*(days*24*60*60 + hours*60*60 + mins*60);
+    int days = (int)floor(tm/(24*60*60));
+    int hours = (int)floor(tm/(60*60))%24;
+    int mins = (int)floor(tm/(60))%60;
+    double usec = 1e6 * (tm - days*24*60*60 - hours*60*60 - mins*60);
 
     string rez;
     if(days)		{ rez += i2s(days)+_("day"); lev = vmax(lev,6); }
@@ -298,6 +298,7 @@ string TSYS::time2str( double utm )
     else if((1e-3*usec) > 0.5 && !lev)	{ rez += (rez.size()?" ":"")+r2s(1e-3*usec,4)+_("ms"); lev = vmax(lev,2); }
     else if(usec > 0.5 && !lev)		{ rez += (rez.size()?" ":"")+r2s(usec,4)+_("us"); lev = vmax(lev,1); }
     else if(!lev)	rez += (rez.size()?" ":"")+r2s(1e3*usec,4)+_("ns");
+
     return rez;
 }
 
@@ -423,8 +424,14 @@ string TSYS::optDescr( )
 	"Lang       <lang>	Work-internal language, like \"en_US.UTF-8\".\n"
 	"Lang2CodeBase <lang>	Base language for variable texts translation, two symbols code.\n"
 	"MainCPUs   <list>	Main used CPUs list (separated by ':').\n"
+	"ClockRT    <false>	Set for use REALTIME (else MONOTONIC) clock, some problematic with the system clock modification.\n"
 	"SaveAtExit <true>	Save the system at exit.\n"
-	"SavePeriod <sec>	Save the system period.\n\n"),
+	"SavePeriod <sec>	Save the system period.\n"
+	"RdStLevel  <lev>	Level of redundancy current station.\n"
+	"RdTaskPer  <s>		Call period of the redundant task.\n"
+	"RdRestConnTm <s>	Restore connection timeout of try to the \"dead\" reserve stations.\n"
+	"RdStList   <list>	Redundant stations list, separated symbol ';' (st1;st2).\n"
+	"RdPrimCmdTr <0|1>	Enable the primary commands transfering to the redundant stations.\n\n"),
 	PACKAGE_NAME,VERSION,buf.sysname,buf.release,nodePath().c_str());
 }
 
@@ -480,7 +487,7 @@ bool TSYS::cfgFileLoad( )
 
     //Load config-file
     int hd = open(mConfFile.c_str(), O_RDONLY);
-    if(hd < 0) mess_err(nodePath().c_str(),_("Config-file '%s' error: %s"),mConfFile.c_str(),strerror(errno));
+    if(hd < 0) mess_sys(TMess::Error, _("Config-file '%s' error: %s"), mConfFile.c_str(), strerror(errno));
     else {
 	bool fOK = true;
 	string s_buf;
@@ -492,7 +499,7 @@ bool TSYS::cfgFileLoad( )
 	    fOK = s_buf.size();
 	}
 	close(hd);
-	if(!fOK) mess_err(nodePath().c_str(), _("Config-file '%s' load error."),mConfFile.c_str());
+	if(!fOK) mess_sys(TMess::Error, _("Config-file '%s' load error."), mConfFile.c_str());
 
 	try {
 	    ResAlloc res(cfgRes(), true);
@@ -506,17 +513,16 @@ bool TSYS::cfgFileLoad( )
 		    }
 		if(stat_n && stat_n->attr("id") != mId) {
 		    if(mId != "EmptySt")
-			mess_warning(nodePath().c_str(),_("Station '%s' is not present in the config-file. Use '%s' station configuration!"),
+			mess_sys(TMess::Warning, _("Station '%s' is not present in the config-file. Using configuration for station '%s'!"),
 			    mId.c_str(), stat_n->attr("id").c_str());
 		    mId	= stat_n->attr("id");
 		}
 		if(!stat_n)	rootN.clear();
 	    }
 	    else rootN.clear();
-	    if(!rootN.childSize()) mess_err(nodePath().c_str(),_("Configuration '%s' error!"),mConfFile.c_str());
+	    if(!rootN.childSize()) mess_sys(TMess::Error, _("Configuration '%s' error!"), mConfFile.c_str());
 	    rootModifCnt = 0;
-	}
-	catch(TError err) { mess_err(nodePath().c_str(),_("Load config-file error: %s"),err.mess.c_str() ); }
+	} catch(TError &err) { mess_sys(TMess::Error, _("Load config-file error: %s"), err.mess.c_str()); }
     }
 
     return cmd_help;
@@ -527,11 +533,11 @@ void TSYS::cfgFileSave( )
     ResAlloc res(cfgRes(), true);
     if(!rootModifCnt) return;
     int hd = open(mConfFile.c_str(), O_CREAT|O_TRUNC|O_WRONLY, 0664);
-    if(hd < 0) mess_err(nodePath().c_str(),_("Config-file '%s' error: %s"),mConfFile.c_str(),strerror(errno));
+    if(hd < 0) mess_sys(TMess::Error, _("Config-file '%s' error: %s"), mConfFile.c_str(), strerror(errno));
     else {
 	string rezFile = rootN.save(XMLNode::XMLHeader);
 	int rez = write(hd, rezFile.data(), rezFile.size());
-	if(rez != (int)rezFile.size()) mess_err(nodePath().c_str(),_("Configuration '%s' write error. %s"),mConfFile.c_str(),((rez<0)?strerror(errno):""));
+	if(rez != (int)rezFile.size()) mess_sys(TMess::Error,_("Configuration '%s' write error. %s"), mConfFile.c_str(), ((rez<0)?strerror(errno):""));
 	rootModifCnt = 0;
 	rootFlTm = time(NULL);
 	close(hd);
@@ -547,9 +553,10 @@ void TSYS::cfgPrmLoad( )
     setModDir(TBDS::genDBGet(nodePath()+"ModDir",modDir(),"root",TBDS::OnlyCfg), true);
     setIcoDir(TBDS::genDBGet(nodePath()+"IcoDir",icoDir(),"root",TBDS::OnlyCfg), true);
     setDocDir(TBDS::genDBGet(nodePath()+"DocDir",docDir(),"root",TBDS::OnlyCfg), true);
+    setMainCPUs(TBDS::genDBGet(nodePath()+"MainCPUs",mainCPUs()));
+    setClockRT(s2i(TBDS::genDBGet(nodePath()+"ClockRT",i2s(clockRT()))));
     setSaveAtExit(s2i(TBDS::genDBGet(nodePath()+"SaveAtExit","0")));
     setSavePeriod(s2i(TBDS::genDBGet(nodePath()+"SavePeriod","0")));
-    setMainCPUs(TBDS::genDBGet(nodePath()+"MainCPUs",mainCPUs()));
 
     //Redundancy parameters
     setRdStLevel(s2i(TBDS::genDBGet(nodePath()+"RdStLevel",i2s(rdStLevel()))));
@@ -568,7 +575,7 @@ void TSYS::load_( )
     static bool first_load = true;
 
     bool cmd_help = cfgFileLoad();
-    mess_info(nodePath().c_str(),_("Load!"));
+    mess_sys(TMess::Info, _("Load!"));
     cfgPrmLoad();
     Mess->load();	//Messages load
 
@@ -587,7 +594,7 @@ void TSYS::load_( )
 	//Load modules
 	modSchedul().at().load();
 	if(!modSchedul().at().loadLibS()) {
-	    mess_err(nodePath().c_str(),_("No one module is loaded. Your configuration broken!"));
+	    mess_sys(TMess::Error, _("No one module is loaded. Your configuration is broken!"));
 	    stop();
 	}
 
@@ -605,9 +612,9 @@ void TSYS::load_( )
     list(lst);
     for(unsigned i_a = 0; i_a < lst.size(); i_a++)
 	try { at(lst[i_a]).at().load(); }
-	catch(TError err) {
-	    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
-	    mess_err(nodePath().c_str(),_("Error load subsystem '%s'."),lst[i_a].c_str());
+	catch(TError &err) {
+	    mess_err(err.cat.c_str(), "%s", err.mess.c_str());
+	    mess_sys(TMess::Error, _("Error load subsystem '%s'."), lst[i_a].c_str());
 	}
 
     if(cmd_help) stop();
@@ -616,7 +623,7 @@ void TSYS::load_( )
 
 void TSYS::save_( )
 {
-    mess_info(nodePath().c_str(),_("Save!"));
+    mess_sys(TMess::Info, _("Save!"));
 
     //System parameters
     TBDS::genDBSet(nodePath()+"StName", mName, "root", TBDS::UseTranslate);
@@ -625,9 +632,10 @@ void TSYS::save_( )
     if(sysModifFlgs&MDF_ModDir)	TBDS::genDBSet(nodePath()+"ModDir", modDir(), "root", TBDS::OnlyCfg);
     if(sysModifFlgs&MDF_IcoDir)	TBDS::genDBSet(nodePath()+"IcoDir", icoDir(), "root", TBDS::OnlyCfg);
     if(sysModifFlgs&MDF_DocDir)	TBDS::genDBSet(nodePath()+"DocDir", docDir(), "root", TBDS::OnlyCfg);
+    TBDS::genDBSet(nodePath()+"MainCPUs", mainCPUs());
+    TBDS::genDBSet(nodePath()+"ClockRT", i2s(clockRT()));
     TBDS::genDBSet(nodePath()+"SaveAtExit", i2s(saveAtExit()));
     TBDS::genDBSet(nodePath()+"SavePeriod", i2s(savePeriod()));
-    TBDS::genDBSet(nodePath()+"MainCPUs", mainCPUs());
 
     //Redundancy parameters
     TBDS::genDBSet(nodePath()+"RdStLevel", i2s(rdStLevel()), "root", TBDS::OnlyCfg);
@@ -654,12 +662,12 @@ int TSYS::start( )
     vector<string> lst;
     list(lst);
 
-    mess_info(nodePath().c_str(),_("Start!"));
+    mess_sys(TMess::Info, _("Start!"));
     for(unsigned i_a = 0; i_a < lst.size(); i_a++)
 	try { at(lst[i_a]).at().subStart(); }
-	catch(TError err) {
-	    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
-	    mess_err(nodePath().c_str(),_("Error start subsystem '%s'."),lst[i_a].c_str());
+	catch(TError &err) {
+	    mess_err(err.cat.c_str(), "%s", err.mess.c_str());
+	    mess_sys(TMess::Error, _("Error start subsystem '%s'."), lst[i_a].c_str());
 	}
 
     cfgFileScan(true);
@@ -667,7 +675,7 @@ int TSYS::start( )
     //Register user API translations into config
     Mess->translReg("", "uapi:"DB_CFG);
 
-    mess_info(nodePath().c_str(),_("Final starting!"));
+    mess_sys(TMess::Info, _("Final starting!"));
 
     unsigned int i_cnt = 1;
     mStopSignal = 0;
@@ -692,20 +700,20 @@ int TSYS::start( )
 	if(!(i_cnt%(10*1000/STD_WAIT_DELAY)))
 	    for(unsigned i_a=0; i_a < lst.size(); i_a++)
 		try { at(lst[i_a]).at().perSYSCall(i_cnt/(1000/STD_WAIT_DELAY)); }
-		catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+		catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 
 	sysSleep(STD_WAIT_DELAY*1e-3);
 	i_cnt++;
     }
 
-    mess_info(nodePath().c_str(),_("Stop!"));
+    mess_sys(TMess::Info, _("Stop!"));
     if(saveAtExit() || savePeriod()) save();
     cfgFileSave();
     for(int i_a = lst.size()-1; i_a >= 0; i_a--)
 	try { at(lst[i_a]).at().subStop(); }
-	catch(TError err) {
-	    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
-	    mess_err(nodePath().c_str(),_("Error stop subsystem '%s'."),lst[i_a].c_str());
+	catch(TError &err) {
+	    mess_err(err.cat.c_str(), "%s", err.mess.c_str());
+	    mess_sys(TMess::Error, _("Error stop subsystem '%s'."), lst[i_a].c_str());
 	}
 
     //High priority service task and redundancy stop
@@ -756,31 +764,31 @@ void TSYS::sighandler( int signal, siginfo_t *siginfo, void *context )
 	    SYS->mStopSignal = signal;
 	    break;
 	case SIGTERM:
-	    mess_warning(SYS->nodePath().c_str(), _("The Terminate signal is received. Server is being stopped!"));
+	    SYS->mess_sys(TMess::Warning, _("Termination signal is received. Stop the station!"));
 	    SYS->mStopSignal = signal;
 	    break;
 	case SIGFPE:
-	    mess_warning(SYS->nodePath().c_str(), _("Floating point exception is caught!"));
+	    SYS->mess_sys(TMess::Warning, _("Floating point exception is caught!"));
 	    exit(1);
 	    break;
 	case SIGCHLD: {
 	    int status;
 	    pid_t pid = wait(&status);
-	    if(!WIFEXITED(status) && pid > 0) mess_info(SYS->nodePath().c_str(), _("Free child process %d!"), pid);
+	    if(!WIFEXITED(status) && pid > 0) SYS->mess_sys(TMess::Info, _("Free child process %d!"), pid);
 	    break;
 	}
 	case SIGPIPE:
-	    //mess_warning(SYS->nodePath().c_str(),_("Broken PIPE signal!"));
+	    //mess_sys(TMess::Warning, _("Broken PIPE signal!"));
 	    break;
 	case SIGSEGV:
-	    mess_emerg(SYS->nodePath().c_str(), _("Segmentation fault signal!"));
+	    SYS->mess_sys(TMess::Emerg, _("Segmentation fault signal!"));
 	    break;
 	case SIGABRT:
-	    mess_emerg(SYS->nodePath().c_str(), _("OpenSCADA is aborted!"));
+	    SYS->mess_sys(TMess::Emerg, _("Program aborted!"));
 	    break;
 	case SIGALRM: case SIGUSR1: break;
 	default:
-	    mess_warning(SYS->nodePath().c_str(), _("Unknown signal %d!"), signal);
+	    SYS->mess_sys(TMess::Warning, _("Unknown signal %d!"), signal);
     }
 }
 
@@ -847,13 +855,13 @@ bool TSYS::eventWait( bool &m_mess_r_stat, bool exempl, const string &loc, time_
 	time_t c_tm = time(NULL);
 	//Check timeout
 	if(tm && (c_tm > s_tm+tm)) {
-	    mess_crit(loc.c_str(),_("Timeouted !!!"));
+	    SYS->mess_sys(TMess::Crit, _("Timeouted !!!"));
 	    return true;
 	}
 	//Make messages
 	if(c_tm > t_tm+1) {	//1sec
 	    t_tm = c_tm;
-	    mess_info(loc.c_str(),_("Wait event..."));
+	    SYS->mess_sys(TMess::Crit, _("Wait event..."));
 	}
 	sysSleep(STD_WAIT_DELAY*1e-3);
     }
@@ -1619,8 +1627,7 @@ string TSYS::rdStRequest( XMLNode &req, const string &st, bool toScan )
 	    SYS->transport().at().cntrIfCmd(req, "redundant");
 	    sit->second.cnt++;
 	    return sit->first;
-	}
-	catch(TError err) {
+	} catch(TError &err) {
 	    sit->second.isLive = false;
 	    sit->second.cnt = rdRestConnTm();
 	    sit->second.lev = 0;
@@ -1647,7 +1654,7 @@ void TSYS::taskCreate( const string &path, int priority, void *(*start_routine)(
 	}
 	res.release();
 	//Error by this active task present
-	if(time(NULL) >= (c_tm+wtm)) throw TError(nodePath().c_str(),_("Task '%s' already present!"),path.c_str());
+	if(time(NULL) >= (c_tm+wtm)) throw err_sys(_("Task '%s' already present!"), path.c_str());
 	sysSleep(0.01);
 	res.request(true);
     }
@@ -1684,7 +1691,7 @@ void TSYS::taskCreate( const string &path, int priority, void *(*start_routine)(
 	if(detachStat == PTHREAD_CREATE_DETACHED) htsk.flgs |= STask::Detached;
 	int rez = pthread_create(&procPthr, pthr_attr, taskWrap, &htsk);
 	if(rez == EPERM) {
-	    mess_warning(nodePath().c_str(), _("No permission for create real-time policy for '%s'. Default thread is created!"), path.c_str());
+	    mess_sys(TMess::Warning, _("No permission for create a real-time policy for '%s'. Default thread is created!"), path.c_str());
 	    policy = SCHED_OTHER;
 	    pthread_attr_setschedpolicy(pthr_attr, policy);
 	    prior.sched_priority = 0;
@@ -1693,17 +1700,16 @@ void TSYS::taskCreate( const string &path, int priority, void *(*start_routine)(
 	}
 	if(!pAttr) pthread_attr_destroy(pthr_attr);
 
-	if(rez) throw TError(1, nodePath().c_str(), _("Task creation error %d."), rez);
+	if(rez) throw err_sys(1, _("Task creation error %d."), rez);
 
 	//Wait for thread structure initialization finish for not detachable tasks
 	while(!(htsk.flgs&STask::Detached) && !htsk.thr) TSYS::sysSleep(1e-3); //sched_yield(); !!! don't use for hard realtime systems with high priority
 	//Wait for start status
 	for(time_t c_tm = time(NULL); !(htsk.flgs&STask::Detached) && startSt && !(*startSt); ) {
-	    if(time(NULL) >= (c_tm+wtm)) throw TError(nodePath().c_str(),_("Task '%s' start timeouted!"),path.c_str());
+	    if(time(NULL) >= (c_tm+wtm)) throw err_sys(_("Task '%s' start timeouted!"), path.c_str());
 	    sysSleep(STD_WAIT_DELAY*1e-3);
 	}
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	if(err.cod) {		//Remove info for pthread_create() but left for other by possible start later
 	    res.request(true);
 	    mTasks.erase(path);
@@ -1736,13 +1742,13 @@ void TSYS::taskDestroy( const string &path, bool *endrunCntr, int wtm, bool noSi
 	time_t c_tm = time(NULL);
 	//Check timeout
 	if(wtm && (c_tm > (s_tm+wtm))) {
-	    mess_crit((nodePath()+path+": stop").c_str(),_("Timeouted !!!"));
-	    throw TError(nodePath().c_str(),_("Task '%s' is not stopped!"),path.c_str());
+	    mess_sys(TMess::Crit, _("Task '%s' timeouted !!!"), path.c_str());
+	    throw err_sys(_("Task '%s' is not stopped!"), path.c_str());
 	}
 	//Make messages
-	if(c_tm > t_tm+1) {  //1sec
+	if(c_tm > t_tm+1) {	//1sec
 	    t_tm = c_tm;
-	    mess_info((nodePath()+path+": stop").c_str(),_("Wait event..."));
+	    mess_sys(TMess::Info, _("Wait event of task '%s' ..."), path.c_str());
 	}
 	sysSleep(STD_WAIT_DELAY*1e-3);
 	first = false;
@@ -1754,18 +1760,19 @@ void TSYS::taskDestroy( const string &path, bool *endrunCntr, int wtm, bool noSi
     }
 }
 
-double TSYS::taskUtilizTm( const string &path )
+double TSYS::taskUtilizTm( const string &path, bool max )
 {
     ResAlloc res(taskRes, false);
     map<string,STask>::iterator it = mTasks.find(path);
     if(it == mTasks.end()) return 0;
+    if(max) return 1e-9*it->second.consMax;
     int64_t tm_beg = 0, tm_end = 0, tm_per = 0;
     for(int i_tr = 0; tm_beg == tm_per && i_tr < 2; i_tr++) {
 	tm_beg = it->second.tm_beg;
 	tm_end = it->second.tm_end;
 	tm_per = it->second.tm_per;
     }
-    if(tm_beg && tm_beg < tm_per) return 1e-3*(tm_end-tm_beg);
+    if(tm_beg && tm_beg < tm_per) return 1e-9*(tm_end-tm_beg);
 
     return 0;
 }
@@ -1774,6 +1781,13 @@ bool TSYS::taskEndRun( )
 {
     sigset_t sigset;
     return sigpending(&sigset) == 0 && sigismember(&sigset,SIGUSR1);
+}
+
+const TSYS::STask& TSYS::taskDescr( )
+{
+    STask *stsk = (STask*)pthread_getspecific(sTaskKey);
+    if(stsk) return *stsk;
+    throw SYS->err_sys(_("It isn't OpenSCADA task!"));
 }
 
 void *TSYS::taskWrap( void *stas )
@@ -1823,12 +1837,12 @@ void *TSYS::taskWrap( void *stas )
     //Call work task
     void *rez = NULL;
     try { rez = wTask(wTaskArg); }
-    catch(TError err) {
-	mess_err(err.cat.c_str(),err.mess.c_str());
-	mess_err(SYS->nodePath().c_str(),_("Task %u unexpected terminated by exception."),tsk->thr);
+    catch(TError &err) {
+	mess_err(err.cat.c_str(), "%s", err.mess.c_str());
+	SYS->mess_sys(TMess::Error, _("Task %u unexpected terminated by exception."), tsk->thr);
     }
     //???? The code cause: FATAL: exception not rethrown
-    //catch(...)	{ mess_err(SYS->nodePath().c_str(),_("Task %u unexpected terminated by unknown exception."),tsk->thr); }
+    //catch(...)	{ mess_sys(TMess::Error, _("Task %u unexpected terminated by unknown exception."), tsk->thr); }
 
     //Mark for task finish
     tsk->flgs |= STask::FinishTask;
@@ -1881,8 +1895,7 @@ void *TSYS::RdTask( void *param )
 			if(!s2i(subPrt->attr("inProc")) || !SYS->at(subLs[iL]).at().rdProcess(subPrt))
 			    subLs.erase(subLs.begin()+(iL--));
 		    }
-		}
-		catch(TError err) {
+		} catch(TError &err) {
 		    sit->second.isLive = false;
 		    sit->second.lev = 0;
 		    sit->second.cnt = SYS->rdRestConnTm();
@@ -1892,10 +1905,10 @@ void *TSYS::RdTask( void *param )
 	    // Reconnect counter process
 	    if(!sit->second.isLive && sit->second.cnt > 0) sit->second.cnt -= SYS->rdTaskPer();
 	    if(sit->second.isLive != sit->second.isLivePrev) {
-		if(sit->second.isLive) mess_note(SYS->nodePath().c_str(), _("Redundancy '%s': station '%s' up."),
-					    SYS->name().c_str(), SYS->transport().at().extHostGet("*",sit->first).name.c_str());
-		else mess_warning(SYS->nodePath().c_str(), _("Redundancy '%s': station '%s' down."),
-					    SYS->name().c_str(), SYS->transport().at().extHostGet("*",sit->first).name.c_str());
+		if(sit->second.isLive) SYS->mess_sys(TMess::Notice, _("Redundant station '%s' up."),
+						SYS->transport().at().extHostGet("*",sit->first).name.c_str());
+		else SYS->mess_sys(TMess::Warning, _("Redundant station '%s' down."),
+						SYS->transport().at().extHostGet("*",sit->first).name.c_str());
 		sit->second.isLivePrev = sit->second.isLive;
 	    }
 	}
@@ -1910,7 +1923,7 @@ void *TSYS::RdTask( void *param )
 
 	//Wait to next iteration
 	TSYS::taskSleep((int64_t)(SYS->rdTaskPer()*1e9));
-    } catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+    } catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 
     return NULL;
 }
@@ -1923,41 +1936,24 @@ int TSYS::sysSleep( float tm )
     return nanosleep(&sp_tm, NULL);
 }
 
-void TSYS::taskSleep( int64_t per, time_t cron, int64_t *lag )
+void TSYS::taskSleep( int64_t per, const string &icron, int64_t *lag )
 {
     struct timespec sp_tm;
     STask *stsk = (STask*)pthread_getspecific(sTaskKey);
 
-    if(!cron) {
-	/*if(!per) per = 1000000000;
-	int64_t cur_tm = 1000*curTime();
-	int64_t pnt_tm = (cur_tm/per + 1)*per;
-	int64_t beg_tm = cur_tm;
-	do
-	{
-	    sp_tm.tv_sec = (pnt_tm-cur_tm)/1000000000; sp_tm.tv_nsec = (pnt_tm-cur_tm)%1000000000;
-	    if(nanosleep(&sp_tm,NULL))	return;
-	    cur_tm = 1000*curTime();
-	}while(cur_tm < pnt_tm);
-
-	if(stsk)
-	{
-	    stsk->tm_beg = stsk->tm_per;
-	    stsk->tm_end = beg_tm;
-	    stsk->tm_per = cur_tm;
-	}*/
-
+    if(icron.empty()) {
 	if(!per) per = 1000000000ll;
-	clock_gettime(CLOCK_REALTIME, &sp_tm);
+	clockid_t clkId = SYS->clockRT() ? CLOCK_REALTIME : CLOCK_MONOTONIC;
+	clock_gettime(clkId, &sp_tm);
 	int64_t cur_tm = (int64_t)sp_tm.tv_sec*1000000000ll + sp_tm.tv_nsec,
 		pnt_tm = (cur_tm/per + 1)*per,
 		wake_tm = 0;
 	do {
 	    sp_tm.tv_sec = pnt_tm/1000000000ll; sp_tm.tv_nsec = pnt_tm%1000000000ll;
-	    if(clock_nanosleep(CLOCK_REALTIME,TIMER_ABSTIME,&sp_tm,NULL)) return;
-	    clock_gettime(CLOCK_REALTIME, &sp_tm);
+	    if(clock_nanosleep(clkId,TIMER_ABSTIME,&sp_tm,NULL)) return;
+	    clock_gettime(clkId, &sp_tm);
 	    wake_tm = (int64_t)sp_tm.tv_sec*1000000000ll + sp_tm.tv_nsec;
-	}while(wake_tm < pnt_tm);
+	} while(wake_tm < pnt_tm);
 
 	if(stsk) {
 	    if(stsk->tm_pnt) stsk->cycleLost += vmax(0, pnt_tm/per-stsk->tm_pnt/per-1);
@@ -1971,13 +1967,25 @@ void TSYS::taskSleep( int64_t per, time_t cron, int64_t *lag )
 	}
     }
     else {
-	time_t end_tm = time(NULL);
-	while(time(NULL) < cron && sysSleep(10) == 0) ;
+	int64_t end_tm = curTime();
+	time_t cur_tm = end_tm/1000000,
+	       cron_tm = cron(icron, cur_tm);
+	while(time(NULL) < cron_tm && sysSleep(1) == 0) {
+	    time_t dt = time(NULL) - cur_tm;
+	    if(dt/60) {
+		dt = 60*(dt/60);
+		SYS->mess_sys(TMess::Debug, _("System clock changed to '%s'. Correction the cron '%s' target!"), tm2s(dt).c_str(), icron.c_str());
+		cron_tm += dt;
+		end_tm += 1000000ll*dt;
+		if(stsk) stsk->tm_per += 1000000000ll*dt;
+	    }
+	    cur_tm = time(NULL);
+	}
 	if(stsk) {
 	    stsk->tm_beg = stsk->tm_per;
-	    stsk->tm_end = 1000000000ll*end_tm;
-	    stsk->tm_per = 1000000000ll*time(NULL);
-	    stsk->tm_pnt = 1000000000ll*cron;
+	    stsk->tm_end = 1000ll*end_tm;
+	    stsk->tm_per = 1000ll*curTime();
+	    stsk->tm_pnt = 1000000000ll*cron_tm;
 	    stsk->lagMax = vmax(stsk->lagMax, stsk->tm_per - stsk->tm_pnt);
 	    if(stsk->tm_beg) stsk->consMax = vmax(stsk->consMax, stsk->tm_end - stsk->tm_beg);
 	}
@@ -2448,7 +2456,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	    if(nCPU() > 1)
 		ctrMkNode("fld",opt,-1,"/gen/mainCPUs",_("Main CPUs set"),RWRWR_,"root","root",2,"tp","str",
 		    "help",_("For using CPU set write processors numbers string separated by symbol ':'.\nCPU numbers started from 0."));
-	    ctrMkNode("fld",opt,-1,"/gen/clk_res",_("Real-time clock resolution"),R_R_R_,"root","root",1,"tp","str");
+	    ctrMkNode("fld",opt,-1,"/gen/clk",_("Tasks planning clock"),R_R_R_,"root","root",1,"tp","str");
 	    ctrMkNode("fld",opt,-1,"/gen/in_charset",_("Internal charset"),R_R___,"root","root",1,"tp","str");
 	    ctrMkNode("fld",opt,-1,"/gen/config",_("Config-file"),R_R___,"root","root",1,"tp","str");
 	    ctrMkNode("fld",opt,-1,"/gen/workdir",_("Work directory"),R_R___,"root","root",3,"tp","str","dest","sel_ed","select","/gen/workDirList");
@@ -2583,10 +2591,10 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	}
 	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setMainCPUs(TSYS::strParse(opt->text(),0,"("));
     }
-    else if(a_path == "/gen/clk_res" && ctrChkNode(opt)) {
+    else if(a_path == "/gen/clk" && ctrChkNode(opt)) {
 	struct timespec tmval;
-	clock_getres(CLOCK_REALTIME,&tmval);
-	opt->setText(tm2s(1e-3*tmval.tv_nsec));
+	clock_getres(SYS->clockRT()?CLOCK_REALTIME:CLOCK_MONOTONIC, &tmval);
+	opt->setText(TSYS::strMess(SYS->clockRT()?_("Real-time %s"):_("Monotonic %s"),tm2s(1e-9*tmval.tv_nsec).c_str()));
     }
     else if(a_path == "/gen/in_charset" && ctrChkNode(opt))	opt->setText(Mess->charset());
     else if(a_path == "/gen/config") {
@@ -2656,7 +2664,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	    opt->childAdd("el")->setAttr("id",lst[i_a])->setText(at(lst[i_a]).at().subName());
     }
     else if(a_path == "/redund/status" && ctrChkNode(opt,"get",R_R_R_,"root","root"))
-	opt->setText(TSYS::strMess(_("Spent time: %s."),TSYS::time2str(mRdPrcTm).c_str()));
+	opt->setText(TSYS::strMess(_("Spent time: %s."),tm2s(1e-6*mRdPrcTm).c_str()));
     else if(a_path == "/redund/statLev") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(i2s(rdStLevel()));
 	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setRdStLevel(s2i(opt->text()));
@@ -2731,9 +2739,10 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		    if(it->second.flgs&STask::FinishTask) cn->setText(_("Finished. "));
 		    if(tm_beg && tm_beg < tm_per)
 			cn->setText(cn->text()+TSYS::strMess(_("Last: %s. Consume: %3.1f[%3.1f]%% (%s from %s). Lag: %s[%s]. Cycles lost: %g."),
-			    tm2s((time_t)(1e-9*tm_per),"%d-%m-%Y %H:%M:%S").c_str(), 100*(double)(tm_end-tm_beg)/(double)(tm_per-tm_beg),
-			    100*(double)consMax/(double)(tm_per-tm_beg), tm2s(1e-3*(tm_end-tm_beg)).c_str(), tm2s(1e-3*(tm_per-tm_beg)).c_str(),
-			    tm2s(1e-3*(tm_per-tm_pnt)).c_str(), tm2s(1e-3*lagMax).c_str(), (double)it->second.cycleLost));
+			    atm2s((time_t)(1e-9*tm_per),SYS->clockRT()?"%d-%m-%Y %H:%M:%S":"%d-%m %H:%M:%S").c_str(),
+			    100*(double)(tm_end-tm_beg)/(double)(tm_per-tm_beg),
+			    100*(double)consMax/(double)(tm_per-tm_beg), tm2s(1e-9*(tm_end-tm_beg)).c_str(), tm2s(1e-9*(tm_per-tm_beg)).c_str(),
+			    tm2s(1e-9*(tm_per-tm_pnt)).c_str(), tm2s(1e-9*lagMax).c_str(), (double)it->second.cycleLost));
 		}
 		if(n_plc) {
 		    string plcVl = _("Standard");
@@ -2764,7 +2773,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	if(nCPU() > 1 && ctrChkNode(opt,"set",RWRW__,"root","root",SEC_WR) && opt->attr("col") == "cpuSet") {
 	    ResAlloc res(taskRes, true);
 	    map<string,STask>::iterator it = mTasks.find(opt->attr("key_path"));
-	    if(it == mTasks.end()) throw TError(nodePath().c_str(),_("No present task '%s'."));
+	    if(it == mTasks.end()) throw err_sys(_("No present task '%s'."));
 	    if(it->second.flgs & STask::Detached) return;
 
 	    it->second.cpuSet = TSYS::strParse(opt->text(),0,"(");
@@ -2785,8 +2794,8 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	    int rez = pthread_setaffinity_np(it->second.thr, sizeof(cpu_set_t), &cpuset);
 	    res.release();
 	    TBDS::genDBSet(nodePath()+"CpuSet:"+it->first, it->second.cpuSet);
-	    if(rez == EINVAL) throw TError(nodePath().c_str(),_("Set not allowed processors try."));
-	    if(rez) throw TError(nodePath().c_str(),_("CPUs set for the thread error."));
+	    if(rez == EINVAL) throw err_sys(_("Set not allowed processors try."));
+	    if(rez) throw err_sys(_("CPUs set for the thread error."));
 	}
 #endif
     }
@@ -2837,8 +2846,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 
 	    // Values request from first source
 	    MtxAlloc res(Mess->mRes, true);
-	    for(map<string, map<string,string> >::iterator im = Mess->trMessIdx.begin(); im != Mess->trMessIdx.end(); ++im)
-	    {
+	    for(map<string, map<string,string> >::iterator im = Mess->trMessIdx.begin(); im != Mess->trMessIdx.end(); ++im) {
 		//  Check for filter
 		if(trFltr.size()) {
 		    map<string,string>::iterator is;
@@ -2877,8 +2885,9 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 			//  Get from config file or DB source
 			bool seekRez = false;
 			for(int inst = 0; true; inst++) {
-			    seekRez = isCfg ? SYS->db().at().dataSeek("", trSrc.substr(4), inst, req)
-					    : SYS->db().at().dataSeek(trSrc.substr(3), "", inst, req);
+			    vector< vector<string> > full;
+			    seekRez = isCfg ? SYS->db().at().dataSeek("", trSrc.substr(4), inst, req, false, &full)
+					    : SYS->db().at().dataSeek(trSrc.substr(3), "", inst, req, false, &full);
 			    if(!seekRez) break;
 			    for(unsigned i_n = 0; i_n < ns.size(); i_n++) {
 				if(!(i_n && i_n < (ns.size()-1))) continue;

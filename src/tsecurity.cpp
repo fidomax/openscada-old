@@ -107,7 +107,7 @@ void TSecurity::usrAdd( const string &name, const string &idb )
 
 void TSecurity::usrDel( const string &name, bool complete )
 {
-    if(usrAt(name).at().sysItem())	throw TError(nodePath().c_str(), _("Removal of system user is inadmissible."));
+    if(usrAt(name).at().sysItem())	throw err_sys(_("Removal of system user is inadmissible."));
     chldDel(mUsr, name, -1, complete);
 }
 
@@ -118,7 +118,7 @@ void TSecurity::grpAdd( const string &name, const string &idb )
 
 void TSecurity::grpDel( const string &name, bool complete )
 {
-    if(grpAt(name).at().sysItem())	throw TError(nodePath().c_str(), _("Removal of system group is inadmissible.")); 
+    if(grpAt(name).at().sysItem())	throw err_sys(_("Removal of system group is inadmissible."));
     chldDel(mGrp, name, -1, complete);
 }
 
@@ -150,21 +150,22 @@ void TSecurity::load_( )
     //Load DB
     string	name;
     map<string, bool>	itReg;
+    vector<vector<string> > full;
 
     // Search and create new users
     try {
 	TConfig g_cfg(&userEl);
-	g_cfg.cfgViewAll(false);
+	//g_cfg.cfgViewAll(false);
 	vector<string> db_ls;
 
 	//  Search new into DB and Config-file
 	SYS->db().at().dbList(db_ls, true);
 	db_ls.push_back(DB_CFG);
 	for(unsigned i_db = 0; i_db < db_ls.size(); i_db++)
-	    for(int fld_cnt = 0; SYS->db().at().dataSeek(db_ls[i_db]+"."+subId()+"_user",nodePath()+subId()+"_user",fld_cnt++,g_cfg); )
-	    {
+	    for(int fld_cnt = 0; SYS->db().at().dataSeek(db_ls[i_db]+"."+subId()+"_user",nodePath()+subId()+"_user",fld_cnt++,g_cfg,false,&full); ) {
 		name = g_cfg.cfg("NAME").getS();
 		if(!usrPresent(name))	usrAdd(name, (db_ls[i_db]==SYS->workDB())?"*.*":db_ls[i_db]);
+		usrAt(name).at().load(&g_cfg);
 		itReg[name] = true;
 	    }
 
@@ -175,16 +176,15 @@ void TSecurity::load_( )
 		if(itReg.find(db_ls[i_it]) == itReg.end() && SYS->chkSelDB(usrAt(db_ls[i_it]).at().DB()))
 		    usrDel(db_ls[i_it]);
 	}
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	mess_err(err.cat.c_str(), "%s", err.mess.c_str());
-	mess_err(nodePath().c_str(), _("Search and create new users error."));
+	mess_sys(TMess::Error, _("Search and create new users error."));
     }
 
     // Search and create new user groups
     try {
 	TConfig g_cfg(&grpEl);
-	g_cfg.cfgViewAll(false);
+	//g_cfg.cfgViewAll(false);
 	vector<string> db_ls;
 	itReg.clear();
 
@@ -192,10 +192,10 @@ void TSecurity::load_( )
 	SYS->db().at().dbList(db_ls, true);
 	db_ls.push_back(DB_CFG);
 	for(unsigned i_db = 0; i_db < db_ls.size(); i_db++)
-	    for(int fld_cnt=0; SYS->db().at().dataSeek(db_ls[i_db]+"."+subId()+"_grp",nodePath()+subId()+"_grp",fld_cnt++,g_cfg); )
-	    {
+	    for(int fld_cnt=0; SYS->db().at().dataSeek(db_ls[i_db]+"."+subId()+"_grp",nodePath()+subId()+"_grp",fld_cnt++,g_cfg,false,&full); ) {
 		name = g_cfg.cfg("NAME").getS();
 		if(!grpPresent(name))	grpAdd(name,(db_ls[i_db]==SYS->workDB())?"*.*":db_ls[i_db]);
+		grpAt(name).at().load(&g_cfg);
 		itReg[name] = true;
 	    }
 
@@ -206,10 +206,9 @@ void TSecurity::load_( )
 		if(itReg.find(db_ls[i_it]) == itReg.end() && SYS->chkSelDB(grpAt(db_ls[i_it]).at().DB()))
 		    grpDel(db_ls[i_it]);
 	}
-    }
-    catch(TError err) {
-	mess_err(err.cat.c_str(),"%s",err.mess.c_str());
-	mess_err(nodePath().c_str(),_("Search and create new user's groups error."));
+    } catch(TError &err) {
+	mess_err(err.cat.c_str(), "%s", err.mess.c_str());
+	mess_sys(TMess::Error, _("Search and create new user's groups error."));
     }
 
     //Add surely users, groups and set their parameters, if its not loaded
@@ -375,10 +374,12 @@ TSecurity &TUser::owner( )	{ return *(TSecurity*)nodePrev(); }
 
 string TUser::tbl( )		{ return string(owner().subId())+"_user"; }
 
-void TUser::load_( )
+void TUser::load_( TConfig *icfg )
 {
     if(!SYS->chkSelDB(DB())) throw TError();
-    SYS->db().at().dataGet(fullDB(), owner().nodePath()+tbl(), *this);
+
+    if(icfg) *(TConfig*)this = *icfg;
+    else SYS->db().at().dataGet(fullDB(), owner().nodePath()+tbl(), *this);
 }
 
 void TUser::save_( )
@@ -494,10 +495,12 @@ TSecurity &TGroup::owner( )	{ return *(TSecurity*)nodePrev(); }
 
 string TGroup::tbl( )		{ return owner().subId()+"_grp"; }
 
-void TGroup::load_( )
+void TGroup::load_( TConfig *icfg )
 {
     if(!SYS->chkSelDB(DB())) throw TError();
-    SYS->db().at().dataGet(fullDB(), owner().nodePath()+tbl(), *this);
+
+    if(icfg) *(TConfig*)this = *icfg;
+    else SYS->db().at().dataGet(fullDB(), owner().nodePath()+tbl(), *this);
 }
 
 void TGroup::save_( )

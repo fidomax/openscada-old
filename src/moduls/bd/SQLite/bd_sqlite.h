@@ -44,12 +44,12 @@ class MTable : public TTable
 {
     public:
 	//Public methods
-	MTable( string name, MBD *bd, bool create );
+	MTable( string name, MBD *bd );
 	~MTable(  );
 
 	// Field's operations
 	void fieldStruct( TConfig &cfg );
-	bool fieldSeek( int row, TConfig &cfg );
+	bool fieldSeek( int row, TConfig &cfg, vector< vector<string> > *full = NULL );
 	void fieldGet( TConfig &cfg );
 	void fieldSet( TConfig &cfg );
 	void fieldDel( TConfig &cfg );
@@ -122,7 +122,6 @@ class BDMod: public TTypeBD
     protected:
 	//Methods
 	void modStop( );
-	void load_( );
 
     private:
 	//Private methods

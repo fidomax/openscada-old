@@ -87,31 +87,31 @@ void TProt::load_( )
     //Load DB
     // Search and create new nodes
     try {
-	TConfig g_cfg(&nodeEl());
-	g_cfg.cfgViewAll(false);
-	vector<string> db_ls;
+	TConfig gCfg(&nodeEl());
+	//gCfg.cfgViewAll(false);
+	vector<string> dbLs;
 	map<string, bool> itReg;
+	vector<vector<string> > full;
 
 	//  Search into DB
-	SYS->db().at().dbList(db_ls, true);
-	db_ls.push_back(DB_CFG);
-	for(unsigned i_db = 0; i_db < db_ls.size(); i_db++)
-	    for(int fld_cnt = 0; SYS->db().at().dataSeek(db_ls[i_db]+"."+modId()+"_node",nodePath()+modId()+"_node",fld_cnt++,g_cfg); )
-	    {
-		string id = g_cfg.cfg("ID").getS();
-		if(!nPresent(id)) nAdd(id, (db_ls[i_db]==SYS->workDB())?"*.*":db_ls[i_db]);
+	SYS->db().at().dbList(dbLs, true);
+	dbLs.push_back(DB_CFG);
+	for(unsigned iDB = 0; iDB < dbLs.size(); iDB++)
+	    for(int fldCnt = 0; SYS->db().at().dataSeek(dbLs[iDB]+"."+modId()+"_node",nodePath()+modId()+"_node",fldCnt++,gCfg,false,&full); ) {
+		string id = gCfg.cfg("ID").getS();
+		if(!nPresent(id)) nAdd(id, (dbLs[iDB]==SYS->workDB())?"*.*":dbLs[iDB]);
+		nAt(id).at().load(&gCfg);
 		itReg[id] = true;
 	    }
 
 	//  Check for remove items removed from DB
 	if(!SYS->selDB().empty()) {
-	    nList(db_ls);
-	    for(unsigned i_it = 0; i_it < db_ls.size(); i_it++)
-		if(itReg.find(db_ls[i_it]) == itReg.end() && SYS->chkSelDB(nAt(db_ls[i_it]).at().DB()))
-		    nDel(db_ls[i_it]);
+	    nList(dbLs);
+	    for(unsigned i_it = 0; i_it < dbLs.size(); i_it++)
+		if(itReg.find(dbLs[i_it]) == itReg.end() && SYS->chkSelDB(nAt(dbLs[i_it]).at().DB()))
+		    nDel(dbLs[i_it]);
 	}
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 	mess_err(nodePath().c_str(),_("Search and create new node error."));
     }
@@ -299,11 +299,10 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 		    rez.assign(buf, resp_len);
 		    //Wait tail
 		    while(resp_len) {
-			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError err){ break; }
+			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError &err) { break; }
 			rez.append(buf, resp_len);
 		    }
-		}
-		catch(TError er) {	//By possible the send request breakdown and no response
+		} catch(TError &er) {	//By possible the send request breakdown and no response
 		    if(err.empty()) err = _("14:Device error: ") + er.mess;
 		    else if(err.find(er.mess) == string::npos) err += "; " + er.mess;
 		    continue;
@@ -331,11 +330,10 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 		    rez.assign(buf, resp_len);
 		    //Wait tail
 		    while(resp_len && (rez.size() < 3 || rez.substr(rez.size()-2,2) != "\x0D\x0A")) {
-			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError err){ break; }
+			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError &err) { break; }
 			rez.append(buf, resp_len);
 		    }
-		}
-		catch(TError er) {	//By possible the send request breakdown and no response
+		} catch(TError &er) {	//By possible the send request breakdown and no response
 		    if(err.empty()) err = _("14:Device error: ") + er.mess;
 		    else if(err.find(er.mess) != string::npos) err += "; " + er.mess;
 		    continue;
@@ -369,7 +367,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 		    default: err = TSYS::strMess(_("12:%02X:Unknown error."),(unsigned char)(pdu[1]));	break;
 		}
 	}
-    } catch(TError er) { err = _("14:Device error: ") + er.mess; }
+    } catch(TError &er) { err = _("14:Device error: ") + er.mess; }
 
     io.setText(err.empty()?pdu:"");
     if(!err.empty()) io.setAttr("err",err);
@@ -387,7 +385,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 	else if(rez.size() > 2) mess += rez.substr(0,rez.size()-2);
 
 	if(prtLen())
-	    pushPrtMess(tm2s(time(NULL),"")+" "+prt+": '"+sid+"' --> "+i2s(node)+"("+tro.workId()+")\n"+mess+"\n");
+	    pushPrtMess(atm2s(time(NULL))+" "+prt+": '"+sid+"' --> "+i2s(node)+"("+tro.workId()+")\n"+mess+"\n");
 	if(debugCat.size()) mess_debug_(debugCat.c_str(), mess.c_str());
     }
 }
@@ -555,7 +553,7 @@ retry:
     }
 
     if(owner().prtLen() && prt.size() && answer.size()) {
-	string mess = tm2s(time(NULL),"")+" "+prt+": "+srcTr().at().workId()+
+	string mess = atm2s(time(NULL))+" "+prt+": "+srcTr().at().workId()+
 			"("+TSYS::strLine(srcAddr(),0)+") --> "+i2s(node)+"\n";
 	mess += _("REQ -> ");
 	if(prt != "ASCII")	mess += TSYS::strDecode(reqst, TSYS::Bin, " ");
@@ -713,21 +711,26 @@ void Node::regCR( int id, const SIO &val, const string &tp, bool wr )
     else throw TError(nodePath().c_str(), _("ModBUS data type '%s' error!"), tp.c_str());
 }
 
-void Node::load_( )
+void Node::load_( TConfig *icfg )
 {
     bool en_prev = enableStat();
 
     if(!SYS->chkSelDB(DB())) throw TError();
-    cfgViewAll(true);
-    SYS->db().at().dataGet(fullDB(),owner().nodePath()+tbl(), *this);
-    cfg("MODE").setI(cfg("MODE").getI());
+
+    if(icfg) *(TConfig*)this = *icfg;
+    else {
+	//cfgViewAll(true);
+	SYS->db().at().dataGet(fullDB(),owner().nodePath()+tbl(), *this);
+	//cfg("MODE").setI(cfg("MODE").getI());
+    }
 
     //Load IO
+    vector<vector<string> > full;
     vector<string> u_pos;
     TConfig cfg(&owner().nodeIOEl());
-    cfg.cfg("NODE_ID").setS(id(),true);
+    cfg.cfg("NODE_ID").setS(id(), TCfg::ForceUse);
     cfg.cfg("VALUE").setExtVal(true);
-    for(int io_cnt = 0; SYS->db().at().dataSeek(fullDB()+"_io",owner().nodePath()+tbl()+"_io",io_cnt++,cfg); ) {
+    for(int ioCnt = 0; SYS->db().at().dataSeek(fullDB()+"_io",owner().nodePath()+tbl()+"_io",ioCnt++,cfg,false,&full); ) {
 	string sid = cfg.cfg("ID").getS();
 
 	//Position storing
@@ -785,13 +788,13 @@ void Node::save_( )
     }
 
     //Clear IO
+    vector<vector<string> > full;
     cfg.cfgViewAll(false);
-    for(int fld_cnt = 0; SYS->db().at().dataSeek(fullDB()+"_io",owner().nodePath()+tbl()+"_io",fld_cnt++,cfg); )
-    {
+    for(int fldCnt = 0; SYS->db().at().dataSeek(fullDB()+"_io",owner().nodePath()+tbl()+"_io",fldCnt++,cfg,false,&full); ) {
 	string sio = cfg.cfg("ID").getS();
 	if(ioId(sio) < 0 || io(ioId(sio))->flg()&Node::LockAttr) {
 	    SYS->db().at().dataDel(fullDB()+"_io", owner().nodePath()+tbl()+"_io", cfg, true, false, true);
-	    fld_cnt--;
+	    fldCnt--;
 	}
     }
 }
@@ -817,8 +820,7 @@ void Node::setEnable( bool vl )
 		string mWorkProg = SYS->daq().at().at(TSYS::strSepParse(progLang(),0,'.')).at().compileFunc(TSYS::strSepParse(progLang(),1,'.'),*this,prog());
 		data->val.setFunc(&((AutoHD<TFunction>)SYS->nodeAt(mWorkProg)).at());
 	    }
-	}
-	catch(TError err) {
+	} catch(TError &err) {
 	    mess_err(nodePath().c_str(),_("Compile function by language '%s' error: %s"),progLang().c_str(),err.mess.c_str());
 	    throw;
 	}
@@ -912,7 +914,7 @@ string Node::getStatus( )
 	    case MD_DATA:
 		rez += TSYS::strMess(_("Spent time: %s. Requests %.4g. Read registers %.4g, coils %.4g, register inputs %.4g, coil inputs %.4g.\n"
 					"Writed registers %.4g, coils %.4g."),
-		    tm2s(tmProc).c_str(), cntReq, data->rReg, data->rCoil, data->rRegI, data->rCoilI, data->wReg, data->wCoil);
+		    tm2s(1e-6*tmProc).c_str(), cntReq, data->rReg, data->rCoil, data->rRegI, data->rCoilI, data->wReg, data->wCoil);
 		break;
 	    case MD_GT_ND: case MD_GT_NET:
 		rez += TSYS::strMess(_("Requests %.4g."), cntReq);
@@ -1204,7 +1206,7 @@ bool Node::req( const string &itr, const string &iprt, unsigned char inode, stri
 
 	    if(!req.attr("err").empty()) { pdu.assign(1, pdu[0]|0x80); pdu += 0xA; }
 	    pdu = req.text();
-	}catch(TError err) { pdu.assign(1, pdu[0]|0x80); pdu += 0xA; }
+	} catch(TError &err) { pdu.assign(1, pdu[0]|0x80); pdu += 0xA; }
 
 	return true;
     }
@@ -1267,8 +1269,7 @@ void *Node::Task( void *ind )
 			    case IO::Boolean:	li->second.at().setB(nd.data->val.getB(li->first));	break;
 			    default: break;
 			}
-	    }
-	    catch(TError err) {
+	    } catch(TError &err) {
 		mess_err(err.cat.c_str(), "%s", err.mess.c_str() );
 		mess_err(nd.nodePath().c_str(), _("Calculate node's function error."));
 	    }
@@ -1452,7 +1453,7 @@ void Node::cntrCmdProc( XMLNode *opt )
 	    try {
 		SYS->daq().at().at(TSYS::strParse(progLang(),0,".")).at().
 				compileFuncSynthHighl(TSYS::strParse(progLang(),1,"."),*opt);
-	    } catch(...){ }
+	    } catch(...) { }
     }
     else if(a_path == "/dt/plang_ls" && ctrChkNode(opt)) {
 	string tplng = progLang();

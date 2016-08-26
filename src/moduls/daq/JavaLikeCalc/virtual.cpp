@@ -36,7 +36,7 @@
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
 #define SUB_TYPE	"LIB"
-#define MOD_VER		"3.1.2"
+#define MOD_VER		"3.2.5"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides based on java like language calculator and engine of libraries. \
  The user can create and modify functions and libraries.")
@@ -207,7 +207,7 @@ void TpContr::compileFuncSynthHighl( const string &lang, XMLNode &shgl )
 	shgl.childAdd("rule")->setAttr("expr","\\b(var|in)(?=\\s+\\w)")->setAttr("color","darkblue")->setAttr("font_weight","1");
 	shgl.childAdd("rule")->setAttr("expr","(\\?|\\:)")->setAttr("color","darkblue")->setAttr("font_weight","1");
 	shgl.childAdd("rule")->setAttr("expr","\\b(0[xX][0-9a-fA-F]*|[0-9]*\\.?[0-9]+|[0-9]*\\.?[0-9]+[eE][-+]?[0-9]*|true|false)\\b")->setAttr("color","darkorange");
-	shgl.childAdd("rule")->setAttr("expr","(\\=|\\!|\\+|\\-|\\>|\\<|\\*|\\/|\\%|\\||\\&|\\^)")->setAttr("color","darkblue")->setAttr("font_weight","1");
+	shgl.childAdd("rule")->setAttr("expr","(\\=|\\!|\\+|\\-|\\>|\\<|\\*|\\/|\\%|\\||\\&|\\^|\\~)")->setAttr("color","darkblue")->setAttr("font_weight","1");
 	shgl.childAdd("rule")->setAttr("expr","(\\;|\\,|\\{|\\}|\\[|\\]|\\(|\\))")->setAttr("color","blue");
     }
 }
@@ -238,8 +238,7 @@ string TpContr::compileFunc( const string &lang, TFunction &fnc_cfg, const strin
 	try {
 	    ((TFunction&)func.at()).operator=(fnc_cfg);
 	    if(prog_text == func.at().prog()) return func.at().nodePath(0,true);
-	}
-	catch(TError err) {
+	} catch(TError &err) {
 	    func.at().setStart(true);
 	    throw;
 	}
@@ -251,8 +250,7 @@ string TpContr::compileFunc( const string &lang, TFunction &fnc_cfg, const strin
 	((TFunction&)func.at()).operator=(fnc_cfg);
 	func.at().setStart(true);
 	func.at().modifClr();
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	if(!func.at().use()) {
 	    func.free();
 	    lbAt("sys_compile").at().del(funcId.c_str());
@@ -273,37 +271,36 @@ void TpContr::load_( )
     //Load function's libraries
     try {
 	// Search and create new libraries
-	TConfig c_el(&elLib());
-	c_el.cfgViewAll(false);
-	vector<string> db_ls;
+	TConfig cEl(&elLib());
+	//cEl.cfgViewAll(false);
+	vector<string> dbLs;
 	map<string, bool> itReg;
+	vector<vector<string> > full;
 
 	// Search into DB
-	SYS->db().at().dbList(db_ls, true);
-	db_ls.push_back(DB_CFG);
-	for(unsigned i_db = 0; i_db < db_ls.size(); i_db++)
-	    for(int lib_cnt = 0; SYS->db().at().dataSeek(db_ls[i_db]+"."+libTable(),nodePath()+"lib",lib_cnt++,c_el); ) {
-		string l_id = c_el.cfg("ID").getS();
+	SYS->db().at().dbList(dbLs, true);
+	dbLs.push_back(DB_CFG);
+	for(unsigned iDB = 0; iDB < dbLs.size(); iDB++)
+	    for(int libCnt = 0; SYS->db().at().dataSeek(dbLs[iDB]+"."+libTable(),nodePath()+"lib",libCnt++,cEl,false,&full); ) {
+		string l_id = cEl.cfg("ID").getS();
 		if(!lbPresent(l_id)) {
-		    lbReg(new Lib(l_id.c_str(),"",(db_ls[i_db]==SYS->workDB())?"*.*":db_ls[i_db]));
+		    lbReg(new Lib(l_id.c_str(),"",(dbLs[iDB]==SYS->workDB())?"*.*":dbLs[iDB]));
 		    try {
-			lbAt(l_id).at().load();
+			lbAt(l_id).at().load(&cEl);
 			//lbAt(l_id).at().setStart(true);		//Do not try start into the loading but possible broblems like into openscada --help
-		    }
-		    catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+		    } catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 		}
 		itReg[l_id] = true;
 	    }
 
 	//  Check for remove items removed from DB
 	if(!SYS->selDB().empty()) {
-	    lbList(db_ls);
-	    for(unsigned i_it = 0; i_it < db_ls.size(); i_it++)
-		if(itReg.find(db_ls[i_it]) == itReg.end() && SYS->chkSelDB(lbAt(db_ls[i_it]).at().DB()))
-		    lbUnreg(db_ls[i_it]);
+	    lbList(dbLs);
+	    for(unsigned i_it = 0; i_it < dbLs.size(); i_it++)
+		if(itReg.find(dbLs[i_it]) == itReg.end() && SYS->chkSelDB(lbAt(dbLs[i_it]).at().DB()))
+		    lbUnreg(dbLs[i_it]);
 	}
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 	mess_err(nodePath().c_str(),_("Load function's libraries error.")); 
     }
@@ -332,13 +329,13 @@ void TpContr::modStop( )
     //Stop and disable all JavaLike-controllers
     vector<string> lst;
     list(lst);
-    for(unsigned i_l = 0; i_l < lst.size(); i_l++)
-	at(lst[i_l]).at().disable();
+    for(unsigned iL = 0; iL < lst.size(); iL++)
+	at(lst[iL]).at().disable();
 
     //Stop functions
     lbList(lst);
-    for(unsigned i_lb = 0; i_lb < lst.size(); i_lb++)
-	lbAt(lst[i_lb]).at().setStart(false);
+    for(unsigned iLb = 0; iLb < lst.size(); iLb++)
+	lbAt(lst[iLb]).at().setStart(false);
 }
 
 void TpContr::cntrCmdProc( XMLNode *opt )
@@ -412,8 +409,7 @@ void Contr::postDisable(int flag)
 	    SYS->db().at().open(db);
 	    SYS->db().at().close(db,true);
 	}
-    }
-    catch(TError err) { mess_err(nodePath().c_str(),"%s",err.mess.c_str()); }
+    } catch(TError &err) { mess_err(nodePath().c_str(),"%s",err.mess.c_str()); }
 
     TController::postDisable(flag);
 }
@@ -424,9 +420,9 @@ string Contr::getStatus( )
 
     if(startStat() && !redntUse()) {
 	if(call_st)	val += TSYS::strMess(_("Call now. "));
-	if(period())	val += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-3*period()).c_str());
-	else val += TSYS::strMess(_("Call next by cron '%s'. "),tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	val += TSYS::strMess(_("Spent time: %s."),tm2s(tm_calc).c_str());
+	if(period())	val += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-9*period()).c_str());
+	else val += TSYS::strMess(_("Call next by cron '%s'. "),atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	val += TSYS::strMess(_("Spent time: %s."),tm2s(1e-6*tm_calc).c_str());
     }
 
     return val;
@@ -443,7 +439,7 @@ void Contr::enable_( )
     }
     setFunc(&mod->lbAt(TSYS::strSepParse(wfnc,0,'.')).at().at(TSYS::strSepParse(wfnc,1,'.')).at());
     try{ loadFunc(); }
-    catch(TError err) {
+    catch(TError &err) {
 	mess_warning(err.cat.c_str(),"%s",err.mess.c_str());
 	mess_warning(nodePath().c_str(),_("Load function and its IO error."));
     }
@@ -456,7 +452,7 @@ void Contr::disable_( )
 
 void Contr::load_( )
 {
-    TController::load_();
+    //TController::load_();
 
     loadFunc();
 }
@@ -476,11 +472,12 @@ void Contr::loadFunc( bool onlyVl )
 	TConfig cfg(&mod->elVal());
 	string bd_tbl = id()+"_val";
 	string bd = DB()+"."+bd_tbl;
+	vector<vector<string> > full;
 
-	for(int fld_cnt = 0; SYS->db().at().dataSeek(bd,mod->nodePath()+bd_tbl,fld_cnt++,cfg); ) {
+	for(int fldCnt = 0; SYS->db().at().dataSeek(bd,mod->nodePath()+bd_tbl,fldCnt++,cfg,false,&full); ) {
 	    int ioId = func()->ioId(cfg.cfg("ID").getS());
 	    if(ioId < 0 || func()->io(ioId)->flg()&Func::SysAttr) continue;
-	    setS(ioId,cfg.cfg("VAL").getS());
+	    setS(ioId, cfg.cfg("VAL").getS());
 	}
     }
 }
@@ -511,11 +508,12 @@ void Contr::save_( )
 	}
 
 	//Clear VAL
+	vector<vector<string> > full;
 	cfg.cfgViewAll(false);
-	for(int fld_cnt = 0; SYS->db().at().dataSeek(val_bd,mod->nodePath()+bd_tbl,fld_cnt++,cfg); )
+	for(int fldCnt = 0; SYS->db().at().dataSeek(val_bd,mod->nodePath()+bd_tbl,fldCnt++,cfg,false,&full); )
 	    if(ioId(cfg.cfg("ID").getS()) < 0) {
 		SYS->db().at().dataDel(val_bd, mod->nodePath()+bd_tbl, cfg, true, false, true);
-		fld_cnt--;
+		fldCnt--;
 	    }
     }
 }
@@ -567,7 +565,7 @@ void *Contr::Task( void *icntr )
 
 	    for(int i_it = 0; i_it < cntr.mIter; i_it++)
 		try { cntr.calc(); }
-		catch(TError err) {
+		catch(TError &err) {
 		    mess_err(err.cat.c_str(),"%s",err.mess.c_str() );
 		    mess_err(cntr.nodePath().c_str(),_("Calculation controller's function error."));
 		}
@@ -577,7 +575,7 @@ void *Contr::Task( void *icntr )
 	}
 
 	if(is_stop) break;
-	TSYS::taskSleep(cntr.period(),cntr.period()?0:TSYS::cron(cntr.cron()));
+	TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
 	if(cntr.endrun_req) is_stop = true;
 	is_start = false;
 	cntr.modif();
@@ -655,10 +653,10 @@ void Contr::cntrCmdProc( XMLNode *opt )
     if(a_path == "/cntr/flst" && ctrChkNode(opt)) {
 	vector<string> lst;
 	int c_lv = 0;
-	string c_path = "", c_el;
+	string c_path = "", cEl;
 	opt->childAdd("el")->setText(c_path);
-	for(int c_off = 0; (c_el=TSYS::strSepParse(fnc(),0,'.',&c_off)).size(); c_lv++) {
-	    c_path += c_lv ? "."+c_el : c_el;
+	for(int c_off = 0; (cEl=TSYS::strSepParse(fnc(),0,'.',&c_off)).size(); c_lv++) {
+	    c_path += c_lv ? "."+cEl : cEl;
 	    opt->childAdd("el")->setText(c_path);
 	}
 	if(c_lv) c_path+=".";
@@ -776,8 +774,7 @@ void Prm::enable( )
 	    try {
 		v_el.fldDel(i_fld);
 		continue;
-	    }
-	    catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+	    } catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 	i_fld++;
     }
 
@@ -819,8 +816,7 @@ void Prm::enable( )
 	    try {
 		v_el.fldDel(i_fld);
 		continue;
-	    }
-	    catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+	    } catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 	i_fld++;
     }
 
@@ -854,7 +850,7 @@ void Prm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
 	int io_id = ((Contr &)owner()).ioId(vo.fld().reserve());
 	if(io_id < 0) disable();
 	else ((Contr&)owner()).set(io_id, vl);
-    }catch(TError err) { disable(); }
+    } catch(TError &err) { disable(); }
 }
 
 void Prm::vlGet( TVal &val )
@@ -870,7 +866,7 @@ void Prm::vlGet( TVal &val )
 	int io_id = ((Contr &)owner()).ioId(val.fld().reserve());
 	if(io_id < 0) disable();
 	else val.set(enableStat()?owner().get(io_id):EVAL_STR,0,true);
-    }catch(TError err) { disable(); }
+    } catch(TError &err) { disable(); }
 }
 
 void Prm::vlArchMake( TVal &val )

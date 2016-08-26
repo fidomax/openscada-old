@@ -48,7 +48,7 @@ class MFileArch
 
 	void attach( const string &name, bool full = true );
 	bool put( TMess::SRec mess );
-	void get( time_t b_tm, time_t e_tm, vector<TMess::SRec> &mess, const string &category, char level, time_t upTo = 0 );
+	time_t get( time_t bTm, time_t eTm, vector<TMess::SRec> &mess, const string &category, char level, time_t upTo = 0 );
 	// Write changes to Archive file
 	//  free - surely free used memory
 	void check( bool free = false );
@@ -96,7 +96,7 @@ class MFileArch
 	vector<CacheEl> cache;
 	CacheEl cach_pr;
 	// Specific parameters
-	Res	mRes;		// resource to access;
+	ResRW	mRes;		// resource to access;
 	ModMArch *mOwner;
     };
 
@@ -113,7 +113,7 @@ class ModMArch: public TMArchivator
 	time_t begin();
 	time_t end();
 	bool put( vector<TMess::SRec> &mess, bool force = false );
-	void get( time_t b_tm, time_t e_tm, vector<TMess::SRec> &mess, const string &category = "", char level = 0, time_t upTo = 0 );
+	time_t get( time_t bTm, time_t eTm, vector<TMess::SRec> &mess, const string &category = "", char level = 0, time_t upTo = 0 );
 	void start();
 	void stop();
 
@@ -161,7 +161,7 @@ class ModMArch: public TMArchivator
 		mPrevDbl,	// duple messages prevent
 		mPrevDblTmCatLev;// mean and prevent to duples by time, category and level
 
-	Res	mRes;		// resource to access;
+	ResRW	mRes;		// resource to access;
 	double	tmCalc;		// Archiving time
 	time_t	mLstCheck;	// Last check directory time
 

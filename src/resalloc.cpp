@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: resalloc.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,21 +28,21 @@ using namespace OSCADA;
 //********************************************
 //* RW Resources allocation object           *
 //********************************************
-Res::Res( )
+ResRW::ResRW( )
 {
 #if !__GLIBC_PREREQ(2,4)
     wThr = 0;
 #endif
-    if(pthread_rwlock_init(&rwc,NULL)) throw TError("ResAlloc", _("Error open semaphore!"));
+    if(pthread_rwlock_init(&rwc,NULL)) throw TError("ResRW", _("Error open semaphore!"));
 }
 
-Res::~Res( )
+ResRW::~ResRW( )
 {
     pthread_rwlock_wrlock(&rwc);
     pthread_rwlock_destroy(&rwc);
 }
 
-void Res::resRequestW( unsigned short tm )
+void ResRW::resRequestW( unsigned short tm )
 {
     int rez = 0;
 #if !__GLIBC_PREREQ(2,4)
@@ -53,27 +53,28 @@ void Res::resRequestW( unsigned short tm )
     if(!tm) rez = pthread_rwlock_wrlock(&rwc);
     else {
 	timespec wtm;
-	clock_gettime(CLOCK_REALTIME,&wtm);
+	//clock_gettime(SYS->clockRT()?CLOCK_REALTIME:CLOCK_MONOTONIC, &wtm);
+	clock_gettime(CLOCK_REALTIME, &wtm);	//But for pthread_rwlock the clock source changing unallowed!
 	wtm.tv_nsec += 1000000*(tm%1000);
 	wtm.tv_sec += tm/1000 + wtm.tv_nsec/1000000000; wtm.tv_nsec = wtm.tv_nsec%1000000000;
-	rez = pthread_rwlock_timedwrlock(&rwc,&wtm);
+	rez = pthread_rwlock_timedwrlock(&rwc, &wtm);
     }
-    if(rez == EDEADLK) throw TError(10, "ResAlloc", _("Resource is try deadlock a thread!"));
-    else if(tm && rez == ETIMEDOUT) throw TError("ResAlloc", _("Resource is timeouted!"));
+    if(rez == EDEADLK) throw TError(10, "ResRW", _("Resource is try deadlock a thread!"));
+    else if(tm && rez == ETIMEDOUT) throw TError("ResRW", _("Resource is timeouted!"));
 #if !__GLIBC_PREREQ(2,4)
     wThr = pthread_self();
 #endif
 }
 
-bool Res::resTryW( )
+bool ResRW::resTryW( )
 {
     int rez = pthread_rwlock_trywrlock(&rwc);
     if(rez == EBUSY) return false;
-    else if(rez == EDEADLK) throw TError(10, "ResAlloc", _("Resource is try deadlock a thread!"));
+    else if(rez == EDEADLK) throw TError(10, "ResRW", _("Resource is try deadlock a thread!"));
     return true;
 }
 
-void Res::resRequestR( unsigned short tm )
+void ResRW::resRequestR( unsigned short tm )
 {
     int rez = 0;
 #if !__GLIBC_PREREQ(2,4)
@@ -84,24 +85,25 @@ void Res::resRequestR( unsigned short tm )
     if(!tm) rez = pthread_rwlock_rdlock(&rwc);
     else {
 	timespec wtm;
-	clock_gettime(CLOCK_REALTIME,&wtm);
+	//clock_gettime(SYS->clockRT()?CLOCK_REALTIME:CLOCK_MONOTONIC, &wtm);
+	clock_gettime(CLOCK_REALTIME, &wtm);	//But for pthread_rwlock the clock source changing unallowed!
 	wtm.tv_nsec += 1000000*(tm%1000);
 	wtm.tv_sec += tm/1000 + wtm.tv_nsec/1000000000; wtm.tv_nsec = wtm.tv_nsec%1000000000;
 	rez = pthread_rwlock_timedrdlock(&rwc,&wtm);
     }
-    if(rez == EDEADLK) throw TError(10,"ResAlloc",_("Resource is try deadlock a thread!"));
-    else if(tm && rez == ETIMEDOUT) throw TError("ResAlloc",_("Resource is timeouted!"));
+    if(rez == EDEADLK) throw TError(10,"ResRW",_("Resource is try deadlock a thread!"));
+    else if(tm && rez == ETIMEDOUT) throw TError("ResRW",_("Resource is timeouted!"));
 }
 
-bool Res::resTryR( )
+bool ResRW::resTryR( )
 {
     int rez = pthread_rwlock_tryrdlock(&rwc);
     if(rez == EBUSY) return false;
-    else if(rez == EDEADLK) throw TError(10,"ResAlloc",_("Resource is try deadlock a thread!"));
+    else if(rez == EDEADLK) throw TError(10,"ResRW",_("Resource is try deadlock a thread!"));
     return true;
 }
 
-void Res::resRelease( )
+void ResRW::resRelease( )
 {
     pthread_rwlock_unlock(&rwc);
 #if !__GLIBC_PREREQ(2,4)
@@ -112,9 +114,9 @@ void Res::resRelease( )
 //********************************************
 //* Automatic resource allocator/deallocator *
 //********************************************
-ResAlloc::ResAlloc( Res &rid ) : mId(rid), mAlloc(false)	{ }
+ResAlloc::ResAlloc( ResRW &rid ) : mId(rid), mAlloc(false)	{ }
 
-ResAlloc::ResAlloc( Res &rid, bool write, unsigned short tm ) : mId(rid), mAlloc(false)	{ request(write, tm); }
+ResAlloc::ResAlloc( ResRW &rid, bool write, unsigned short tm ) : mId(rid), mAlloc(false)	{ request(write, tm); }
 
 ResAlloc::~ResAlloc( )	{ if(mAlloc) release(); }
 
@@ -126,7 +128,7 @@ void ResAlloc::request( bool write, unsigned short tm )
 	if(write) mId.resRequestW(tm);
 	else mId.resRequestR(tm);
 	mAlloc = true;
-    } catch(TError err) { if(err.cod!=10) throw; }
+    } catch(TError &err) { if(err.cod!=10) throw; }
 }
 
 void ResAlloc::release( )
@@ -141,48 +143,75 @@ void ResAlloc::release( )
 //********************************************
 ResString::ResString( const string &vl )
 {
-    pthread_mutex_init(&mRes, NULL);
     setVal(vl);
 }
 
-ResString::~ResString( )
-{
-    pthread_mutex_lock(&mRes);
-    pthread_mutex_destroy(&mRes);
-}
+ResString::~ResString( )	{ }
 
 size_t ResString::size( )	{ return getVal().size(); }
 
-bool   ResString::empty( )	{ return getVal().empty(); }
+bool ResString::empty( )	{ return getVal().empty(); }
 
 void ResString::setVal( const string &vl )
 {
-    pthread_mutex_lock(&mRes);
+    mRes.lock();
     str.assign(vl.data(), vl.size());	//Bypass for COW algorithm prevent
-    pthread_mutex_unlock(&mRes);
+    mRes.unlock();
 }
 
 string ResString::getVal( )
 {
-    pthread_mutex_lock(&mRes);
+    mRes.lock();
     string rez(str.data(), str.size());	//Bypass for COW algorithm prevent
-    pthread_mutex_unlock(&mRes);
+    mRes.unlock();
     return rez;
 }
 
 ResString &ResString::operator=( const string &val )	{ setVal(val); return *this; }
 
 //***********************************************************
+//* Conditional variable object, by mutex		    *
+//***********************************************************
+CondVar::CondVar( )
+{
+    pthread_condattr_t attr;
+    pthread_condattr_init(&attr);
+    pthread_condattr_setclock(&attr, (SYS && SYS->clockRT()) ? CLOCK_REALTIME : CLOCK_MONOTONIC);
+    pthread_cond_init(&cnd, &attr);
+}
+
+CondVar::~CondVar( )
+{
+    pthread_cond_destroy(&cnd);
+}
+
+int CondVar::wait( ResMtx &mtx, unsigned short tm )
+{
+    if(tm) {
+	timespec wtm;
+	clock_gettime(SYS->clockRT()?CLOCK_REALTIME:CLOCK_MONOTONIC, &wtm);
+	wtm.tv_nsec += 1000000*(tm%1000);
+	wtm.tv_sec += tm/1000 + wtm.tv_nsec/1000000000; wtm.tv_nsec = wtm.tv_nsec%1000000000;
+	return pthread_cond_timedwait(&cnd, &mtx.mtx(), &wtm);
+    }
+    return pthread_cond_wait(&cnd, &mtx.mtx());
+}
+
+int CondVar::wakeOne( )	{ return pthread_cond_signal(&cnd); }
+
+int CondVar::wakeAll( )	{ return pthread_cond_broadcast(&cnd); }
+
+//***********************************************************
 //* Automatic POSIX mutex allocator/deallocator		    *
 //***********************************************************
-MtxAlloc::MtxAlloc( pthread_mutex_t &iM, bool iLock ) : m(iM),  mLock(false){ if(iLock) lock(); }
+MtxAlloc::MtxAlloc( ResMtx &iM, bool iLock ) : m(iM),  mLock(false){ if(iLock) lock(); }
 
 MtxAlloc::~MtxAlloc( )	{ unlock(); }
 
 int MtxAlloc::lock( )
 {
     if(mLock) return 0;
-    int rez = pthread_mutex_lock(&m);
+    int rez = m.lock();
     if(!rez) mLock = true;
 
     return rez;
@@ -191,7 +220,7 @@ int MtxAlloc::lock( )
 int MtxAlloc::tryLock( )
 {
     if(mLock) return 0;
-    int rez = pthread_mutex_trylock(&m);
+    int rez = m.tryLock();
     if(!rez) mLock = true;
 
     return rez;
@@ -200,7 +229,7 @@ int MtxAlloc::tryLock( )
 int MtxAlloc::unlock( )
 {
     if(!mLock) return 0;
-    int rez = pthread_mutex_unlock(&m);
+    int rez = m.unlock();
     if(!rez) mLock = false;
 
     return rez;
@@ -209,7 +238,7 @@ int MtxAlloc::unlock( )
 //********************************************
 //* String + reference mutex lock for        *
 //********************************************
-MtxString::MtxString( pthread_mutex_t &iM ) : m(iM)	{ }
+MtxString::MtxString( ResMtx &iM ) : m(iM)	{ }
 
 MtxString::~MtxString( )	{ }
 
@@ -219,16 +248,16 @@ bool   MtxString::empty( )	{ return getVal().empty(); }
 
 void MtxString::setVal( const string &vl )
 {
-    pthread_mutex_lock(&m);
+    m.lock();
     str.assign(vl.data(), vl.size());	//Bypass for COW algorithm prevent
-    pthread_mutex_unlock(&m);
+    m.unlock();
 }
 
 string MtxString::getVal( )
 {
-    pthread_mutex_lock(&m);
+    m.lock();
     string rez(str.data(), str.size());	//Bypass for COW algorithm prevent
-    pthread_mutex_unlock(&m);
+    m.unlock();
     return rez;
 }
 

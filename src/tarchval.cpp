@@ -466,7 +466,7 @@ template <class TpVal> TpVal TValBuf::TBuf<TpVal>::get( int64_t *itm, bool up_or
 {
     int64_t tm = (itm)?(*itm):TSYS::curTime();
 
-    if((up_ord && tm > end) || (!up_ord && tm < beg))	throw TError("ValBuf",_("Value is not present."));
+    if((up_ord && tm > end) || (!up_ord && tm < beg))	throw TError("ValBuf", _("Value is not present."));
 
     tm = up_ord ? vmax(tm, beg) : vmin(tm, end);
     //Process hard grid buffer
@@ -603,7 +603,7 @@ template <class TpVal> void TValBuf::TBuf<TpVal>::set( TpVal value, int64_t tm )
 	    (*buf.grid)[wcur] = value;
 	    return;
 	}
-	else if(npos < 0) throw TError("ValBuf",_("Grid mode doesn't support inserting too old values %lld (%lld-%lld)."),tm,beg,end);
+	else if(npos < 0) throw TError("ValBuf", _("Grid mode doesn't support inserting too old values %lld (%lld-%lld)."), tm, beg, end);
 	else {
 	    TpVal fillVl = eval;
 	    if(fillLast && buf.grid->size()) fillVl = cur ? (*buf.grid)[cur-1] : (*buf.grid)[buf.grid->size()-1];
@@ -637,7 +637,7 @@ template <class TpVal> void TValBuf::TBuf<TpVal>::set( TpVal value, int64_t tm )
     else if(per) {
 	int npos = (tm-end)/per;
 	// Set value
-	if(npos < 0) throw TError("ValBuf",_("Grid mode doesn't support inserting old values."));
+	if(npos < 0) throw TError("ValBuf", _("Grid mode doesn't support inserting old values."));
 	else {
 	    if(hgResTm) {
 		SHg b_el;
@@ -792,7 +792,7 @@ template <class TpVal> void TValBuf::TBuf<TpVal>::set( TpVal value, int64_t tm )
     else {
 	if(hgResTm) {
 	    SHg b_el = { tm, value };
-	    if(tm < beg && size && (int)buf.tmHigh->size() >= size) throw TError("ValBuf",_("Set too old value to buffer."));
+	    if(tm < beg && size && (int)buf.tmHigh->size() >= size) throw TError("ValBuf", _("Set too old value to buffer."));
 	    int c_pos = 0;
 
 	    // Half divider
@@ -825,7 +825,7 @@ template <class TpVal> void TValBuf::TBuf<TpVal>::set( TpVal value, int64_t tm )
 	}
 	else {
 	    SLw b_el = { tm/1000000, value };
-	    if(tm < beg && size && (int)buf.tmLow->size() >= size) throw TError("ValBuf",_("Set too old value to buffer."));
+	    if(tm < beg && size && (int)buf.tmLow->size() >= size) throw TError("ValBuf", _("Set too old value to buffer."));
 	    int c_pos = 0;
 	    // Half divider
 	    int d_win = buf.tmLow->size()/2;
@@ -941,8 +941,7 @@ AutoHD<TVal> TVArchive::srcPAttr( bool force, const string &ipath )
 	if(TSYS::strParse(srcPath,0,".") == "sub_DAQ" || TSYS::strParse(srcPath,0,".") == "DAQ")
 	    attr = SYS->nodeAt(srcPath,0,'.');
 	else attr = SYS->daq().at().attrAt(srcPath,'.');
-    }
-    catch(TError err) { }
+    } catch(TError &err) { }
 
     return attr;
 }
@@ -1008,10 +1007,13 @@ void TVArchive::setPeriod( int64_t vl )
 
 void TVArchive::setUpBuf( )	{ makeBuf((TFld::Type)mVType.getI(), mBSize, (int64_t)(1e6*mBPer.getR()), mBHGrd, mBHRes); }
 
-void TVArchive::load_( )
+void TVArchive::load_( TConfig *icfg )
 {
     if(!SYS->chkSelDB(DB())) throw TError();
-    SYS->db().at().dataGet(fullDB(), owner().nodePath()+tbl(), *this);
+
+    if(icfg) *(TConfig*)this = *icfg;
+    else SYS->db().at().dataGet(fullDB(), owner().nodePath()+tbl(), *this);
+
     setUpBuf();
 }
 
@@ -1026,14 +1028,14 @@ void TVArchive::start( )
 	try {
 	    runSt = true;
 	    setSrcMode();
-	} catch(...){ runSt = false; throw; }
+	} catch(...) { runSt = false; throw; }
 
     //Attach to archivators
     string arch, archs = cfg("ArchS").getS();
     for(int i_off = 0; (arch = TSYS::strSepParse(archs,0,';',&i_off)).size(); )
 	if(!archivatorPresent(arch))
 	    try { archivatorAttach(arch); }
-	    catch(TError err)	{ mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+	    catch(TError &err)	{ mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 }
 
 void TVArchive::stop( bool full_del )
@@ -1066,13 +1068,13 @@ void TVArchive::setSrcMode( SrcMode ivl, const string &isrc, bool noex )
     //Set all links
     if(runSt && vl == ActiveAttr) {
 	pattrSrc = srcPAttr(true,src);
-	if(pattrSrc.freeStat()) { if(!noex) throw TError(nodePath().c_str(),_("Connect to source '%s' error."),src.c_str()); }
+	if(pattrSrc.freeStat()) { if(!noex) throw err_sys(_("Connect to source '%s' error."),src.c_str()); }
 	else {
 	    //Double link prevent
 	    if(!pattrSrc.at().arch().freeStat() && &pattrSrc.at().arch().at() != this) {
 		if(!noex) {
 		    pattrSrc.free();
-		    throw TError(nodePath().c_str(), _("The archive '%s' was already connected to target parameter '%s'."),
+		    throw err_sys( _("The archive '%s' was already connected to target parameter '%s'."),
 			srcPAttr(true,src).at().arch().at().id().c_str(), src.c_str());
 		}
 	    }
@@ -1085,13 +1087,13 @@ void TVArchive::setSrcMode( SrcMode ivl, const string &isrc, bool noex )
 
     if(runSt && vl == PassiveAttr) {
 	pattrSrc = srcPAttr(true, src);
-	if(pattrSrc.freeStat()) { if(!noex) throw TError(nodePath().c_str(),_("Connect to source '%s' error."),src.c_str()); }
+	if(pattrSrc.freeStat()) { if(!noex) throw err_sys(_("Connect to source '%s' error."),src.c_str()); }
 	else {
 	    //Double link prevent
 	    if(!pattrSrc.at().arch().freeStat() && &pattrSrc.at().arch().at() != this) {
 		if(!noex) {
 		    pattrSrc.free();
-		    throw TError(nodePath().c_str(), _("The archive '%s' was already connected to target parameter '%s'."),
+		    throw err_sys( _("The archive '%s' was already connected to target parameter '%s'."),
 			srcPAttr(true,src).at().arch().at().id().c_str(), src.c_str());
 		}
 	    }
@@ -1220,7 +1222,7 @@ bool TVArchive::archivatorPresent( const string &arch )
 	for(unsigned i_l = 0; i_l < archEl.size(); i_l++)
 	    if(&archEl[i_l]->archivator() == &archivat.at())
 		return true;
-    } catch(TError err){ }
+    } catch(TError &err) { }
 
     return false;
 }
@@ -1231,8 +1233,7 @@ void TVArchive::archivatorAttach( const string &arch )
 
     AutoHD<TVArchivator> archivat = owner().at(TSYS::strSepParse(arch,0,'.')).at().valAt(TSYS::strSepParse(arch,1,'.'));
 
-    if(!archivat.at().startStat())
-	throw TError(nodePath().c_str(),_("Archivator '%s' error or it is not started."),arch.c_str());
+    if(!archivat.at().startStat()) throw err_sys(_("Archivator '%s' error or it is not started."), arch.c_str());
 
     if(startStat()) {	//Attach allow only to started archive
 	int i_l, i_ins = -1;
@@ -1323,7 +1324,7 @@ string TVArchive::makeTrendImg( int64_t ibeg, int64_t iend, const string &iarch,
 #if HAVE_GD_CORE
     int brect[8];
     char *gdR = gdImageStringFT(NULL, &brect[0], 0, (char*)sclMarkFont.c_str(), mrkFontSize, 0, 0, 0, (char*)"000000");
-    if(gdR) mess_err(nodePath().c_str(), _("gdImageStringFT for font '%s' error: %s."), sclMarkFont.c_str(), gdR);
+    if(gdR) mess_sys(TMess::Error, _("gdImageStringFT for font '%s' error: %s."), sclMarkFont.c_str(), gdR);
     else mrkHeight = brect[3]-brect[7];
     //if( mrkHeight <= 0 ) return rez;
     int hmax_ln = vsz / (mrkHeight?(brect[2]-brect[6]):15);
@@ -1707,7 +1708,7 @@ void TVArchive::cntrCmdProc( XMLNode *opt )
 		opt->setAttr("tm", ll2s(tm));
 		return;
 	    }
-	    if(tm < tm_grnd)	throw TError(nodePath().c_str(),_("Range error"));
+	    if(tm < tm_grnd)	throw err_sys(_("Range error"));
 
 	    int64_t period = s2ll(opt->attr("per"));
 
@@ -1752,7 +1753,7 @@ void TVArchive::cntrCmdProc( XMLNode *opt )
 	    int64_t ibeg = buf.begin(), iend = buf.end();
 	    period = vmax(period,buf.period());
 	    int mode = s2i(opt->attr("mode"));
-	    if(mode < 0 || mode > 2) throw TError(nodePath().c_str(),_("No support data mode '%d'"),mode);
+	    if(mode < 0 || mode > 2) throw err_sys(_("No support data mode '%d'"),mode);
 	    switch(buf.valType()) {
 		case TFld::Boolean: {
 		    char tval_pr = EVAL_BOOL, tval_pr1 = EVAL_BOOL;
@@ -1860,7 +1861,7 @@ void TVArchive::cntrCmdProc( XMLNode *opt )
 					text += i2s(vpos_end)+" "+TSYS::strEncode(tval_pr,TSYS::Custom,"\n")+"\n";
 				    tval_pr1 = tval_pr;
 				    break;
-				case 2: throw TError(nodePath().c_str(),_("Binary mode no support for string data"));
+				case 2: throw err_sys(_("Binary mode no support for string data"));
 			    }
 			tval_pr = tval;
 			vpos_end = vpos_cur;
@@ -1958,9 +1959,9 @@ void TVArchive::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SARH_ID,SEC_WR))	s2i(opt->text()) ? start() : stop();
     }
     if(a_path == "/prm/st/bEnd" && ctrChkNode(opt))
-	opt->setText(TSYS::time2str(end(BUF_ARCH_NM)/1000000,"%d-%m-%Y %H:%M:%S.")+i2s(end(BUF_ARCH_NM)%1000000));
+	opt->setText(atm2s(end(BUF_ARCH_NM)/1000000,"%d-%m-%Y %H:%M:%S.")+i2s(end(BUF_ARCH_NM)%1000000));
     if(a_path == "/prm/st/bBeg" && ctrChkNode(opt))
-	opt->setText(TSYS::time2str(begin(BUF_ARCH_NM)/1000000,"%d-%m-%Y %H:%M:%S.")+i2s(begin(BUF_ARCH_NM)%1000000));
+	opt->setText(atm2s(begin(BUF_ARCH_NM)/1000000,"%d-%m-%Y %H:%M:%S.")+i2s(begin(BUF_ARCH_NM)%1000000));
     else if(a_path == "/prm/st/db") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SARH_ID,SEC_RD))	opt->setText(DB());
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SARH_ID,SEC_WR))	setDB(opt->text());
@@ -1999,9 +2000,9 @@ void TVArchive::cntrCmdProc( XMLNode *opt )
 		    if(a_el) {
 			if(n_prc) n_prc->childAdd("el")->setText("1");
 			if(n_end)
-			    n_end->childAdd("el")->setText(TSYS::time2str(a_el->end()/1000000,"%d-%m-%Y %H:%M:%S.")+i2s(a_el->end()%1000000));
+			    n_end->childAdd("el")->setText(atm2s(a_el->end()/1000000,"%d-%m-%Y %H:%M:%S.")+i2s(a_el->end()%1000000));
 			if(n_beg)
-			    n_beg->childAdd("el")->setText(TSYS::time2str(a_el->begin()/1000000,"%d-%m-%Y %H:%M:%S.")+i2s(a_el->begin()%1000000));
+			    n_beg->childAdd("el")->setText(atm2s(a_el->begin()/1000000,"%d-%m-%Y %H:%M:%S.")+i2s(a_el->begin()%1000000));
 		    }
 		    else {
 			if(n_prc) n_prc->childAdd("el")->setText("0");
@@ -2240,10 +2241,12 @@ TVArchEl *TVArchivator::getArchEl( TVArchive &arch )	{ return new TVArchEl(arch,
 
 TTypeArchivator &TVArchivator::owner( )			{ return *(TTypeArchivator *)nodePrev(); }
 
-void TVArchivator::load_( )
+void TVArchivator::load_( TConfig *icfg )
 {
     if(!SYS->chkSelDB(DB())) throw TError();
-    SYS->db().at().dataGet(fullDB(), SYS->archive().at().nodePath()+tbl(), *this);
+
+    if(icfg) *(TConfig*)this = *icfg;
+    else SYS->db().at().dataGet(fullDB(), SYS->archive().at().nodePath()+tbl(), *this);
 }
 
 void TVArchivator::save_( )
@@ -2288,8 +2291,7 @@ void *TVArchivator::Task( void *param )
 
 	    //while(!arch.endrunReq && (time(NULL)-stTm) < arch.archPeriod()) TSYS::sysSleep(STD_WAIT_DELAY*1e-3);
 	    TSYS::taskSleep((int64_t)(1e9*arch.archPeriod()));
-	}
-	catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str() ); }
+	} catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str() ); }
 
     arch.runSt = false;
 
@@ -2345,7 +2347,7 @@ void TVArchivator::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SARH_ID,SEC_RD))	opt->setText(startStat() ? "1" : "0");
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SARH_ID,SEC_WR))	s2i(opt->text()) ? start() : stop();
     }
-    else if(a_path == "/prm/st/tarch" && ctrChkNode(opt))	opt->setText(TSYS::time2str(tm_calc));
+    else if(a_path == "/prm/st/tarch" && ctrChkNode(opt))	opt->setText(tm2s(1e-6*tm_calc));
     else if(a_path == "/prm/st/db") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SARH_ID,SEC_RD))	opt->setText(DB());
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SARH_ID,SEC_WR))	setDB(opt->text());

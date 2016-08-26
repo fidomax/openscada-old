@@ -61,7 +61,7 @@ void Func::postDisable( int flag )
     setStart(false);
     if(flag && !owner().DB().empty())
 	try{ del(); }
-	catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+	catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 }
 
 bool Func::cfgChange( TCfg &co, const TVariant &pc )
@@ -132,11 +132,12 @@ void Func::setProg( const string &prg )
     if(owner().DB().empty()) modifClr();
 }
 
-void Func::load_( )
+void Func::load_( TConfig *icfg )
 {
     if(owner().DB().empty() || (!SYS->chkSelDB(owner().DB())))	throw TError();
 
-    SYS->db().at().dataGet(owner().fullDB(), mod->nodePath()+owner().tbl(), *this);
+    if(icfg) *(TConfig*)this = *icfg;
+    else SYS->db().at().dataGet(owner().fullDB(), mod->nodePath()+owner().tbl(), *this);
 
     loadIO();
 }
@@ -145,12 +146,12 @@ void Func::loadIO( )
 {
     if(startStat()) return;
     TConfig cfg(&mod->elFncIO());
+    vector<vector<string> > full;
 
     vector<string> u_pos;
-    cfg.cfg("F_ID").setS(id(), true);
+    cfg.cfg("F_ID").setS(id(), TCfg::ForceUse);
     cfg.cfg("DEF").setExtVal(true);
-    for(int fld_cnt = 0; SYS->db().at().dataSeek(owner().fullDB()+"_io",mod->nodePath()+owner().tbl()+"_io",fld_cnt,cfg); fld_cnt++)
-    {
+    for(int fldCnt = 0; SYS->db().at().dataSeek(owner().fullDB()+"_io",mod->nodePath()+owner().tbl()+"_io",fldCnt,cfg,false,&full); fldCnt++) {
 	string sid = cfg.cfg("ID").getS();
 
 	//Position storing
@@ -178,7 +179,7 @@ void Func::loadIO( )
     //Position fixing
     for(int i_p = 0; i_p < (int)u_pos.size(); i_p++) {
 	int iid = ioId(u_pos[i_p]);
-	if(iid != i_p) try{ ioMove(iid,i_p); } catch(...){ }
+	if(iid != i_p) try{ ioMove(iid,i_p); } catch(...) { }
     }
 }
 
@@ -216,11 +217,12 @@ void Func::saveIO( )
     }
 
     //Clear IO
+    vector<vector<string> > full;
     cfg.cfgViewAll(false);
-    for(int fld_cnt = 0; SYS->db().at().dataSeek(io_bd,io_cfgpath,fld_cnt++,cfg); )
+    for(int fldCnt = 0; SYS->db().at().dataSeek(io_bd,io_cfgpath,fldCnt++,cfg,false,&full); )
 	if(ioId(cfg.cfg("ID").getS()) < 0) {
 	    SYS->db().at().dataDel(io_bd, io_cfgpath, cfg, true, false, true);
-	    fld_cnt--;
+	    fldCnt--;
 	}
 }
 
@@ -284,10 +286,7 @@ void Func::setStart( bool val )
 {
     if(val == runSt) return;
     //Start calc
-    if(val) {
-	progCompile();
-	runSt = true;
-    }
+    if(val) progCompile();
     //Stop calc
     else {
 	ResAlloc res(fRes(), true);
@@ -295,8 +294,8 @@ void Func::setStart( bool val )
 	regClear();
 	regTmpClean( );
 	funcClear();
-	runSt = false;
     }
+    TFunction::setStart(val);
 }
 
 void Func::ioAdd( IO *io )
@@ -368,12 +367,12 @@ int Func::funcGet( const string &path )
     try {
 	if(dynamic_cast<TFunction*>(&SYS->nodeAt(path,0,'.').at()))
 	    f_path = SYS->nodeAt(path,0,'.').at().nodePath();
-    }catch(...){ }
+    } catch(...) { }
 
     if(f_path.empty()) {
 	for(int off = 0; !(ns=TSYS::strSepParse(mUsings,0,';',&off)).empty(); )
 	    try{ if(dynamic_cast<TFunction*>(&SYS->nodeAt(ns+"."+path,0,'.').at())) break; }
-	    catch(...){ continue; }
+	    catch(...) { continue; }
 	if(ns.empty()) return -1;
 	f_path = SYS->nodeAt(ns+"."+path,0,'.').at().nodePath();
     }
@@ -477,34 +476,34 @@ Reg *Func::cdMvi( Reg *op, bool no_code )
     Reg *rez = NULL, *tR = NULL;
     if(op->pos() >= 0) return op;	//Already load
 
-    //Check for place use and set standalone
-    int i_rg = -1;
+    //Check for place used and set standalone
+    int iRg = -1;
     switch(op->type()) {
 	case Reg::Bool:
-	    for(i_rg = 0; i_rg < (int)mRegs.size(); i_rg++)
-		if((tR=mRegs[i_rg])->name().empty() && tR->type() == op->type() && tR->lock() && tR->val().b == op->val().b)
+	    for(iRg = 0; iRg < (int)mRegs.size(); iRg++)
+		if((tR=mRegs[iRg])->name().empty() && tR->type() == op->type() && tR->lock() && tR->val().b == op->val().b)
 		    break;
 	    break;
 	case Reg::Int:
-	    for(i_rg = 0; i_rg < (int)mRegs.size(); i_rg++)
-		if((tR=mRegs[i_rg])->name().empty() && tR->type() == op->type() && tR->lock() && tR->val().i == op->val().i)
+	    for(iRg = 0; iRg < (int)mRegs.size(); iRg++)
+		if((tR=mRegs[iRg])->name().empty() && tR->type() == op->type() && tR->lock() && tR->val().i == op->val().i)
 		    break;
 	    break;
 	case Reg::Real:
-	    for(i_rg = 0; i_rg < (int)mRegs.size(); i_rg++)
-		if((tR=mRegs[i_rg])->name().empty() && tR->type() == op->type() && tR->lock() && tR->val().r == op->val().r)
+	    for(iRg = 0; iRg < (int)mRegs.size(); iRg++)
+		if((tR=mRegs[iRg])->name().empty() && tR->type() == op->type() && tR->lock() && tR->val().r == op->val().r)
 		    break;
 	    break;
 	case Reg::String:
-	    for(i_rg = 0; i_rg < (int)mRegs.size(); i_rg++)
-		if((tR=mRegs[i_rg])->name().empty() && tR->type() == op->type() && tR->lock() && tR->val().s == op->val().s)
+	    for(iRg = 0; iRg < (int)mRegs.size(); iRg++)
+		if((tR=mRegs[iRg])->name().empty() && tR->type() == op->type() && tR->lock() && *tR->val().s == *op->val().s)
 		    break;
 	    break;
 	default: break;
     }
-    if(i_rg >= 0) {
-	if(i_rg < (int)mRegs.size()) {
-	    rez = mRegs[i_rg];
+    if(iRg >= 0) {
+	if(iRg < (int)mRegs.size()) {
+	    rez = mRegs[iRg];
 #ifdef OSC_DEBUG
 	    SYS->cntrIter("ReusedConstants",1);
 #endif
@@ -734,7 +733,7 @@ Reg *Func::cdMove( Reg *rez, Reg *op, bool force )
 
 Reg *Func::cdBinaryOp( Reg::Code cod, Reg *op1, Reg *op2, Reg *rez )
 {
-    //Check allow the buildin calc and calc
+    //Check to allow the buildin calc and calc
     if(op1->pos() < 0 && op2->pos() < 0) {
 	switch(cod) {
 	    case Reg::Add: case Reg::AddAss: case Reg::Sub: case Reg::SubAss:
@@ -813,8 +812,9 @@ Reg *Func::cdBinaryOp( Reg::Code cod, Reg *op1, Reg *op2, Reg *rez )
     Reg::Type op1_tp = op1->vType(this);
     Reg::Type rez_tp = op1->objEl() ? Reg::Dynamic : op1_tp;
     int op1_pos = op1->pos();
-    if(op1_tp != Reg::Dynamic) op2 = cdTypeConv(op2, op1_tp);
-    else if(op2->pos() < 0) op2 = cdMvi(op2);
+    //if(op1_tp != Reg::Dynamic) op2 = cdTypeConv(op2, op1_tp);
+    //else 
+    if(op2->pos() < 0) op2 = cdMvi(op2);
     int op2_pos = op2->pos();
 
     if(rez != op1) op1->free();
@@ -1505,8 +1505,7 @@ TVariant Func::oFuncCall( TVariant &vl, const string &prop, vector<TVariant> &pr
 	}
 	return false;
 	//throw TError(nodePath().c_str(),_("Unknown type '%d' for property '%s'."),vl.type(),prop.c_str());
-    }
-    catch(TError err) {
+    } catch(TError &err) {
 	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), "%s", err.mess.c_str());
     }
 
@@ -1878,7 +1877,7 @@ void Func::exec( TValFunc *val, const uint8_t *cprg, ExecData &dt )
 			case Reg::Int:	  setValI(val, reg[ptr->toR], getValI(val,reg[ptr->fromR]));	break;
 			case Reg::Real:	  setValR(val, reg[ptr->toR], getValR(val,reg[ptr->fromR]));	break;
 			case Reg::String: setValS(val, reg[ptr->toR], getValS(val,reg[ptr->fromR]));	break;
-			default:	  setVal(val, reg[ptr->toR], getVal(val,reg[ptr->fromR]));		break;
+			default:	  setVal(val, reg[ptr->toR], getVal(val,reg[ptr->fromR]));	break;
 		    }
 		else setVal(val, reg[ptr->toR], getVal(val,reg[ptr->fromR]));
 		cprg += sizeof(SCode); continue;

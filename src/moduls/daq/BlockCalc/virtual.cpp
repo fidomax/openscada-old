@@ -42,7 +42,7 @@
 #define MOD_NAME	_("Block based calculator")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.7.0"
+#define MOD_VER		"1.7.7"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides a block based calculator.")
 #define LICENSE		"GPL2"
@@ -151,14 +151,8 @@ TController *TpContr::ContrAttach( const string &name, const string &daq_db )	{ 
 Contr::Contr( string name_c, const string &daq_db, ::TElem *cfgelem) :
     TController(name_c, daq_db, cfgelem), prcSt(false), callSt(false), endrunReq(false),
     mPerOld(cfg("PERIOD").getId()), mPrior(cfg("PRIOR").getId()), mIter(cfg("ITER").getId()),
-    mPer(1e9)
+    mPer(1e9), calcRes(true)
 {
-    pthread_mutexattr_t attrM;
-    pthread_mutexattr_init(&attrM);
-    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&calcRes, &attrM);
-    pthread_mutexattr_destroy(&attrM);
-
     cfg("PRM_BD").setS("BlckCalcPrm_"+name_c);
     cfg("BLOCK_SH").setS("BlckCalcBlcks_"+name_c);
     mBl = grpAdd("blk_");
@@ -166,7 +160,7 @@ Contr::Contr( string name_c, const string &daq_db, ::TElem *cfgelem) :
 
 Contr::~Contr( )
 {
-    pthread_mutex_destroy(&calcRes);
+
 }
 
 TCntrNode &Contr::operator=( TCntrNode &node )
@@ -201,9 +195,10 @@ string Contr::getStatus( )
     string rez = TController::getStatus( );
     if(startStat() && !redntUse()) {
 	if(callSt)	rez += TSYS::strMess(_("Call now. "));
-	if(period())	rez += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-3*period()).c_str());
-	else rez += TSYS::strMess(_("Call next by cron '%s'. "), tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	rez += TSYS::strMess(_("Spent time: %s. "), tm2s(SYS->taskUtilizTm(nodePath('.',true))).c_str());
+	if(period())	rez += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-9*period()).c_str());
+	else rez += TSYS::strMess(_("Call next by cron '%s'. "), atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	rez += TSYS::strMess(_("Spent time: %s[%s]. "),
+	    tm2s(SYS->taskUtilizTm(nodePath('.',true))).c_str(), tm2s(SYS->taskUtilizTm(nodePath('.',true),true)).c_str());
     }
     return rez;
 }
@@ -222,8 +217,7 @@ void Contr::postDisable( int flag )
 	    SYS->db().at().open(wbd);
 	    SYS->db().at().close(wbd,true);
 	}
-    }
-    catch(TError err) { mess_err(nodePath().c_str(),"%s",err.mess.c_str()); }
+    } catch(TError &err) { mess_err(nodePath().c_str(),"%s",err.mess.c_str()); }
 
     TController::postDisable(flag);
 }
@@ -234,24 +228,25 @@ void Contr::load_( )
 {
     if(!SYS->chkSelDB(DB())) throw TError();
 
-    TController::load_( );
+    //TController::load_( );
 
     //Check for get old period method value
-    if(mPerOld)	{ cfg("SCHEDULE").setS(TSYS::real2str(mPerOld/1e3)); mPerOld = 0; }
+    if(mPerOld)	{ cfg("SCHEDULE").setS(TSYS::real2str(mPerOld/1e3)); mPerOld = 0;  modif(true); }
 
     //Load block's configuration
-    TConfig c_el(&mod->blockE());
-    c_el.cfgViewAll(false);
+    TConfig cEl(&mod->blockE());
+    //cEl.cfgViewAll(false);
     string bd = DB()+"."+cfg("BLOCK_SH").getS();
     map<string, bool>	itReg;
+    vector<vector<string> > full;
 
-    for(int fld_cnt = 0; SYS->db().at().dataSeek(bd,mod->nodePath()+cfg("BLOCK_SH").getS(),fld_cnt++,c_el); ) {
-	string id = c_el.cfg("ID").getS();
+    for(int fldCnt = 0; SYS->db().at().dataSeek(bd,mod->nodePath()+cfg("BLOCK_SH").getS(),fldCnt++,cEl,false,&full); ) {
+	string id = cEl.cfg("ID").getS();
 	if(!chldPresent(mBl,id)) {
 	    blkAdd(id);
-	    ((TConfig &)blkAt(id).at()) = c_el;
+	    //((TConfig &)blkAt(id).at()) = cEl;
 	}
-	blkAt(id).at().load();
+	blkAt(id).at().load(&cEl);
 	itReg[id] = true;
     }
 
@@ -273,7 +268,7 @@ void Contr::enable_( )
     for(unsigned i_l = 0; i_l < lst.size(); i_l++)
 	if(blkAt(lst[i_l]).at().toEnable())
 	    try { blkAt(lst[i_l]).at().setEnable(true); }
-	    catch(TError err) {
+	    catch(TError &err) {
 		mess_warning(err.cat.c_str(),"%s",err.mess.c_str());
 		mess_warning(nodePath().c_str(),_("Enable block '%s' error."),lst[i_l].c_str());
 	    }
@@ -287,7 +282,7 @@ void Contr::disable_( )
     for(unsigned i_l = 0; i_l < lst.size(); i_l++)
 	if(blkAt(lst[i_l]).at().enable())
 	    try{ blkAt(lst[i_l]).at().setEnable(false); }
-	    catch(TError err) {
+	    catch(TError &err) {
 		mess_warning(err.cat.c_str(),"%s",err.mess.c_str());
 		mess_warning(nodePath().c_str(),_("Enable block '%s' error."),lst[i_l].c_str());
 	    }
@@ -306,7 +301,7 @@ void Contr::start_( )
     for(unsigned i_l = 0; i_l < lst.size(); i_l++)
 	if(blkAt(lst[i_l]).at().enable() && blkAt(lst[i_l]).at().toProcess())
 	    try { blkAt(lst[i_l]).at().setProcess(true); }
-	    catch(TError err) {
+	    catch(TError &err) {
 		mess_warning(err.cat.c_str(),"%s",err.mess.c_str());
 		mess_warning(nodePath().c_str(),_("Process block '%s' error."),lst[i_l].c_str());
 	    }
@@ -376,7 +371,7 @@ void *Contr::Task( void *icontr )
 	for(unsigned i_it = 0; (int)i_it < cntr.mIter && !cntr.redntUse(); i_it++)
 	    for(unsigned i_blk = 0; i_blk < cntr.calcBlks.size(); i_blk++)
 		try { cntr.calcBlks[i_blk].at().calc(is_start, is_stop, cntr.period()?((1e9*(double)cntr.iterate())/cntr.period()):(-1e-6*(t_cnt-t_prev))); }
-		catch(TError err) {
+		catch(TError &err) {
 		    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
 		    string blck = cntr.calcBlks[i_blk].at().id();
 		    mess_err(cntr.nodePath().c_str(),_("Block '%s' calc error."),blck.c_str());
@@ -394,7 +389,7 @@ void *Contr::Task( void *icontr )
 
 	if(is_stop) break;
 
-	TSYS::taskSleep((int64_t)cntr.period(), (cntr.period()?0:TSYS::cron(cntr.cron())));
+	TSYS::taskSleep((int64_t)cntr.period(), cntr.period() ? "" : cntr.cron());
 
 	if(cntr.endrunReq)	is_stop = true;
 	if(!cntr.redntUse())	is_start = false;
@@ -554,7 +549,7 @@ void Prm::enable( )
 	if(fel.empty())
 	{
 	    try{ v_el.fldDel(i_fld); i_fld--; }
-	    catch(TError err)
+	    catch(TError &err)
 	    { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
 	}
     }*/
@@ -625,7 +620,7 @@ void Prm::enable( )
 	    if(pls[i_p] == v_el.fldAt(i_fld).name())	break;
 	if(i_p < (int)pls.size()) continue;
 	try{ v_el.fldDel(i_fld); i_fld--; }
-	catch(TError err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
+	catch(TError &err) { mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }
     }
 
     TParamContr::enable();
@@ -660,7 +655,7 @@ void Prm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
 	    MtxAlloc sres(owner().calcRes, true);
 	    blk.at().set(io_id, vl);
 	}
-    }catch(TError err) { disable(); }
+    } catch(TError &err) { disable(); }
 }
 
 void Prm::vlGet( TVal &val )
@@ -680,7 +675,7 @@ void Prm::vlGet( TVal &val )
 	int io_id = blk.at().ioId(TSYS::strSepParse(val.fld().reserve(),1,'.'));
 	if( io_id < 0 )	disable();
 	else val.set((enableStat()&&owner().startStat()) ? blk.at().get(io_id) : EVAL_STR, 0, true);
-    }catch(TError err) { disable(); }
+    } catch(TError &err) { disable(); }
 }
 
 void Prm::vlArchMake( TVal &val )

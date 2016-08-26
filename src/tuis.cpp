@@ -34,7 +34,7 @@ using namespace OSCADA;
 //*************************************************
 //* TUIS                                          *
 //*************************************************
-TUIS::TUIS( ) : TSubSYS(SUI_ID,_("User interfaces"), true)
+TUIS::TUIS( ) : TSubSYS(SUI_ID,_("User Interfaces"), true)
 {
 #if HAVE_GD_CORE
     gdFTUseFontConfig(1);
@@ -55,20 +55,6 @@ void TUIS::load_( )
 	if(argCom == "h" || argCom == "help")	fprintf(stdout,"%s",optDescr().c_str());
 
     //Load parameters from config-file
-}
-
-void TUIS::subStart( )
-{
-    mess_info(nodePath().c_str(), _("Start subsystem."));
-
-    TSubSYS::subStart( );
-}
-
-void TUIS::subStop( )
-{
-    mess_info(nodePath().c_str(), _("Stop subsystem."));
-
-    TSubSYS::subStop( );
 }
 
 string TUIS::icoGet( const string &inm, string *tp, bool retPath )
@@ -114,7 +100,7 @@ string TUIS::docGet( const string &inm, string *tp, unsigned opt )
     if(hd != -1) {
 	if(tp) *tp = types[i_t];
 	if(opt == GetFilePath) rez = pathi+"/"+transl[i_tr]+"/"+nm+"."+types[i_t];
-	else if(opt == GetExecCommand) rez = "xdg-open "+pathi+"/"+transl[i_tr]+"/"+nm+"."+types[i_t];
+	else if(opt == GetExecCommand) rez = "xdg-open "+pathi+"/"+transl[i_tr]+"/"+nm+"."+types[i_t]+" &";
 	else {
 	    char buf[STR_BUF_LEN];
 	    for(int len = 0; (len=read(hd,buf,sizeof(buf))) > 0; ) rez.append(buf,len);
@@ -151,7 +137,7 @@ string TUIS::docGet( const string &inm, string *tp, unsigned opt )
 		    break;
 		}
 	    }
-	} catch(TError) { }
+	} catch(TError&) { }
     }
 
     return rez;

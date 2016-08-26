@@ -101,21 +101,23 @@ void Lib::setFullDB( const string &idb )
     modifG( );
 }
 
-void Lib::load_( )
+void Lib::load_( TConfig *icfg )
 {
     if(DB().empty() || (!SYS->chkSelDB(DB())))	throw TError();
 
-    SYS->db().at().dataGet(DB()+"."+mod->libTable(), mod->nodePath()+"lib/", *this);
+    if(icfg) *(TConfig*)this = *icfg;
+    else SYS->db().at().dataGet(DB()+"."+mod->libTable(), mod->nodePath()+"lib/", *this);
 
     //Load functions
     map<string, bool>   itReg;
-    TConfig c_el(&mod->elFnc());
-    c_el.cfgViewAll(false);
-    for(int fld_cnt = 0; SYS->db().at().dataSeek(fullDB(),mod->nodePath()+tbl(),fld_cnt++,c_el); ) {
-	string f_id = c_el.cfg("ID").getS();
-	if(!present(f_id)) add(f_id.c_str());
-	at(f_id).at().load();
-	itReg[f_id] = true;
+    TConfig cEl(&mod->elFnc());
+    vector<vector<string> > full;
+    //cEl.cfgViewAll(false);
+    for(int fldCnt = 0; SYS->db().at().dataSeek(fullDB(),mod->nodePath()+tbl(),fldCnt++,cEl,false,&full); ) {
+	string fId = cEl.cfg("ID").getS();
+	if(!present(fId)) add(fId);
+	at(fId).at().load(&cEl);
+	itReg[fId] = true;
     }
 
     // Check for remove items removed from DB
@@ -140,8 +142,8 @@ void Lib::setStart( bool val )
     vector<string> lst;
     list(lst);
     for(unsigned i_f = 0; i_f < lst.size(); i_f++)
-	try { if(at(lst[i_f]).at().toStart()) at(lst[i_f]).at().setStart(val); }
-	catch(TError err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
+	try { if(!val || at(lst[i_f]).at().toStart()) at(lst[i_f]).at().setStart(val); }
+	catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 
     runSt = val;
 }

@@ -61,7 +61,7 @@ class WidgetLib : public TCntrNode, public TConfig
 
 	// Enable stat
 	bool enable( )		{ return mEnable; }
-	void setEnable( bool val );
+	void setEnable( bool val, bool force = false );
 
         // Mime data access
 	void mimeDataList( vector<string> &list, const string &idb = "" );
@@ -82,7 +82,7 @@ class WidgetLib : public TCntrNode, public TConfig
 	const char *nodeName( )		{ return mId.getSd(); }
 	void cntrCmdProc( XMLNode *opt );	//Control interface command process
 
-	void load_( );
+	void load_( TConfig *cfg );
 	void save_( );
 
 	void postEnable( int flag );
@@ -128,14 +128,14 @@ class LWidget : public Widget, public TConfig
 	string	proc( )		{ return cfg("PROC").getS(); }
 	int64_t	timeStamp( )	{ return mTimeStamp; }
 
-	void setEnable( bool val );
+	void setEnable( bool val, bool force = false );
 	void setIco( const string &iico )	{ cfg("ICO").setS(iico); }
 	void setCalcLang( const string &ilng );
 	void setCalcProgTr( bool vl );
 	void setCalcProg( const string &iprg );
 	void setCalcPer( int vl )		{ mProcPer = vl; modif(); }
 	void setParentNm( const string &isw );
-	void setEnableByNeed( );
+	void setEnableByNeed( )			{ enableByNeed = true; modifClr(); }
 
 	// Include widgets
 	void wdgAdd( const string &wid, const string &name, const string &path, bool force = false );
@@ -163,7 +163,7 @@ class LWidget : public Widget, public TConfig
 	void cntrCmdProc( XMLNode *opt );	//Control interface command process
 
 	// Storing
-	void load_( );
+	void load_( TConfig *cfg );
 	void save_( );
 	void wClear( );
 
@@ -198,7 +198,7 @@ class CWidget : public Widget, public TConfig
 	int	calcPer( );
 	string	parentNm( )	{ return cfg("PARENT").getS(); }
 
-	void setEnable( bool val );
+	void setEnable( bool val, bool force = false );
 	void setParentNm( const string &isw );
 
 	// Storing
@@ -221,7 +221,7 @@ class CWidget : public Widget, public TConfig
 	bool cfgChange( TCfg &co, const TVariant &pc )	{ modif(); return true; }
 
 	// Storing
-	void load_( );
+	void load_( TConfig *cfg );
 	void save_( );
 	void wClear( );
 

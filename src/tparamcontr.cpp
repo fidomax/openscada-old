@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tparamcontr.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,7 +32,7 @@ using namespace OSCADA;
 //*************************************************
 //* TParamContr                                   *
 //*************************************************
-TParamContr::TParamContr( const string &name, TTypeParam *tpprm ) : TConfig(tpprm), mPrm(-1), mEn(false), tipparm(tpprm)
+TParamContr::TParamContr( const string &name, TTypeParam *tpprm ) : TConfig(tpprm), mRdPrcTm(0), mPrm(-1), mEn(false), tpParm(tpprm)
 {
     cfg("SHIFR") = mId = name;	//!! For prevent ID location change on the parameter type change
 
@@ -167,31 +167,33 @@ void TParamContr::LoadParmCfg( )
     if(mPrm < 0) return;
 
     map<string, bool>	itReg;
+    vector<vector<string> > full;
 
     //Search and create new parameters
-    for(unsigned i_tp = 0; i_tp < owner().owner().tpPrmSize(); i_tp++) {
-	if(owner().owner().tpPrmAt(i_tp).DB(&owner()).empty()) continue;
+    for(unsigned iTp = 0; iTp < owner().owner().tpPrmSize(); iTp++) {
+	if(owner().owner().tpPrmAt(iTp).DB(&owner()).empty()) continue;
 	try {
-	    TConfig c_el(&owner().owner().tpPrmAt(i_tp));
-	    c_el.cfgViewAll(false);
-	    c_el.cfg("OWNER").setS(ownerPath(true), TCfg::ForceUse);
+	    TConfig cEl(&owner().owner().tpPrmAt(iTp));
+	    //cEl.cfgViewAll(false);
+	    cEl.cfg("OWNER").setS(ownerPath(true), TCfg::ForceUse);
 
 	    // Search new into DB and Config-file
-	    for(int fld_cnt = 0; SYS->db().at().dataSeek(owner().DB()+"."+owner().owner().tpPrmAt(i_tp).DB(&owner()),
-		    owner().owner().nodePath()+owner().owner().tpPrmAt(i_tp).DB(&owner()),fld_cnt++,c_el); )
+	    for(int fld_cnt = 0; SYS->db().at().dataSeek(owner().DB()+"."+owner().owner().tpPrmAt(iTp).DB(&owner()),
+		    owner().owner().nodePath()+owner().owner().tpPrmAt(iTp).DB(&owner()),fld_cnt++,cEl,false,&full); )
 	    {
 		try {
-		    string shfr = c_el.cfg("SHIFR").getS();
-		    if(!present(shfr))	add(shfr, i_tp);
+		    string shfr = cEl.cfg("SHIFR").getS();
+		    if(!present(shfr))	add(shfr, iTp);
+		    at(shfr).at().load(&cEl);
 		    itReg[shfr] = true;
-		} catch(TError err) {
+		} catch(TError &err) {
 		    mess_err(err.cat.c_str(), "%s", err.mess.c_str());
-		    mess_err(nodePath().c_str(), _("Add parameter '%s' error."), c_el.cfg("SHIFR").getS().c_str());
+		    mess_sys(TMess::Error, _("Add parameter '%s' error."), cEl.cfg("SHIFR").getS().c_str());
 		}
 	    }
-	} catch(TError err) {
+	} catch(TError &err) {
 	    mess_err(err.cat.c_str(), "%s", err.mess.c_str());
-	    mess_err(nodePath().c_str(), _("Search and create new parameters error."));
+	    mess_sys(TMess::Error, _("Search and create new parameters error."));
 	}
     }
 
@@ -218,8 +220,8 @@ void TParamContr::postEnable( int flag )
     TValue::postEnable(flag);
 
     if(!vlCfg()) setVlCfg(this);
-    if(!vlElemPresent(&SYS->daq().at().errE()))
-	vlElemAtt(&SYS->daq().at().errE());
+    if(!vlElemPresent(&SYS->daq().at().elErr()))
+	vlElemAtt(&SYS->daq().at().elErr());
 }
 
 void TParamContr::preDisable( int flag )
@@ -246,13 +248,16 @@ void TParamContr::postDisable( int flag )
     }
 }
 
-void TParamContr::load_( )
+void TParamContr::load_( TConfig *icfg )
 {
     if(!SYS->chkSelDB(owner().DB())) throw TError();
 
-    cfgViewAll(true);
-    cfg("OWNER") = ownerPath();
-    SYS->db().at().dataGet(owner().DB()+"."+type().DB(&owner()), owner().owner().nodePath()+type().DB(&owner()), *this);
+    if(icfg) *(TConfig*)this = *icfg;
+    else {
+	//cfgViewAll(true);
+	cfg("OWNER") = ownerPath();
+	SYS->db().at().dataGet(owner().DB()+"."+type().DB(&owner()), owner().owner().nodePath()+type().DB(&owner()), *this);
+    }
 
     LoadParmCfg();
 }
@@ -294,15 +299,15 @@ void TParamContr::enable( )
     for(unsigned i_prm = 0; i_prm < prm_list.size(); i_prm++)
 	if(at(prm_list[i_prm]).at().toEnable())
 	    try{ at(prm_list[i_prm]).at().enable(); }
-	    catch(TError err) {
+	    catch(TError &err) {
 		mess_warning(err.cat.c_str(), "%s", err.mess.c_str());
-		mess_warning(nodePath().c_str(), _("Enable parameter '%s' error."), prm_list[i_prm].c_str());
+		mess_sys(TMess::Warning, _("Enable parameter '%s' error."), prm_list[i_prm].c_str());
 		enErr = true;
 	    }
 
     mEn = true;
 
-    if(enErr) throw TError(nodePath().c_str(), _("Some parameters enable error."));
+    if(enErr) throw err_sys(_("Some parameters enable error."));
 }
 
 void TParamContr::disable( )
@@ -313,9 +318,9 @@ void TParamContr::disable( )
     for(unsigned i_prm = 0; i_prm < prm_list.size(); i_prm++)
 	if(at(prm_list[i_prm]).at().enableStat())
 	    try{ at(prm_list[i_prm]).at().disable(); }
-	    catch(TError err) {
+	    catch(TError &err) {
 		mess_warning(err.cat.c_str(), "%s", err.mess.c_str());
-		mess_warning(nodePath().c_str(), _("Disable parameter '%s' error."), prm_list[i_prm].c_str());
+		mess_sys(TMess::Warning, _("Disable parameter '%s' error."), prm_list[i_prm].c_str());
 	    }
 
     type().disable(this);
@@ -370,14 +375,14 @@ void TParamContr::setType( const string &tpId )
 	tCfg = *(TConfig*)this;
 
 	//Set new config structure
-	tipparm = &owner().owner().tpPrmAt(owner().owner().tpPrmToId(tpId));
-	setElem(tipparm);
+	tpParm = &owner().owner().tpPrmAt(owner().owner().tpPrmToId(tpId));
+	setElem(tpParm);
 
 	//Restore configurations
 	*(TConfig*)this = tCfg;
     } catch(...) { }
 
-    if(mPrm < 0 && tipparm->isPrmCntr) mPrm = grpAdd("prm_");
+    if(mPrm < 0 && tpParm->isPrmCntr) mPrm = grpAdd("prm_");
 
     setNodeMode(TCntrNode::Enabled);
 
@@ -447,7 +452,7 @@ void TParamContr::cntrCmdProc( XMLNode *opt )
     else if(a_path == "/prm/st/en") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SDAQ_ID,SEC_RD))	opt->setText(enableStat()?"1":"0");
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR)) {
-	    if(!owner().enableStat())	throw TError(nodePath().c_str(),_("Controller is not started!"));
+	    if(!owner().enableStat())	throw err_sys(_("Controller is not started!"));
 	    else s2i(opt->text()) ? enable() : disable();
 	}
     }
@@ -491,7 +496,7 @@ void TParamContr::cntrCmdProc( XMLNode *opt )
 	}
     }
     else if(a_path == "/prm/tpLst" && ctrChkNode(opt))
-	for(unsigned i_tp = 0; i_tp < owner().owner().tpPrmSize(); i_tp++)
-	    opt->childAdd("el")->setAttr("id",owner().owner().tpPrmAt(i_tp).name)->setText(owner().owner().tpPrmAt(i_tp).descr);
+	for(unsigned iTp = 0; iTp < owner().owner().tpPrmSize(); iTp++)
+	    opt->childAdd("el")->setAttr("id",owner().owner().tpPrmAt(iTp).name)->setText(owner().owner().tpPrmAt(iTp).descr);
     else TValue::cntrCmdProc(opt);
 }

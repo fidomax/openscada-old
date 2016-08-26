@@ -51,7 +51,7 @@ class MTable : public TTable
     public:
 	//Public methods
 	//!!! Constructor for a DB-subsystem table object
-	MTable( string name, MBD *iown, bool create );
+	MTable( string name, MBD *iown );
 	//!!! Destructor for a DB-subsystem table object
 	~MTable( );
 
@@ -59,7 +59,7 @@ class MTable : public TTable
 	//!!! Processing virtual function for getting the field's structure (value's type of the field and it's primary key flag)
 	void fieldStruct( TConfig &cfg );
 	//!!! Processing virtual functions for seeking, getting, setting and deleting a field
-	bool fieldSeek( int row, TConfig &cfg );
+	bool fieldSeek( int row, TConfig &cfg, vector< vector<string> > *full = NULL );
 	void fieldGet( TConfig &cfg );
 	void fieldSet( TConfig &cfg );
 	void fieldDel( TConfig &cfg );

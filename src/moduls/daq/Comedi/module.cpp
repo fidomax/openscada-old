@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.Comedi file: module.cpp
 /***************************************************************************
- *   Copyright (C) 2012-2015 by Roman Savochenko                           *
+ *   Copyright (C) 2012-2016 by Roman Savochenko                           *
  *   rom_as@oscada.org                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -37,7 +37,7 @@
 #define MOD_NAME	_("DAQ boards by Comedi")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.0.3"
+#define MOD_VER		"1.0.7"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("ISA, PCI, PCMCIA, USB DAQ boards collection by Comedi(http://www.comedi.org).")
 #define LICENSE		"GPL2"
@@ -117,9 +117,9 @@ string TMdContr::getStatus( )
 
     if(startStat() && !redntUse()) {
 	if(call_st)	val += TSYS::strMess(_("Call now. "));
-	if(period())	val += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-3*period()).c_str());
-	else val += TSYS::strMess(_("Call next by cron '%s'. "), tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	val += TSYS::strMess(_("Spent time: %s. "), tm2s(tm_gath).c_str());
+	if(period())	val += TSYS::strMess(_("Call by period: %s. "), tm2s(1e-9*period()).c_str());
+	else val += TSYS::strMess(_("Call next by cron '%s'. "), atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	val += TSYS::strMess(_("Spent time: %s. "), tm2s(1e-6*tm_gath).c_str());
     }
 
     return val;
@@ -181,10 +181,9 @@ void *TMdContr::Task( void *icntr )
 	    cntr.prcSt = true;
 
 	    //Calc next work time and sleep
-	    TSYS::taskSleep(cntr.period(), (cntr.period()?0:TSYS::cron(cntr.cron())));
+	    TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
 	}
-    }
-    catch(TError err) { mess_err( err.cat.c_str(), err.mess.c_str() ); }
+    } catch(TError &err) { mess_err( err.cat.c_str(), err.mess.c_str() ); }
 
     cntr.prcSt = false;
 
@@ -343,7 +342,7 @@ void TMdPrm::enable()
 		break;
 	if(i_l >= als.size())
 	    try{ p_el.fldDel(i_p); i_p--; }
-	    catch(TError err){ mess_warning(err.cat.c_str(),err.mess.c_str()); }
+	    catch(TError &err){ mess_warning(err.cat.c_str(),err.mess.c_str()); }
     }
 
     owner().prmEn(id(), true);
@@ -418,7 +417,7 @@ string TMdPrm::modPrm( const string &prm )
 	for(unsigned i_n = 0; i_n < prmNd.childSize(); i_n++)
 	    if(prmNd.childGet(i_n)->name() == sobj)
 		return prmNd.childGet(i_n)->attr(sa);
-    } catch(...){ }
+    } catch(...) { }
 
     return "";
 }
@@ -426,7 +425,7 @@ string TMdPrm::modPrm( const string &prm )
 void TMdPrm::setModPrm( const string &prm, const string &val )
 {
     XMLNode prmNd("ModCfg");
-    try { prmNd.load(cfg("PRMS").getS()); } catch(...){ }
+    try { prmNd.load(cfg("PRMS").getS()); } catch(...) { }
 
     if(modPrm(prm) != val) modif();
     string sobj = TSYS::strParse(prm,0,":"), sa = TSYS::strParse(prm,1,":");
@@ -444,10 +443,6 @@ void TMdPrm::setModPrm( const string &prm, const string &val )
 
     cfg("PRMS").setS(prmNd.save(XMLNode::BrAllPast));
 }
-
-void TMdPrm::load_( )	{ TParamContr::load_(); }
-
-void TMdPrm::save_( )	{ TParamContr::save_(); }
 
 void TMdPrm::cntrCmdProc( XMLNode *opt )
 {

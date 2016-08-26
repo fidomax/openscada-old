@@ -46,7 +46,17 @@ class TController : public TCntrNode, public TConfig
 	enum Redundant {
 	    Off		= 0,
 	    Asymmetric	= 1,
-	    Symmetric	= 2
+	    OnlyAlarms	= 2,
+	    // Command specific
+	    Any		= 0
+	};
+	class RedntStkEl {
+	    public:
+	    RedntStkEl( const string &iaddr = "" ) : pos(0), addr(iaddr)	{ }
+
+	    unsigned pos;
+	    vector<string> ls;
+	    string addr;
 	};
 
 	//Public methods
@@ -93,8 +103,8 @@ class TController : public TCntrNode, public TConfig
 
 	// Redundancy
 	//  In redundancy now
-	bool redntUse( )	{ return mRedntUse; }
-	void setRedntUse( bool vl )		{ mRedntUse = vl; }
+	bool redntUse( Redundant md = Asymmetric )	{ return mRdUse && (md == Any || redntMode() == md); }
+	void setRedntUse( bool vl )		{ mRdUse = vl; }
 	//  Mode of the archiver's redundancy, only enabling now
 	Redundant redntMode( )	{ return (TController::Redundant)cfg("REDNT").getI(); }
 	void setRedntMode( Redundant vl )	{ cfg("REDNT").setI(vl); }
@@ -114,7 +124,7 @@ class TController : public TCntrNode, public TConfig
 
 	//Methods
 	// User methods
-	void load_( );
+	void load_( TConfig *cfg );
 	void save_( );
 	virtual void enable_( )		{ }
 	virtual void disable_( )	{ }
@@ -134,7 +144,8 @@ class TController : public TCntrNode, public TConfig
 
     private:
 	//Private methods
-	const char *nodeName( )	{ return mId.getSd(); }
+	const char *nodeName( )		{ return mId.getSd(); }
+	const char *nodeNameSYSM( )	{ return mId.getSd(); }
 
 	void LoadParmCfg( );
 
@@ -143,11 +154,11 @@ class TController : public TCntrNode, public TConfig
 	char	&mAEn, &mAStart;
 
 	string	mDB;
-	MtxString mRedntSt;
+	MtxString mRdSt;
 
-	unsigned mPrm		: 2;
-	unsigned mRedntUse	: 1;
-	unsigned mRedntFirst	: 1;
+	unsigned mPrm	 : 2;
+	unsigned mRdUse	 : 1;
+	unsigned mRdFirst: 1;
 };
 
 }

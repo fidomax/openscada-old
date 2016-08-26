@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.AMRDevs file: mod_tmpl.h
 /***************************************************************************
- *   Copyright (C) 2010-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2010-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -64,8 +64,8 @@ class TMdPrm : public TParamContr
 	//Attributes
 	TElem	els;		//Work atribute elements
 	void	*extPrms;
-	pthread_mutex_t	dataM;
-	MtxString	mErr;
+	ResMtx	dataM;
+	MtxString mErr;
 	vector<string>	als;
 	double	numBytes;
 
@@ -112,7 +112,7 @@ class TMdContr: public TController
 	static void *Task( void *icntr );
 
 	//Attributes
-	Res	en_res;		//Resource for enable params
+	ResRW	enRes;		//Resource for enable params
 	int64_t	&mPrior,	//Process task priority
 		&mRestTm,	//Restore timeout in s
 		&mConnTry;	//Connections try

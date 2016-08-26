@@ -158,7 +158,7 @@ class VisRun : public QMainWindow
 	RunPageView *findOpenPage( const string &pg );
 	RunWdgView *findOpenWidget( const string &wdg );
 
-	int cntrIfCmd( XMLNode &node, bool glob = false );
+	int cntrIfCmd( XMLNode &node, bool glob = false, bool main = false );
 
 	QString getFileName(const QString &caption, const QString &dir, const QString &filter, QFileDialog::AcceptMode mode = QFileDialog::AcceptOpen);
 
@@ -254,6 +254,7 @@ class VisRun : public QMainWindow
 	string 		prjSes_it, work_sess, src_prj;//Work session and source project
 	RunPageView	*master_pg;		//Master page of runtime session
 	int		mPeriod;		//Clock's period
+	int		mConId;			//The connection to VCA ID
 	unsigned	mScreen,		//Work screen, possible virtual
 			wPrcCnt;		//Process counter
 	float		upd_tm;

@@ -53,7 +53,6 @@ class TMdPrm : public TParamContr
 	int64_t iCnl( )			{ return mCnl; }
 	void setICnl( int64_t val )	{ mCnl = val; modif(); }
 
-	void load_( );
 	void enable( );
 	void disable( );
 
@@ -96,8 +95,6 @@ class TMdContr: public TController
 
 	TElem &prmEL( )		{ return pEl; }
 
-	void load_( );
-	void save_( );
 	void start_( );
 	void stop_( );
 
@@ -105,7 +102,7 @@ class TMdContr: public TController
 
 	TTpContr &owner( );
 
-	Res &nodeRes( )		{ return nRes; }
+	ResRW &nodeRes( )	{ return nRes; }
 
     protected:
 	//Methods
@@ -132,7 +129,7 @@ class TMdContr: public TController
 	double	inAdcTimePrev, inAdcTimeAdj, lostFrmsCntr;
 	unsigned long framesPerBufferMax;
 
-	Res	nRes;
+	ResRW	nRes;
 };
 
 //*************************************************

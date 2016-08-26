@@ -46,7 +46,7 @@
 #define MOD_NAME	_("Qt GUI starter")
 #define MOD_TYPE	SUI_ID
 #define VER_TYPE	SUI_VER
-#define MOD_VER		"1.8.2"
+#define MOD_VER		"1.8.4"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides the Qt GUI starter. Qt-starter is the only and compulsory component for all GUI modules based on the Qt library.")
 #define LICENSE		"GPL2"
@@ -138,7 +138,7 @@ void TUIMod::postEnable( int flag )
 	string argCom, argVl;
 	for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
 	    if(argCom == "h" || argCom == "help") isHelp = true;
-	    else if(argCom == "demon" || argCom == "daemon") demonMode = true;
+	    else if(argCom == "demon" || argCom == "daemon" || strcasecmp(argCom.c_str(),"nox11") == 0) demonMode = true;
 		    // Qt bind options (debug)
 	    else if(argCom == "sync" || argCom == "widgetcount" ||
 		    // Qt bind options
@@ -157,8 +157,6 @@ void TUIMod::postEnable( int flag )
 void TUIMod::postDisable( int flag )
 {
     if(runSt) SYS->taskDestroy(nodePath('.',true), &mEndRun, 10, true);
-    /*try { 
-    catch(TError err){ mess_err(err.cat.c_str(),"%s",err.mess.c_str()); }*/
 }
 
 void TUIMod::load_( )
@@ -202,6 +200,7 @@ string TUIMod::optDescr( )
     snprintf(buf,sizeof(buf),_(
 	"======================= The module <%s:%s> options =======================\n"
 	"----------- Qt debug commandline options ----------\n"
+	"    --noX11                Prevent Qt start, mostly for pure console.\n"
 	"    --sync                 Switches to synchronous mode X11 for debugging.\n"
 	"    --widgetcount          Prints debug message at the end about number of widgets\n"
 	"                           left undestroyed and maximum number of widgets existed at\n"
@@ -275,7 +274,8 @@ void *TUIMod::Task( void * )
 	SYS->archive().at().messGet(st_time, time(NULL), recs, "", TMess::Debug, BUF_ARCH_NM);
 	QString mess;
 	for(int i_m = recs.size()-1; i_m >= 0 && i_m > ((int)recs.size()-10); i_m--)
-	    mess += QString("\n%1: %2").arg(recs[i_m].categ.c_str()).arg(recs[i_m].mess.c_str());
+	    mess += QString("\n%1").arg(recs[i_m].mess.c_str());
+	    //mess += QString("\n%1: %2").arg(recs[i_m].categ.c_str()).arg(recs[i_m].mess.c_str());
 	recs.clear();
 	splash->showMessage(mess,Qt::AlignBottom|Qt::AlignLeft);
 	QtApp->processEvents();
@@ -321,7 +321,8 @@ void *TUIMod::Task( void * )
 	SYS->archive().at().messGet(st_time, time(NULL), recs, "", TMess::Debug, BUF_ARCH_NM);
 	QString mess;
 	for(int i_m = recs.size()-1; i_m >= 0 && i_m > ((int)recs.size()-10); i_m--)
-	    mess += QString("\n%1: %2").arg(recs[i_m].categ.c_str()).arg(recs[i_m].mess.c_str());
+	    mess += QString("\n%1").arg(recs[i_m].mess.c_str());
+	    //mess += QString("\n%1: %2").arg(recs[i_m].categ.c_str()).arg(recs[i_m].mess.c_str());
 	recs.clear();
 	splash->showMessage(mess,Qt::AlignBottom|Qt::AlignLeft);
 	QtApp->processEvents();
@@ -395,7 +396,7 @@ void WinControl::callQtModule( )
     if(obj->objectName() == "*exit*")	SYS->stop();
     else {
 	try{ callQtModule(obj->objectName().toStdString()); }
-	catch(TError err) {  }
+	catch(TError &err) {  }
     }
 }
 

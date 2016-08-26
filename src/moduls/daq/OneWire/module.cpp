@@ -39,7 +39,7 @@
 #define MOD_NAME	_("1Wire devices")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"0.1.3"
+#define MOD_VER		"0.1.7"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("1Wire devices support by OWFS (http://owfs.org).")
 #define LICENSE		"GPL2"
@@ -196,9 +196,9 @@ string TMdContr::getStatus( )
     string rez = TController::getStatus();
     if(startStat() && !redntUse()) {
 	if(callSt)	rez += TSYS::strMess(_("Call now. "));
-	if(period())	rez += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-3*period()).c_str());
-	else rez += TSYS::strMess(_("Call next by cron '%s'. "),tm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
-	rez += TSYS::strMess(_("Spent time: %s."),tm2s(tmGath).c_str());
+	if(period())	rez += TSYS::strMess(_("Call by period: %s. "),tm2s(1e-9*period()).c_str());
+	else rez += TSYS::strMess(_("Call next by cron '%s'. "),atm2s(TSYS::cron(cron()),"%d-%m-%Y %R").c_str());
+	rez += TSYS::strMess(_("Spent time: %s."),tm2s(1e-6*tmGath).c_str());
     }
 
     return rez;
@@ -274,13 +274,13 @@ void *TMdContr::Task( void *icntr )
 	cntr.callSt = true;
 	for(unsigned i_p = 0; i_p < cntr.p_hd.size() && !cntr.redntUse() && !TSYS::taskEndRun(); i_p++)
 	    try { cntr.p_hd[i_p].at().getVals(); }
-	    catch(TError err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
+	    catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 	cntr.callSt = false;
 	cntr.en_res.resRelease();
 	cntr.tmGath = TSYS::curTime()-t_cnt;
 
 	if(TSYS::taskEndRun()) break;
-	TSYS::taskSleep(cntr.period(), (cntr.period()?0:TSYS::cron(cntr.cron())));
+	TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
     }
 
     cntr.prcSt = false;
@@ -355,7 +355,7 @@ void TMdPrm::enable( )
 		break;
 	if(i_l >= als.size())
 	    try{ p_el.fldDel(i_p); i_p--; }
-	    catch(TError err){ mess_warning(err.cat.c_str(),err.mess.c_str()); }
+	    catch(TError &err){ mess_warning(err.cat.c_str(),err.mess.c_str()); }
     }
 
     owner().prmEn(id(), true);
@@ -370,16 +370,6 @@ void TMdPrm::disable( )
     TParamContr::disable();
 
     setEval();
-}
-
-void TMdPrm::load_( )
-{
-    TParamContr::load_();
-}
-
-void TMdPrm::save_( )
-{
-    TParamContr::save_();
 }
 
 string TMdPrm::OWFSDevLs( )

@@ -547,7 +547,7 @@ bool ModInspAttr::setData( const QModelIndex &index, const QVariant &ivl, int ro
 	    }
 	}
 	if(toSetWdg || (TSYS::strSepParse(cur_wdg,1,';').size() && (isGrp || nwdg == TSYS::strSepParse(cur_wdg,0,';')))) setWdg(cur_wdg);
-    }catch(...){ return false; }
+    } catch(...) { return false; }
 
     return true;
 }
@@ -1313,7 +1313,7 @@ void WdgTree::selectItem( bool force )
     emit selectItem(work_wdg,force);
 }
 
-void WdgTree::updateTree( const string &vca_it )
+void WdgTree::updateTree( const string &vca_it, bool initial )
 {
     int64_t d_cnt = 0;
     if(mess_lev() == TMess::Debug) d_cnt = TSYS::curTime();
@@ -1336,7 +1336,7 @@ void WdgTree::updateTree( const string &vca_it )
     string upd_wdgi = (vca_lev>=3) ? TSYS::pathLev(vca_it,2).substr(4) : "";
 
     XMLNode req("get");
-    req.setAttr("path","/%2fserv%2fwlbBr")->setAttr("item",vca_it);
+    req.setAttr("path", "/%2fserv%2fwlbBr")->setAttr("item", vca_it)->setAttr("conTm", i2s(initial?mod->restoreTime()*1000:0));
     owner()->cntrIfCmd(req);
 
     if(mess_lev() == TMess::Debug)
@@ -1665,7 +1665,7 @@ void ProjTree::selectItem( bool force )
     emit selectItem(work_wdg,force);
 }
 
-void ProjTree::updateTree( const string &vca_it, QTreeWidgetItem *it )
+void ProjTree::updateTree( const string &vca_it, QTreeWidgetItem *it, bool initial )
 {
     int64_t d_cnt = 0;
     vector<string> list_pr, list_pg;
@@ -1689,7 +1689,7 @@ void ProjTree::updateTree( const string &vca_it, QTreeWidgetItem *it )
 	//Process top level items and project's list
 	// Get widget's libraries list
 	XMLNode prj_req("get");
-	prj_req.setAttr("path","/%2fprm%2fcfg%2fprj");
+	prj_req.setAttr("path", "/%2fprm%2fcfg%2fprj")->setAttr("conTm", i2s(initial?mod->restoreTime()*1000:0));
 	if(owner()->cntrIfCmd(prj_req)) {
 	    mod->postMess(prj_req.attr("mcat").c_str(), prj_req.text().c_str(), TVision::Error, this);
 	    return;
@@ -2186,8 +2186,7 @@ void DevelWdgView::wdgViewTool( QAction *act )
 	QRectF selRect;
 	int sel_cnt = 0;
 	for(int i_c = 0; i_c < children().size(); i_c++)
-	    if((cwdg=qobject_cast<DevelWdgView*>(children().at(i_c))) && cwdg->select())
-	    {
+	    if((cwdg=qobject_cast<DevelWdgView*>(children().at(i_c))) && cwdg->select()) {
 		selRect = selRect.united(cwdg->geometryF());
 		sel_cnt++;
 	    }
@@ -3076,7 +3075,7 @@ bool DevelWdgView::event( QEvent *event )
 		if(fMoveHold || cursor().shape() != Qt::ArrowCursor) {
 		    if(cursor().shape() != Qt::ArrowCursor) {
 			vector<DevelWdgView*> lswdgs;
-			selectChilds(NULL,&lswdgs);
+			selectChilds(NULL, &lswdgs);
 			if(fMoveHoldMove) {
 			    if(!lswdgs.size()) {
 				saveGeom(id().c_str());
@@ -3156,7 +3155,7 @@ bool DevelWdgView::event( QEvent *event )
 		upMouseCursors(curp);
 
 		// Move widgets control
-		if(fMoveHold && cursor().shape() != Qt::ArrowCursor && ((QMouseEvent*)event)->buttons()&Qt::LeftButton &&
+		if(fMoveHold && cursor().shape() != Qt::ArrowCursor && (((QMouseEvent*)event)->buttons()&Qt::LeftButton) &&
 		    (((QMouseEvent*)event)->pos()-dragStartPos).manhattanLength() >= QApplication::startDragDistance())
 		{
 		    dragStartPos = QPoint(-100,-100);
@@ -3292,8 +3291,7 @@ void SizePntWdg::apply( )
     if(mWSize.width() > 2 && mWSize.height() > 2) {
 	QRegion reg;
 	QRect   wrect, irect;
-	switch(view)
-	{
+	switch(view) {
 	    case SizeDots:
 		wrect = QRectF(mWPos,mWSize).adjusted(-3,-3,3,3).toRect();
 		irect = QRect(0,0,wrect.width(),wrect.height());
@@ -3324,16 +3322,14 @@ void SizePntWdg::apply( )
 
 bool SizePntWdg::event( QEvent *ev )
 {
-    switch(ev->type())
-    {
+    switch(ev->type()) {
 	case QEvent::Paint: {
 	    if(!rect().isValid()) break;
 
 	    QPainter pnt(this);
 	    pnt.setWindow(rect());
 
-	    switch(view)
-	    {
+	    switch(view) {
 		case SizeDots:
 		    pnt.setPen(QColor("black"));
 		    pnt.setBrush(QBrush(QColor("lightgreen")));

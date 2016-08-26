@@ -647,8 +647,8 @@ VisDevelop::VisDevelop( const string &open_user, const string &user_pass, const 
     setWindowState(Qt::WindowMaximized);
     menuBar()->setVisible(true);
 
-    wdgTree->updateTree();
-    prjTree->updateTree();
+    wdgTree->updateTree("", true);	//Initial for allow the widgets loading on the server side mostly
+    prjTree->updateTree("", NULL, true);//Initial for allow the projects loading on the server side mostly
 
     //Restore main window state
     string st = TSYS::strDecode(mod->uiPropGet("devWinState",user()),TSYS::base64);
@@ -717,11 +717,11 @@ QString VisDevelop::getFileName(const QString &caption, const QString &dir, cons
     return "";
 }
 
-string VisDevelop::user( )	{ return mWUser->user().toStdString(); }
+string VisDevelop::user( )	{ return mWUser->user(); }
 
-string VisDevelop::password( )	{ return mWUser->pass().toStdString(); }
+string VisDevelop::password( )	{ return mWUser->pass(); }
 
-string VisDevelop::VCAStation( )	{ return mWUser->VCAStation().toStdString(); }
+string VisDevelop::VCAStation( )	{ return mWUser->VCAStation(); }
 
 bool VisDevelop::wdgScale( )		{ return w_scale->scale(); }
 
@@ -860,9 +860,9 @@ void VisDevelop::quitSt( )
 void VisDevelop::about( )
 {
     QMessageBox::about(this,windowTitle(),
-	QString(_("%1 v%2.\n%3\nAuthor: %4\nDevelopers: %5\nLicense: %6\n\n%7 v%8.\n%9\nLicense: %10\nAuthor: %11\nWeb site: %12")).
+	QString(_("%1 v%2.\n%3\nAuthor: %4\nLicense: %5\n\n%6 v%7.\n%8\nLicense: %9\nAuthor: %10\nWeb site: %11")).
 	    arg(mod->modInfo("Name").c_str()).arg(mod->modInfo("Version").c_str()).arg(mod->modInfo("Description").c_str()).
-	    arg(mod->modInfo("Author").c_str()).arg(mod->modInfo(_("Developers")).c_str()).arg(mod->modInfo("License").c_str()).
+	    arg(mod->modInfo("Author").c_str()).arg(mod->modInfo("License").c_str()).
 	    arg(PACKAGE_NAME).arg(VERSION).arg(_(PACKAGE_DESCR)).arg(PACKAGE_LICENSE).arg(_(PACKAGE_AUTHOR)).arg(PACKAGE_SITE));
 }
 
