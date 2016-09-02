@@ -239,8 +239,6 @@ bool Session::modifChk( unsigned int tm, unsigned int iMdfClc )
 
 string Session::ico( )			{ return (!parent().freeStat()) ? parent().at().ico() : ""; }
 
-double Session::calcTm( )		{ return SYS->taskUtilizTm(nodePath('.',true)); }
-
 AutoHD<Project> Session::parent( )	{ return mParent; }
 
 void Session::add( const string &iid, const string &iparent )
@@ -686,7 +684,8 @@ void Session::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"set",permit(),owner().c_str(),grp().c_str(),SEC_WR))	setProjNm(opt->text());
     }
     else if(a_path == "/obj/st/backgrnd" && ctrChkNode(opt))	opt->setText(i2s(backgrnd()));
-    else if(a_path == "/obj/st/calc_tm" && ctrChkNode(opt))	opt->setText(tm2s(calcTm()));
+    else if(a_path == "/obj/st/calc_tm" && ctrChkNode(opt))
+	opt->setText(tm2s(SYS->taskUtilizTm(nodePath('.',true)))+"["+tm2s(SYS->taskUtilizTm(nodePath('.',true),true))+"]");
     else if(a_path == "/obj/st/connect" && ctrChkNode(opt))	opt->setText(i2s(connects()));
     else if(a_path == "/obj/st/reqTime" && ctrChkNode(opt))	opt->setText(i2s(reqTm()));
     else if(a_path == "/obj/st/leftToClose" && ctrChkNode(opt))	opt->setText(i2s(vmax(0,DIS_SES_TM-(time(NULL)-reqTm()))));
@@ -1137,6 +1136,29 @@ AutoHD<Widget> SessPage::wdgAt( const string &wdg, int lev, int off )
     return Widget::wdgAt(wdg, lev, off);
 }
 
+float SessPage::tmCalcAll( )
+{
+    float vl = SessWdg::tmCalcAll();
+    vector<string> lst;
+    pageList(lst);
+    for(unsigned iW = 0; iW < lst.size(); iW++)
+	if(pageAt(lst[iW]).at().process())
+	    vl += pageAt(lst[iW]).at().tmCalcAll();
+
+    return vl;
+}
+
+float SessPage::tmCalcMaxAll( )
+{
+    float vl = SessWdg::tmCalcMaxAll();
+    vector<string> lst;
+    pageList(lst);
+    for(unsigned iW = 0; iW < lst.size(); iW++)
+	vl = vmax(vl, pageAt(lst[iW]).at().tmCalcMaxAll());
+
+    return vl;
+}
+
 void SessPage::calc( bool first, bool last )
 {
     //Process self data
@@ -1381,8 +1403,8 @@ bool SessPage::cntrCmdGeneric( XMLNode *opt )
 //* SessWdg: Session page's widget               *
 //************************************************
 SessWdg::SessWdg( const string &iid, const string &iparent, Session *isess ) :
-    Widget(iid,iparent), TValFunc(iid+"_wdg",NULL), mProc(false), inLnkGet(true), mToEn(false), mMdfClc(0),
-    mCalcClk(isess->calcClk()), mCalcRes(true), mSess(isess)
+    Widget(iid,iparent), TValFunc(iid+"_wdg",NULL), tmCalc(0), tmCalcMax(0),
+    mProc(false), inLnkGet(true), mToEn(false), mMdfClc(0), mCalcClk(isess->calcClk()), mCalcRes(true), mSess(isess)
 {
     BACrtHoldOvr = true;
 }
@@ -1454,6 +1476,7 @@ void SessWdg::setEnable( bool val, bool force )
 	for(unsigned i_l = 0; i_l < ls.size(); i_l++)
 	    wdgDel(ls[i_l]);
     }
+
     SessWdg *sw;
     if(val && (sw=ownerSessWdg(true)) && sw->process()) {
 	setProcess(true);
@@ -1548,7 +1571,10 @@ void SessWdg::setProcess( bool val, bool lastFirstCalc )
     mProc = val;
 
     // Make process element's lists
-    if(val) prcElListUpdate();
+    if(val) {
+	tmCalc = tmCalcMax = 0;
+	prcElListUpdate();
+    }
 
     // First calc, after all set
     if(val && diff && lastFirstCalc) calc(true, false);
@@ -1608,9 +1634,9 @@ void SessWdg::inheritAttr( const string &aid )
     }
 }
 
-void SessWdg::attrAdd( TFld *attr, int pos, bool inher, bool forceMdf )
+void SessWdg::attrAdd( TFld *attr, int pos, bool inher, bool forceMdf, bool allInher )
 {
-    Widget::attrAdd(attr, pos, inher, forceMdf || enable());
+    Widget::attrAdd(attr, pos, inher, forceMdf || enable(), allInher);
 }
 
 AutoHD<Widget> SessWdg::wdgAt( const string &wdg, int lev, int off )
@@ -1623,11 +1649,33 @@ AutoHD<Widget> SessWdg::wdgAt( const string &wdg, int lev, int off )
     return Widget::wdgAt(wdg, lev, off);
 }
 
+float SessWdg::tmCalcAll( )
+{
+    float vl = tmCalc;
+    vector<string> lst;
+    wdgList(lst);
+    for(unsigned iW = 0; iW < lst.size(); iW++)
+	if(((AutoHD<SessWdg>)wdgAt(lst[iW])).at().process())
+	    vl += ((AutoHD<SessWdg>)wdgAt(lst[iW])).at().tmCalcAll();
+
+    return vl;
+}
+
+float SessWdg::tmCalcMaxAll( )
+{
+    float vl = tmCalcMax;
+    vector<string> lst;
+    wdgList(lst);
+    for(unsigned iW = 0; iW < lst.size(); iW++)
+	vl = vmax(vl, ((AutoHD<SessWdg>)wdgAt(lst[iW])).at().tmCalcMaxAll());
+
+    return vl;
+}
+
 void SessWdg::pgClose( )
 {
     try {
-	if(!dynamic_cast<SessPage*>(this) && rootId() == "Box" && attrAt("pgGrp").at().getS() != "" && attrAt("pgOpenSrc").at().getS() != "")
-	{
+	if(!dynamic_cast<SessPage*>(this) && rootId() == "Box" && attrAt("pgGrp").at().getS() != "" && attrAt("pgOpenSrc").at().getS() != "") {
 	    ((AutoHD<SessWdg>)mod->nodeAt(attrAt("pgOpenSrc").at().getS())).at().attrAt("pgOpen").at().setB(false);
 	    attrAt("pgOpenSrc").at().setS("");
 	}
@@ -1635,8 +1683,8 @@ void SessWdg::pgClose( )
 
     vector<string> list;
     wdgList(list);
-    for(unsigned i_w = 0; i_w < list.size(); i_w++)
-	((AutoHD<SessWdg>)wdgAt(list[i_w])).at().pgClose();
+    for(unsigned iW = 0; iW < list.size(); iW++)
+	((AutoHD<SessWdg>)wdgAt(list[iW])).at().pgClose();
 }
 
 string SessWdg::sessAttr( const string &id, bool onlyAllow )
@@ -1788,6 +1836,9 @@ void SessWdg::calc( bool first, bool last )
 
     try {
 	int pgOpenPrc = -1;
+	int64_t tCnt;
+
+	if(mess_lev() == TMess::Debug) tCnt = TSYS::curTime();
 
 	//Load events to process
 	if(!((ownerSess()->calcClk())%(vmax(calcPer()/ownerSess()->period(),1))) || first || last) {
@@ -1934,6 +1985,8 @@ void SessWdg::calc( bool first, bool last )
 
 	    //Generic calc
 	    Widget::calc(this);
+
+	    if(mess_lev() == TMess::Debug) { tmCalc = 1e-6*(TSYS::curTime()-tCnt); tmCalcMax = vmax(tmCalcMax, tmCalc); }
 	}
     } catch(TError &err) {
 	res.unlock();
@@ -2234,6 +2287,8 @@ bool SessWdg::cntrCmdGeneric( XMLNode *opt )
     if(opt->name() == "info") {
 	Widget::cntrCmdGeneric(opt);
 	ctrMkNode("fld",opt,1,"/wdg/st/proc",_("Process"),RWRWR_,owner().c_str(),grp().c_str(),1,"tp","bool");
+	if(mess_lev() == TMess::Debug)
+	    ctrMkNode("fld",opt,1,"/wdg/st/tmSpent",_("Spent time"),R_R_R_,owner().c_str(),grp().c_str(),1,"tp","str");
 	return true;
     }
 
@@ -2243,6 +2298,8 @@ bool SessWdg::cntrCmdGeneric( XMLNode *opt )
 	if(ctrChkNode(opt,"get",RWRWR_,owner().c_str(),grp().c_str(),SEC_RD)) opt->setText(i2s(process()));
 	if(ctrChkNode(opt,"set",RWRWR_,owner().c_str(),grp().c_str(),SEC_WR)) setProcess(s2i(opt->text()));
     }
+    else if(a_path == "/wdg/st/tmSpent" && ctrChkNode(opt,"get"))
+	opt->setText(_("Subtree=")+tm2s(tmCalcAll())+"["+tm2s(tmCalcMaxAll())+"], "+_("Item=")+tm2s(tmCalc)+"["+tm2s(tmCalcMax)+"]");
     else return Widget::cntrCmdGeneric(opt);
 
     return true;
