@@ -351,13 +351,11 @@ void KA_GZD::saveParam(void)
 	saveVal(data[i].TUOpen.lnk);
 	saveVal(data[i].TUClose.lnk);
 	saveVal(data[i].TUStop.lnk);
-	saveVal(data[i].TUStopEx.lnk);
 	saveVal(data[i].TURemote.lnk);
 	saveVal(data[i].TUManual.lnk);
 	saveVal(data[i].TimeOpen.lnk);
 	saveVal(data[i].TimeClose.lnk);
 	saveVal(data[i].TimeStop.lnk);
-	saveVal(data[i].TimeStopEx.lnk);
 	saveVal(data[i].TimeRemote.lnk);
 	saveVal(data[i].TimeManual.lnk);
 	saveVal(data[i].TCOpen.lnk);
@@ -365,6 +363,10 @@ void KA_GZD::saveParam(void)
 	saveVal(data[i].TCMode.lnk);
 	saveVal(data[i].TCOpenErr.lnk);
 	saveVal(data[i].TCCloseErr.lnk);
+	if(valve_type == vt_6TU) {
+	    saveVal(data[i].TUStopEx.lnk);
+	    saveVal(data[i].TimeStopEx.lnk);
+	}
     }
 }
 
