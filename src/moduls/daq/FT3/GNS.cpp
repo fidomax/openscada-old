@@ -53,8 +53,8 @@ void KA_GNS::SKANSchannel::UpdateTUParam(uint16_t ID, uint8_t cl)
     tmp[4][1].w = TimeManual.Get();
 
     if(tmp[0][0].w != TUOn.vl || tmp[0][1].w != TimeOn.vl || tmp[1][0].w != TUOff.vl || tmp[1][1].w != TimeOff.vl || tmp[2][0].w != TUStop.vl
-	    || tmp[2][1].w != TimeStop.vl || tmp[3][0].w != TUManual.vl || tmp[3][1].w != TimeManual.vl || tmp[4][0].w != TURemote.vl
-	    || tmp[4][1].w != TimeRemote.vl) {
+	    || tmp[2][1].w != TimeStop.vl || tmp[3][0].w != TURemote.vl || tmp[3][1].w != TimeRemote.vl || tmp[4][0].w != TUManual.vl
+	    || tmp[4][1].w != TimeManual.vl) {
 	TUOn.s = 0;
 	TUOn.Update(tmp[0][0].w);
 	TimeOn.Update(tmp[0][1].w);
