@@ -102,7 +102,13 @@ namespace FT3
 	virtual void saveIO(void)
 	{
 	}
+	virtual void saveParam(void)
+	{
+	}
 	virtual void loadIO(bool force = false)
+	{
+	}
+	virtual void loadParam(void)
 	{
 	}
 	virtual void tmHandler(void)
@@ -341,6 +347,8 @@ namespace FT3
 	void AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex);
 	void loadLnk(SLnk& lnk);
 	void saveLnk(SLnk& lnk);
+	void saveVal(SLnk& lnk);
+	void loadVal(SLnk& lnk);
 	uint8_t SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
 	uint8_t SetNew8Val(ui16Data& d, uint8_t addr, uint16_t prmID, uint8_t val);
 	uint8_t SetNew28Val(ui8Data& d1, ui8Data& d2, uint8_t addr, uint16_t prmID, uint8_t val1, uint8_t val2);

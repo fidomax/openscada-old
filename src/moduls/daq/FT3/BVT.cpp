@@ -127,7 +127,7 @@ void KA_BVT::AddChannel(uint8_t iid)
     chan_err.insert(chan_err.end(), SDataRec());
     data.push_back(SKATTchannel(iid, this));
     AddAttr(data.back().State.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-    AddAttr(data.back().Value.lnk, TFld::Real,  TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
+    AddAttr(data.back().Value.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
     if(with_params) {
 	AddAttr(data.back().Period.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
 	AddAttr(data.back().Sens.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
@@ -189,8 +189,9 @@ void KA_BVT::loadIO(bool force)
     }
 }
 
-void KA_BVT::saveIO()
+void KA_BVT::saveIO(void)
 {
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "save io");
     for(int i = 0; i < count_n; i++) {
 	saveLnk(data[i].State.lnk);
 	saveLnk(data[i].Value.lnk);
@@ -206,6 +207,25 @@ void KA_BVT::saveIO()
 	saveLnk(data[i].MaxA.lnk);
 	saveLnk(data[i].Factor.lnk);
 	saveLnk(data[i].Adjust.lnk);
+    }
+}
+
+void KA_BVT::saveParam(void)
+{
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "save param");
+    for(int i = 0; i < count_n; i++) {
+	saveVal(data[i].Period.lnk);
+	saveVal(data[i].Sens.lnk);
+	saveVal(data[i].MinS.lnk);
+	saveVal(data[i].MaxS.lnk);
+	saveVal(data[i].MinPV.lnk);
+	saveVal(data[i].MaxPV.lnk);
+	saveVal(data[i].MinW.lnk);
+	saveVal(data[i].MaxW.lnk);
+	saveVal(data[i].MinA.lnk);
+	saveVal(data[i].MaxA.lnk);
+	saveVal(data[i].Factor.lnk);
+	saveVal(data[i].Adjust.lnk);
     }
 }
 
@@ -429,6 +449,7 @@ uint8_t KA_BVT::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_BVT::setVal(TVal &val)
 {
+    uint16_t rc = 0;
     int off = 0;
     FT3ID ft3ID;
     ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
@@ -471,13 +492,14 @@ uint16_t KA_BVT::setVal(TVal &val)
 	Msg.L += SerializeF(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("maxW_%d", ft3ID.k)).at().getR(0, true));
 	Msg.L += SerializeF(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("factor_%d", ft3ID.k)).at().getR(0, true));
 	Msg.L += SerializeF(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("adjust_%d", ft3ID.k)).at().getR(0, true));
+	rc = 1;
 	break;
     }
     if(Msg.L > 2) {
 	Msg.L += 3;
 	mPrm.owner().DoCmd(&Msg);
     }
-    return 0;
+    return rc;
 }
 
 B_BVT::B_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_k, bool has_rate) :

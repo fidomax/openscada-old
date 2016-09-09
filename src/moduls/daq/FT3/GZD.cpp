@@ -345,6 +345,29 @@ void KA_GZD::saveIO(void)
     }
 }
 
+void KA_GZD::saveParam(void)
+{
+    for(int i = 0; i < count_n; i++) {
+	saveVal(data[i].TUOpen.lnk);
+	saveVal(data[i].TUClose.lnk);
+	saveVal(data[i].TUStop.lnk);
+	saveVal(data[i].TUStopEx.lnk);
+	saveVal(data[i].TURemote.lnk);
+	saveVal(data[i].TUManual.lnk);
+	saveVal(data[i].TimeOpen.lnk);
+	saveVal(data[i].TimeClose.lnk);
+	saveVal(data[i].TimeStop.lnk);
+	saveVal(data[i].TimeStopEx.lnk);
+	saveVal(data[i].TimeRemote.lnk);
+	saveVal(data[i].TimeManual.lnk);
+	saveVal(data[i].TCOpen.lnk);
+	saveVal(data[i].TCClose.lnk);
+	saveVal(data[i].TCMode.lnk);
+	saveVal(data[i].TCOpenErr.lnk);
+	saveVal(data[i].TCCloseErr.lnk);
+    }
+}
+
 void KA_GZD::tmHandler(void)
 {
     for(int i = 0; i < count_n; i++) {
@@ -598,6 +621,7 @@ uint8_t KA_GZD::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_GZD::setVal(TVal &val)
 {
+    uint16_t rc = 0;
     int off = 0;
     FT3ID ft3ID;
     ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
@@ -628,6 +652,7 @@ uint16_t KA_GZD::setVal(TVal &val)
 		Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUstopEx_%d", ft3ID.k)).at().getI(0, true));
 		Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeStopEx_%d", ft3ID.k)).at().getI(0, true));
 	    }
+	    rc = 1;
 	    break;
 	case 2:
 
@@ -636,6 +661,7 @@ uint16_t KA_GZD::setVal(TVal &val)
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().getI(0, true));
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcOpenErr_%d", ft3ID.k)).at().getI(0, true));
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcCloseErr_%d", ft3ID.k)).at().getI(0, true));
+	    rc = 1;
 	    break;
 	case 3:
 	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
@@ -646,5 +672,5 @@ uint16_t KA_GZD::setVal(TVal &val)
 	Msg.L += 3;
 	mPrm.owner().DoCmd(&Msg);
     }
-    return 0;
+    return rc;
 }

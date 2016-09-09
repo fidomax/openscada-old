@@ -36,6 +36,7 @@ namespace FT3
 	void AddChannel(uint8_t iid);
 	void saveIO(void);
 	void loadIO(bool force = false);
+	void saveParam(void);
 	uint16_t Task(uint16_t);
 	uint16_t HandleEvent(int64_t, uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);

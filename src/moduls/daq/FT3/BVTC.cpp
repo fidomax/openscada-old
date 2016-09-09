@@ -80,13 +80,21 @@ void KA_BVTC::loadIO(bool force)
     }
 }
 
-void KA_BVTC::saveIO()
+void KA_BVTC::saveIO(void)
 {
     //Save links
     for(int i = 0; i < count_n; i++) {
 	saveLnk(data[i].Value.lnk);
 	saveLnk(data[i].Count.lnk);
 	saveLnk(data[i].Period.lnk);
+    }
+}
+
+void KA_BVTC::saveParam(void)
+{
+    for(int i = 0; i < count_n; i++) {
+	saveVal(data[i].Count.lnk);
+	saveVal(data[i].Period.lnk);
     }
 }
 
@@ -250,6 +258,7 @@ uint8_t KA_BVTC::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_BVTC::setVal(TVal &val)
 {
+    uint16_t rc = 0;
     int off = 0;
     FT3ID ft3ID;
     ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
@@ -268,6 +277,7 @@ uint16_t KA_BVTC::setVal(TVal &val)
 	case 1:
 	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Period_%d", ft3ID.k)).at().getI(0, true));
 	    Msg.L += SerializeB(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("Count_%d", ft3ID.k)).at().getI(0, true));
+	    rc = 1;
 	    break;
 	}
     }
@@ -276,7 +286,7 @@ uint16_t KA_BVTC::setVal(TVal &val)
 	mPrm.owner().DoCmd(&Msg);
     }
 
-    return 0;
+    return rc;
 }
 
 //---------------------------------------------------------------------------

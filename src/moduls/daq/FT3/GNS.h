@@ -46,6 +46,7 @@ namespace FT3
 	string getStatus(void);
 	void saveIO(void);
 	void loadIO(bool force = false);
+	void saveParam(void);
 	void tmHandler(void);
  	uint16_t config;
 	class SKANSchannel

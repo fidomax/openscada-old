@@ -544,6 +544,7 @@ void TTpContr::postEnable(int flag)
     elPrmIO.fldAdd(new TFld("PRM_ID", _("Parameter ID"), TFld::String, TCfg::Key, i2s(atoi(OBJ_ID_SZ) * 6).c_str()));
     elPrmIO.fldAdd(new TFld("ID", _("ID"), TFld::String, TCfg::Key, OBJ_ID_SZ));
     elPrmIO.fldAdd(new TFld("VALUE", _("Value"), TFld::String, TFld::NoFlag, "200"));
+    elPrmIO.fldAdd(new TFld("ATTR_VALUE", _("Attribute value"), TFld::String, TFld::NoFlag, "200"));
 }
 
 TController *TTpContr::ContrAttach(const string &name, const string &daq_db)
@@ -1276,7 +1277,9 @@ void TMdPrm::vlSet(TVal &vo, const TVariant &vl, const TVariant &pvl)
 	return;
     }
     if(mDA) {
-	mDA->setVal(vo);
+	if (mDA->setVal(vo)){
+	    modif();
+	}
     } else {
 	return;
     }
@@ -1304,8 +1307,13 @@ void TMdPrm::load_()
 
 void TMdPrm::save_()
 {
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, "save____");
     TParamContr::save_();
-    if(enableStat() && mDA) mDA->saveIO();
+    if(enableStat() && mDA) {
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, "save");
+	mDA->saveIO();
+	mDA->saveParam();
+    }
 }
 
 string TMdPrm::typeDBName()
