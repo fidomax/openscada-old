@@ -611,7 +611,7 @@ uint16_t TMdContr::CRC(const string &data, uint16_t n, uint16_t length)
     return ~CRC;
 }
 
-bool TMdContr::DoCmd(tagMsg * pMsg)
+uint16_t TMdContr::DoCmd(tagMsg * pMsg)
 {
     uint8_t Cmd = pMsg->C;
     if(Transact(pMsg)) {
@@ -659,9 +659,9 @@ bool TMdContr::DoCmd(tagMsg * pMsg)
 	    }
 
 	}
-	return true;
+	return pMsg->C & 0x0F;
     } else {
-	return false;
+	return ERROR;
     }
 
 }
@@ -1013,6 +1013,7 @@ void TMdContr::start_()
     nChannel = cfg("NCHANNEL").getI();
     Channels.clear();
     devAddr = vmin(63, vmax(1,cfg("NODE").getI()));
+    SetCntrState(StateNoConnection);
     //> Start the gathering data task
     if(!prc_st) {
 	if(cfg("CTRTYPE").getS() == "DAQ") {
@@ -1080,6 +1081,10 @@ void TMdContr::SetCntrState(eCntrState nState)
 	case StateRefreshData:
 	    mess_sys(TMess::Info, _("Refresh data"));
 	    break;
+	case StateIdle:
+	    mess_sys(TMess::Info, _("Idle"));
+	    break;
+
 	}
     }
 
@@ -1100,19 +1105,14 @@ void *TMdContr::DAQTask(void *icntr)
 	bool IsSoftReset = false;
 	bool IsNoAnswer = false;
 	bool IsSetup = false;
+	bool IsError = false;
 	switch(cntr.CntrState) {
 
 	case StateNoConnection:
 	    Msg.L = 3;
 	    Msg.C = ResetChan;
-	    if(cntr.DoCmd(&Msg)) {
+	    if(cntr.DoCmd(&Msg) == GOOD2) {
 		cntr.SetCntrState(StateUnknown);
-		/*		Msg.L = 3;
-		 Msg.C = ResData2;
-		 if(cntr.DoCmd(&Msg)) {
-		 cntr.NeedInit = false;
-		 }*/
-
 	    }
 	    break;
 
@@ -1153,52 +1153,69 @@ void *TMdContr::DAQTask(void *icntr)
 	    }
 	    break;
 
-	case StateHardReset: case StateSoftReset:
-	    for(int i_l = 0; i_l < lst.size(); i_l++) {
-		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		t.at().BlckPreInit();
-	    }
+	case StateHardReset:
+	case StateSoftReset:
 	    cntr.SetCntrState(StatePreInint);
 	    break;
 
 	case StatePreInint:
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		t.at().BlckSetParams();
+		if(t.at().BlckPreInit() != GOOD2) {
+		    IsError = true;
+		}
 	    }
-	    cntr.SetCntrState(StateSetParams);
+	    if(!IsError) {
+		cntr.SetCntrState(StateSetParams);
+	    }
 	    break;
 
 	case StateSetParams:
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		t.at().BlckPostInit();
+		if(t.at().BlckSetParams() != GOOD2) {
+		    IsError = true;
+		}
 	    }
-	    cntr.SetCntrState(StatePostInit);
+	    if(!IsError) {
+		cntr.SetCntrState(StatePostInit);
+	    }
 	    break;
 
 	case StatePostInit:
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		t.at().BlckStart();
+		if(t.at().BlckPostInit() != GOOD2) {
+		    IsError = true;
+		}
 	    }
-	    cntr.SetCntrState(StateStart);
+	    if(!IsError) {
+		cntr.SetCntrState(StateStart);
+	    }
 	    break;
 
 	case StateStart:
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		t.at().BlckRefreshData();
+		if(t.at().BlckStart() != GOOD2) {
+		    IsError = true;
+		}
 	    }
-	    cntr.SetCntrState(StateRefreshData);
+	    if(!IsError) {
+		cntr.SetCntrState(StateRefreshData);
+	    }
 	    break;
 
 	case StateRefreshData:
-	    /*	    for(int i_l = 0; i_l < lst.size(); i_l++) {
-	     AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-	     t.at().BlckRefreshData();
-	     }*/
-	    cntr.SetCntrState(StateIdle);
+	    for(int i_l = 0; i_l < lst.size(); i_l++) {
+		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
+		if(t.at().BlckRefreshData() != GOOD3) {
+		    IsError = true;
+		}
+	    }
+	    if(!IsError) {
+		cntr.SetCntrState(StateIdle);
+	    }
 	    break;
 
 	case StateIdle:
@@ -1208,7 +1225,7 @@ void *TMdContr::DAQTask(void *icntr)
 	    }
 	    Msg.L = 3;
 	    Msg.C = ReqData;
-	    if(!cntr.DoCmd(&Msg)) {
+	    if(cntr.DoCmd(&Msg) == ERROR) {
 		cntr.SetCntrState(StateNoConnection);
 	    }
 	    break;
@@ -1416,7 +1433,7 @@ uint16_t TMdPrm::BlckPreInit(void)
     if(mDA) {
 	return mDA->PreInit();
     } else {
-	return BlckStateNone;
+	return GOOD2;
     }
 }
 
@@ -1425,7 +1442,7 @@ uint16_t TMdPrm::BlckSetParams(void)
     if(mDA) {
 	return mDA->SetParams();
     } else {
-	return BlckStateNone;
+	return GOOD2;
     }
 }
 
@@ -1434,7 +1451,7 @@ uint16_t TMdPrm::BlckPostInit(void)
     if(mDA) {
 	return mDA->PostInit();
     } else {
-	return BlckStateNone;
+	return GOOD2;
     }
 }
 
@@ -1443,7 +1460,7 @@ uint16_t TMdPrm::BlckStart(void)
     if(mDA) {
 	return mDA->Start();
     } else {
-	return BlckStateNone;
+	return GOOD2;
     }
 }
 
@@ -1452,7 +1469,7 @@ uint16_t TMdPrm::BlckRefreshData(void)
     if(mDA) {
 	return mDA->RefreshData();
     } else {
-	return BlckStateNone;
+	return GOOD3;
     }
 }
 

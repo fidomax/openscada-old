@@ -94,7 +94,8 @@ namespace FT3
 	GOOD2 = 0,
 	BAD2 = 1,
 	GOOD3 = 8,
-	BAD3 = 9
+	BAD3 = 9,
+	ERROR = 0xFF
     };
     enum eModeTask
     {
@@ -297,7 +298,7 @@ namespace FT3
 	}
 
 	bool isLogic();
-	bool DoCmd(tagMsg * t);
+	uint16_t DoCmd(tagMsg * t);
 	bool Transact(tagMsg * t);
 	bool ProcessMessage(tagMsg *, tagMsg *);
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);

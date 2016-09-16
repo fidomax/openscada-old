@@ -75,7 +75,7 @@ uint16_t KA_BUC::GetState()
     Msg.L = 5;
     Msg.C = AddrReq;
     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
-    if(mPrm.owner().DoCmd(&Msg)) {
+    if(mPrm.owner().DoCmd(&Msg) == GOOD3) {
 	switch(mPrm.vlAt("state").at().getI(0, true)) {
 	case KA_BUC_HardReset:
 	    rc = BlckStateHardReset;
@@ -98,13 +98,11 @@ uint16_t KA_BUC::GetState()
 uint16_t KA_BUC::PreInit(void)
 {
     tagMsg Msg;
-    uint16_t rc = GOOD2;
     Msg.L = 6;
     Msg.C = SetData;
     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
     Msg.D[2] = 0x80;
-    mPrm.owner().DoCmd(&Msg);
-    return rc;
+    return mPrm.owner().DoCmd(&Msg);
 }
 uint16_t KA_BUC::SetParams(void)
 {
@@ -113,16 +111,13 @@ uint16_t KA_BUC::SetParams(void)
 uint16_t KA_BUC::PostInit(void)
 {
     tagMsg Msg;
-    uint16_t rc = GOOD2;
-
     time_t rawtime;
     time(&rawtime);
     Msg.L = 10;
     Msg.C = SetData;
     *((uint16_t *) Msg.D) = PackID(1, 0, 2); //current time
     mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
-    mPrm.owner().DoCmd(&Msg);
-    return rc;
+    return mPrm.owner().DoCmd(&Msg);
 
 }
 uint16_t KA_BUC::Start(void)
@@ -133,13 +128,11 @@ uint16_t KA_BUC::Start(void)
     Msg.C = SetData;
     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
     Msg.D[2] = 0x01;
-    mPrm.owner().DoCmd(&Msg);
-    return rc;
+    return mPrm.owner().DoCmd(&Msg);
 }
 uint16_t KA_BUC::RefreshData(void)
 {
     tagMsg Msg;
-    uint16_t rc = GOOD2;
     Msg.L = 3 + 2 * 6;
     Msg.C = AddrReq;
     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
@@ -148,15 +141,14 @@ uint16_t KA_BUC::RefreshData(void)
     *((uint16_t *) (Msg.D + 6)) = PackID(1, 0, 0); //timer state
     *((uint16_t *) (Msg.D + 8)) = PackID(1, 0, 2); //current time
     *((uint16_t *) (Msg.D + 10)) = PackID(1, 0, 3); //uptime
-    mPrm.owner().DoCmd(&Msg);
-    return rc;
+    return mPrm.owner().DoCmd(&Msg);
 }
 
 uint16_t KA_BUC::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
+    /*switch(uc) {
     case TaskRefresh:
 	Msg.L = 3 + 2 * 6;
 	Msg.C = AddrReq;
@@ -194,7 +186,7 @@ uint16_t KA_BUC::Task(uint16_t uc)
 	    rc = 2;
 	}
 	break;
-    }
+    }*/
     return rc;
 }
 
