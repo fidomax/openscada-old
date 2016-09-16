@@ -251,6 +251,85 @@ string KA_GNS::getStatus(void)
     return rez;
 }
 
+uint16_t KA_GNS::GetState()
+{
+    tagMsg Msg;
+    uint16_t rc = BlckStateUnknown;
+    Msg.L = 5;
+    Msg.C = AddrReq;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    if(mPrm.owner().DoCmd(&Msg) == GOOD3) {
+	switch(mPrm.vlAt("state").at().getI(0, true)) {
+	case KA_GNS_Error:
+	    rc = BlckStateError;
+	    break;
+	case KA_GNS_Normal:
+	    rc = BlckStateNormal;
+	    break;
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_GNS::PreInit(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_GNS::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    loadParam();
+    for(int i = 0; i < count_n; i++) {
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOn.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOn.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOff.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOff.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUStop.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeStop.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TURemote.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeRemote.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUManual.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeManual.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOn.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOff.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCMode.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 4));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].Time.lnk.vlattr.at().getI(0, true));
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if(rc != GOOD2) break;
+    }
+    return rc;
+}
+
+uint16_t KA_GNS::PostInit(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_GNS::Start(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_GNS::RefreshData(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+    }
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
 void KA_GNS::loadIO(bool force)
 {
     if(mPrm.owner().startStat() && !force) {
@@ -321,6 +400,27 @@ void KA_GNS::saveParam(void)
     }
 }
 
+void KA_GNS::loadParam(void)
+{
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
+    for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].TUOn.lnk);
+	loadVal(data[i].TUOff.lnk);
+	loadVal(data[i].TUStop.lnk);
+	loadVal(data[i].TURemote.lnk);
+	loadVal(data[i].TUManual.lnk);
+	loadVal(data[i].TimeOn.lnk);
+	loadVal(data[i].TimeOff.lnk);
+	loadVal(data[i].TimeStop.lnk);
+	loadVal(data[i].TimeRemote.lnk);
+	loadVal(data[i].TimeManual.lnk);
+	loadVal(data[i].TCOn.lnk);
+	loadVal(data[i].TCOff.lnk);
+	loadVal(data[i].TCMode.lnk);
+	loadVal(data[i].Time.lnk);
+    }
+}
+
 void KA_GNS::tmHandler(void)
 {
     for(int i = 0; i < count_n; i++) {
@@ -339,7 +439,7 @@ uint16_t KA_GNS::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
+/*    switch(uc) {
     case TaskRefresh:
 	Msg.L = 5;
 	Msg.C = AddrReq;
@@ -383,7 +483,7 @@ uint16_t KA_GNS::Task(uint16_t uc)
 	    }
 	}
 	break;
-    }
+    }*/
     return rc;
 }
 
