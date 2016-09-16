@@ -31,35 +31,35 @@ namespace FT3
     class TMdPrm;
     class TMdContr;
 
-    typedef union
+    union ui8fl
     {
 	uint8_t b[4];
 	float f;
-    } ui8fl;
+    };
 
-    typedef union
+    union ui832
     {
 	uint8_t b[4];
 	uint32_t ui32;
-    } ui832;
+    };
 
-    typedef union
+    union ui8w
     {
 	uint8_t b[2];
 	uint16_t w;
-    } ui8w;
+    };
 
-    typedef struct sFT3ID  // FT3 ID
+    struct FT3ID  // FT3 ID
     {
 	uint8_t g; // group
 	uint8_t k; // object
 	uint8_t n; // parameter
-    } FT3ID;
+    };
 
-    typedef enum eTypeFT3
+    enum TypeFT3
     {
 	GRS = 0x0, KA = 0x1,
-    } TypeFT3;
+    };
 
     class DA: public TElem
     {
@@ -78,6 +78,24 @@ namespace FT3
 	{
 	}
 	virtual uint16_t Task(uint16_t)
+	{
+	}
+	virtual uint16_t GetState()
+	{
+	}
+	virtual uint16_t PreInit(void)
+	{
+	}
+	virtual uint16_t SetParams(void)
+	{
+	}
+	virtual uint16_t PostInit(void)
+	{
+	}
+	virtual uint16_t Start(void)
+	{
+	}
+	virtual uint16_t RefreshData(void)
 	{
 	}
 	virtual uint16_t HandleEvent(int64_t, uint8_t *)
@@ -257,26 +275,28 @@ namespace FT3
 	    uint8_t s;
 	    uint32_t vl_sens, err;
 	    SLnk lnk;
-	    void Update(uint32_t d,uint8_t cmd)
+	    void Update(uint32_t d, uint8_t cmd)
 	    {
-			switch (cmd){
-			case 0:
-				vl = d;
-				lnk.vlattr.at().setI(vl, 0, true);
-				break;
-			case 1:
-				vl_sens = d;
-				lnk.vlattr.at().setI(vl_sens, 0, true);
-				break;
-			default:
-				vl = d;
-				lnk.vlattr.at().setI(vl, 0, true);
-				break;
-			}
-	    };
+		switch(cmd) {
+		case 0:
+		    vl = d;
+		    lnk.vlattr.at().setI(vl, 0, true);
+		    break;
+		case 1:
+		    vl_sens = d;
+		    lnk.vlattr.at().setI(vl_sens, 0, true);
+		    break;
+		default:
+		    vl = d;
+		    lnk.vlattr.at().setI(vl, 0, true);
+		    break;
+		}
+	    }
+	    ;
 	    void Set(uint32_t d)
 	    {
-		Update(d,0); Update(d,1);
+		Update(d, 0);
+		Update(d, 1);
 		lnk.aprm.at().setI(vl);
 	    }
 	    ;
@@ -305,26 +325,28 @@ namespace FT3
 	    uint8_t s;
 	    float vl_sens, err;
 	    SLnk lnk;
-	    void Update(float d,uint8_t cmd)
+	    void Update(float d, uint8_t cmd)
 	    {
-			switch (cmd){
-			case 0:
-				vl = d;
-				lnk.vlattr.at().setR(vl, 0, true);
-				break;
-			case 1:
-				vl_sens = d;
-				lnk.vlattr.at().setR(vl_sens, 0, true);
-				break;
-			default:
-				vl = d;
-				lnk.vlattr.at().setR(vl, 0, true);
-				break;
-			}
-	    };
+		switch(cmd) {
+		case 0:
+		    vl = d;
+		    lnk.vlattr.at().setR(vl, 0, true);
+		    break;
+		case 1:
+		    vl_sens = d;
+		    lnk.vlattr.at().setR(vl_sens, 0, true);
+		    break;
+		default:
+		    vl = d;
+		    lnk.vlattr.at().setR(vl, 0, true);
+		    break;
+		}
+	    }
+	    ;
 	    void Set(float d)
 	    {
-	    Update(d,0); Update(d,1);
+		Update(d, 0);
+		Update(d, 1);
 		lnk.aprm.at().setR(vl);
 	    }
 	    ;

@@ -68,6 +68,90 @@ void KA_BUC::tmHandler(void)
     NeedInit = false;
 }
 
+uint16_t KA_BUC::GetState()
+{
+    tagMsg Msg;
+    uint16_t rc = BlckStateUnknown;
+    Msg.L = 5;
+    Msg.C = AddrReq;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    if(mPrm.owner().DoCmd(&Msg)) {
+	switch(mPrm.vlAt("state").at().getI(0, true)) {
+	case KA_BUC_HardReset:
+	    rc = BlckStateHardReset;
+	    break;
+	case KA_BUC_Normal:
+	    rc = BlckStateNormal;
+	    break;
+	case KA_BUC_SoftReset:
+	    rc = BlckStateSoftReset;
+	    break;
+	case KA_BUC_Setup:
+	case KA_BUC_Start:
+	    rc = BlckStateSetup;
+	    break;
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_BUC::PreInit(void)
+{
+    tagMsg Msg;
+    uint16_t rc = GOOD2;
+    Msg.L = 6;
+    Msg.C = SetData;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    Msg.D[2] = 0x80;
+    mPrm.owner().DoCmd(&Msg);
+    return rc;
+}
+uint16_t KA_BUC::SetParams(void)
+{
+    return GOOD2;
+}
+uint16_t KA_BUC::PostInit(void)
+{
+    tagMsg Msg;
+    uint16_t rc = GOOD2;
+
+    time_t rawtime;
+    time(&rawtime);
+    Msg.L = 10;
+    Msg.C = SetData;
+    *((uint16_t *) Msg.D) = PackID(1, 0, 2); //current time
+    mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
+    mPrm.owner().DoCmd(&Msg);
+    return rc;
+
+}
+uint16_t KA_BUC::Start(void)
+{
+    tagMsg Msg;
+    uint16_t rc = GOOD2;
+    Msg.L = 6;
+    Msg.C = SetData;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    Msg.D[2] = 0x01;
+    mPrm.owner().DoCmd(&Msg);
+    return rc;
+}
+uint16_t KA_BUC::RefreshData(void)
+{
+    tagMsg Msg;
+    uint16_t rc = GOOD2;
+    Msg.L = 3 + 2 * 6;
+    Msg.C = AddrReq;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    *((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //configuration
+    *((uint16_t *) (Msg.D + 4)) = PackID(ID, 0, 2); //modification
+    *((uint16_t *) (Msg.D + 6)) = PackID(1, 0, 0); //timer state
+    *((uint16_t *) (Msg.D + 8)) = PackID(1, 0, 2); //current time
+    *((uint16_t *) (Msg.D + 10)) = PackID(1, 0, 3); //uptime
+    mPrm.owner().DoCmd(&Msg);
+    return rc;
+}
+
 uint16_t KA_BUC::Task(uint16_t uc)
 {
     tagMsg Msg;
@@ -84,7 +168,7 @@ uint16_t KA_BUC::Task(uint16_t uc)
 	*((uint16_t *) (Msg.D + 10)) = PackID(1, 0, 3); //uptime
 	if(mPrm.owner().DoCmd(&Msg)) {
 	    if(mPrm.vlAt("state").at().getI(0, true) != 1) {
-		if(Task(TaskSet) == 1) {
+		if(Task(TaskSetParams) == 1) {
 		    rc = 1;
 		}
 	    } else {
@@ -93,7 +177,7 @@ uint16_t KA_BUC::Task(uint16_t uc)
 	}
 	if(rc) NeedInit = false;
 	break;
-    case TaskSet:
+    case TaskSetParams:
 	time_t rawtime;
 	time(&rawtime);
 	Msg.L = 10;
@@ -390,7 +474,7 @@ uint16_t B_BUC::Task(uint16_t uc)
 	if(mPrm.owner().DoCmd(&Msg)) {
 	    if(Msg.C == GOOD3) {
 		if(mPrm.vlAt("state").at().getI(0, true) != 0) {
-		    if(Task(TaskSet) == 1) {
+		    if(Task(TaskSetParams) == 1) {
 			rc = 1;
 		    }
 		} else {
@@ -400,7 +484,7 @@ uint16_t B_BUC::Task(uint16_t uc)
 	}
 	if(rc) NeedInit = false;
 	break;
-    case TaskSet:
+    case TaskSetParams:
 	time_t rawtime;
 	time(&rawtime);
 	Msg.L = 10;

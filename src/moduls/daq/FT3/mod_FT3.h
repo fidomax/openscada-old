@@ -68,16 +68,16 @@ namespace FT3
 #define mlD 252
 #define nBE 400
 
-    typedef struct sMsg  // FT3 message
+    struct tagMsg  // FT3 message
     {
 	uint8_t D[mlD]; // data
 	uint8_t L; // length
 	uint8_t C; // command
 	uint8_t A; // destination address
 	uint8_t B; // source address
-    } tagMsg;
+    };
 
-    typedef enum eCodFT3
+    enum eCodFT3
     {
 	ResetChan = 0x0,
 	ResData2 = 0x1,
@@ -95,12 +95,21 @@ namespace FT3
 	BAD2 = 1,
 	GOOD3 = 8,
 	BAD3 = 9
-    } CodFT3;
-    typedef enum eModeTask
+    };
+    enum eModeTask
     {
-	TaskNone = 0, TaskIdle = 1, TaskRefresh = 2, TaskSet = 3
-    } ModeTask;
+	TaskNone, TaskIdle, TaskGetState, TaskRefresh, TaskSetParams, TaskStart
+    };
 
+    enum eCntrState
+    {
+	StateNoConnection, StateUnknown, StateIdle, StateSoftReset, StateHardReset, StateRefreshData, StatePreInint, StateSetParams, StatePostInit, StateStart
+    };
+
+    enum eBlockState
+    {
+	BlckStateNormal = 0x0001, BlckStateError = 0x0002, BlckStateUnknown = 0x0004, BlckStateSetup = 0x0008, BlckStateSoftReset = 0x4000, BlckStateHardReset = 0x8000, BlckStateNone = 0x0010
+    };
     struct blockEvents
     {
 	uint16_t d; 		//date (15-9 - year, 8-0 day)
@@ -201,6 +210,12 @@ namespace FT3
 	uint8_t cmdGet(uint16_t, uint8_t *);
 	uint8_t cmdSet(uint8_t *, uint8_t);
 	uint16_t Task(uint16_t);
+	uint16_t BlckGetState(void);
+	uint16_t BlckPreInit(void);
+	uint16_t BlckSetParams(void);
+	uint16_t BlckPostInit(void);
+	uint16_t BlckStart(void);
+	uint16_t BlckRefreshData(void);
 	uint16_t HandleEvent(time_t, uint8_t *);
 	void tmHandler(void);
 	TElem p_el;			//Work atribute elements
@@ -252,7 +267,6 @@ namespace FT3
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E, uint8_t *DHM);
     };
 
-
 //*************************************************
 //* Modft3::TMdContr                             *
 //*************************************************
@@ -287,6 +301,7 @@ namespace FT3
 	bool Transact(tagMsg * t);
 	bool ProcessMessage(tagMsg *, tagMsg *);
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
+	void SetCntrState(eCntrState nState);
 	time_t DateTimeToTime_t(uint8_t *d)
 	{
 	    if(cfg("PRTTYPE").getS() == "GRS") {
@@ -319,7 +334,8 @@ namespace FT3
 
 	//!!! FT3 CRC
 	uint16_t CRC(char *data, uint16_t length);
-	void MakePacket(tagMsg *msg, char *io_buf, uint16_t *len);
+	uint16_t CRC(const string &data, uint16_t n, uint16_t length);
+	void MakePacket(tagMsg *msg, string &io_buf);
 	bool VerCRC(char *p, uint16_t l);
 	uint16_t VerifyPacket(char *t, uint16_t *l);
 	uint16_t ParsePacket(char *t, uint16_t l, tagMsg * msg);
@@ -350,6 +366,7 @@ namespace FT3
 		endrun_req;	// Request to stop of the Process task
 
 	bool NeedInit;
+	eCntrState CntrState;
 
 	int mNode;
 
