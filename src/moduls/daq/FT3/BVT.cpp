@@ -165,6 +165,93 @@ string KA_BVT::getStatus(void)
     return rez;
 }
 
+uint16_t KA_BVT::GetState()
+{
+    tagMsg Msg;
+    uint16_t rc = BlckStateUnknown;
+    Msg.L = 5;
+    Msg.C = AddrReq;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    if(mPrm.owner().DoCmd(&Msg) == GOOD3) {
+	switch(mPrm.vlAt("state").at().getI(0, true)) {
+	case KA_BVT_Error:
+	    rc = BlckStateError;
+	    break;
+	case KA_BVT_Normal:
+	    rc = BlckStateNormal;
+	    break;
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_BVT::PreInit(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 1));
+	Msg.L += SerializeB(Msg.D + Msg.L, 4);
+    }
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+uint16_t KA_BVT::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 2));
+	Msg.L += SerializeB(Msg.D + Msg.L, data[i].Period.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].Sens.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].MinS.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].MaxS.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].MinPV.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].MaxPV.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].MinW.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].MaxW.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].MinA.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].MaxA.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].Factor.lnk.vlattr.at().getR(0, true));
+	Msg.L += SerializeF(Msg.D + Msg.L, data[i].Adjust.lnk.vlattr.at().getR(0, true));
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if(rc != GOOD2) break;
+    }
+    return rc;
+
+}
+uint16_t KA_BVT::PostInit(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 1));
+	Msg.L += SerializeB(Msg.D + Msg.L, 1);
+    }
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+uint16_t KA_BVT::Start(void)
+{
+    return GOOD2;
+}
+uint16_t KA_BVT::RefreshData(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+    }
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
 void KA_BVT::loadIO(bool force)
 {
     if(mPrm.owner().startStat() && !force) {
@@ -229,6 +316,25 @@ void KA_BVT::saveParam(void)
     }
 }
 
+void KA_BVT::loadParam(void)
+{
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
+    for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].Period.lnk);
+	loadVal(data[i].Sens.lnk);
+	loadVal(data[i].MinS.lnk);
+	loadVal(data[i].MaxS.lnk);
+	loadVal(data[i].MinPV.lnk);
+	loadVal(data[i].MaxPV.lnk);
+	loadVal(data[i].MinW.lnk);
+	loadVal(data[i].MaxW.lnk);
+	loadVal(data[i].MinA.lnk);
+	loadVal(data[i].MaxA.lnk);
+	loadVal(data[i].Factor.lnk);
+	loadVal(data[i].Adjust.lnk);
+    }
+}
+
 void KA_BVT::tmHandler(void)
 {
     for(int i = 0; i < count_n; i++) {
@@ -244,7 +350,7 @@ uint16_t KA_BVT::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
+/*    switch(uc) {
     case TaskRefresh:
 	Msg.L = 5;
 	Msg.C = AddrReq;
@@ -283,7 +389,7 @@ uint16_t KA_BVT::Task(uint16_t uc)
 	    }
 	}
 	break;
-    }
+    }*/
     return rc;
 }
 
