@@ -73,6 +73,72 @@ string KA_BTU::getStatus(void)
 
 }
 
+uint16_t KA_BTU::GetState()
+{
+    tagMsg Msg;
+    uint16_t rc = BlckStateUnknown;
+    Msg.L = 5;
+    Msg.C = AddrReq;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    if(mPrm.owner().DoCmd(&Msg) == GOOD3) {
+	switch(mPrm.vlAt("state").at().getI(0, true)) {
+	case KA_BTU_Error:
+	    rc = BlckStateError;
+	    break;
+	case KA_BTU_Normal:
+	    rc = BlckStateNormal;
+	    break;
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_BTU::PreInit(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_BTU::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    loadParam();
+    for(int i = 0; i < count_nu; i++) {
+	Msg.L = 0;
+	Msg.C = SetData;
+	for(int j = 0; j < 16; j++) {
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, j + 1));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, TUdata[i].Time[j].lnk.vlattr.at().getI(0, true));
+	}
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if(rc != GOOD2) break;
+    }
+    return rc;
+}
+
+uint16_t KA_BTU::PostInit(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_BTU::Start(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_BTU::RefreshData(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    for(int i = 1; i <= count_nu; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+    }
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
 void KA_BTU::loadIO(bool force)
 {
     if(mPrm.owner().startStat() && !force) {
@@ -105,6 +171,17 @@ void KA_BTU::saveParam(void)
 	saveVal(TUdata[i].Line.lnk);
 	for(int j = 0; j < 16; j++) {
 	    saveVal(TUdata[i].Time[j].lnk);
+	}
+    }
+}
+
+void KA_BTU::loadParam(void)
+{
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
+    for(int i = 0; i < count_nu; i++) {
+	loadVal(TUdata[i].Line.lnk);
+	for(int j = 0; j < 16; j++) {
+	    loadVal(TUdata[i].Time[j].lnk);
 	}
     }
 }
