@@ -201,6 +201,7 @@ uint16_t KA_BVT::SetParams(void)
 {
     uint16_t rc;
     tagMsg Msg;
+    loadParam();
     for(int i = 1; i <= count_n; i++) {
 	Msg.L = 0;
 	Msg.C = SetData;
