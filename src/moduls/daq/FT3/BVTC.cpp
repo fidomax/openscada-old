@@ -66,6 +66,88 @@ string KA_BVTC::getStatus(void)
     return rez;
 }
 
+uint16_t KA_BVTC::GetState()
+{
+    tagMsg Msg;
+    uint16_t rc = BlckStateUnknown;
+    Msg.L = 5;
+    Msg.C = AddrReq;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    if(mPrm.owner().DoCmd(&Msg) == GOOD3) {
+	switch(mPrm.vlAt("state").at().getI(0, true)) {
+	case KA_BVTC_Error:
+	    rc = BlckStateError;
+	    break;
+	case KA_BVTC_Normal:
+	    rc = BlckStateNormal;
+	    break;
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_BVTC::PreInit(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+	Msg.L += SerializeB(Msg.D + Msg.L, 3);
+    }
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+uint16_t KA_BVTC::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    loadParam();
+    for(int i = 0; i < count_n; i++) {
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
+	Msg.L += SerializeB(Msg.D + Msg.L, data[i].Period.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeB(Msg.D + Msg.L, data[i].Count.lnk.vlattr.at().getI(0, true));
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if(rc != GOOD2) break;
+    }
+    return rc;
+
+}
+
+uint16_t KA_BVTC::PostInit(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+	Msg.L += SerializeB(Msg.D + Msg.L, 0);
+    }
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+uint16_t KA_BVTC::Start(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_BVTC::RefreshData(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+    }
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
 void KA_BVTC::loadIO(bool force)
 {
     //Load links
@@ -98,6 +180,15 @@ void KA_BVTC::saveParam(void)
     }
 }
 
+void KA_BVTC::loadParam(void)
+{
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
+    for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].Period.lnk);
+	loadVal(data[i].Count.lnk);
+    }
+}
+
 void KA_BVTC::tmHandler(void)
 {
     for(int i = 0; i < count_n; i++) {
@@ -114,7 +205,7 @@ uint16_t KA_BVTC::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
+/*    switch(uc) {
     case TaskRefresh:
 	Msg.L = 7;
 	Msg.C = AddrReq;
@@ -143,7 +234,7 @@ uint16_t KA_BVTC::Task(uint16_t uc)
 	}
 	if(rc) NeedInit = false;
 	break;
-    }
+    }*/
     return rc;
 }
 

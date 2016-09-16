@@ -202,10 +202,10 @@ uint16_t KA_BVT::SetParams(void)
     uint16_t rc;
     tagMsg Msg;
     loadParam();
-    for(int i = 1; i <= count_n; i++) {
+    for(int i = 0; i < count_n; i++) {
 	Msg.L = 0;
 	Msg.C = SetData;
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 2));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
 	Msg.L += SerializeB(Msg.D + Msg.L, data[i].Period.lnk.vlattr.at().getI(0, true));
 	Msg.L += SerializeF(Msg.D + Msg.L, data[i].Sens.lnk.vlattr.at().getR(0, true));
 	Msg.L += SerializeF(Msg.D + Msg.L, data[i].MinS.lnk.vlattr.at().getR(0, true));
