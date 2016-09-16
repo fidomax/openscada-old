@@ -200,7 +200,7 @@ uint16_t KA_BTU::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
+/*    switch(uc) {
     case TaskRefresh:
 	Msg.L = 5;
 	Msg.C = AddrReq;
@@ -240,7 +240,7 @@ uint16_t KA_BTU::Task(uint16_t uc)
 	}
 	if(rc) NeedInit = false;
 	break;
-    }
+    }*/
     return rc;
 }
 uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)

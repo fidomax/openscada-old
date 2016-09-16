@@ -291,6 +291,89 @@ string KA_GZD::getStatus(void)
     return rez;
 }
 
+uint16_t KA_GZD::GetState()
+{
+    tagMsg Msg;
+    uint16_t rc = BlckStateUnknown;
+    Msg.L = 5;
+    Msg.C = AddrReq;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    if(mPrm.owner().DoCmd(&Msg) == GOOD3) {
+	switch(mPrm.vlAt("state").at().getI(0, true)) {
+	case KA_GZD_Error:
+	    rc = BlckStateError;
+	    break;
+	case KA_GZD_Normal:
+	    rc = BlckStateNormal;
+	    break;
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_GZD::PreInit(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_GZD::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    loadParam();
+    for(int i = 0; i < count_n; i++) {
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOpen.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOpen.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUClose.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeClose.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUStop.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeStop.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TURemote.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeRemote.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUManual.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeManual.lnk.vlattr.at().getI(0, true));
+	if(valve_type == vt_6TU) {
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUStopEx.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeStopEx.lnk.vlattr.at().getI(0, true));
+	}
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOpen.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCClose.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCMode.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOpenErr.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCCloseErr.lnk.vlattr.at().getI(0, true));
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if(rc != GOOD2) break;
+    }
+    return rc;
+}
+
+uint16_t KA_GZD::PostInit(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_GZD::Start(void)
+{
+    return GOOD2;
+}
+
+uint16_t KA_GZD::RefreshData(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+    }
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
 void KA_GZD::loadIO(bool force)
 {
     if(mPrm.owner().startStat() && !force) {
@@ -370,6 +453,32 @@ void KA_GZD::saveParam(void)
     }
 }
 
+void KA_GZD::loadParam(void)
+{
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
+    for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].TUOpen.lnk);
+	loadVal(data[i].TUClose.lnk);
+	loadVal(data[i].TUStop.lnk);
+	loadVal(data[i].TURemote.lnk);
+	loadVal(data[i].TUManual.lnk);
+	loadVal(data[i].TimeOpen.lnk);
+	loadVal(data[i].TimeClose.lnk);
+	loadVal(data[i].TimeStop.lnk);
+	loadVal(data[i].TimeRemote.lnk);
+	loadVal(data[i].TimeManual.lnk);
+	loadVal(data[i].TCOpen.lnk);
+	loadVal(data[i].TCClose.lnk);
+	loadVal(data[i].TCMode.lnk);
+	loadVal(data[i].TCOpenErr.lnk);
+	loadVal(data[i].TCCloseErr.lnk);
+	if(valve_type == vt_6TU) {
+	    loadVal(data[i].TUStopEx.lnk);
+	    loadVal(data[i].TimeStopEx.lnk);
+	}
+    }
+}
+
 void KA_GZD::tmHandler(void)
 {
     for(int i = 0; i < count_n; i++) {
@@ -387,7 +496,7 @@ uint16_t KA_GZD::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
+/*    switch(uc) {
     case TaskRefresh:
 	Msg.L = 5;
 	Msg.C = AddrReq;
@@ -430,7 +539,7 @@ uint16_t KA_GZD::Task(uint16_t uc)
 	    }
 	}
 	break;
-    }
+    }*/
     return rc;
 
 }
