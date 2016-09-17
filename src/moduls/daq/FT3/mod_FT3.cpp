@@ -1577,6 +1577,9 @@ void TMdPrm::vlGet(TVal &val)
 	} else {
 	    val.setS(mDA->getStatus(), 0, true);
 	}
+    } else {
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, "vlGet");
+	mDA->vlGet(val);
     }
 }
 

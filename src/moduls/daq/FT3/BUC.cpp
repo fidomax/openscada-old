@@ -40,7 +40,7 @@ KA_BUC::KA_BUC(TMdPrm& prm, uint16_t id) :
     fld->setReserve("0:0:2");
     mPrm.p_el.fldAdd(fld = new TFld("sttimer", _("Timer state"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("1:0:0");
-    mPrm.p_el.fldAdd(fld = new TFld("curdt", _("Current datetime"), TFld::String, TVal::DirWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("curdt", _("Current datetime"), TFld::String, TVal::DirWrite | TVal::DirRead));
     fld->setReserve("1:0:2");
     mPrm.p_el.fldAdd(fld = new TFld("stopdt", _("Stop datetime"), TFld::String, TFld::NoWrite));
     fld->setReserve("1:0:3");
@@ -300,6 +300,19 @@ uint16_t KA_BUC::setVal(TVal &val)
     }
     if(Msg.L) mPrm.owner().DoCmd(&Msg);
     return 0;
+}
+
+void KA_BUC::vlGet(TVal &val)
+{
+    if(val.name() == "curdt") {
+	tagMsg Msg;
+	Msg.L = 0;
+	Msg.C = AddrReq;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(1, 0, 2)); //current time
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(1, 0, 3)); //uptime
+	Msg.L += 3;
+	mPrm.owner().DoCmd(&Msg);
+    }
 }
 
 uint8_t KA_BUC::cmdGet(uint16_t prmID, uint8_t * out)

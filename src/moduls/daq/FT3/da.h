@@ -132,6 +132,9 @@ namespace FT3
 	virtual void tmHandler(void)
 	{
 	}
+	virtual void vlGet(TVal &val)
+	{
+	}
 	void setInit(bool bInit)
 	{
 	    NeedInit = bInit;
