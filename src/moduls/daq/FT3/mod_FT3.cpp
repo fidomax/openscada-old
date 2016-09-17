@@ -990,7 +990,41 @@ TMdContr::~TMdContr()
 string TMdContr::getStatus()
 {
     string rez = TController::getStatus();
-    if(startStat() && !redntUse()) rez += TSYS::strMess(_("Gather data time %.6g ms. "), tm_gath);
+    if(startStat() && !redntUse()) {
+	switch(CntrState) {
+	case StateNoConnection:
+	    rez += TSYS::strMess(_("No connection. "));
+	    rez.replace(0, 1, "10");
+	    break;
+	case StateUnknown:
+	    rez += TSYS::strMess(_("Unknown state. "));
+	    break;
+	case StateHardReset:
+	    rez += TSYS::strMess(_("Hard reset. "));
+	    break;
+	case StatePreInint:
+	    rez += TSYS::strMess(_("PreInit. "));
+	    break;
+	case StateSetParams:
+	    rez += TSYS::strMess(_("Set Params. "));
+	    break;
+	case StatePostInit:
+	    rez += TSYS::strMess(_("PostInit. "));
+	    break;
+	case StateStart:
+	    rez += TSYS::strMess(_("Starting. "));
+	    break;
+	case StateRefreshData:
+	    rez += TSYS::strMess(_("Refresh data. "));
+	    break;
+	case StateIdle:
+	    rez += TSYS::strMess(_("Idle. "));
+	    break;
+
+	}
+	rez += TSYS::strMess(_("Gather data time %.6g ms. "), tm_gath);
+    }
+
     return rez;
 }
 
@@ -1219,10 +1253,10 @@ void *TMdContr::DAQTask(void *icntr)
 	    break;
 
 	case StateIdle:
-	    for(int i_l = 0; i_l < lst.size(); i_l++) {
-		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		t.at().Task(TaskIdle);
-	    }
+	    /*for(int i_l = 0; i_l < lst.size(); i_l++) {
+	     AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
+	     t.at().Task(TaskIdle);
+	     }*/
 	    Msg.L = 3;
 	    Msg.C = ReqData;
 	    if(cntr.DoCmd(&Msg) == ERROR) {

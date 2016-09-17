@@ -54,10 +54,21 @@ KA_BUC::~KA_BUC()
 string KA_BUC::getStatus(void)
 {
     string rez;
-    if(NeedInit) {
-	rez = "20: Опрос";
-    } else {
-	rez = "0: Норма";
+    switch(mPrm.vlAt("state").at().getI(0, true)) {
+    case KA_BUC_HardReset:
+	rez = _("10: Hard reset");
+	break;
+    case KA_BUC_Normal:
+	rez = _("0: Normal");
+	break;
+    case KA_BUC_SoftReset:
+	rez = _("11: Soft reset");
+	break;
+    case KA_BUC_Setup:
+	rez = _("12: Setup");
+    case KA_BUC_Start:
+	rez = _("13: Startup");
+	break;
     }
     return rez;
 
@@ -149,44 +160,44 @@ uint16_t KA_BUC::Task(uint16_t uc)
     tagMsg Msg;
     uint16_t rc = 0;
     /*switch(uc) {
-    case TaskRefresh:
-	Msg.L = 3 + 2 * 6;
-	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
-	*((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //configuration
-	*((uint16_t *) (Msg.D + 4)) = PackID(ID, 0, 2); //modification
-	*((uint16_t *) (Msg.D + 6)) = PackID(1, 0, 0); //timer state
-	*((uint16_t *) (Msg.D + 8)) = PackID(1, 0, 2); //current time
-	*((uint16_t *) (Msg.D + 10)) = PackID(1, 0, 3); //uptime
-	if(mPrm.owner().DoCmd(&Msg)) {
-	    if(mPrm.vlAt("state").at().getI(0, true) != 1) {
-		if(Task(TaskSetParams) == 1) {
-		    rc = 1;
-		}
-	    } else {
-		rc = 1;
-	    }
-	}
-	if(rc) NeedInit = false;
-	break;
-    case TaskSetParams:
-	time_t rawtime;
-	time(&rawtime);
-	Msg.L = 10;
-	Msg.C = SetData;
-	*((uint16_t *) Msg.D) = PackID(1, 0, 2); //current time
-	mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
-	mPrm.owner().DoCmd(&Msg);
-	if(Msg.C == GOOD2) {
-	    rc = 1;
-	}
-	break;
-    case TaskIdle:
-	if(mPrm.vlAt("state").at().getI(0, true) != 1) {
-	    rc = 2;
-	}
-	break;
-    }*/
+     case TaskRefresh:
+     Msg.L = 3 + 2 * 6;
+     Msg.C = AddrReq;
+     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+     *((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //configuration
+     *((uint16_t *) (Msg.D + 4)) = PackID(ID, 0, 2); //modification
+     *((uint16_t *) (Msg.D + 6)) = PackID(1, 0, 0); //timer state
+     *((uint16_t *) (Msg.D + 8)) = PackID(1, 0, 2); //current time
+     *((uint16_t *) (Msg.D + 10)) = PackID(1, 0, 3); //uptime
+     if(mPrm.owner().DoCmd(&Msg)) {
+     if(mPrm.vlAt("state").at().getI(0, true) != 1) {
+     if(Task(TaskSetParams) == 1) {
+     rc = 1;
+     }
+     } else {
+     rc = 1;
+     }
+     }
+     if(rc) NeedInit = false;
+     break;
+     case TaskSetParams:
+     time_t rawtime;
+     time(&rawtime);
+     Msg.L = 10;
+     Msg.C = SetData;
+     *((uint16_t *) Msg.D) = PackID(1, 0, 2); //current time
+     mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
+     mPrm.owner().DoCmd(&Msg);
+     if(Msg.C == GOOD2) {
+     rc = 1;
+     }
+     break;
+     case TaskIdle:
+     if(mPrm.vlAt("state").at().getI(0, true) != 1) {
+     rc = 2;
+     }
+     break;
+     }*/
     return rc;
 }
 
