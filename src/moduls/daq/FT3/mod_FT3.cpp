@@ -1209,6 +1209,7 @@ void *TMdContr::DAQTask(void *icntr)
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
 		if(t.at().BlckSetParams() != GOOD2) {
 		    IsError = true;
+		    break;
 		}
 	    }
 	    if(!IsError) {
@@ -1571,15 +1572,14 @@ void TMdPrm::vlGet(TVal &val)
 {
     if(val.name() == "err") {
 	TParamContr::vlGet(val);
-	string st = TSYS::strParse(val.getS(NULL, true), 0, ":");
+/*	string st = TSYS::strParse(val.getS(NULL, true), 0, ":");
 	if(st == "1" || st == "2") {
 
 	} else {
 	    val.setS(mDA->getStatus(), 0, true);
-	}
+	}*/
     } else {
-	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, "vlGet");
-	mDA->vlGet(val);
+	if (mDA)mDA->vlGet(val);
     }
 }
 
