@@ -23,20 +23,23 @@
 
 namespace FT3
 {
-#define vs_AWR       0       // авария
-#define vs_OFF       1       // закрыто(выкл.)
-#define vs_ON        2       // открыто(вкл.)
-#define vs_03        3
-#define vs_04        4
-#define vs_05        5
-#define vs_06        6
 #define vt_5TU       0
 #define vt_6TU       1
 
+    enum eKA_GZD_VS
+    {
+	vs_AWR = 0,       // авария
+	vs_OFF = 1,       // закрыто(выкл.)
+	vs_ON = 2,       // открыто(вкл.)
+	vs_03 = 3,
+	vs_04 = 4,
+	vs_05 = 5,
+	vs_06 = 6
+
+    };
     enum eKA_GZD_State
     {
-	KA_GZD_Error = 0x0,
-	KA_GZD_Normal = 0x1
+	KA_GZD_Error = 0x0, KA_GZD_Normal = 0x1
     };
     class KA_GZD: public DA
     {
@@ -68,8 +71,8 @@ namespace FT3
 	class SKAZDchannel
 	{
 	public:
-	    SKAZDchannel(uint8_t iid, bool w_params, uint32_t v_type, DA* owner) : valve_type(v_type),
-		    da(owner), id(iid), State(TSYS::strMess("state_%d", id + 1), TSYS::strMess(_("State %d"), id + 1)),
+	    SKAZDchannel(uint8_t iid, bool w_params, uint32_t v_type, DA* owner) :
+		    valve_type(v_type), da(owner), id(iid), State(TSYS::strMess("state_%d", id + 1), TSYS::strMess(_("State %d"), id + 1)),
 		    Function(TSYS::strMess("function_%d", id + 1), TSYS::strMess(_("Function %d"), id + 1)),
 		    TUOpen(TSYS::strMess("TUopen_%d", id + 1), TSYS::strMess(_("TU open %d"), id + 1)),
 		    TUClose(TSYS::strMess("TUclose_%d", id + 1), TSYS::strMess(_("TU close %d"), id + 1)),
@@ -112,7 +115,7 @@ namespace FT3
 
 	    ui8Data State, Function;
 	    ui16Data TUOpen, TUClose, TUStop, TUStopEx, TURemote, TUManual;
-	    ui16Data TimeOpen, TimeClose, TimeStop,TimeStopEx, TimeRemote, TimeManual;
+	    ui16Data TimeOpen, TimeClose, TimeStop, TimeStopEx, TimeRemote, TimeManual;
 	    ui16Data TCOpen, TCClose, TCMode, TCOpenErr, TCCloseErr;
 
 	    void UpdateTUParam(uint16_t ID, uint8_t cl);
