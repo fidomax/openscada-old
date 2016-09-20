@@ -452,7 +452,8 @@ void TTpContr::postEnable(int flag)
     fldAdd(new TFld("PRM_BD_GNS", _("GNS Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_GKR", _("GKR Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_TANK", _("TANK Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PERIOD", _("Gather data period (s)"), TFld::Integer, TFld::NoFlag, "3", "1", "0;100"));
+    fldAdd(new TFld("SCHEDULE", _("Acquisition schedule"), TFld::String, TFld::NoFlag, "100", "1"));
+//    fldAdd(new TFld("PERIOD", _("Gather data period (s)"), TFld::Integer, TFld::NoFlag, "3", "1", "0;100"));
     fldAdd(new TFld("PRIOR", _("Gather task priority"), TFld::Integer, TFld::NoFlag, "2", "0", "-1;199"));
     //fldAdd(new TFld("TO_PRTR",_("Blocs"),TFld::String,TFld::Selected,"5","BUC","BUC;BTR;BVT;BVTS;BPI",_("BUC;BTR;BVT;BVTS;BPI")));
     fldAdd(new TFld("NODE", _("Addres"), TFld::Integer, TFld::NoFlag, "2", "1", "1;63"));
@@ -557,7 +558,7 @@ TController *TTpContr::ContrAttach(const string &name, const string &daq_db)
 //*************************************************
 TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
 	TController(name_c, daq_db, cfgelem), prc_st(false), endrun_req(false), tm_gath(0), CntrState(StateNoConnection), NeedInit(true), enRes(true),
-	eventRes(true), mPer(cfg("PERIOD").getI()), mPrior(cfg("PRIOR").getId())
+	eventRes(true), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR").getId())
 {
     cfg("PRM_BD_BUC").setS("FT3Prm_BUC_" + name_c);
     cfg("PRM_BD_BVTS").setS("FT3Prm_BVTS_" + name_c);
@@ -691,7 +692,7 @@ bool TMdContr::Transact(tagMsg * pMsg)
     uint16_t rc;
     msg.reserve(Len(pMsg->L));
     MakePacket(pMsg, msg);
-    uint8_t nRep = 2;
+    uint8_t nRep = 5;
     while(nRep) {
 	try {
 	    AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(cfg("ADDR").getS(), 0, '.')).at().outAt(
@@ -738,7 +739,7 @@ bool TMdContr::Transact(tagMsg * pMsg)
 		    } while(resp_len);
 		}
 	    } else {
-		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("bad header found!"));
+		mess_sys(TMess::Info, _("bad header found!"));
 		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), l);
 		data_s = "";
 		for(int i = 0; i < l; i++) {
@@ -761,14 +762,14 @@ bool TMdContr::Transact(tagMsg * pMsg)
 		    rc = ParsePacket(io_buf, l, pMsg);
 
 		    if(rc == 1) {
-			if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Parse error %d"), rc);
+			mess_sys(TMess::Info, _("Parse error %d"), rc);
 			pMsg->L = 0;
 		    } else {
 
 		    }
 
 		} else {
-		    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Verify error %d"), rc);
+		    mess_sys(TMess::Info, _("Verify error %d"), rc);
 		    data_s = "";
 		    for(int i = 0; i < l; i++) {
 			data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
@@ -784,7 +785,7 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	    }
 	} catch (...) {
 	    pMsg->L = 0;
-	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("messIO error"));
+	    mess_sys(TMess::Info, _("messIO error"));
 	}
 	nRep--;
 	if(pMsg->L) break;
@@ -1044,6 +1045,7 @@ TParamContr *TMdContr::ParamAttach(const string &name, int type)
 
 void TMdContr::start_()
 {
+    mPer = TSYS::strSepParse(cron(), 1, ' ').empty() ? vmax(0, (int64_t )(1e9 * s2r(cron()))) : 0;
     nChannel = cfg("NCHANNEL").getI();
     Channels.clear();
     devAddr = vmin(63, vmax(1,cfg("NODE").getI()));
@@ -1195,61 +1197,127 @@ void *TMdContr::DAQTask(void *icntr)
 	case StatePreInint:
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		if(t.at().BlckPreInit() != GOOD2) {
+
+		switch(t.at().BlckPreInit()) {
+		case BAD2:
+		case BAD3:
 		    IsError = true;
+		    break;
+		case ERROR:
+		    IsNoAnswer = true;
+		    break;
+		}
+		if(IsError || IsNoAnswer) {
+		    break;
 		}
 	    }
-	    if(!IsError) {
-		cntr.SetCntrState(StateSetParams);
+	    if(IsNoAnswer) {
+		cntr.SetCntrState(StateNoConnection);
+	    } else {
+		if(!IsError) {
+		    cntr.SetCntrState(StateSetParams);
+		}
 	    }
 	    break;
 
 	case StateSetParams:
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		if(t.at().BlckSetParams() != GOOD2) {
+		switch(t.at().BlckSetParams()) {
+		case BAD2:
+		case BAD3:
 		    IsError = true;
+		    break;
+		case ERROR:
+		    IsNoAnswer = true;
+		    break;
+		}
+		if(IsError || IsNoAnswer) {
 		    break;
 		}
 	    }
-	    if(!IsError) {
-		cntr.SetCntrState(StatePostInit);
+	    if(IsNoAnswer) {
+		cntr.SetCntrState(StateNoConnection);
+	    } else {
+		if(!IsError) {
+		    cntr.SetCntrState(StatePostInit);
+		}
 	    }
 	    break;
 
 	case StatePostInit:
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		if(t.at().BlckPostInit() != GOOD2) {
+		switch(t.at().BlckPostInit()) {
+		case BAD2:
+		case BAD3:
 		    IsError = true;
+		    break;
+		case ERROR:
+		    IsNoAnswer = true;
+		    break;
 		}
+		if(IsError || IsNoAnswer) {
+		    break;
+		}
+
 	    }
-	    if(!IsError) {
-		cntr.SetCntrState(StateStart);
+	    if(IsNoAnswer) {
+		cntr.SetCntrState(StateNoConnection);
+	    } else {
+		if(!IsError) {
+		    cntr.SetCntrState(StateStart);
+		}
 	    }
 	    break;
 
 	case StateStart:
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		if(t.at().BlckStart() != GOOD2) {
+		switch(t.at().BlckStart()) {
+		case BAD2:
+		case BAD3:
 		    IsError = true;
+		    break;
+		case ERROR:
+		    IsNoAnswer = true;
+		    break;
+		}
+		if(IsError || IsNoAnswer) {
+		    break;
 		}
 	    }
-	    if(!IsError) {
-		cntr.SetCntrState(StateRefreshData);
+	    if(IsNoAnswer) {
+		cntr.SetCntrState(StateNoConnection);
+	    } else {
+		if(!IsError) {
+		    cntr.SetCntrState(StateRefreshData);
+		}
 	    }
 	    break;
 
 	case StateRefreshData:
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-		if(t.at().BlckRefreshData() != GOOD3) {
+		switch(t.at().BlckRefreshData()) {
+		case BAD2:
+		case BAD3:
 		    IsError = true;
+		    break;
+		case ERROR:
+		    IsNoAnswer = true;
+		    break;
+		}
+		if(IsError || IsNoAnswer) {
+		    break;
 		}
 	    }
-	    if(!IsError) {
-		cntr.SetCntrState(StateIdle);
+	    if(IsNoAnswer) {
+		cntr.SetCntrState(StateNoConnection);
+	    } else {
+		if(!IsError) {
+		    cntr.SetCntrState(StateIdle);
+		}
 	    }
 	    break;
 
@@ -1291,7 +1359,7 @@ void *TMdContr::DAQTask(void *icntr)
 	cntr.tm_gath = 1e-3 * (TSYS::curTime() - t_cnt);
 
 	//!!! Wait for next iteration
-	TSYS::taskSleep((long long) (1e9 * cntr.period()));
+	TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
     }
 
     cntr.prc_st = false;
@@ -1456,56 +1524,76 @@ uint16_t TMdPrm::Task(uint16_t cod)
 
 uint16_t TMdPrm::BlckGetState(void)
 {
+    uint16_t rc = BlckStateNone;
+    //mess_sys(TMess::Error, _("GetState"));
     if(mDA) {
-	return mDA->GetState();
-    } else {
-	return BlckStateNone;
+	rc = mDA->GetState();
     }
+    if(rc == BlckStateUnknown) {
+	mess_sys(TMess::Error, _("Receiving block state error"));
+    }
+    return rc;
 }
 
 uint16_t TMdPrm::BlckPreInit(void)
 {
+    uint16_t rc = GOOD2;
     if(mDA) {
-	return mDA->PreInit();
-    } else {
-	return GOOD2;
+	rc = mDA->PreInit();
     }
+    if((rc != GOOD2) && (rc != GOOD3)) {
+	mess_sys(TMess::Error, _("Block PreInint error"));
+    }
+    return rc;
 }
 
 uint16_t TMdPrm::BlckSetParams(void)
 {
+    uint16_t rc = GOOD2;
     if(mDA) {
-	return mDA->SetParams();
-    } else {
-	return GOOD2;
+	rc = mDA->SetParams();
     }
+    if((rc != GOOD2) && (rc != GOOD3)) {
+	mess_sys(TMess::Error, _("Block SetParams error"));
+    }
+    return rc;
 }
 
 uint16_t TMdPrm::BlckPostInit(void)
 {
+    uint16_t rc = GOOD2;
     if(mDA) {
-	return mDA->PostInit();
-    } else {
-	return GOOD2;
+	rc = mDA->PostInit();
     }
+    if((rc != GOOD2) && (rc != GOOD3)) {
+	mess_sys(TMess::Error, _("Block PostInint error"));
+    }
+    return rc;
 }
 
 uint16_t TMdPrm::BlckStart(void)
 {
+    uint16_t rc = GOOD2;
     if(mDA) {
-	return mDA->Start();
-    } else {
-	return GOOD2;
+	rc = mDA->Start();
     }
+    if((rc != GOOD2) && (rc != GOOD3)) {
+	mess_sys(TMess::Error, _("Block Start error"));
+    }
+
+    return rc;
 }
 
 uint16_t TMdPrm::BlckRefreshData(void)
 {
+    uint16_t rc = GOOD2;
     if(mDA) {
-	return mDA->RefreshData();
-    } else {
-	return GOOD3;
+	rc = mDA->RefreshData();
     }
+    if((rc != GOOD2) && (rc != GOOD3)) {
+	mess_sys(TMess::Error, _("Block RefreshData error"));
+    }
+    return rc;
 }
 
 uint16_t TMdPrm::HandleEvent(time_t tm, uint8_t * D)
@@ -1572,14 +1660,14 @@ void TMdPrm::vlGet(TVal &val)
 {
     if(val.name() == "err") {
 	TParamContr::vlGet(val);
-/*	string st = TSYS::strParse(val.getS(NULL, true), 0, ":");
-	if(st == "1" || st == "2") {
+	/*	string st = TSYS::strParse(val.getS(NULL, true), 0, ":");
+	 if(st == "1" || st == "2") {
 
-	} else {
-	    val.setS(mDA->getStatus(), 0, true);
-	}*/
+	 } else {
+	 val.setS(mDA->getStatus(), 0, true);
+	 }*/
     } else {
-	if (mDA)mDA->vlGet(val);
+	if(mDA) mDA->vlGet(val);
     }
 }
 

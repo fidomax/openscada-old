@@ -281,12 +281,9 @@ namespace FT3
 
 	string getStatus();
 
-	int64_t period()
-	{
-	    return mPer;
-	}
-//	string	cron( )		{ return mSched; }
-//	string	addr( )		{ return mAddr; }
+	int64_t	period( )	{ return mPer; }
+	string	cron( )		{ return mSched; }
+
 	int prior()
 	{
 	    return mPrior;
@@ -370,6 +367,8 @@ namespace FT3
 	eCntrState CntrState;
 
 	int mNode;
+
+	TCfg	&mSched;
 
 	//!!! Enabled and processing parameter's links list container.
 	vector<AutoHD<TMdPrm> > pHd;
