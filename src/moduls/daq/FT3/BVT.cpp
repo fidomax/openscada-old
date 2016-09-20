@@ -190,8 +190,8 @@ uint16_t KA_BVT::PreInit(void)
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = SetData;
-    for(int i = 1; i <= count_n; i++) {
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 1));
+    for(int i = 0; i < count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
 	Msg.L += SerializeB(Msg.D + Msg.L, TT_OFF);
     }
     Msg.L += 3;
@@ -232,8 +232,8 @@ uint16_t KA_BVT::PostInit(void)
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = SetData;
-    for(int i = 1; i <= count_n; i++) {
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 1));
+    for(int i = 0; i < count_n; i++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
 	Msg.L += SerializeB(Msg.D + Msg.L, data[i].State.lnk.vlattr.at().getI(0, true));
     }
     Msg.L += 3;
