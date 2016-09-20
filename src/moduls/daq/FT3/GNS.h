@@ -24,17 +24,17 @@
 namespace FT3
 {
 
-#define NAS_VAG       0    // неопределено
-#define NAS_OFF       1    // выкл.
-#define NAS_ON        2    // вкл.
-#define NAS_REP       3    // ремонт
-#define NAS_AWR       4    // авария
-
-
+    enum eKA_GNS_NAS
+    {
+	NAS_VAG = 0,    // неопределено
+	NAS_OFF = 1,    // выкл.
+	NAS_ON = 2,    // вкл.
+	NAS_REP = 3,    // ремонт
+	NAS_AWR = 4    // авария
+    };
     enum eKA_GNS_State
     {
-	KA_GNS_Error = 0x0,
-	KA_GNS_Normal = 0x1
+	KA_GNS_Error = 0x0, KA_GNS_Normal = 0x1
     };
     class KA_GNS: public DA
     {
@@ -61,7 +61,7 @@ namespace FT3
 	void saveParam(void);
 	void loadParam(void);
 	void tmHandler(void);
- 	uint16_t config;
+	uint16_t config;
 	class SKANSchannel
 	{
 	public:

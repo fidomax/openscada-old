@@ -23,6 +23,13 @@
 
 namespace FT3
 {
+    enum eKA_BVTC_TC
+    {
+	TC_FAILURE = 0,
+	TC_OFF = 1,
+	TC_ON = 2,
+	TC_DISABLED = 3,
+    };
     enum eKA_BVTC_State
     {
 	KA_BVTC_Error = 0x0,

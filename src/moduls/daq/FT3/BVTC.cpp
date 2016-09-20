@@ -93,7 +93,7 @@ uint16_t KA_BVTC::PreInit(void)
     Msg.C = SetData;
     for(int i = 1; i <= count_n; i++) {
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
-	Msg.L += SerializeB(Msg.D + Msg.L, 3);
+	Msg.L += SerializeB(Msg.D + Msg.L, TC_DISABLED);
     }
     Msg.L += 3;
     return mPrm.owner().DoCmd(&Msg);
@@ -105,14 +105,16 @@ uint16_t KA_BVTC::SetParams(void)
     tagMsg Msg;
     loadParam();
     for(int i = 0; i < count_n; i++) {
-	Msg.L = 0;
-	Msg.C = SetData;
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
-	Msg.L += SerializeB(Msg.D + Msg.L, data[i].Period.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeB(Msg.D + Msg.L, data[i].Count.lnk.vlattr.at().getI(0, true));
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-	if(rc != GOOD2) break;
+	if(data[i].Value.lnk.vlattr.at().getI(0, true) != TC_DISABLED) {
+	    Msg.L = 0;
+	    Msg.C = SetData;
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
+	    Msg.L += SerializeB(Msg.D + Msg.L, data[i].Period.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeB(Msg.D + Msg.L, data[i].Count.lnk.vlattr.at().getI(0, true));
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	    if(rc != GOOD2) break;
+	}
     }
     return rc;
 
@@ -125,7 +127,7 @@ uint16_t KA_BVTC::PostInit(void)
     Msg.C = SetData;
     for(int i = 1; i <= count_n; i++) {
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
-	Msg.L += SerializeB(Msg.D + Msg.L, 0);
+	Msg.L += SerializeB(Msg.D + Msg.L, data[i].Value.lnk.vlattr.at().getI(0, true));
     }
     Msg.L += 3;
     return mPrm.owner().DoCmd(&Msg);
@@ -175,6 +177,7 @@ void KA_BVTC::saveIO(void)
 void KA_BVTC::saveParam(void)
 {
     for(int i = 0; i < count_n; i++) {
+	saveVal(data[i].Value.lnk);
 	saveVal(data[i].Count.lnk);
 	saveVal(data[i].Period.lnk);
     }
@@ -184,6 +187,7 @@ void KA_BVTC::loadParam(void)
 {
     if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
     for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].Value.lnk);
 	loadVal(data[i].Period.lnk);
 	loadVal(data[i].Count.lnk);
     }
@@ -205,36 +209,36 @@ uint16_t KA_BVTC::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-/*    switch(uc) {
-    case TaskRefresh:
-	Msg.L = 7;
-	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
-	*((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //config
-	if(mPrm.owner().DoCmd(&Msg)) {
-	    if(Msg.C == GOOD3) {
-		Msg.L = 5;
-		Msg.C = AddrReq;
-		*((uint16_t *) Msg.D) = PackID(ID, 0, 2); //TC Value
-		if(mPrm.owner().DoCmd(&Msg)) {
-		    if(with_params) {
-			Msg.L = 3 + count_n * 2;
-			Msg.C = AddrReq;
-			for(int i = 1; i <= count_n; i++) {
-			    *((uint16_t *) (Msg.D + (i - 1) * 2)) = PackID(ID, i, 1); //маски ТC
-			}
-			if(mPrm.owner().DoCmd(&Msg)) {
-			    rc = 1;
-			}
-		    } else {
-			rc = 1;
-		    }
-		}
-	    }
-	}
-	if(rc) NeedInit = false;
-	break;
-    }*/
+    /*    switch(uc) {
+     case TaskRefresh:
+     Msg.L = 7;
+     Msg.C = AddrReq;
+     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+     *((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //config
+     if(mPrm.owner().DoCmd(&Msg)) {
+     if(Msg.C == GOOD3) {
+     Msg.L = 5;
+     Msg.C = AddrReq;
+     *((uint16_t *) Msg.D) = PackID(ID, 0, 2); //TC Value
+     if(mPrm.owner().DoCmd(&Msg)) {
+     if(with_params) {
+     Msg.L = 3 + count_n * 2;
+     Msg.C = AddrReq;
+     for(int i = 1; i <= count_n; i++) {
+     *((uint16_t *) (Msg.D + (i - 1) * 2)) = PackID(ID, i, 1); //маски ТC
+     }
+     if(mPrm.owner().DoCmd(&Msg)) {
+     rc = 1;
+     }
+     } else {
+     rc = 1;
+     }
+     }
+     }
+     }
+     if(rc) NeedInit = false;
+     break;
+     }*/
     return rc;
 }
 

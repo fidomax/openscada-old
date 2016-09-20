@@ -284,23 +284,27 @@ uint16_t KA_GNS::SetParams(void)
     for(int i = 0; i < count_n; i++) {
 	Msg.L = 0;
 	Msg.C = SetData;
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOn.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOn.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOff.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOff.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUStop.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeStop.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TURemote.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeRemote.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUManual.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeManual.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOn.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOff.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCMode.lnk.vlattr.at().getI(0, true));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 4));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].Time.lnk.vlattr.at().getI(0, true));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
+	Msg.L += SerializeB(Msg.D + Msg.L, data[i].State.lnk.vlattr.at().getI(0, true) & 0x0F);
+	if((data[i].State.lnk.vlattr.at().getI(0, true) & 0x0F) != NAS_REP) {
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOn.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOn.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOff.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOff.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUStop.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeStop.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TURemote.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeRemote.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUManual.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeManual.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOn.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOff.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCMode.lnk.vlattr.at().getI(0, true));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 4));
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].Time.lnk.vlattr.at().getI(0, true));
+	}
 	Msg.L += 3;
 	rc = mPrm.owner().DoCmd(&Msg);
 	if(rc != GOOD2) break;
@@ -383,6 +387,7 @@ void KA_GNS::saveIO(void)
 void KA_GNS::saveParam(void)
 {
     for(int i = 0; i < count_n; i++) {
+	saveVal(data[i].State.lnk);
 	saveVal(data[i].TUOn.lnk);
 	saveVal(data[i].TUOff.lnk);
 	saveVal(data[i].TUStop.lnk);
@@ -404,6 +409,7 @@ void KA_GNS::loadParam(void)
 {
     if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
     for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].State.lnk);
 	loadVal(data[i].TUOn.lnk);
 	loadVal(data[i].TUOff.lnk);
 	loadVal(data[i].TUStop.lnk);
@@ -439,51 +445,51 @@ uint16_t KA_GNS::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-/*    switch(uc) {
-    case TaskRefresh:
-	Msg.L = 5;
-	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
-	if(mPrm.owner().DoCmd(&Msg)) {
-	    if(Msg.C == GOOD3) {
-		NeedInit = false;
-		if(with_params) {
-		    for(int i = 1; i <= count_n; i++) {
-			if(chan_err[i].state == 1) continue;
-			Msg.L = 13;
-			Msg.C = AddrReq;
-			*((uint16_t *) Msg.D) = PackID(ID, i, 0); //Состояние задвижки
-			*((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 1); //Адреса ТУ
-			*((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 2); //Адреса ТС
-			*((uint16_t *) (Msg.D + 6)) = PackID(ID, i, 3); //Функция
-			*((uint16_t *) (Msg.D + 8)) = PackID(ID, i, 4); //Моторесурс
+    /*    switch(uc) {
+     case TaskRefresh:
+     Msg.L = 5;
+     Msg.C = AddrReq;
+     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
+     if(mPrm.owner().DoCmd(&Msg)) {
+     if(Msg.C == GOOD3) {
+     NeedInit = false;
+     if(with_params) {
+     for(int i = 1; i <= count_n; i++) {
+     if(chan_err[i].state == 1) continue;
+     Msg.L = 13;
+     Msg.C = AddrReq;
+     *((uint16_t *) Msg.D) = PackID(ID, i, 0); //Состояние задвижки
+     *((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 1); //Адреса ТУ
+     *((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 2); //Адреса ТС
+     *((uint16_t *) (Msg.D + 6)) = PackID(ID, i, 3); //Функция
+     *((uint16_t *) (Msg.D + 8)) = PackID(ID, i, 4); //Моторесурс
 
-			if(mPrm.owner().DoCmd(&Msg)) {
-			    if(Msg.C == GOOD3) {
-				chan_err[i].state = 1;
-				rc = 1;
-			    } else {
-				rc = 0;
-				chan_err[i].state = 2;
-				NeedInit = true;
-			    }
-			} else {
-			    rc = 0;
-			    chan_err[i].state = 3;
-			    NeedInit = true;
-			}
+     if(mPrm.owner().DoCmd(&Msg)) {
+     if(Msg.C == GOOD3) {
+     chan_err[i].state = 1;
+     rc = 1;
+     } else {
+     rc = 0;
+     chan_err[i].state = 2;
+     NeedInit = true;
+     }
+     } else {
+     rc = 0;
+     chan_err[i].state = 3;
+     NeedInit = true;
+     }
 
-		    }
-		} else {
-		    rc = 1;
-		}
-	    } else {
-		rc = 0;
-		NeedInit = true;
-	    }
-	}
-	break;
-    }*/
+     }
+     } else {
+     rc = 1;
+     }
+     } else {
+     rc = 0;
+     NeedInit = true;
+     }
+     }
+     break;
+     }*/
     return rc;
 }
 
