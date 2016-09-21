@@ -168,7 +168,6 @@ uint16_t KA_BUC::Task(uint16_t uc)
 	mPrm.owner().SetCntrState(StateUnknown);
 	break;
     }
-    mPrm.owner().SetCntrState(StateUnknown);
     return 0;
 }
 
