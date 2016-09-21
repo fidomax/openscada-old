@@ -113,7 +113,14 @@ uint16_t KA_BVTC::SetParams(void)
 	    Msg.L += SerializeB(Msg.D + Msg.L, data[i].Count.lnk.vlattr.at().getI(0, true));
 	    Msg.L += 3;
 	    rc = mPrm.owner().DoCmd(&Msg);
-	    if(rc != GOOD2) break;
+	    if((rc == BAD2) || (rc == BAD3)) {
+		mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
+	    } else {
+		if(rc == ERROR) {
+		    mPrm.mess_sys(TMess::Error, "No answer to set channel %d", i + 1);
+		    break;
+		}
+	    }
 	}
     }
     return rc;

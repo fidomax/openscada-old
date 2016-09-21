@@ -197,6 +197,7 @@ uint16_t KA_BVT::PreInit(void)
     Msg.L += 3;
     return mPrm.owner().DoCmd(&Msg);
 }
+
 uint16_t KA_BVT::SetParams(void)
 {
     uint16_t rc;
@@ -221,12 +222,21 @@ uint16_t KA_BVT::SetParams(void)
 	    Msg.L += SerializeF(Msg.D + Msg.L, data[i].Adjust.lnk.vlattr.at().getR(0, true));
 	    Msg.L += 3;
 	    rc = mPrm.owner().DoCmd(&Msg);
-	    if(rc != GOOD2) break;
+	    if((rc == BAD2) || (rc == BAD3)) {
+		mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
+	    } else {
+		if(rc == ERROR) {
+		    mPrm.mess_sys(TMess::Error, "No answer to set channel %d", i + 1);
+		    break;
+		}
+	    }
+
 	}
     }
     return rc;
 
 }
+
 uint16_t KA_BVT::PostInit(void)
 {
     tagMsg Msg;
@@ -239,10 +249,12 @@ uint16_t KA_BVT::PostInit(void)
     Msg.L += 3;
     return mPrm.owner().DoCmd(&Msg);
 }
+
 uint16_t KA_BVT::Start(void)
 {
     return GOOD2;
 }
+
 uint16_t KA_BVT::RefreshData(void)
 {
     tagMsg Msg;

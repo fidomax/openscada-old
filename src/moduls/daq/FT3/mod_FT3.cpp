@@ -1207,16 +1207,14 @@ void *TMdContr::DAQTask(void *icntr)
 		    IsNoAnswer = true;
 		    break;
 		}
-		if(IsError || IsNoAnswer) {
+		if(IsNoAnswer) {
 		    break;
 		}
 	    }
 	    if(IsNoAnswer) {
 		cntr.SetCntrState(StateNoConnection);
 	    } else {
-		if(!IsError) {
-		    cntr.SetCntrState(StateSetParams);
-		}
+		cntr.SetCntrState(StateSetParams);
 	    }
 	    break;
 
@@ -1232,16 +1230,14 @@ void *TMdContr::DAQTask(void *icntr)
 		    IsNoAnswer = true;
 		    break;
 		}
-		if(IsError || IsNoAnswer) {
+		if(IsNoAnswer) {
 		    break;
 		}
 	    }
 	    if(IsNoAnswer) {
 		cntr.SetCntrState(StateNoConnection);
 	    } else {
-		if(!IsError) {
-		    cntr.SetCntrState(StatePostInit);
-		}
+		cntr.SetCntrState(StatePostInit);
 	    }
 	    break;
 
@@ -1257,7 +1253,7 @@ void *TMdContr::DAQTask(void *icntr)
 		    IsNoAnswer = true;
 		    break;
 		}
-		if(IsError || IsNoAnswer) {
+		if(IsNoAnswer) {
 		    break;
 		}
 
@@ -1265,9 +1261,7 @@ void *TMdContr::DAQTask(void *icntr)
 	    if(IsNoAnswer) {
 		cntr.SetCntrState(StateNoConnection);
 	    } else {
-		if(!IsError) {
-		    cntr.SetCntrState(StateStart);
-		}
+		cntr.SetCntrState(StateStart);
 	    }
 	    break;
 
@@ -1283,16 +1277,14 @@ void *TMdContr::DAQTask(void *icntr)
 		    IsNoAnswer = true;
 		    break;
 		}
-		if(IsError || IsNoAnswer) {
+		if(IsNoAnswer) {
 		    break;
 		}
 	    }
 	    if(IsNoAnswer) {
 		cntr.SetCntrState(StateNoConnection);
 	    } else {
-		if(!IsError) {
-		    cntr.SetCntrState(StateRefreshData);
-		}
+		cntr.SetCntrState(StateRefreshData);
 	    }
 	    break;
 
@@ -1308,16 +1300,14 @@ void *TMdContr::DAQTask(void *icntr)
 		    IsNoAnswer = true;
 		    break;
 		}
-		if(IsError || IsNoAnswer) {
+		if(IsNoAnswer) {
 		    break;
 		}
 	    }
 	    if(IsNoAnswer) {
 		cntr.SetCntrState(StateNoConnection);
 	    } else {
-		if(!IsError) {
-		    cntr.SetCntrState(StateIdle);
-		}
+		cntr.SetCntrState(StateIdle);
 	    }
 	    break;
 
@@ -1541,8 +1531,12 @@ uint16_t TMdPrm::BlckPreInit(void)
     if(mDA) {
 	rc = mDA->PreInit();
     }
-    if((rc != GOOD2) && (rc != GOOD3)) {
-	mess_sys(TMess::Error, _("Block PreInint error"));
+    if((rc == BAD2) || (rc == BAD3)) {
+	mess_sys(TMess::Error, "Can't PreInit");
+    } else {
+	if(rc == ERROR) {
+	    mess_sys(TMess::Error, "No answer to PreInit");
+	}
     }
     return rc;
 }
@@ -1565,8 +1559,12 @@ uint16_t TMdPrm::BlckPostInit(void)
     if(mDA) {
 	rc = mDA->PostInit();
     }
-    if((rc != GOOD2) && (rc != GOOD3)) {
-	mess_sys(TMess::Error, _("Block PostInint error"));
+    if((rc == BAD2) || (rc == BAD3)) {
+	mess_sys(TMess::Error, "Can't PostInit");
+    } else {
+	if(rc == ERROR) {
+	    mess_sys(TMess::Error, "No answer to PostInit");
+	}
     }
     return rc;
 }
@@ -1577,10 +1575,13 @@ uint16_t TMdPrm::BlckStart(void)
     if(mDA) {
 	rc = mDA->Start();
     }
-    if((rc != GOOD2) && (rc != GOOD3)) {
-	mess_sys(TMess::Error, _("Block Start error"));
+    if((rc == BAD2) || (rc == BAD3)) {
+	mess_sys(TMess::Error, "Can't Start");
+    } else {
+	if(rc == ERROR) {
+	    mess_sys(TMess::Error, "No answer to Start");
+	}
     }
-
     return rc;
 }
 
@@ -1590,8 +1591,12 @@ uint16_t TMdPrm::BlckRefreshData(void)
     if(mDA) {
 	rc = mDA->RefreshData();
     }
-    if((rc != GOOD2) && (rc != GOOD3)) {
-	mess_sys(TMess::Error, _("Block RefreshData error"));
+    if((rc == BAD2) || (rc == BAD3)) {
+	mess_sys(TMess::Error, "Can't RefreshData");
+    } else {
+	if(rc == ERROR) {
+	    mess_sys(TMess::Error, "No answer to RefreshData");
+	}
     }
     return rc;
 }
