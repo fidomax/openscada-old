@@ -140,11 +140,6 @@ uint16_t KA_BVTC::PostInit(void)
     return mPrm.owner().DoCmd(&Msg);
 }
 
-uint16_t KA_BVTC::Start(void)
-{
-    return GOOD2;
-}
-
 uint16_t KA_BVTC::RefreshData(void)
 {
     tagMsg Msg;

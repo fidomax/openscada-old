@@ -311,11 +311,6 @@ uint16_t KA_GZD::GetState()
     return rc;
 }
 
-uint16_t KA_GZD::PreInit(void)
-{
-    return GOOD2;
-}
-
 uint16_t KA_GZD::SetParams(void)
 {
     uint16_t rc;
@@ -361,16 +356,6 @@ uint16_t KA_GZD::SetParams(void)
 	}
     }
     return rc;
-}
-
-uint16_t KA_GZD::PostInit(void)
-{
-    return GOOD2;
-}
-
-uint16_t KA_GZD::Start(void)
-{
-    return GOOD2;
 }
 
 uint16_t KA_GZD::RefreshData(void)

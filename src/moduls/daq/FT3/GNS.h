@@ -46,10 +46,7 @@ namespace FT3
 	uint16_t count_n;
 	uint16_t Task(uint16_t);
 	uint16_t GetState(void);
-	uint16_t PreInit(void);
 	uint16_t SetParams(void);
-	uint16_t PostInit(void);
-	uint16_t Start(void);
 	uint16_t RefreshData(void);
 	uint16_t HandleEvent(int64_t, uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);

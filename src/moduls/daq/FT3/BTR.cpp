@@ -93,11 +93,6 @@ uint16_t KA_BTU::GetState()
     return rc;
 }
 
-uint16_t KA_BTU::PreInit(void)
-{
-    return GOOD2;
-}
-
 uint16_t KA_BTU::SetParams(void)
 {
     uint16_t rc;
@@ -122,16 +117,6 @@ uint16_t KA_BTU::SetParams(void)
 	}
     }
     return rc;
-}
-
-uint16_t KA_BTU::PostInit(void)
-{
-    return GOOD2;
-}
-
-uint16_t KA_BTU::Start(void)
-{
-    return GOOD2;
 }
 
 uint16_t KA_BTU::RefreshData(void)

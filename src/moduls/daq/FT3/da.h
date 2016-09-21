@@ -83,21 +83,12 @@ namespace FT3
 	virtual uint16_t GetState()
 	{
 	}
-	virtual uint16_t PreInit(void)
-	{
-	}
-	virtual uint16_t SetParams(void)
-	{
-	}
-	virtual uint16_t PostInit(void)
-	{
-	}
-	virtual uint16_t Start(void)
-	{
-	}
-	virtual uint16_t RefreshData(void)
-	{
-	}
+	uint16_t SetupClock(void);
+	uint16_t PreInit(void);
+	uint16_t SetParams(void);
+	uint16_t PostInit(void);
+	uint16_t Start(void);
+	uint16_t RefreshData(void);
 	virtual uint16_t HandleEvent(int64_t, uint8_t *)
 	{
 	}

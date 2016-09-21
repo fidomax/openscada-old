@@ -106,31 +106,27 @@ uint16_t KA_BUC::GetState()
     return rc;
 }
 
-uint16_t KA_BUC::PreInit(void)
+uint16_t KA_BUC::SetupClock(void)
 {
+    uint16_t rc;
     tagMsg Msg;
     Msg.L = 6;
     Msg.C = SetData;
     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
     Msg.D[2] = 0x80;
-    return mPrm.owner().DoCmd(&Msg);
+    rc = mPrm.owner().DoCmd(&Msg);
+    if(rc == GOOD2 || rc == GOOD3) {
+	time_t rawtime;
+	time(&rawtime);
+	Msg.L = 10;
+	Msg.C = SetData;
+	*((uint16_t *) Msg.D) = PackID(1, 0, 2); //current time
+	mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
+	rc = mPrm.owner().DoCmd(&Msg);
+    }
+    return rc;
 }
-uint16_t KA_BUC::SetParams(void)
-{
-    return GOOD2;
-}
-uint16_t KA_BUC::PostInit(void)
-{
-    tagMsg Msg;
-    time_t rawtime;
-    time(&rawtime);
-    Msg.L = 10;
-    Msg.C = SetData;
-    *((uint16_t *) Msg.D) = PackID(1, 0, 2); //current time
-    mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
-    return mPrm.owner().DoCmd(&Msg);
 
-}
 uint16_t KA_BUC::Start(void)
 {
     tagMsg Msg;
@@ -141,6 +137,7 @@ uint16_t KA_BUC::Start(void)
     Msg.D[2] = 0x01;
     return mPrm.owner().DoCmd(&Msg);
 }
+
 uint16_t KA_BUC::RefreshData(void)
 {
     tagMsg Msg;

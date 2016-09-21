@@ -271,11 +271,6 @@ uint16_t KA_GNS::GetState()
     return rc;
 }
 
-uint16_t KA_GNS::PreInit(void)
-{
-    return GOOD2;
-}
-
 uint16_t KA_GNS::SetParams(void)
 {
     uint16_t rc;
@@ -317,16 +312,6 @@ uint16_t KA_GNS::SetParams(void)
 	}
     }
     return rc;
-}
-
-uint16_t KA_GNS::PostInit(void)
-{
-    return GOOD2;
-}
-
-uint16_t KA_GNS::Start(void)
-{
-    return GOOD2;
 }
 
 uint16_t KA_GNS::RefreshData(void)

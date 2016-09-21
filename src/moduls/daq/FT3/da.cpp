@@ -22,10 +22,36 @@
 
 #include <tsys.h>
 
-#include "mod_FT3.h"
 #include "da.h"
+#include "mod_FT3.h"
 
 using namespace FT3;
+
+uint16_t SetupClock(void)
+{
+    return GOOD2;
+}
+uint16_t PreInit(void)
+{
+    return GOOD2;
+}
+uint16_t SetParams(void)
+{
+    return GOOD2;
+}
+uint16_t PostInit(void)
+{
+    return GOOD2;
+}
+uint16_t Start(void)
+{
+    return GOOD2;
+}
+uint16_t RefreshData(void)
+{
+    return GOOD2;
+}
+
 
 void DA::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
 {

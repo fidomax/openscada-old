@@ -104,12 +104,18 @@ namespace FT3
 
     enum eCntrState
     {
-	StateNoConnection, StateUnknown, StateIdle, StateSoftReset, StateHardReset, StateRefreshData, StatePreInint, StateSetParams, StatePostInit, StateStart
+	StateNoConnection, StateUnknown, StateIdle, StateSoftReset, StateHardReset, StateSetupClock, StatePreInint, StateSetParams, StatePostInit, StateStart, StateRefreshData
     };
 
     enum eBlockState
     {
-	BlckStateNormal = 0x0001, BlckStateError = 0x0002, BlckStateUnknown = 0x0004, BlckStateSetup = 0x0008, BlckStateSoftReset = 0x4000, BlckStateHardReset = 0x8000, BlckStateNone = 0x0010
+	BlckStateNormal = 0x0001,
+	BlckStateError = 0x0002,
+	BlckStateUnknown = 0x0004,
+	BlckStateSetup = 0x0008,
+	BlckStateSoftReset = 0x4000,
+	BlckStateHardReset = 0x8000,
+	BlckStateNone = 0x0010
     };
     struct blockEvents
     {
@@ -212,6 +218,7 @@ namespace FT3
 	uint8_t cmdSet(uint8_t *, uint8_t);
 	uint16_t Task(uint16_t);
 	uint16_t BlckGetState(void);
+	uint16_t BlckSetupClock(void);
 	uint16_t BlckPreInit(void);
 	uint16_t BlckSetParams(void);
 	uint16_t BlckPostInit(void);
@@ -281,8 +288,14 @@ namespace FT3
 
 	string getStatus();
 
-	int64_t	period( )	{ return mPer; }
-	string	cron( )		{ return mSched; }
+	int64_t period()
+	{
+	    return mPer;
+	}
+	string cron()
+	{
+	    return mSched;
+	}
 
 	int prior()
 	{
@@ -368,7 +381,7 @@ namespace FT3
 
 	int mNode;
 
-	TCfg	&mSched;
+	TCfg &mSched;
 
 	//!!! Enabled and processing parameter's links list container.
 	vector<AutoHD<TMdPrm> > pHd;

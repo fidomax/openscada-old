@@ -1099,8 +1099,14 @@ void TMdContr::SetCntrState(eCntrState nState)
 	case StateUnknown:
 	    mess_sys(TMess::Info, _("Unknown state"));
 	    break;
+	case StateSoftReset:
+	    mess_sys(TMess::Info, _("Soft reset"));
+	    break;
 	case StateHardReset:
 	    mess_sys(TMess::Info, _("Hard reset"));
+	    break;
+	case StateSetupClock:
+	    mess_sys(TMess::Info, _("Setup Clock"));
 	    break;
 	case StatePreInint:
 	    mess_sys(TMess::Info, _("PreInit"));
@@ -1191,7 +1197,31 @@ void *TMdContr::DAQTask(void *icntr)
 
 	case StateHardReset:
 	case StateSoftReset:
-	    cntr.SetCntrState(StatePreInint);
+	    cntr.SetCntrState(StateSetupClock);
+	    break;
+
+	case StateSetupClock:
+	    for(int i_l = 0; i_l < lst.size(); i_l++) {
+		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
+
+		switch(t.at().BlckSetupClock()) {
+		case BAD2:
+		case BAD3:
+		    IsError = true;
+		    break;
+		case ERROR:
+		    IsNoAnswer = true;
+		    break;
+		}
+		if(IsNoAnswer) {
+		    break;
+		}
+	    }
+	    if(IsNoAnswer) {
+		cntr.SetCntrState(StateNoConnection);
+	    } else {
+		cntr.SetCntrState(StatePreInint);
+	    }
 	    break;
 
 	case StatePreInint:
@@ -1521,6 +1551,22 @@ uint16_t TMdPrm::BlckGetState(void)
     }
     if(rc == BlckStateUnknown) {
 	mess_sys(TMess::Error, _("Receiving block state error"));
+    }
+    return rc;
+}
+
+uint16_t TMdPrm::BlckSetupClock(void)
+{
+    uint16_t rc = GOOD2;
+    if(mDA) {
+	rc = mDA->SetupClock();
+    }
+    if((rc == BAD2) || (rc == BAD3)) {
+	mess_sys(TMess::Error, "Can't SetupClock");
+    } else {
+	if(rc == ERROR) {
+	    mess_sys(TMess::Error, "No answer to SetupClock");
+	}
     }
     return rc;
 }
