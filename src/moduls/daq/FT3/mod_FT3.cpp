@@ -1342,11 +1342,16 @@ void *TMdContr::DAQTask(void *icntr)
 	    break;
 
 	case StateIdle:
-	    Msg.L = 3;
-	    Msg.C = ReqData;
-	    if(cntr.DoCmd(&Msg) == ERROR) {
-		cntr.SetCntrState(StateNoConnection);
-	    }
+	    uint16_t rc;
+	    do {
+		Msg.L = 3;
+		Msg.C = ReqData;
+		rc = cntr.DoCmd(&Msg);
+		if(rc == ERROR) {
+		    cntr.SetCntrState(StateNoConnection);
+		    break;
+		}
+	    } while(rc != BAD3);
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
 		t.at().Task(TaskIdle);
@@ -1759,8 +1764,8 @@ void TMdPrm::cntrCmdProc(XMLNode *opt)
 	    if(ctrMkNode("area", opt, -1, "/cfg/prm", _("Parameters"))) {
 		if(mDA) {
 		    for(int i_io = 0; i_io < mDA->lnkSize(); i_io++) {
-			ctrMkNode("fld", opt, -1, (string("/cfg/prm/pr_") + mDA->lnk(i_io).prmName).c_str(), mDA->lnk(i_io).prmDesc, RWRWR_, "root", SDAQ_ID, 3,
-				"tp", "str", "dest", "sel_ed", "select", (string("/cfg/prm/pl_") + mDA->lnk(i_io).prmName).c_str());
+			ctrMkNode("fld", opt, -1, (string("/cfg/prm/pr_") + mDA->lnk(i_io).prmName).c_str(), mDA->lnk(i_io).prmDesc, RWRWR_, "root",
+			SDAQ_ID, 3, "tp", "str", "dest", "sel_ed", "select", (string("/cfg/prm/pl_") + mDA->lnk(i_io).prmName).c_str());
 		    }
 		}
 
