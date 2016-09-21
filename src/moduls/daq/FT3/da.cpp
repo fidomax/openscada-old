@@ -27,31 +27,30 @@
 
 using namespace FT3;
 
-uint16_t SetupClock(void)
+uint16_t DA::SetupClock(void)
 {
     return GOOD2;
 }
-uint16_t PreInit(void)
+uint16_t DA::PreInit(void)
 {
     return GOOD2;
 }
-uint16_t SetParams(void)
+uint16_t DA::SetParams(void)
 {
     return GOOD2;
 }
-uint16_t PostInit(void)
+uint16_t DA::PostInit(void)
 {
     return GOOD2;
 }
-uint16_t Start(void)
+uint16_t DA::Start(void)
 {
     return GOOD2;
 }
-uint16_t RefreshData(void)
+uint16_t DA::RefreshData(void)
 {
     return GOOD2;
 }
-
 
 void DA::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
 {
