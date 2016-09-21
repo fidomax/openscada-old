@@ -188,53 +188,6 @@ void KA_BTU::tmHandler(void)
     NeedInit = false;
 }
 
-uint16_t KA_BTU::Task(uint16_t uc)
-{
-    tagMsg Msg;
-    uint16_t rc = 0;
-    /*    switch(uc) {
-     case TaskRefresh:
-     Msg.L = 5;
-     Msg.C = AddrReq;
-     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
-     if(mPrm.owner().DoCmd(&Msg)) {
-     if(Msg.C == GOOD3) {
-     rc = 1;
-     Msg.L = 5;
-     Msg.C = AddrReq;
-     *((uint16_t *) (Msg.D)) = PackID(ID, 0, 2); //исполнение
-     mPrm.owner().DoCmd(&Msg);
-     if(with_params) {
-     for(int i = 1; i <= count_nu; i++) {
-     Msg.L = 5;
-     Msg.C = AddrReq;
-     *((uint16_t *) Msg.D) = PackID(ID, i, 0); //линия ТУ
-     for(int j = 1; j <= 16; j++) {
-     Msg.L += 2;
-     *((uint16_t *) (Msg.D + Msg.L - 5)) = PackID(ID, i, j); //Параметры реле
-     }
-     if(mPrm.owner().DoCmd(&Msg)) {
-     if(Msg.C == GOOD3) {
-     rc = 1;
-     } else {
-     rc = 0;
-     break;
-     }
-     } else {
-     rc = 0;
-     break;
-     }
-
-     }
-     }
-
-     }
-     }
-     if(rc) NeedInit = false;
-     break;
-     }*/
-    return rc;
-}
 uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));

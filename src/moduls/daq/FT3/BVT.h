@@ -46,7 +46,6 @@ namespace FT3
 	uint16_t count_n;
 	uint16_t config;
 	void AddChannel(uint8_t iid);
-	uint16_t Task(uint16_t);
 	uint16_t GetState(void);
 	uint16_t PreInit(void);
 	uint16_t SetParams(void);

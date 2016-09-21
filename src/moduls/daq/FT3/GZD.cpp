@@ -490,58 +490,6 @@ void KA_GZD::tmHandler(void)
     NeedInit = false;
 }
 
-uint16_t KA_GZD::Task(uint16_t uc)
-{
-    tagMsg Msg;
-    uint16_t rc = 0;
-    /*    switch(uc) {
-     case TaskRefresh:
-     Msg.L = 5;
-     Msg.C = AddrReq;
-     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
-     if(mPrm.owner().DoCmd(&Msg)) {
-     if(Msg.C == GOOD3) {
-     NeedInit = false;
-     if(with_params) {
-     for(int i = 1; i <= count_n; i++) {
-     if(chan_err[i].state == 1) continue;
-     Msg.L = 11;
-     Msg.C = AddrReq;
-     *((uint16_t *) Msg.D) = PackID(ID, i, 0); //Состояние задвижки
-     *((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 1); //Адреса ТУ
-     *((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 2); //Адреса ТС
-     *((uint16_t *) (Msg.D + 6)) = PackID(ID, i, 3); //Функция
-
-     if(mPrm.owner().DoCmd(&Msg)) {
-     if(Msg.C == GOOD3) {
-     chan_err[i].state = 1;
-     rc = 1;
-     } else {
-     rc = 0;
-     chan_err[i].state = 2;
-     NeedInit = true;
-     }
-     } else {
-     rc = 0;
-     chan_err[i].state = 3;
-     NeedInit = true;
-     }
-
-     }
-     } else {
-     rc = 1;
-     }
-     } else {
-     rc = 0;
-     NeedInit = true;
-     }
-     }
-     break;
-     }*/
-    return rc;
-
-}
-
 uint16_t KA_GZD::HandleEvent(int64_t tm, uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));

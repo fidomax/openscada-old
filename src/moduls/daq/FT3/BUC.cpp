@@ -154,48 +154,22 @@ uint16_t KA_BUC::RefreshData(void)
 
 uint16_t KA_BUC::Task(uint16_t uc)
 {
-    tagMsg Msg;
-    uint16_t rc = 0;
-    /*switch(uc) {
-     case TaskRefresh:
-     Msg.L = 3 + 2 * 6;
-     Msg.C = AddrReq;
-     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
-     *((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //configuration
-     *((uint16_t *) (Msg.D + 4)) = PackID(ID, 0, 2); //modification
-     *((uint16_t *) (Msg.D + 6)) = PackID(1, 0, 0); //timer state
-     *((uint16_t *) (Msg.D + 8)) = PackID(1, 0, 2); //current time
-     *((uint16_t *) (Msg.D + 10)) = PackID(1, 0, 3); //uptime
-     if(mPrm.owner().DoCmd(&Msg)) {
-     if(mPrm.vlAt("state").at().getI(0, true) != 1) {
-     if(Task(TaskSetParams) == 1) {
-     rc = 1;
-     }
-     } else {
-     rc = 1;
-     }
-     }
-     if(rc) NeedInit = false;
-     break;
-     case TaskSetParams:
-     time_t rawtime;
-     time(&rawtime);
-     Msg.L = 10;
-     Msg.C = SetData;
-     *((uint16_t *) Msg.D) = PackID(1, 0, 2); //current time
-     mPrm.owner().Time_tToDateTime(Msg.D + 2, rawtime);
-     mPrm.owner().DoCmd(&Msg);
-     if(Msg.C == GOOD2) {
-     rc = 1;
-     }
-     break;
-     case TaskIdle:
-     if(mPrm.vlAt("state").at().getI(0, true) != 1) {
-     rc = 2;
-     }
-     break;
-     }*/
-    return rc;
+    switch(mPrm.vlAt("state").at().getI(0, true)) {
+    case KA_BUC_HardReset:
+	mPrm.owner().SetCntrState(StateHardReset);
+	break;
+    case KA_BUC_Normal:
+	break;
+    case KA_BUC_SoftReset:
+	mPrm.owner().SetCntrState(StateSoftReset);
+	break;
+    case KA_BUC_Setup:
+    case KA_BUC_Start:
+	mPrm.owner().SetCntrState(StateUnknown);
+	break;
+    }
+    mPrm.owner().SetCntrState(StateUnknown);
+    return 0;
 }
 
 uint16_t KA_BUC::HandleEvent(int64_t tm, uint8_t *D)

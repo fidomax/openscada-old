@@ -1342,14 +1342,14 @@ void *TMdContr::DAQTask(void *icntr)
 	    break;
 
 	case StateIdle:
-	    /*for(int i_l = 0; i_l < lst.size(); i_l++) {
-	     AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
-	     t.at().Task(TaskIdle);
-	     }*/
 	    Msg.L = 3;
 	    Msg.C = ReqData;
 	    if(cntr.DoCmd(&Msg) == ERROR) {
 		cntr.SetCntrState(StateNoConnection);
+	    }
+	    for(int i_l = 0; i_l < lst.size(); i_l++) {
+		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
+		t.at().Task(TaskIdle);
 	    }
 	    break;
 	}

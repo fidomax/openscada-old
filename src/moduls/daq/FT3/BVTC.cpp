@@ -207,43 +207,6 @@ void KA_BVTC::tmHandler(void)
     NeedInit = false;
 }
 
-uint16_t KA_BVTC::Task(uint16_t uc)
-{
-    tagMsg Msg;
-    uint16_t rc = 0;
-    /*    switch(uc) {
-     case TaskRefresh:
-     Msg.L = 7;
-     Msg.C = AddrReq;
-     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
-     *((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1); //config
-     if(mPrm.owner().DoCmd(&Msg)) {
-     if(Msg.C == GOOD3) {
-     Msg.L = 5;
-     Msg.C = AddrReq;
-     *((uint16_t *) Msg.D) = PackID(ID, 0, 2); //TC Value
-     if(mPrm.owner().DoCmd(&Msg)) {
-     if(with_params) {
-     Msg.L = 3 + count_n * 2;
-     Msg.C = AddrReq;
-     for(int i = 1; i <= count_n; i++) {
-     *((uint16_t *) (Msg.D + (i - 1) * 2)) = PackID(ID, i, 1); //маски ТC
-     }
-     if(mPrm.owner().DoCmd(&Msg)) {
-     rc = 1;
-     }
-     } else {
-     rc = 1;
-     }
-     }
-     }
-     }
-     if(rc) NeedInit = false;
-     break;
-     }*/
-    return rc;
-}
-
 uint16_t KA_BVTC::HandleEvent(int64_t tm, uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));

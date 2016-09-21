@@ -27,6 +27,10 @@
 
 using namespace FT3;
 
+uint16_t DA::Task(uint16_t uCod)
+{
+    return 0;
+}
 uint16_t DA::SetupClock(void)
 {
     return GOOD2;

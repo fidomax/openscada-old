@@ -358,52 +358,6 @@ void KA_BVT::tmHandler(void)
     NeedInit = false;
 }
 
-uint16_t KA_BVT::Task(uint16_t uc)
-{
-    tagMsg Msg;
-    uint16_t rc = 0;
-    /*    switch(uc) {
-     case TaskRefresh:
-     Msg.L = 5;
-     Msg.C = AddrReq;
-     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
-     if(mPrm.owner().DoCmd(&Msg)) {
-     if(Msg.C == GOOD3) {
-     NeedInit = false;
-     rc = 1;
-     for(int i = 1; i <= count_n; i++) {
-     if(chan_err[i].state == 1) continue;
-     Msg.L = 5;
-     Msg.C = AddrReq;
-     *((uint16_t *) Msg.D) = PackID(ID, i, 0); //value
-     if(with_params) {
-     Msg.L += 2;
-     *((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 2); //params
-     }
-     if(mPrm.owner().DoCmd(&Msg)) {
-     if(Msg.C == GOOD3) {
-     chan_err[i].state = 1;
-     rc = 1;
-     } else {
-     rc = 0;
-     chan_err[i].state = 2;
-     NeedInit = true;
-     }
-     } else {
-     rc = 0;
-     chan_err[i].state = 3;
-     NeedInit = true;
-     }
-     }
-     } else {
-     rc = 0;
-     NeedInit = true;
-     }
-     }
-     break;
-     }*/
-    return rc;
-}
 
 uint16_t KA_BVT::HandleEvent(int64_t tm, uint8_t * D)
 {

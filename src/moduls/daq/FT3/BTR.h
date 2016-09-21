@@ -39,7 +39,6 @@ namespace FT3
 	bool with_params;
 	uint16_t config;
 	void AddChannel(uint8_t iid);
-	uint16_t Task(uint16_t);
 	uint16_t GetState(void);
 	uint16_t SetParams(void);
 	uint16_t RefreshData(void);
