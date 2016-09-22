@@ -104,7 +104,7 @@ namespace FT3
 
     enum eCntrState
     {
-	StateNoConnection, StateUnknown, StateIdle, StateSoftReset, StateHardReset, StateSetupClock, StatePreInint, StateSetParams, StatePostInit, StateStart, StateRefreshData
+	StateNoConnection, StateUnknown, StateIdle, StateSoftReset, StateHardReset, StateSetupClock, StatePreInint, StateSetParams, StatePostInit, StateStart, StateRefreshData, StateRefreshParams
     };
 
     enum eBlockState
@@ -224,6 +224,7 @@ namespace FT3
 	uint16_t BlckPostInit(void);
 	uint16_t BlckStart(void);
 	uint16_t BlckRefreshData(void);
+	uint16_t BlckRefreshParams(void);
 	uint16_t HandleEvent(time_t, uint8_t *);
 	void tmHandler(void);
 	TElem p_el;			//Work atribute elements

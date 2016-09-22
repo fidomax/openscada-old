@@ -31,27 +31,38 @@ uint16_t DA::Task(uint16_t uCod)
 {
     return 0;
 }
+
 uint16_t DA::SetupClock(void)
 {
     return GOOD2;
 }
+
 uint16_t DA::PreInit(void)
 {
     return GOOD2;
 }
+
 uint16_t DA::SetParams(void)
 {
     return GOOD2;
 }
+
 uint16_t DA::PostInit(void)
 {
     return GOOD2;
 }
+
 uint16_t DA::Start(void)
 {
     return GOOD2;
 }
+
 uint16_t DA::RefreshData(void)
+{
+    return GOOD2;
+}
+
+uint16_t DA::RefreshParams(void)
 {
     return GOOD2;
 }

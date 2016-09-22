@@ -826,6 +826,7 @@ void TMdContr::MakePacket(tagMsg *msg, string &io_buf)
 	    case ResetChan:
 	    case ResData2:
 	    case AddrReq:
+	    case Reset:
 		io_buf += (msg->C | 0x40);
 		break;
 	    default:
@@ -1018,6 +1019,9 @@ string TMdContr::getStatus()
 	case StateRefreshData:
 	    rez += TSYS::strMess(_("Refresh data. "));
 	    break;
+	case StateRefreshParams:
+	    rez += TSYS::strMess(_("Refresh params. "));
+	    break;
 	case StateIdle:
 	    rez += TSYS::strMess(_("Idle. "));
 	    break;
@@ -1123,6 +1127,9 @@ void TMdContr::SetCntrState(eCntrState nState)
 	case StateRefreshData:
 	    mess_sys(TMess::Info, _("Refresh data"));
 	    break;
+	case StateRefreshParams:
+	    mess_sys(TMess::Info, _("Refresh params"));
+	    break;
 	case StateIdle:
 	    mess_sys(TMess::Info, _("Idle"));
 	    break;
@@ -1188,7 +1195,7 @@ void *TMdContr::DAQTask(void *icntr)
 			if(IsSetup) {
 			    cntr.SetCntrState(StateSoftReset);
 			} else {
-			    cntr.SetCntrState(StateRefreshData);
+			    cntr.SetCntrState(StateRefreshParams);
 			}
 		    }
 		}
@@ -1338,6 +1345,29 @@ void *TMdContr::DAQTask(void *icntr)
 		cntr.SetCntrState(StateNoConnection);
 	    } else {
 		cntr.SetCntrState(StateIdle);
+	    }
+	    break;
+
+	case StateRefreshParams:
+	    for(int i_l = 0; i_l < lst.size(); i_l++) {
+		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
+		switch(t.at().BlckRefreshParams()) {
+		case BAD2:
+		case BAD3:
+		    IsError = true;
+		    break;
+		case ERROR:
+		    IsNoAnswer = true;
+		    break;
+		}
+		if(IsNoAnswer) {
+		    break;
+		}
+	    }
+	    if(IsNoAnswer) {
+		cntr.SetCntrState(StateNoConnection);
+	    } else {
+		cntr.SetCntrState(StateRefreshData);
 	    }
 	    break;
 
@@ -1647,6 +1677,22 @@ uint16_t TMdPrm::BlckRefreshData(void)
     } else {
 	if(rc == ERROR) {
 	    mess_sys(TMess::Error, "No answer to RefreshData");
+	}
+    }
+    return rc;
+}
+
+uint16_t TMdPrm::BlckRefreshParams(void)
+{
+    uint16_t rc = GOOD2;
+    if(mDA) {
+	rc = mDA->RefreshParams();
+    }
+    if((rc == BAD2) || (rc == BAD3)) {
+	mess_sys(TMess::Error, "Can't RefreshParams");
+    } else {
+	if(rc == ERROR) {
+	    mess_sys(TMess::Error, "No answer to RefreshParams");
 	}
     }
     return rc;

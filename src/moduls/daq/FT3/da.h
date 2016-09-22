@@ -87,6 +87,7 @@ namespace FT3
 	virtual uint16_t PostInit(void);
 	virtual uint16_t Start(void);
 	virtual uint16_t RefreshData(void);
+	virtual uint16_t RefreshParams(void);
 	virtual uint16_t HandleEvent(int64_t, uint8_t *)
 	{
 	}

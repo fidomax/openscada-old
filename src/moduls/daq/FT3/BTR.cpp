@@ -131,6 +131,31 @@ uint16_t KA_BTU::RefreshData(void)
     return mPrm.owner().DoCmd(&Msg);
 }
 
+uint16_t KA_BTU::RefreshParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    for(int i = 1; i <= count_nu; i++) {
+	Msg.L = 0;
+	Msg.C = AddrReq;
+	for(int j = 1; j <= 16; j++) {
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, j));
+	}
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if((rc == BAD2) || (rc == BAD3)) {
+	    mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", i);
+	} else {
+	    if(rc == ERROR) {
+		mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", i);
+		break;
+	    }
+	}
+
+    }
+    return rc;
+}
+
 void KA_BTU::loadIO(bool force)
 {
     if(mPrm.owner().startStat() && !force) {

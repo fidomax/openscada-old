@@ -358,6 +358,29 @@ uint16_t KA_GZD::SetParams(void)
     return rc;
 }
 
+uint16_t KA_GZD::RefreshParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L = 0;
+	Msg.C = AddrReq;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 1));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 2));
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if((rc == BAD2) || (rc == BAD3)) {
+	    mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", i);
+	} else {
+	    if(rc == ERROR) {
+		mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", i);
+		break;
+	    }
+	}
+    }
+    return rc;
+}
+
 uint16_t KA_GZD::RefreshData(void)
 {
     tagMsg Msg;

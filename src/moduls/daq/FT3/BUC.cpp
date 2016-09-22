@@ -35,15 +35,23 @@ KA_BUC::KA_BUC(TMdPrm& prm, uint16_t id) :
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TVal::DirWrite));
     fld->setReserve("0:0:0");
     mPrm.p_el.fldAdd(fld = new TFld("config", _("Configuration"), TFld::Integer, TFld::NoWrite));
-    fld->setReserve("0:0:1");
+    fld->setReserve("0:1:0");
     mPrm.p_el.fldAdd(fld = new TFld("modification", _("Modification"), TFld::Integer, TFld::NoWrite));
-    fld->setReserve("0:0:2");
+    fld->setReserve("0:2:0");
     mPrm.p_el.fldAdd(fld = new TFld("sttimer", _("Timer state"), TFld::Integer, TFld::NoWrite));
-    fld->setReserve("1:0:0");
+    fld->setReserve("0:0:1");
     mPrm.p_el.fldAdd(fld = new TFld("curdt", _("Current datetime"), TFld::String, TVal::DirWrite | TVal::DirRead));
-    fld->setReserve("1:0:2");
+    fld->setReserve("0:2:1");
     mPrm.p_el.fldAdd(fld = new TFld("stopdt", _("Stop datetime"), TFld::String, TFld::NoWrite));
-    fld->setReserve("1:0:3");
+    fld->setReserve("0:3:1");
+    mPrm.p_el.fldAdd(fld = new TFld("reset", _("Hard Reset"), TFld::Boolean, TVal::DirWrite));
+    fld->setReserve("1:0:0");
+    mPrm.p_el.fldAdd(fld = new TFld("resetchn", _("Channel reset"), TFld::Boolean, TVal::DirWrite));
+    fld->setReserve("1:1:0");
+    mPrm.p_el.fldAdd(fld = new TFld("resetdata", _("Data reset"), TFld::Boolean, TVal::DirWrite));
+    fld->setReserve("1:2:0");
+    //fld->setReserve("1:0:3");
+
 }
 
 KA_BUC::~KA_BUC()
@@ -252,6 +260,24 @@ uint16_t KA_BUC::setVal(TVal &val)
 		break;
 	    }
 	    break;
+	case 1:
+	    switch(ft3ID.n) {
+	    case 0:
+		Msg.L = 3;
+		Msg.C = Reset;
+		break;
+	    case 1:
+		Msg.L = 3;
+		Msg.C = ResetChan;
+		break;
+	    case 2:
+		Msg.L = 3;
+		Msg.C = ResData2;
+		break;
+	    }
+	    val.setB(0, 0, true);
+	    break;
+
 	}
     }
     if(ft3ID.g == clockID) {

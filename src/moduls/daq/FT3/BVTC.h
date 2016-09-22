@@ -48,6 +48,7 @@ namespace FT3
 	uint16_t GetState(void);
 	uint16_t PreInit(void);
 	uint16_t SetParams(void);
+	uint16_t RefreshParams(void);
 	uint16_t PostInit(void);
 	uint16_t RefreshData(void);
 	uint16_t HandleEvent(int64_t, uint8_t *);
