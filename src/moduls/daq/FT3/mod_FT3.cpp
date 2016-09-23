@@ -995,39 +995,39 @@ string TMdContr::getStatus()
     if(startStat() && !redntUse()) {
 	switch(CntrState) {
 	case StateNoConnection:
-	    rez += TSYS::strMess(_("No connection. "));
+	    rez += TSYS::strMess(_("No connection"));
 	    rez.replace(0, 1, "10");
 	    break;
 	case StateUnknown:
-	    rez += TSYS::strMess(_("Unknown state. "));
+	    rez += TSYS::strMess(_("Unknown state"));
 	    break;
 	case StateHardReset:
-	    rez += TSYS::strMess(_("Hard reset. "));
+	    rez += TSYS::strMess(_("Hard reset"));
 	    break;
 	case StatePreInint:
-	    rez += TSYS::strMess(_("PreInit. "));
+	    rez += TSYS::strMess(_("PreInit"));
 	    break;
 	case StateSetParams:
-	    rez += TSYS::strMess(_("Set Params. "));
+	    rez += TSYS::strMess(_("Set Params"));
 	    break;
 	case StatePostInit:
-	    rez += TSYS::strMess(_("PostInit. "));
+	    rez += TSYS::strMess(_("PostInit"));
 	    break;
 	case StateStart:
-	    rez += TSYS::strMess(_("Starting. "));
+	    rez += TSYS::strMess(_("Starting"));
 	    break;
 	case StateRefreshData:
-	    rez += TSYS::strMess(_("Refresh data. "));
+	    rez += TSYS::strMess(_("Refresh data"));
 	    break;
 	case StateRefreshParams:
-	    rez += TSYS::strMess(_("Refresh params. "));
+	    rez += TSYS::strMess(_("Refresh params"));
 	    break;
 	case StateIdle:
-	    rez += TSYS::strMess(_("Idle. "));
+	    rez += TSYS::strMess(_("Idle"));
 	    break;
 
 	}
-	rez += TSYS::strMess(_("Gather data time %.6g ms. "), tm_gath);
+	rez += TSYS::strMess(_(". Gather data time %.6g ms. "), tm_gath);
     }
 
     return rez;
