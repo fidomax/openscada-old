@@ -317,6 +317,7 @@ uint16_t KA_GZD::SetParams(void)
     tagMsg Msg;
     loadParam();
     for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].State.lnk);
 	Msg.L = 0;
 	Msg.C = SetData;
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
@@ -477,7 +478,6 @@ void KA_GZD::loadParam(void)
 {
     if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
     for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].State.lnk);
 	loadVal(data[i].TUOpen.lnk);
 	loadVal(data[i].TUClose.lnk);
 	loadVal(data[i].TUStop.lnk);

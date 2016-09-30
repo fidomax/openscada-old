@@ -277,6 +277,7 @@ uint16_t KA_GNS::SetParams(void)
     tagMsg Msg;
     loadParam();
     for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].State.lnk);
 	Msg.L = 0;
 	Msg.C = SetData;
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
@@ -425,7 +426,6 @@ void KA_GNS::loadParam(void)
 {
     if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
     for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].State.lnk);
 	loadVal(data[i].TUOn.lnk);
 	loadVal(data[i].TUOff.lnk);
 	loadVal(data[i].TUStop.lnk);

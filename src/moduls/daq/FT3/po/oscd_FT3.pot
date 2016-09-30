@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-23 13:30+0300\n"
+"POT-Creation-Date: 2016-09-30 10:18+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -270,6 +270,12 @@ msgstr ""
 msgid "Ignore FCB2"
 msgstr ""
 
+msgid "Params refresh"
+msgstr ""
+
+msgid "DB;PLC"
+msgstr ""
+
 msgid "BUC"
 msgstr ""
 
@@ -439,6 +445,9 @@ msgstr ""
 msgid "Refresh params"
 msgstr ""
 
+msgid "Load params"
+msgstr ""
+
 msgid "Idle"
 msgstr ""
 
@@ -458,7 +467,43 @@ msgstr ""
 msgid "Receiving block state error"
 msgstr ""
 
+msgid "Can't SetupClock"
+msgstr ""
+
+msgid "No answer to SetupClock"
+msgstr ""
+
+msgid "Can't PreInit"
+msgstr ""
+
+msgid "No answer to PreInit"
+msgstr ""
+
 msgid "Block SetParams error"
+msgstr ""
+
+msgid "Can't PostInit"
+msgstr ""
+
+msgid "No answer to PostInit"
+msgstr ""
+
+msgid "Can't Start"
+msgstr ""
+
+msgid "No answer to Start"
+msgstr ""
+
+msgid "Can't RefreshData"
+msgstr ""
+
+msgid "No answer to RefreshData"
+msgstr ""
+
+msgid "Can't RefreshParams"
+msgstr ""
+
+msgid "No answer to RefreshParams"
 msgstr ""
 
 #, c-format

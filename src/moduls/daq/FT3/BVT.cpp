@@ -266,6 +266,7 @@ uint16_t KA_BVT::PostInit(void)
     Msg.L = 0;
     Msg.C = SetData;
     for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].State.lnk);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
 	Msg.L += SerializeB(Msg.D + Msg.L, data[i].State.lnk.vlattr.at().getI(0, true));
     }
@@ -354,7 +355,6 @@ void KA_BVT::loadParam(void)
 {
     if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
     for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].State.lnk);
 	loadVal(data[i].Period.lnk);
 	loadVal(data[i].Sens.lnk);
 	loadVal(data[i].MinS.lnk);

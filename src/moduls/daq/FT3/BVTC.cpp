@@ -157,6 +157,7 @@ uint16_t KA_BVTC::PostInit(void)
     Msg.L = 0;
     Msg.C = SetData;
     for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].Value.lnk);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
 	Msg.L += SerializeB(Msg.D + Msg.L, data[i].Value.lnk.vlattr.at().getI(0, true));
     }
@@ -213,7 +214,6 @@ void KA_BVTC::loadParam(void)
 {
     if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
     for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].Value.lnk);
 	loadVal(data[i].Period.lnk);
 	loadVal(data[i].Count.lnk);
     }

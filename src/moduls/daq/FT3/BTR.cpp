@@ -185,7 +185,7 @@ void KA_BTU::saveIO()
 void KA_BTU::saveParam(void)
 {
     for(int i = 0; i < count_nu; i++) {
-	saveVal(TUdata[i].Line.lnk);
+//	saveVal(TUdata[i].Line.lnk);
 	for(int j = 0; j < 16; j++) {
 	    saveVal(TUdata[i].Time[j].lnk);
 	}
@@ -196,7 +196,7 @@ void KA_BTU::loadParam(void)
 {
     if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
     for(int i = 0; i < count_nu; i++) {
-	loadVal(TUdata[i].Line.lnk);
+//	loadVal(TUdata[i].Line.lnk);
 	for(int j = 0; j < 16; j++) {
 	    loadVal(TUdata[i].Time[j].lnk);
 	}

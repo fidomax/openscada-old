@@ -460,6 +460,7 @@ void TTpContr::postEnable(int flag)
     fldAdd(new TFld("ADDR", _("Transport address"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("NCHANNEL", _("Channels count/Stantion address"), TFld::Integer, TFld::NoFlag, "2", "1", "1;63"));
     fldAdd(new TFld("IGNORE_FCB2", _("Ignore FCB2"), TFld::Boolean, TFld::NoFlag, "1", "0"));
+    fldAdd(new TFld("PRM_REFRESH", _("Params refresh"), TFld::String, TFld::Selected, "5", "DB", "DB;PLC", _("DB;PLC")));
     //> Parameter type bd structure
 
     int t_prm = tpParmAdd("tp_BUC", "PRM_BD_BUC", _("BUC"));
@@ -1022,6 +1023,9 @@ string TMdContr::getStatus()
 	case StateRefreshParams:
 	    rez += TSYS::strMess(_("Refresh params"));
 	    break;
+	case StateLoadParams:
+	    rez += TSYS::strMess(_("Load params"));
+	    break;
 	case StateIdle:
 	    rez += TSYS::strMess(_("Idle"));
 	    break;
@@ -1130,6 +1134,9 @@ void TMdContr::SetCntrState(eCntrState nState)
 	case StateRefreshParams:
 	    mess_sys(TMess::Info, _("Refresh params"));
 	    break;
+	case StateLoadParams:
+	    mess_sys(TMess::Info, _("Load params"));
+	    break;
 	case StateIdle:
 	    mess_sys(TMess::Info, _("Idle"));
 	    break;
@@ -1195,7 +1202,11 @@ void *TMdContr::DAQTask(void *icntr)
 			if(IsSetup) {
 			    cntr.SetCntrState(StateSoftReset);
 			} else {
-			    cntr.SetCntrState(StateRefreshParams);
+			    if(cntr.cfg("PRM_REFRESH").getS() == "PLC"){
+				cntr.SetCntrState(StateRefreshParams);
+			    } else {
+				cntr.SetCntrState(StateLoadParams);
+			    }
 			}
 		    }
 		}
@@ -1352,6 +1363,29 @@ void *TMdContr::DAQTask(void *icntr)
 	    for(int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
 		switch(t.at().BlckRefreshParams()) {
+		case BAD2:
+		case BAD3:
+		    IsError = true;
+		    break;
+		case ERROR:
+		    IsNoAnswer = true;
+		    break;
+		}
+		if(IsNoAnswer) {
+		    break;
+		}
+	    }
+	    if(IsNoAnswer) {
+		cntr.SetCntrState(StateNoConnection);
+	    } else {
+		cntr.SetCntrState(StateRefreshData);
+	    }
+	    break;
+
+	case StateLoadParams:
+	    for(int i_l = 0; i_l < lst.size(); i_l++) {
+		AutoHD<TMdPrm> t = cntr.at(lst[i_l]);
+		switch(t.at().BlckLoadParams()) {
 		case BAD2:
 		case BAD3:
 		    IsError = true;
@@ -1597,10 +1631,10 @@ uint16_t TMdPrm::BlckSetupClock(void)
 	rc = mDA->SetupClock();
     }
     if((rc == BAD2) || (rc == BAD3)) {
-	mess_sys(TMess::Error, "Can't SetupClock");
+	mess_sys(TMess::Error, _("Can't SetupClock"));
     } else {
 	if(rc == ERROR) {
-	    mess_sys(TMess::Error, "No answer to SetupClock");
+	    mess_sys(TMess::Error, _("No answer to SetupClock"));
 	}
     }
     return rc;
@@ -1613,10 +1647,10 @@ uint16_t TMdPrm::BlckPreInit(void)
 	rc = mDA->PreInit();
     }
     if((rc == BAD2) || (rc == BAD3)) {
-	mess_sys(TMess::Error, "Can't PreInit");
+	mess_sys(TMess::Error, _("Can't PreInit"));
     } else {
 	if(rc == ERROR) {
-	    mess_sys(TMess::Error, "No answer to PreInit");
+	    mess_sys(TMess::Error, _("No answer to PreInit"));
 	}
     }
     return rc;
@@ -1641,10 +1675,10 @@ uint16_t TMdPrm::BlckPostInit(void)
 	rc = mDA->PostInit();
     }
     if((rc == BAD2) || (rc == BAD3)) {
-	mess_sys(TMess::Error, "Can't PostInit");
+	mess_sys(TMess::Error, _("Can't PostInit"));
     } else {
 	if(rc == ERROR) {
-	    mess_sys(TMess::Error, "No answer to PostInit");
+	    mess_sys(TMess::Error, _("No answer to PostInit"));
 	}
     }
     return rc;
@@ -1657,10 +1691,10 @@ uint16_t TMdPrm::BlckStart(void)
 	rc = mDA->Start();
     }
     if((rc == BAD2) || (rc == BAD3)) {
-	mess_sys(TMess::Error, "Can't Start");
+	mess_sys(TMess::Error, _("Can't Start"));
     } else {
 	if(rc == ERROR) {
-	    mess_sys(TMess::Error, "No answer to Start");
+	    mess_sys(TMess::Error, _("No answer to Start"));
 	}
     }
     return rc;
@@ -1673,10 +1707,10 @@ uint16_t TMdPrm::BlckRefreshData(void)
 	rc = mDA->RefreshData();
     }
     if((rc == BAD2) || (rc == BAD3)) {
-	mess_sys(TMess::Error, "Can't RefreshData");
+	mess_sys(TMess::Error, _("Can't RefreshData"));
     } else {
 	if(rc == ERROR) {
-	    mess_sys(TMess::Error, "No answer to RefreshData");
+	    mess_sys(TMess::Error, _("No answer to RefreshData"));
 	}
     }
     return rc;
@@ -1689,14 +1723,24 @@ uint16_t TMdPrm::BlckRefreshParams(void)
 	rc = mDA->RefreshParams();
     }
     if((rc == BAD2) || (rc == BAD3)) {
-	mess_sys(TMess::Error, "Can't RefreshParams");
+	mess_sys(TMess::Error, _("Can't RefreshParams"));
     } else {
 	if(rc == ERROR) {
-	    mess_sys(TMess::Error, "No answer to RefreshParams");
+	    mess_sys(TMess::Error, _("No answer to RefreshParams"));
 	}
     }
     return rc;
 }
+
+uint16_t TMdPrm::BlckLoadParams(void)
+{
+    uint16_t rc = GOOD2;
+    if(mDA) {
+	mDA->loadParam();
+    }
+    return rc;
+}
+
 
 uint16_t TMdPrm::HandleEvent(time_t tm, uint8_t * D)
 {
@@ -1739,7 +1783,7 @@ void TMdPrm::vlSet(TVal &vo, const TVariant &vl, const TVariant &pvl)
     if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("TMdPrm::vlSet name %s "), vo.name().c_str());
     if(!enableStat() || !owner().startStat()) vo.setS(EVAL_STR, 0, true);
 
-    if(vl.isEVal() || vl == pvl) return;
+//    if(vl.isEVal() || vl == pvl) return;
 
 //Send to active reserve station
     if(owner().redntUse()) {
