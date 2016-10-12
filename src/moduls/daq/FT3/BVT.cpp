@@ -48,17 +48,17 @@ void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
 	    || tmpfl[10].f != Adjust.vl) {
 	Period.s = 0;
 	Period.Update(tmp);
-	Sens.Update(tmpfl[0].f, 0);
-	MinS.Update(tmpfl[1].f, 0);
-	MaxS.Update(tmpfl[2].f, 0);
-	MinPV.Update(tmpfl[3].f, 0);
-	MaxPV.Update(tmpfl[4].f, 0);
-	MinA.Update(tmpfl[5].f, 0);
-	MaxA.Update(tmpfl[6].f, 0);
-	MinW.Update(tmpfl[7].f, 0);
-	MaxW.Update(tmpfl[8].f, 0);
-	Factor.Update(tmpfl[9].f, 0);
-	Adjust.Update(tmpfl[10].f, 0);
+	Sens.Update(tmpfl[0].f);
+	MinS.Update(tmpfl[1].f);
+	MaxS.Update(tmpfl[2].f);
+	MinPV.Update(tmpfl[3].f);
+	MaxPV.Update(tmpfl[4].f);
+	MinA.Update(tmpfl[5].f);
+	MaxA.Update(tmpfl[6].f);
+	MinW.Update(tmpfl[7].f);
+	MaxW.Update(tmpfl[8].f);
+	Factor.Update(tmpfl[9].f);
+	Adjust.Update(tmpfl[10].f);
 	uint8_t E[46] = { 0, tmp, tmpfl[0].b[0], tmpfl[0].b[1], tmpfl[0].b[2], tmpfl[0].b[3], tmpfl[1].b[0], tmpfl[1].b[1], tmpfl[1].b[2], tmpfl[1].b[3],
 		tmpfl[2].b[0], tmpfl[2].b[1], tmpfl[2].b[2], tmpfl[2].b[3], tmpfl[3].b[0], tmpfl[3].b[1], tmpfl[3].b[2], tmpfl[3].b[3], tmpfl[4].b[0],
 		tmpfl[4].b[1], tmpfl[4].b[2], tmpfl[4].b[3], tmpfl[5].b[0], tmpfl[5].b[1], tmpfl[5].b[2], tmpfl[5].b[3], tmpfl[6].b[0], tmpfl[6].b[1],

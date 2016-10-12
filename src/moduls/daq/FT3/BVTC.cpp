@@ -109,8 +109,8 @@ uint16_t KA_BVTC::SetParams(void)
 	    Msg.L = 0;
 	    Msg.C = SetData;
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
-	    Msg.L += SerializeB(Msg.D + Msg.L, data[i].Period.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeB(Msg.D + Msg.L, data[i].Count.lnk.vlattr.at().getI(0, true));
+	    Msg.L += data[i].Period.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].Count.SerializeAttr(Msg.D + Msg.L);
 	    Msg.L += 3;
 	    rc = mPrm.owner().DoCmd(&Msg);
 	    if((rc == BAD2) || (rc == BAD3)) {
@@ -159,7 +159,7 @@ uint16_t KA_BVTC::PostInit(void)
     for(int i = 0; i < count_n; i++) {
 	loadVal(data[i].Value.lnk);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
-	Msg.L += SerializeB(Msg.D + Msg.L, data[i].Value.lnk.vlattr.at().getI(0, true));
+	Msg.L += data[i].Value.SerializeAttr(Msg.D + Msg.L);
     }
     Msg.L += 3;
     return mPrm.owner().DoCmd(&Msg);
@@ -249,6 +249,7 @@ uint16_t KA_BVTC::HandleEvent(int64_t tm, uint8_t * D)
 	case 2:
 	    l = 2 + count_n * 2;
 	    for(int j = 1; j <= count_n; j++) {
+		//data[j].Value.Update()
 		mPrm.vlAt(TSYS::strMess("TC_%d", j)).at().setI(D[j * 2 + 1], tm, true);
 	    }
 	    break;

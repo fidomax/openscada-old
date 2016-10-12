@@ -214,6 +214,17 @@ namespace FT3
 		    return err;
 		}
 	    }
+	    uint8_t Serialize(uint8_t * out)
+	    {
+		out[0] = vl;
+		return 1;
+	    }
+	    uint8_t SerializeAttr(uint8_t * out)
+	    {
+		out[0] = lnk.vlattr.at().getI(0, true);
+		return 1;
+	    }
+
 	};
 
 	class ui16Data
@@ -231,10 +242,10 @@ namespace FT3
 	    uint8_t s;
 	    uint16_t err;
 	    SLnk lnk;
-	    void Update(uint16_t d)
+	    void Update(uint16_t d/*, int64_t tm = 0*/)
 	    {
 		vl = d;
-		lnk.vlattr.at().setI(vl, 0, true);
+		lnk.vlattr.at().setI(vl, 0/*tm*/, true);
 	    }
 	    ;
 	    void Set(uint16_t d)
@@ -250,6 +261,24 @@ namespace FT3
 		} else {
 		    return err;
 		}
+	    }
+	    uint8_t Serialize(uint8_t * out)
+	    {
+		for(uint8_t j = 0; j < 2; j++)
+		    out[j] = b_vl[j];
+		return 2;
+	    }
+	    uint8_t SerializeAttr(uint8_t * out)
+	    {
+		union
+		{
+		    uint16_t v;
+		    uint8_t c[2];
+		} dt;
+		dt.v = lnk.vlattr.at().getI(0, true);
+		for(uint8_t j = 0; j < 2; j++)
+		    out[j] = dt.c[j];
+		return 2;
 	    }
 	};
 
@@ -268,13 +297,13 @@ namespace FT3
 	    uint8_t s;
 	    uint32_t vl_sens, err;
 	    SLnk lnk;
-	    void Update(uint32_t d, uint8_t cmd)
+	    void Update(uint32_t d/*, uint8_t cmd = 0*/)
 	    {
-		switch(cmd) {
-		case 0:
+/*		switch(cmd) {
+		case 0:*/
 		    vl = d;
 		    lnk.vlattr.at().setI(vl, 0, true);
-		    break;
+/*		    break;
 		case 1:
 		    vl_sens = d;
 		    lnk.vlattr.at().setI(vl_sens, 0, true);
@@ -283,13 +312,13 @@ namespace FT3
 		    vl = d;
 		    lnk.vlattr.at().setI(vl, 0, true);
 		    break;
-		}
+		}*/
 	    }
 	    ;
 	    void Set(uint32_t d)
 	    {
-		Update(d, 0);
-		Update(d, 1);
+		Update(d);
+//		Update(d, 1);
 		lnk.aprm.at().setI(vl);
 	    }
 	    ;
@@ -300,6 +329,24 @@ namespace FT3
 		} else {
 		    return err;
 		}
+	    }
+	    uint8_t Serialize(uint8_t * out)
+	    {
+		for(uint8_t j = 0; j < 4; j++)
+		    out[j] = b_vl[j];
+		return 4;
+	    }
+	    uint8_t SerializeAttr(uint8_t * out)
+	    {
+		union
+		{
+		    uint16_t v;
+		    uint8_t c[4];
+		} dt;
+		dt.v = lnk.vlattr.at().getI(0, true);
+		for(uint8_t j = 0; j < 4; j++)
+		    out[j] = dt.c[j];
+		return 4;
 	    }
 	};
 
@@ -318,13 +365,13 @@ namespace FT3
 	    uint8_t s;
 	    float vl_sens, err;
 	    SLnk lnk;
-	    void Update(float d, uint8_t cmd)
+	    void Update(float d/*, uint8_t cmd = 0*/)
 	    {
-		switch(cmd) {
-		case 0:
+/*		switch(cmd) {
+		case 0:*/
 		    vl = d;
 		    lnk.vlattr.at().setR(vl, 0, true);
-		    break;
+/*		    break;
 		case 1:
 		    vl_sens = d;
 		    lnk.vlattr.at().setR(vl_sens, 0, true);
@@ -333,13 +380,13 @@ namespace FT3
 		    vl = d;
 		    lnk.vlattr.at().setR(vl, 0, true);
 		    break;
-		}
+		}*/
 	    }
 	    ;
 	    void Set(float d)
 	    {
-		Update(d, 0);
-		Update(d, 1);
+		Update(d);
+//		Update(d, 1);
 		lnk.aprm.at().setR(vl);
 	    }
 	    ;
@@ -350,6 +397,24 @@ namespace FT3
 		} else {
 		    return err;
 		}
+	    }
+	    uint8_t Serialize(uint8_t * out)
+	    {
+		for(uint8_t j = 0; j < 4; j++)
+		    out[j] = b_vl[j];
+		return 4;
+	    }
+	    uint8_t SerializeAttr(uint8_t * out)
+	    {
+		union
+		{
+		    uint16_t v;
+		    uint8_t c[4];
+		} dt;
+		dt.v = lnk.vlattr.at().getR(0, true);
+		for(uint8_t j = 0; j < 4; j++)
+		    out[j] = dt.c[j];
+		return 4;
 	    }
 	};
 

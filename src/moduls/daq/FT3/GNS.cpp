@@ -33,7 +33,9 @@ void KA_GNS::SKANSchannel::UpdateState(uint16_t ID, uint8_t cl)
     tmpui8 = State.Get();
     if(tmpui8 != State.vl) {
 	State.Update(tmpui8);
-	if((tmpui8 & 0x0F) == NAS_ON) Time.Update(Time.vl, 1);
+	if((tmpui8 & 0x0F) == NAS_ON){
+	    Time.vl_sens = Time.vl;
+	}
 	uint8_t E[2] = { 0, tmpui8 };
 	da->PushInBE(cl, sizeof(E), ID, E);
     }
@@ -94,10 +96,10 @@ void KA_GNS::SKANSchannel::UpdateTime(uint16_t ID, uint8_t cl)
 {
     ui832 tmp;
     tmp.ui32 = Time.Get();
-    Time.Update(tmp.ui32, 0);
+    Time.Update(tmp.ui32);
     if((tmp.ui32 - Time.vl_sens) > 36000) {
 	Time.s = 0;
-	Time.Update(tmp.ui32, 1);
+	Time.vl_sens = tmp.ui32;
 	uint8_t E[5] = { 0, tmp.b[0], tmp.b[1], tmp.b[2], tmp.b[3] };
 	da->PushInBE(cl, sizeof(E), ID, E);
     }
