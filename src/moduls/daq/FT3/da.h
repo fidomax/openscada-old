@@ -188,10 +188,10 @@ namespace FT3
 	    uint8_t s;
 	    uint8_t err;
 	    SLnk lnk;
-	    void Update(uint8_t d)
+	    void Update(uint8_t d, int64_t tm = 0)
 	    {
 		vl = d;
-		lnk.vlattr.at().setI(vl, 0, true);
+		lnk.vlattr.at().setI(vl, tm, true);
 	    }
 	    ;
 	    void Set(uint8_t d)
@@ -242,10 +242,10 @@ namespace FT3
 	    uint8_t s;
 	    uint16_t err;
 	    SLnk lnk;
-	    void Update(uint16_t d/*, int64_t tm = 0*/)
+	    void Update(uint16_t d, int64_t tm = 0)
 	    {
 		vl = d;
-		lnk.vlattr.at().setI(vl, 0/*tm*/, true);
+		lnk.vlattr.at().setI(vl, tm, true);
 	    }
 	    ;
 	    void Set(uint16_t d)
@@ -297,28 +297,16 @@ namespace FT3
 	    uint8_t s;
 	    uint32_t vl_sens, err;
 	    SLnk lnk;
-	    void Update(uint32_t d/*, uint8_t cmd = 0*/)
+	    void Update(uint32_t d, int64_t tm = 0)
 	    {
-/*		switch(cmd) {
-		case 0:*/
-		    vl = d;
-		    lnk.vlattr.at().setI(vl, 0, true);
-/*		    break;
-		case 1:
-		    vl_sens = d;
-		    lnk.vlattr.at().setI(vl_sens, 0, true);
-		    break;
-		default:
-		    vl = d;
-		    lnk.vlattr.at().setI(vl, 0, true);
-		    break;
-		}*/
+		vl = d;
+		lnk.vlattr.at().setI(vl, tm, true);
 	    }
 	    ;
 	    void Set(uint32_t d)
 	    {
+		vl_sens = d;
 		Update(d);
-//		Update(d, 1);
 		lnk.aprm.at().setI(vl);
 	    }
 	    ;
@@ -365,28 +353,16 @@ namespace FT3
 	    uint8_t s;
 	    float vl_sens, err;
 	    SLnk lnk;
-	    void Update(float d/*, uint8_t cmd = 0*/)
+	    void Update(float d, int64_t tm = 0)
 	    {
-/*		switch(cmd) {
-		case 0:*/
-		    vl = d;
-		    lnk.vlattr.at().setR(vl, 0, true);
-/*		    break;
-		case 1:
-		    vl_sens = d;
-		    lnk.vlattr.at().setR(vl_sens, 0, true);
-		    break;
-		default:
-		    vl = d;
-		    lnk.vlattr.at().setR(vl, 0, true);
-		    break;
-		}*/
+		vl = d;
+		lnk.vlattr.at().setR(vl, tm, true);
 	    }
 	    ;
 	    void Set(float d)
 	    {
+		vl_sens = d;
 		Update(d);
-//		Update(d, 1);
 		lnk.aprm.at().setR(vl);
 	    }
 	    ;
