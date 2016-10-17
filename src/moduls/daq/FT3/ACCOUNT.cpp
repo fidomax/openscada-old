@@ -237,7 +237,7 @@ void B_ACCOUNT::tmHandler(void)
 	    UpdateParam2Fl(data[i].MinA, data[i].MaxA, PackID(ID, (i + 1), 5), 1);
 	    UpdateParam32(data[i].Sensors, PackID(ID, (i + 1), 6), 1);
 	    UpdateParamFl(data[i].ServiceQ, PackID(ID, (i + 1), 7), 1);
-	    UpdateParam8(data[i].Hour, PackID(ID, (i + 1), 2), 8);
+	    UpdateParam8(data[i].Hour, PackID(ID, (i + 1), 8), 1);
 	    UpdateParamFl(data[i].HourlyQ, PackID(ID, (i + 1), 9), 0);
 	    UpdateParamFl(data[i].Counter, PackID(ID, (i + 1), 10), 0);
 	    /*	    UpdateParamFl(data[i].HourQ, PackID(ID, (i + 1), 11), 1);
