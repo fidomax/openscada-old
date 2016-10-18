@@ -267,6 +267,13 @@ bool TProtIn::mess(const string &ireqst, string &answer)
 		    if(t.at().ProcessMessage(&msg, &msgOut)) {
 
 			modPrt->MakePacket(answer, &msgOut);
+			if(mess_lev() == TMess::Debug){
+			    data_s = "";
+			    for(int i = 0; i < answer.size(); i++) {
+			        data_s += TSYS::int2str((uint8_t) answer[i], TSYS::Hex) + " ";
+			    }
+			    mess_sys(TMess::Debug, _("response: %s"), data_s.c_str());
+			}
 		    }
 		}
 
