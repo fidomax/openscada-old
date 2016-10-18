@@ -60,7 +60,10 @@ namespace FT3
     {
 	GRS = 0x0, KA = 0x1,
     };
-
+    uint8_t SerializeF(uint8_t * out, float vl);
+    uint8_t SerializeUi16(uint8_t * out, uint16_t vl);
+    uint8_t SerializeUi32(uint8_t * out, uint32_t vl);
+    uint8_t SerializeB(uint8_t * out, uint8_t vl);
     class DA: public TElem
     {
 	friend class TMdPrm;
@@ -193,19 +196,16 @@ namespace FT3
 		vl = d;
 		lnk.vlattr.at().setI(vl, tm, true);
 	    }
-	    ;
 	    void Set(uint8_t d)
 	    {
 		Update(d);
 		lnk.aprm.at().setI(vl);
 	    }
-	    ;
 	    void Set(uint32_t d)
 	    {
 		Update(d);
 		lnk.aprm.at().setI(d);
 	    }
-	    ;
 	    uint8_t Get()
 	    {
 		if(lnk.Connected()) {
@@ -223,6 +223,17 @@ namespace FT3
 	    {
 		out[0] = lnk.vlattr.at().getI(0, true);
 		return 1;
+	    }
+	    uint8_t CheckUpdate(void)
+	    {
+		uint8_t t = Get();
+		if(t != vl) {
+		    Update(t);
+		    return true;
+		} else {
+		    return false;
+		}
+
 	    }
 
 	};
@@ -280,6 +291,17 @@ namespace FT3
 		    out[j] = dt.c[j];
 		return 2;
 	    }
+	    bool CheckUpdate(void)
+	    {
+		uint16_t t = Get();
+		if(t != vl) {
+		    Update(t);
+		    return true;
+		} else {
+		    return false;
+		}
+
+	    }
 	};
 
 	class ui32Data
@@ -336,6 +358,18 @@ namespace FT3
 		    out[j] = dt.c[j];
 		return 4;
 	    }
+	    bool CheckUpdate(void)
+	    {
+		uint32_t t = Get();
+		if(t != vl) {
+		    Update(t);
+		    return true;
+		} else {
+		    return false;
+		}
+
+	    }
+
 	};
 
 	class flData
@@ -392,6 +426,18 @@ namespace FT3
 		    out[j] = dt.c[j];
 		return 4;
 	    }
+	    bool CheckUpdate(void)
+	    {
+		float t = Get();
+		if(t != vl) {
+		    Update(t);
+		    return true;
+		} else {
+		    return false;
+		}
+
+	    }
+
 	};
 
 	//vector<SLnk> mlnk;
@@ -427,10 +473,6 @@ namespace FT3
 	FT3ID UnpackID(uint16_t ID);
 	uint16_t PackID(FT3ID ID);
 	uint16_t PackID(uint8_t g, uint8_t k, uint8_t n);
-	uint8_t SerializeF(uint8_t * out, float vl);
-	uint8_t SerializeUi16(uint8_t * out, uint16_t vl);
-	uint8_t SerializeUi32(uint8_t * out, uint32_t vl);
-	uint8_t SerializeB(uint8_t * out, uint8_t vl);
     public:
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
 	time_t DateTimeToTime_t(uint8_t *d);

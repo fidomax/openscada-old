@@ -25,17 +25,27 @@ namespace FT3
 {
     enum eKA_BVT_TT
     {
-	TT_FAILURE = 0,
-	TT_NORMAL = 1,
-	TT_WARNING = 2,
-	TT_ERROR = 3,
-	TT_OFF= 4
+	TT_FAILURE = 0, TT_NORMAL = 1, TT_WARNING = 2, TT_ERROR = 3, TT_OFF = 4
     };
     enum eKA_BVT_State
     {
-	KA_BVT_Error = 0x0,
-	KA_BVT_Normal = 0x1
+	KA_BVT_Error = 0x0, KA_BVT_Normal = 0x1
     };
+    struct KATTParams  // FT3 ID
+    {
+	uint8_t Period;
+	float Sens;
+	float MinS;
+	float MaxS;
+	float MinPV;
+	float MaxPV;
+	float MinA;
+	float MaxA;
+	float MinW;
+	float MaxW;
+	float Factor;
+	float Adjust;
+    }__attribute__((packed));
     class KA_BVT: public DA
     {
     public:
@@ -89,6 +99,8 @@ namespace FT3
 
 	    flData Value, Sens, MinS, MaxS, MinPV, MaxPV, MinW, MaxW, MinA, MaxA, Factor, Adjust;
 	    void UpdateTTParam(uint16_t ID, uint8_t cl);
+	    bool IsParamChanged();
+	    bool IsNewParamOK(const struct KATTParams *params);
 	    uint8_t SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_t *val);
 	};
 	vector<SKATTchannel> data;
@@ -187,7 +199,12 @@ namespace FT3
 	uint16_t ID;
 	uint16_t count_n;
 	void AddChannel(uint8_t iid);
-	uint16_t Task(uint16_t);
+	uint16_t GetState(void);
+	uint16_t PreInit(void);
+	uint16_t SetParams(void);
+	uint16_t RefreshParams(void);
+	uint16_t PostInit(void);
+	uint16_t RefreshData(void);
 	uint16_t HandleEvent(int64_t, uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
@@ -195,6 +212,8 @@ namespace FT3
 	string getStatus(void);
 	void saveIO(void);
 	void loadIO(bool force = false);
+	void saveParam(void);
+	void loadParam(void);
 	void tmHandler(void);
 	class STTchannel
 	{
