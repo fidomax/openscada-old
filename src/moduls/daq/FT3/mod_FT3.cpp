@@ -207,6 +207,21 @@ void TMdContr::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
     }
 }
 
+uint8_t TMdContr::cmdSynchTime()
+{
+    uint8_t rc = 0;
+    vector<string> lst;
+    list(lst);
+    for(int i_l = 0; i_l < lst.size(); i_l++) {
+	AutoHD<TMdPrm> t = at(lst[i_l]);
+	rc = t.at().cmdSynchTime();
+	if(rc < 2) {
+	    break;
+	}
+    }
+    return rc;
+}
+
 uint8_t TMdContr::cmdGet(uint16_t prmID, uint8_t * out)
 {
     uint8_t rc = 0;
@@ -267,6 +282,13 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	Channels[msg->B].FCB2 = Channels[msg->B].FCB3 = 0xFF;
 	resp->L = 3;
 	resp->C = Channels[msg->B].FCB3 & 0x20;
+	break;
+    case TimSync:
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("SynchronizationTimer"));
+	rc = cmdSynchTime();
+	if(rc == 0) {
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Clock don't set"));
+	}
 	break;
     case ReqData1:
     case ReqData2:
@@ -1757,6 +1779,15 @@ void TMdPrm::tmHandler()
 	mDA->tmHandler();
     } else {
 	return;
+    }
+}
+
+uint8_t TMdPrm::cmdSynchTime()
+{
+    if(mDA) {
+	return mDA->cmdSynchTime();
+    } else {
+	return 0;
     }
 }
 

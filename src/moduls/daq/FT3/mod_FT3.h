@@ -214,6 +214,7 @@ namespace FT3
 	TMdContr &owner();
 
 	//!!! Get data from Logic FT3 parameter
+	uint8_t cmdSynchTime();
 	uint8_t cmdGet(uint16_t, uint8_t *);
 	uint8_t cmdSet(uint8_t *, uint8_t);
 	uint16_t Task(uint16_t);
@@ -332,7 +333,6 @@ namespace FT3
 		Time_tToKADateTime(d, t);
 	    }
 	}
-
 	uint8_t devAddr;
 	uint8_t nChannel;
 
@@ -355,6 +355,7 @@ namespace FT3
 	uint16_t Len(uint16_t l);
 
 	//!!! Get data from Logic FT3 controller
+	uint8_t cmdSynchTime();
 	uint8_t cmdGet(uint16_t, uint8_t *);
 	uint8_t cmdSet(uint8_t *, uint8_t);
 

@@ -19,6 +19,8 @@
  ***************************************************************************/
 
 #include <sys/times.h>
+#include <sys/time.h>
+
 
 #include <tsys.h>
 
@@ -426,6 +428,32 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
     return l;
 }
 
+uint8_t KA_BUC::cmdSynchTime()
+{
+    if(!clockstate) return 0;
+    struct tm * timeinfo;
+    struct timeval t;
+    time_t rawtime;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    if(!(timeinfo->tm_min < 30)){
+        if(23 < ++timeinfo->tm_hour){
+            timeinfo->tm_hour = 0;
+            timeinfo->tm_mday++;
+            if((timeinfo->tm_year & 3 ? 365 : 366) < ++timeinfo->tm_yday){
+                timeinfo->tm_mon = 0;
+                timeinfo->tm_mday = 1;
+                timeinfo->tm_year++;
+            }
+        }
+    }
+    timeinfo->tm_min = 0;
+    timeinfo->tm_sec = 0;
+    t.tv_sec = mktime(timeinfo) - rawtime;
+    adjtime(&t, NULL);
+    return 1;
+}
+
 B_BUC::B_BUC(TMdPrm& prm, uint16_t id, uint16_t modif) :
 	DA(prm), ID(id), mod_KP(modif), state(2), stateWatch(1), s_tm(0), wt1(0), wt2(0), s_wt1(0), s_wt2(0)
 {
@@ -709,4 +737,30 @@ uint8_t B_BUC::cmdSet(uint8_t * req, uint8_t addr)
     }
 
     return l;
+}
+
+uint8_t B_BUC::cmdSynchTime()
+{
+    if(stateWatch) return 0;
+    struct tm * timeinfo;
+    struct timeval t;
+    time_t rawtime;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    if(!(timeinfo->tm_min < 30)){
+        if(23 < ++timeinfo->tm_hour){
+            timeinfo->tm_hour = 0;
+            timeinfo->tm_mday++;
+            if((timeinfo->tm_year & 3 ? 365 : 366) < ++timeinfo->tm_yday){
+                timeinfo->tm_mon = 0;
+                timeinfo->tm_mday = 1;
+                timeinfo->tm_year++;
+            }
+        }
+    }
+    timeinfo->tm_min = 0;
+    timeinfo->tm_sec = 0;
+    t.tv_sec = mktime(timeinfo) - rawtime;
+    adjtime(&t, NULL);
+    return 1;
 }
