@@ -177,7 +177,7 @@ msgstr "Сброс канала"
 msgid "SynchronizationTimer"
 msgstr "Корректировка таймера"
 
-msgid "Clock don't set"
+msgid "Clock is not set"
 msgstr "Часы не установлены"
 
 msgid "ReqData BAD FCB!!!"

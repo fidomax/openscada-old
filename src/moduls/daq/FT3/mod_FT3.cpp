@@ -287,7 +287,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
 	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("SynchronizationTimer"));
 	rc = cmdSynchTime();
 	if(rc == 0) {
-	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Clock don't set"));
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Clock is not set"));
 	}
 	break;
     case ReqData1:

@@ -171,7 +171,7 @@ msgstr ""
 msgid "SynchronizationTimer"
 msgstr ""
 
-msgid "Clock don't set"
+msgid "Clock is not set"
 msgstr ""
 
 msgid "ResetChan"
