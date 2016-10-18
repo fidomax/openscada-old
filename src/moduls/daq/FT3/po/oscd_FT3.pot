@@ -168,6 +168,12 @@ msgstr ""
 msgid "ProcessMessage one byte req A %02X"
 msgstr ""
 
+msgid "SynchronizationTimer"
+msgstr ""
+
+msgid "Clock don't set"
+msgstr ""
+
 msgid "ResetChan"
 msgstr ""
 

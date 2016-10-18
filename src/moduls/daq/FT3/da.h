@@ -97,6 +97,9 @@ namespace FT3
 	virtual uint16_t setVal(TVal &)
 	{
 	}
+	virtual uint8_t cmdSynchTime()
+	{
+	}
 	virtual uint8_t cmdGet(uint16_t, uint8_t *)
 	{
 	}
