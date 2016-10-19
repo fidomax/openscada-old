@@ -21,7 +21,6 @@
 #include <sys/times.h>
 #include <sys/time.h>
 
-
 #include <tsys.h>
 
 #include "mod_FT3.h"
@@ -302,14 +301,29 @@ uint16_t KA_BUC::setVal(TVal &val)
 
 void KA_BUC::vlGet(TVal &val)
 {
-    if(val.name() == "curdt") {
-	tagMsg Msg;
-	Msg.L = 0;
-	Msg.C = AddrReq;
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(1, 0, 2)); //current time
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(1, 0, 3)); //uptime
-	Msg.L += 3;
-	mPrm.owner().DoCmd(&Msg);
+    if(mPrm.owner().cfg("CTRTYPE").getS() == "DAQ") {
+	if(val.name() == "curdt") {
+	    tagMsg Msg;
+	    Msg.L = 0;
+	    Msg.C = AddrReq;
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(1, 0, 2)); //current time
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(1, 0, 3)); //uptime
+	    Msg.L += 3;
+	    mPrm.owner().DoCmd(&Msg);
+	}
+    } else {
+	if(val.name() == "curdt") {
+	    time_t rawtime;
+	    unsigned long upval = 0;
+	    time(&rawtime);
+	    mPrm.vlAt("curdt").at().setS(atm2s(rawtime, "%d.%m.%Y %H:%M:%S"), 0, true);
+	    FILE *f = fopen("/proc/uptime", "r");
+	    if((f != NULL) && (fscanf(f, "%lu", &upval) == 1)) {
+		rawtime -= upval;
+	    }
+	    fclose(f);
+	    mPrm.vlAt("stopdt").at().setS(atm2s(rawtime, "%d.%m.%Y %H:%M:%S"), 0, true);
+	}
     }
 }
 
@@ -436,16 +450,16 @@ uint8_t KA_BUC::cmdSynchTime()
     time_t rawtime;
     time(&rawtime);
     timeinfo = localtime(&rawtime);
-    if(!(timeinfo->tm_min < 30)){
-        if(23 < ++timeinfo->tm_hour){
-            timeinfo->tm_hour = 0;
-            timeinfo->tm_mday++;
-            if((timeinfo->tm_year & 3 ? 365 : 366) < ++timeinfo->tm_yday){
-                timeinfo->tm_mon = 0;
-                timeinfo->tm_mday = 1;
-                timeinfo->tm_year++;
-            }
-        }
+    if(!(timeinfo->tm_min < 30)) {
+	if(23 < ++timeinfo->tm_hour) {
+	    timeinfo->tm_hour = 0;
+	    timeinfo->tm_mday++;
+	    if((timeinfo->tm_year & 3 ? 365 : 366) < ++timeinfo->tm_yday) {
+		timeinfo->tm_mon = 0;
+		timeinfo->tm_mday = 1;
+		timeinfo->tm_year++;
+	    }
+	}
     }
     timeinfo->tm_min = 0;
     timeinfo->tm_sec = 0;
@@ -747,16 +761,16 @@ uint8_t B_BUC::cmdSynchTime()
     time_t rawtime;
     time(&rawtime);
     timeinfo = localtime(&rawtime);
-    if(!(timeinfo->tm_min < 30)){
-        if(23 < ++timeinfo->tm_hour){
-            timeinfo->tm_hour = 0;
-            timeinfo->tm_mday++;
-            if((timeinfo->tm_year & 3 ? 365 : 366) < ++timeinfo->tm_yday){
-                timeinfo->tm_mon = 0;
-                timeinfo->tm_mday = 1;
-                timeinfo->tm_year++;
-            }
-        }
+    if(!(timeinfo->tm_min < 30)) {
+	if(23 < ++timeinfo->tm_hour) {
+	    timeinfo->tm_hour = 0;
+	    timeinfo->tm_mday++;
+	    if((timeinfo->tm_year & 3 ? 365 : 366) < ++timeinfo->tm_yday) {
+		timeinfo->tm_mon = 0;
+		timeinfo->tm_mday = 1;
+		timeinfo->tm_year++;
+	    }
+	}
     }
     timeinfo->tm_min = 0;
     timeinfo->tm_sec = 0;
