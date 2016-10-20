@@ -215,18 +215,18 @@ uint16_t KA_BVT::SetParams(void)
 	    Msg.L = 0;
 	    Msg.C = SetData;
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
-	    Msg.L += data[i].Period.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].Sens.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].MinS.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].MaxS.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].MinPV.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].MaxPV.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].MinW.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].MaxW.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].MinA.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].MaxA.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].Factor.Serialize(Msg.D + Msg.L);
-	    Msg.L += data[i].Adjust.Serialize(Msg.D + Msg.L);
+	    Msg.L += data[i].Period.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].Sens.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].MinS.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].MaxS.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].MinPV.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].MaxPV.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].MinW.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].MaxW.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].MinA.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].MaxA.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].Factor.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].Adjust.SerializeAttr(Msg.D + Msg.L);
 	    Msg.L += 3;
 	    rc = mPrm.owner().DoCmd(&Msg);
 	    if((rc == BAD2) || (rc == BAD3)) {
@@ -275,7 +275,7 @@ uint16_t KA_BVT::PostInit(void)
     for(int i = 0; i < count_n; i++) {
 	loadVal(data[i].State.lnk);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
-	Msg.L += data[i].State.Serialize(Msg.D + Msg.L);
+	Msg.L += data[i].State.SerializeAttr(Msg.D + Msg.L);
     }
     Msg.L += 3;
     return mPrm.owner().DoCmd(&Msg);
@@ -555,26 +555,26 @@ uint16_t KA_BVT::setVal(TVal &val)
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(stateft3ID));
 	Msg.L += SerializeB(Msg.D + Msg.L, 4);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
-	Msg.L += data[ft3ID.k - 1].Value.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Value.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(stateft3ID));
-	Msg.L += data[ft3ID.k - 1].State.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].State.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 1:
-	Msg.L += data[ft3ID.k - 1].State.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].State.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 2:
-	Msg.L += data[ft3ID.k - 1].Period.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].Sens.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MinS.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxS.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MinPV.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxPV.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MinA.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxA.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MinW.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxW.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].Factor.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].Adjust.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Period.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Sens.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MinS.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MaxS.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MinPV.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MaxPV.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MinA.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MaxA.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MinW.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MaxW.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Factor.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Adjust.SerializeAttr(Msg.D + Msg.L);
 	rc = 1;
 	break;
     }
@@ -685,35 +685,35 @@ uint16_t B_BVT::SetParams(void)
 	Msg.L = 0;
 	Msg.C = SetData;
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
-	Msg.L += data[i].Period.Serialize(Msg.D + Msg.L);
+	Msg.L += data[i].Period.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 3));
-	Msg.L += data[i].Sens.Serialize(Msg.D + Msg.L);
+	Msg.L += data[i].Sens.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 4));
-	Msg.L += data[i].MinS.Serialize(Msg.D + Msg.L);
-	Msg.L += data[i].MaxS.Serialize(Msg.D + Msg.L);
+	Msg.L += data[i].MinS.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[i].MaxS.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 5));
-	Msg.L += data[i].MinPV.Serialize(Msg.D + Msg.L);
-	Msg.L += data[i].MaxPV.Serialize(Msg.D + Msg.L);
+	Msg.L += data[i].MinPV.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[i].MaxPV.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 6));
-	Msg.L += data[i].MinW.Serialize(Msg.D + Msg.L);
-	Msg.L += data[i].MaxW.Serialize(Msg.D + Msg.L);
+	Msg.L += data[i].MinW.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[i].MaxW.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 7));
-	Msg.L += data[i].MinA.Serialize(Msg.D + Msg.L);
-	Msg.L += data[i].MaxA.Serialize(Msg.D + Msg.L);
+	Msg.L += data[i].MinA.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[i].MaxA.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 8));
-	Msg.L += data[i].Factor.Serialize(Msg.D + Msg.L);
+	Msg.L += data[i].Factor.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 9));
-	Msg.L += data[i].Dimension.Serialize(Msg.D + Msg.L);
+	Msg.L += data[i].Dimension.SerializeAttr(Msg.D + Msg.L);
 	if(with_k) {
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 10));
-	    Msg.L += data[i].CorFactor.Serialize(Msg.D + Msg.L);
+	    Msg.L += data[i].CorFactor.SerializeAttr(Msg.D + Msg.L);
 	    if(with_rate) {
 		Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 12));
-		Msg.L += data[i].Calcs.Serialize(Msg.D + Msg.L);
+		Msg.L += data[i].Calcs.SerializeAttr(Msg.D + Msg.L);
 		Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 13));
-		Msg.L += data[i].RateSens.Serialize(Msg.D + Msg.L);
+		Msg.L += data[i].RateSens.SerializeAttr(Msg.D + Msg.L);
 		Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 14));
-		Msg.L += data[i].RateLimit.Serialize(Msg.D + Msg.L);
+		Msg.L += data[i].RateLimit.SerializeAttr(Msg.D + Msg.L);
 	    }
 
 	}
@@ -1212,44 +1212,44 @@ uint16_t B_BVT::setVal(TVal &val)
     Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
     switch(ft3ID.n) {
     case 2:
-	Msg.L += data[ft3ID.k - 1].Period.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Period.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 3:
-	Msg.L += data[ft3ID.k - 1].Sens.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Sens.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 4:
-	Msg.L += data[ft3ID.k - 1].MinS.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxS.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MinS.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MaxS.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 5:
-	Msg.L += data[ft3ID.k - 1].MinPV.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxPV.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MinPV.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MaxPV.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 6:
-	Msg.L += data[ft3ID.k - 1].MinW.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxW.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MinW.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MaxW.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 7:
-	Msg.L += data[ft3ID.k - 1].MinA.Serialize(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxA.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MinA.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].MaxA.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 8:
-	Msg.L += data[ft3ID.k - 1].Factor.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Factor.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 9:
-	Msg.L += data[ft3ID.k - 1].Dimension.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Dimension.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 10:
-	Msg.L += data[ft3ID.k - 1].CorFactor.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].CorFactor.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 12:
-	Msg.L += data[ft3ID.k - 1].Calcs.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].Calcs.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 13:
-	Msg.L += data[ft3ID.k - 1].RateSens.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].RateSens.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 14:
-	Msg.L += data[ft3ID.k - 1].RateLimit.Serialize(Msg.D + Msg.L);
+	Msg.L += data[ft3ID.k - 1].RateLimit.SerializeAttr(Msg.D + Msg.L);
 	break;
 
     }
