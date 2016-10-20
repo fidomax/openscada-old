@@ -1502,7 +1502,7 @@ void *TMdContr::LogicTask(void *icntr)
 	cntr.tm_gath = 1e-3 * (TSYS::curTime() - t_cnt);
 
 	//!!! Wait for next iteration
-	TSYS::taskSleep((long long) (1e9 * cntr.period()));
+	TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
     }
 
     cntr.prc_st = false;
