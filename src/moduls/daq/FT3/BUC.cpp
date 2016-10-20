@@ -85,7 +85,13 @@ string KA_BUC::getStatus(void)
 
 void KA_BUC::tmHandler(void)
 {
-    NeedInit = false;
+    if(NeedInit){
+	mPrm.vlAt("state").at().setI(state, 0, true);
+	mPrm.vlAt("config").at().setI(config, 0, true);
+	mPrm.vlAt("modification").at().setI(modification, 0, true);
+	mPrm.vlAt("sttimer").at().setI(clockstate, 0, true);
+	NeedInit = false;
+    }
 }
 
 uint16_t KA_BUC::GetState()
@@ -479,7 +485,7 @@ B_BUC::B_BUC(TMdPrm& prm, uint16_t id, uint16_t modif) :
     fld->setReserve("0:1");
     mPrm.p_el.fldAdd(fld = new TFld("sttimer", _("Timer state"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("1:0");
-    mPrm.p_el.fldAdd(fld = new TFld("curdt", _("Current datetime"), TFld::String, TVal::DirWrite));
+    mPrm.p_el.fldAdd(fld = new TFld("curdt", _("Current datetime"), TFld::String, TVal::DirWrite | TVal::DirRead));
     fld->setReserve("1:1");
     mPrm.p_el.fldAdd(fld = new TFld("stopdt", _("Stop datetime"), TFld::String, TFld::NoWrite));
     fld->setReserve("1:2");
@@ -507,7 +513,14 @@ string B_BUC::getStatus(void)
 
 void B_BUC::tmHandler(void)
 {
-    NeedInit = false;
+    if(NeedInit){
+	mPrm.vlAt("state").at().setI(state, 0, true);
+	mPrm.vlAt("modification").at().setI(mod_KP, 0, true);
+	mPrm.vlAt("sttimer").at().setI(stateWatch, 0, true);
+	mPrm.vlAt("dl1").at().setI(wt1, 0, true);
+	mPrm.vlAt("dl2").at().setI(wt2, 0, true);
+	NeedInit = false;
+    }
 }
 
 uint16_t B_BUC::Task(uint16_t uc)
@@ -660,6 +673,34 @@ uint16_t B_BUC::setVal(TVal &val)
     return 0;
 }
 
+void B_BUC::vlGet(TVal &val)
+{
+    if(mPrm.owner().cfg("CTRTYPE").getS() == "DAQ") {
+	if(val.name() == "curdt") {
+	    tagMsg Msg;
+	    Msg.L = 0;
+	    Msg.C = AddrReq;
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(0, 1, 1)); //current time
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(0, 1, 2)); //uptime
+	    Msg.L += 3;
+	    mPrm.owner().DoCmd(&Msg);
+	}
+    } else {
+	if(val.name() == "curdt") {
+	    time_t rawtime;
+	    unsigned long upval = 0;
+	    time(&rawtime);
+	    mPrm.vlAt("curdt").at().setS(atm2s(rawtime, "%d.%m.%Y %H:%M:%S"), 0, true);
+	    FILE *f = fopen("/proc/uptime", "r");
+	    if((f != NULL) && (fscanf(f, "%lu", &upval) == 1)) {
+		rawtime -= upval;
+	    }
+	    fclose(f);
+	    mPrm.vlAt("stopdt").at().setS(atm2s(rawtime, "%d.%m.%Y %H:%M:%S"), 0, true);
+	}
+    }
+}
+
 uint8_t B_BUC::cmdGet(uint16_t prmID, uint8_t * out)
 {
     FT3ID ft3ID = UnpackID(prmID);
@@ -742,6 +783,8 @@ uint8_t B_BUC::cmdSet(uint8_t * req, uint8_t addr)
 	case 1:
 	    s_tm = addr;
 	    state = stateWatch = 0;
+	    mPrm.vlAt("state").at().setI(state, 0, true);
+	    mPrm.vlAt("sttimer").at().setI(stateWatch, 0, true);
 	    rawtime = mPrm.owner().DateTimeToTime_t(req + 2);
 	    stime(&rawtime);
 	    l = 7;

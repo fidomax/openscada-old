@@ -83,6 +83,7 @@ namespace FT3
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
 	uint16_t setVal(TVal &val);
+ 	void vlGet(TVal &val);
 	string getStatus(void);
 	void tmHandler(void);
 
