@@ -366,7 +366,7 @@ uint16_t DA::PackID(uint8_t g, uint8_t k, uint8_t n)
     return rc;
 }
 
-uint8_t SerializeF(uint8_t * out, float vl)
+uint8_t FT3::SerializeF(uint8_t * out, float vl)
 {
     union
     {
@@ -379,7 +379,7 @@ uint8_t SerializeF(uint8_t * out, float vl)
     return 4;
 }
 
-uint8_t SerializeUi16(uint8_t * out, uint16_t vl)
+uint8_t FT3::SerializeUi16(uint8_t * out, uint16_t vl)
 {
     union
     {
@@ -392,7 +392,7 @@ uint8_t SerializeUi16(uint8_t * out, uint16_t vl)
     return 2;
 }
 
-uint8_t SerializeUi32(uint8_t * out, uint32_t vl)
+uint8_t FT3::SerializeUi32(uint8_t * out, uint32_t vl)
 {
     union
     {
@@ -406,7 +406,7 @@ uint8_t SerializeUi32(uint8_t * out, uint32_t vl)
 }
 
 
-uint8_t SerializeB(uint8_t * out, uint8_t vl)
+uint8_t FT3::SerializeB(uint8_t * out, uint8_t vl)
 {
     out[0] = vl;
     return 1;
