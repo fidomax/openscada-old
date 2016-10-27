@@ -48,6 +48,7 @@
 #include <QPrintDialog>
 #include <QDateTime>
 #include <QTextStream>
+#include <math.h>
 
 #include <config.h>
 #include <tsys.h>

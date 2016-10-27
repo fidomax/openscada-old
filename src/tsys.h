@@ -44,7 +44,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <math.h>
+//#include <math.h>
 #include <stdio.h>
 
 #include <string>
@@ -253,10 +253,7 @@ class TSYS : public TCntrNode
 	static string uint2str( unsigned val, IntView view = Dec );
 	static string ll2str( long long val, IntView view = Dec );
 	static string real2str( double val, int prec = 15, char tp = 'g' );
-	static double realRound( double val, int dig = 0, bool toint = false ) {
-	    double rez = floor(val*pow(10,dig)+0.5)/pow(10,dig);
-	    return toint ? floor(rez+0.5) : rez;
-	}
+	static double realRound( double val, int dig = 0, bool toint = false );
 	static string atime2str( time_t tm, const string &format = "" );
 	static string time2str( double tm );
 	static string cpct2str( double cnt );

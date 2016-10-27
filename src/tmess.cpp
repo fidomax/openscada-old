@@ -18,13 +18,14 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <stdlib.h>
 #include <sys/types.h>
 #include <syslog.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <langinfo.h>
-#include <stdlib.h>
+
 #include <locale.h>
 #include <string.h>
 #include <errno.h>
@@ -136,7 +137,6 @@ void TMess::putArg( const char *categ, int8_t level, const char *fmt, va_list ap
     int64_t ctm = TSYS::curTime();
     //string sMess = i2s(level) + "|" + categ + " | " + mess;
     string sMess = i2s(level) + "[" + categ + "] " + mess;
-
     if(mLogDir & DIR_SYSLOG) {
 	int level_sys;
 	switch(abs(level)) {

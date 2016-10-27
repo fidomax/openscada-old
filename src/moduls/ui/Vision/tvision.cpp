@@ -23,13 +23,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <tsys.h>
-#include <tmess.h>
-
 #include <QDesktopWidget>
 #include <QIcon>
 #include <QMessageBox>
 #include <QErrorMessage>
+
+#include <tsys.h>
+#include <tmess.h>
 
 #include "vis_devel.h"
 #include "vis_run.h"

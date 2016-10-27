@@ -24,6 +24,8 @@
 #include <fftw3.h>
 #endif
 
+#include <math.h>
+
 using namespace FLibSYS;
 
 //*************************************************

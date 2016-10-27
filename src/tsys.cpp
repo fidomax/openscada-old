@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <langinfo.h>
 #include <zlib.h>
-
+#include <math.h>
 #include <algorithm>
 
 #include "terror.h"
@@ -271,7 +271,10 @@ string TSYS::real2str( double val, int prec, char tp )
     }
     return buf;
 }
-
+double TSYS::realRound( double val, int dig, bool toint ) {
+    double rez = floor(val*pow(10,dig)+0.5)/pow(10,dig);
+    return toint ? floor(rez+0.5) : rez;
+}
 string TSYS::atime2str( time_t itm, const string &format )
 {
     struct tm tm_tm;

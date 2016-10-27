@@ -24,6 +24,7 @@
 
 #include "da.h"
 #include "mod_FT3.h"
+#include <math.h>
 
 using namespace FT3;
 
