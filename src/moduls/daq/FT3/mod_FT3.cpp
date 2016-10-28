@@ -693,6 +693,9 @@ uint16_t TMdContr::DoCmd(tagMsg * pMsg)
 bool TMdContr::Transact(tagMsg * pMsg)
 {
 
+    AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(cfg("ADDR").getS(), 0, '.')).at().outAt(
+	    TSYS::strSepParse(cfg("ADDR").getS(), 1, '.'));
+    ResAlloc resN(tr.at().nodeRes(), true);
     uint16_t l = 0;
     uint8_t Cmd = pMsg->C;
     pMsg->A = devAddr;
@@ -718,12 +721,9 @@ bool TMdContr::Transact(tagMsg * pMsg)
     uint8_t nRep = 5;
     while(nRep) {
 	try {
-	    AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(cfg("ADDR").getS(), 0, '.')).at().outAt(
-		    TSYS::strSepParse(cfg("ADDR").getS(), 1, '.'));
 	    if(!tr.at().startStat()) tr.at().start();
 	    //> Send request
 	    bool errPresent = true;
-	    ResAlloc resN(tr.at().nodeRes(), true);
 	    pMsg->L = 0;
 
 	    data_s = "";
