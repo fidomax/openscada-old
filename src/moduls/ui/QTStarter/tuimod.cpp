@@ -631,7 +631,7 @@ bool I18NTranslator::isEmpty( ) const	{ return false; }
 #if QT_VERSION < 0x050000
 QString I18NTranslator::translate( const char *context, const char *sourceText, const char *comment ) const
 #else
-QString I18NTranslator::translate( const char *context, const char *sourceText, const char *comment, int n ) const;
+QString I18NTranslator::translate( const char *context, const char *sourceText, const char *comment, int n ) const
 #endif
 {
     if(!sourceText) return "";
