@@ -483,7 +483,6 @@ uint8_t KA_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 	    case 1:
 		l += SerializeB(out + l, data[ft3ID.k - 1].State.s);
 		l += data[ft3ID.k - 1].State.Serialize(out + l);
-		l = 2;
 		break;
 	    case 2:
 		l += SerializeB(out + l, data[ft3ID.k - 1].Period.s);

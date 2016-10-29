@@ -103,7 +103,7 @@ uint16_t KA_BTU::SetParams(void)
 	Msg.C = SetData;
 	for(int j = 0; j < 16; j++) {
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, j + 1));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, TUdata[i].Time[j].lnk.vlattr.at().getI(0, true));
+	    Msg.L += TUdata[i].Time[j].Serialize(Msg.D + Msg.L);
 	}
 	Msg.L += 3;
 	rc = mPrm.owner().DoCmd(&Msg);
@@ -185,7 +185,6 @@ void KA_BTU::saveIO()
 void KA_BTU::saveParam(void)
 {
     for(int i = 0; i < count_nu; i++) {
-//	saveVal(TUdata[i].Line.lnk);
 	for(int j = 0; j < 16; j++) {
 	    saveVal(TUdata[i].Time[j].lnk);
 	}
@@ -196,7 +195,6 @@ void KA_BTU::loadParam(void)
 {
     if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
     for(int i = 0; i < count_nu; i++) {
-//	loadVal(TUdata[i].Line.lnk);
 	for(int j = 0; j < 16; j++) {
 	    loadVal(TUdata[i].Time[j].lnk);
 	}
@@ -236,7 +234,7 @@ uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)
 	if(count_nu && (ft3ID.k <= count_nu)) {
 	    switch(ft3ID.n) {
 	    case 0:
-		mPrm.vlAt(TSYS::strMess("Line_%d", ft3ID.k)).at().setI(D[3], tm, true);
+		TUdata[ft3ID.k - 1].Line.Update(D[3], tm);
 		l = 4;
 		break;
 	    case 1:
@@ -256,13 +254,13 @@ uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)
 	    case 15:
 	    case 16:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("Time%d_%d", ft3ID.n, ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		    TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].Update(TSYS::getUnalign16(D + 3), tm);
 		}
 		l = 5;
 		break;
 	    case 32:
 		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("line_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		    TUdata[ft3ID.k - 1].Line.Update(TSYS::getUnalign16(D + 3), tm);
 		}
 		l = 5;
 		break;
@@ -298,9 +296,8 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
 	if(count_nu && (ft3ID.k <= count_nu)) {
 	    switch(ft3ID.n) {
 	    case 0:
-		out[0] = TUdata[ft3ID.k - 1].Line.s;
-		out[1] = TUdata[ft3ID.k - 1].iTY;
-		l = 2;
+		l += SerializeB(out + l, TUdata[ft3ID.k - 1].Line.s);
+		l += SerializeB(out + l, TUdata[ft3ID.k - 1].iTY);
 		break;
 	    case 1:
 	    case 2:
@@ -318,16 +315,12 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
 	    case 14:
 	    case 15:
 	    case 16:
-		out[0] = TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].s;
-		out[1] = TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].vl;
-		out[2] = TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].vl >> 8;
-		l = 3;
+		l += SerializeB(out + l, TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].s);
+		l += TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].Serialize(out + l);
 		break;
 	    case 32:
-		out[0] = TUdata[ft3ID.k - 1].Line.s;
-		out[1] = TUdata[ft3ID.k - 1].Line.vl;
-		out[1] = TUdata[ft3ID.k - 1].Line.vl >> 8;
-		l = 3;
+		l += SerializeB(out + l, TUdata[ft3ID.k - 1].Line.s);
+		l += TUdata[ft3ID.k - 1].Line.Serialize(out + l);
 		break;
 	    }
 	}
