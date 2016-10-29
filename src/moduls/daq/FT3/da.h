@@ -69,21 +69,12 @@ namespace FT3
 	friend class TMdPrm;
     public:
 	//Methods
-	DA(TMdPrm& prm) :
-		mPrm(prm), NeedInit(true), blkID(0)
-	{
-	}
-	virtual ~DA()
-	{
-	}
+	DA(TMdPrm& prm) : mPrm(prm), NeedInit(true), blkID(0)	{ }
+	virtual ~DA( )	{ }
 
-	virtual void getVals()
-	{
-	}
+	virtual void getVals( )	{ }
 	virtual uint16_t Task(uint16_t);
-	virtual uint16_t GetState()
-	{
-	}
+	virtual uint16_t GetState( )			{ return 0; }
 	virtual uint16_t SetupClock(void);
 	virtual uint16_t PreInit(void);
 	virtual uint16_t SetParams(void);
@@ -91,64 +82,27 @@ namespace FT3
 	virtual uint16_t Start(void);
 	virtual uint16_t RefreshData(void);
 	virtual uint16_t RefreshParams(void);
-	virtual uint16_t HandleEvent(int64_t, uint8_t *)
-	{
-	}
-	virtual uint16_t setVal(TVal &)
-	{
-	}
-	virtual uint8_t cmdSynchTime()
-	{
-	}
-	virtual uint8_t cmdGet(uint16_t, uint8_t *)
-	{
-	}
-	virtual uint8_t cmdSet(uint8_t *, uint8_t)
-	{
-	}
-	virtual bool cntrCmdProc(XMLNode *opt)
-	{
-	    return false;
-	}
-	virtual string getStatus()
-	{
-	}
-	virtual void saveIO(void)
-	{
-	}
-	virtual void saveParam(void)
-	{
-	}
-	virtual void loadIO(bool force = false)
-	{
-	}
-	virtual void loadParam(void)
-	{
-	}
-	virtual void tmHandler(void)
-	{
-	}
-	virtual void vlGet(TVal &val)
-	{
-	}
-	void setInit(bool bInit)
-	{
-	    NeedInit = bInit;
-	}
-	bool IsNeedUpdate()
-	{
-	    return NeedInit;
-	}
+	virtual uint16_t HandleEvent(int64_t, uint8_t *){ return 0; }
+	virtual uint16_t setVal(TVal &)			{ return 0; }
+	virtual uint8_t cmdSynchTime()			{ return 0; }
+	virtual uint8_t cmdGet(uint16_t, uint8_t *)	{ return 0; }
+	virtual uint8_t cmdSet(uint8_t *, uint8_t)	{ return 0; }
+	virtual bool cntrCmdProc(XMLNode *opt)		{ return false; }
+	virtual string getStatus( )			{ return ""; }
+	virtual void saveIO(void)			{ }
+	virtual void saveParam(void)			{ }
+	virtual void loadIO(bool force = false)		{ }
+	virtual void loadParam(void)			{ }
+	virtual void tmHandler(void)			{ }
+	virtual void vlGet(TVal &val)			{ }
+	void setInit(bool bInit)			{ NeedInit = bInit; }
+	bool IsNeedUpdate()				{ return NeedInit; }
 
     protected:
 	class SDataRec
 	{
 	public:
-	    SDataRec(void) :
-		    state(0)
-	    {
-	    }
-	    ;
+	    SDataRec(void) : state(0)	{ }
 	    int state;		//Channel state
 	};
 	//Data
@@ -199,16 +153,19 @@ namespace FT3
 		vl = d;
 		lnk.vlattr.at().setI(vl, tm, true);
 	    }
+	    ;
 	    void Set(uint8_t d)
 	    {
 		Update(d);
 		lnk.aprm.at().setI(vl);
 	    }
+	    ;
 	    void Set(uint32_t d)
 	    {
 		Update(d);
 		lnk.aprm.at().setI(d);
 	    }
+	    ;
 	    uint8_t Get()
 	    {
 		if(lnk.Connected()) {
@@ -476,6 +433,10 @@ namespace FT3
 	FT3ID UnpackID(uint16_t ID);
 	uint16_t PackID(FT3ID ID);
 	uint16_t PackID(uint8_t g, uint8_t k, uint8_t n);
+	uint8_t SerializeF(uint8_t * out, float vl);
+	uint8_t SerializeUi16(uint8_t * out, uint16_t vl);
+	uint8_t SerializeUi32(uint8_t * out, uint32_t vl);
+	uint8_t SerializeB(uint8_t * out, uint8_t vl);
     public:
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
 	time_t DateTimeToTime_t(uint8_t *d);
