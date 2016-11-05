@@ -94,6 +94,8 @@ namespace FT3
 	    void UpdateTUParam(uint16_t ID, uint8_t cl);
 	    void UpdateTCParam(uint16_t ID, uint8_t cl);
 	    void UpdateTime(uint16_t ID, uint8_t cl);
+	    bool IsTUParamChanged();
+	    bool IsTCParamChanged();
 	    uint8_t SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val);
 	    uint8_t SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val);
 	    uint8_t SetNewState(uint8_t addr, uint16_t prmID, uint8_t *val);

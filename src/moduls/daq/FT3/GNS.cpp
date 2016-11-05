@@ -40,54 +40,63 @@ void KA_GNS::SKANSchannel::UpdateState(uint16_t ID, uint8_t cl)
 	da->PushInBE(cl, sizeof(E), ID, E);
     }
 }
+
+bool KA_GNS::SKANSchannel::IsTUParamChanged()
+{
+    bool vl_change = false;
+    vl_change |= TUOn.CheckUpdate();
+    vl_change |= TimeOn.CheckUpdate();
+    vl_change |= TUOff.CheckUpdate();
+    vl_change |= TimeOff.CheckUpdate();
+    vl_change |= TUStop.CheckUpdate();
+    vl_change |= TimeStop.CheckUpdate();
+    vl_change |= TURemote.CheckUpdate();
+    vl_change |= TimeRemote.CheckUpdate();
+    vl_change |= TUManual.CheckUpdate();
+    vl_change |= TimeManual.CheckUpdate();
+    return vl_change;
+}
+
+bool KA_GNS::SKANSchannel::IsTCParamChanged()
+{
+    bool vl_change = false;
+    vl_change |= TCOn.CheckUpdate();
+    vl_change |= TCOff.CheckUpdate();
+    vl_change |= TCMode.CheckUpdate();
+    return vl_change;
+}
+
 void KA_GNS::SKANSchannel::UpdateTUParam(uint16_t ID, uint8_t cl)
 {
-    ui8w tmp[5][2];
-    tmp[0][0].w = TUOn.Get();
-    tmp[0][1].w = TimeOn.Get();
-    tmp[1][0].w = TUOff.Get();
-    tmp[1][1].w = TimeOff.Get();
-    tmp[2][0].w = TUStop.Get();
-    tmp[2][1].w = TimeStop.Get();
-    tmp[3][0].w = TURemote.Get();
-    tmp[3][1].w = TimeRemote.Get();
-    tmp[4][0].w = TUManual.Get();
-    tmp[4][1].w = TimeManual.Get();
-
-    if(tmp[0][0].w != TUOn.vl || tmp[0][1].w != TimeOn.vl || tmp[1][0].w != TUOff.vl || tmp[1][1].w != TimeOff.vl || tmp[2][0].w != TUStop.vl
-	    || tmp[2][1].w != TimeStop.vl || tmp[3][0].w != TURemote.vl || tmp[3][1].w != TimeRemote.vl || tmp[4][0].w != TUManual.vl
-	    || tmp[4][1].w != TimeManual.vl) {
+    if(IsTUParamChanged()) {
 	TUOn.s = 0;
-	TUOn.Update(tmp[0][0].w);
-	TimeOn.Update(tmp[0][1].w);
-	TUOff.Update(tmp[1][0].w);
-	TimeOff.Update(tmp[1][1].w);
-	TUStop.Update(tmp[2][0].w);
-	TimeStop.Update(tmp[2][1].w);
-	TURemote.Update(tmp[3][0].w);
-	TimeRemote.Update(tmp[3][1].w);
-	TUManual.Update(tmp[4][0].w);
-	TimeManual.Update(tmp[4][1].w);
-	uint8_t E[21] = { 0, tmp[0][0].b[0], tmp[0][0].b[1], tmp[0][1].b[0], tmp[0][1].b[1], tmp[1][0].b[0], tmp[1][0].b[1], tmp[1][1].b[0], tmp[1][1].b[1],
-		tmp[2][0].b[0], tmp[2][0].b[1], tmp[2][1].b[0], tmp[2][1].b[1], tmp[3][0].b[0], tmp[3][0].b[1], tmp[3][1].b[0], tmp[3][1].b[1], tmp[4][0].b[0],
-		tmp[4][0].b[1], tmp[4][1].b[0], tmp[4][1].b[1] };
+	uint8_t E[21];
+	uint8_t l = 0;
+	l += SerializeB(E + l, TUOn.s);
+	l += TUOn.Serialize(E + l);
+	l += TimeOn.Serialize(E + l);
+	l += TUOff.Serialize(E + l);
+	l += TimeOff.Serialize(E + l);
+	l += TUStop.Serialize(E + l);
+	l += TimeStop.Serialize(E + l);
+	l += TURemote.Serialize(E + l);
+	l += TimeRemote.Serialize(E + l);
+	l += TUManual.Serialize(E + l);
+	l += TimeManual.Serialize(E + l);
 	da->PushInBE(cl, sizeof(E), ID, E);
     }
 }
 
 void KA_GNS::SKANSchannel::UpdateTCParam(uint16_t ID, uint8_t cl)
 {
-    ui8w tmp[3];
-    tmp[0].w = TCOn.Get();
-    tmp[1].w = TCOff.Get();
-    tmp[2].w = TCMode.Get();
-
-    if(tmp[0].w != TCOn.vl || tmp[1].w != TCOff.vl || tmp[2].w != TCMode.vl) {
+    if(IsTCParamChanged()) {
 	TCOn.s = 0;
-	TCOn.Update(tmp[0].w);
-	TCOff.Update(tmp[1].w);
-	TCMode.Update(tmp[2].w);
-	uint8_t E[7] = { 0, tmp[0].b[0], tmp[0].b[1], tmp[1].b[0], tmp[1].b[1], tmp[2].b[0], tmp[2].b[1] };
+	uint8_t E[7];
+	uint8_t l = 0;
+	l += SerializeB(E + l, TUOn.s);
+	l += TCOn.Serialize(E + l);
+	l += TCOff.Serialize(E + l);
+	l += TCMode.Serialize(E + l);
 	da->PushInBE(cl, sizeof(E), ID, E);
     }
 }

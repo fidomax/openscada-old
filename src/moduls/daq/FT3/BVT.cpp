@@ -44,6 +44,7 @@ bool KA_BVT::SKATTchannel::IsParamChanged()
     vl_change |= Adjust.CheckUpdate();
     return vl_change;
 }
+
 void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
 {
     if(IsParamChanged()) {
