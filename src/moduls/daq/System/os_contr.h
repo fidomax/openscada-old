@@ -72,7 +72,7 @@ class TMdPrm : public TParamContr
 	string addPrm( const string &prm, const string &def = "" );
 	void setAddPrm( const string &prm, const string &val );
 
-	TMdContr &owner( );
+	TMdContr &owner( ) const;
 
 	//Attributes
 	ResString daErr;		//DA error
@@ -143,7 +143,7 @@ class TMdContr: public TController
 		endrunReq;	//Request to stop of the Process task
 	vector< AutoHD<TMdPrm> > pHd;
 
-	double	mPer, tm_calc;	// Scheme's calc time
+	double	mPer;		//Calc time period
 };
 
 //*************************************************

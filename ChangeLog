@@ -1,3 +1,50 @@
+2016-11-03 Roman
+- FIX:DB.LibsDB.OscadaLibs: Notifications dispatcher adapted to object's attributes deletion by the operator "delete".
+- FIX:DB.LibsDB.vcaBase: Main.ElViewGraph: Adapted to store static parameters in the selection mode.
+- SYS: TVariant.propClear() expanded to single property clean.
+- !!!!:DAQ.JavaLikeCalc: Expanded by operator "delete" for objects or its properties free.
+
+
+2016-11-02 Roman
+- FIX:SYS: Discard for attributes of object clear at EVAL assign.
+- !!:FIX:DB.LibsDB.OscadaLibs: Notifications dispatcher expanded by the notify messages criteria of its category and level.
+- SYS: data/openscada_start.in: expanded by first argument --ProjName={PNm} project's selection.
+- !!:DAQ.System: Expanded by "FS" data source. Automatic creation of sources expanded to modes of sources "Fast" and "Slow".
+- UI.QTStarter: X Session manager disabled from restart the closed at exit programms.
+
+
+2016-10-30 Roman
+- !!:FIX:DB.LibsDB.OscadaLibs: Notifications dispatcher unified, stabilized and status is added for SMS and EMail sent by direct OpenSCADA functions.
+    !!:Self SMS send implementing unified and expanded for: disable ECHO, check/set PIN, TEST and PDU SMS mode.
+    FIX:Self SMTP implementing fixed for localized field "Date" by use an external call for utility "date".
+- FIX:UI.Vision: Wrong sometime set cursor to current is fixed for primitive "Diagram".
+
+
+2016-10-29 Roman
+- FIX:Transport.SSL: TLSv1.1, TLSv1.2, DTLSv1 set to build for SSL version >= 0x1000114fL.
+- Transport.Serial: Char limit value expanded to 10000 ms, for output.
+- FIX:UI.QTStarter: Build for Qt5 fixed.
+
+
+2016-10-28 Roman
+- !!:FIX:DB.LibsDB.OscadaLibs: DevLib.IEC60870: Fix for the new behavior of attributes of Object free by EVAL set.
+    !!:Self implementing for EMail sent by SMTP is added as an user protocol's function, implemented: pure, SSL/TLS, AUTH.
+    !!:Notifications dispatcher Controllers.ntfDispatch expanded by using self SMTP implementing for EMail send.
+- !!!!:SYS: More functions set to constant after some objects appending by a copy constructor.
+    !!!!:More error and warning fixes from PVS-Studio report, thanks to Maksim Kochetkov:
+	TCntrNode: Possible wrong into copy node function by unsigned group's index.
+	TCntrNode,TConfig,TRegExp,Archive,DB.{MySQL,PostgreSQL},DAQ.{AMRDevs,JavaLikeCalc},Special.FLibSYS,UI.{Vision,WebVision}:
+	    Possible collision into a function argument or an internal variable name and the class method.
+	TVariant: Middle strings reallocation is set to the result check.
+	XMLNodeObj,DAQ.{*,AMRDevs,Siemens},Archive.{*,FSArch},UI.QTCfg: Some logic made simply.
+    !!: Adapting and some fixing for build by GCC v6 with C++11 by default.
+- DAQ.{Templates,JavaLikeCalc},Protocol.ModBus,UI.VCAEngine: Items deletion procedure termination at DB error is added.
+- FIX:Special.FLibSYS: FFT buffers "free" fix, instead "delete".
+- !:Transport.SSL: Expanded by methods TLSv1.1, TLSv1.2, DTLSv1.
+- UI.QTStarter: Adapted to Qt5 specific method QTranslator::translate().
+- FIX:UI.VCAEngine: Virtual function PrWidget::setEnable() fixed for second argument.
+
+
 2016-10-25 Roman
 - FIX:DB.LibsDB.vcaBase: Main.{grpGraph,grpGraph10,ElViewGraph} fixed to per-user saving selected graphics.
 - !!:FIX:DAQ.Templates,Archive.FSArch,DAQ.{JavaLikeCalc,ModBus}: Data fields removing at the preloaded SEEK fixed.

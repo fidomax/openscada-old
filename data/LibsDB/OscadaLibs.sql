@@ -334,20 +334,29 @@ INSERT INTO "lib_Controllers_io" VALUES('prescr','f_frq','Function calculate fre
 INSERT INTO "lib_Controllers_io" VALUES('prescr','f_start','Function start flag',3,0,'0',0,1,'','','','');
 INSERT INTO "lib_Controllers_io" VALUES('prescr','f_stop','Function stop flag',3,0,'0',0,2,'','','','');
 INSERT INTO "lib_Controllers_io" VALUES('prescr','this','This controller object link',4,0,'0',0,3,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','f_start','Function start flag',3,0,'',0,10,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','server','Server, empty for disable',0,0,'localhost:25',0,0,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','auth','Auth, empty for disable',0,0,'user:pass',0,1,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','sender','Sender',0,0,'noreply@oscada.org',0,2,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','defReceiver','Default receiver',0,0,'test@oscada.org',0,3,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','emailTopic','EMail topic',0,0,'Notification',0,4,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','emailMess','EMail message',0,0,'',0,5,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','f_frq','Function calculate frequency (Hz)',2,0,'1000',0,12,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','f_stop','Function stop flag',3,0,'0',0,11,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','this','This controller object link',4,0,'0',0,13,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','tmOut','Timeout, seconds',1,0,'5',0,9,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','SMSTrId','SMS serial transport, empty for disable',0,0,'SMS',0,6,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','SMSPin','SMS pin, empty for disable',0,0,'1111',0,7,'','','','');
-INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','SMSDefTel','SMS default receiver, tel. number',0,0,'+380XXXXXXXXX',0,8,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','f_start','Function start flag',3,0,'',0,15,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','emailTopic','EMail topic',0,0,'Notification',0,8,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','emailMess','EMail message',0,0,'',0,9,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','f_frq','Function calculate frequency (Hz)',2,0,'1000',0,17,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','f_stop','Function stop flag',3,0,'0',0,16,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','this','This controller object link',4,0,'0',0,18,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','tmOut','Maximum notification timeout, seconds',1,0,'5',0,0,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','SMSTrId','SMS serial transport, empty for disable',0,0,'SMS',0,11,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','SMSPin','SMS pin, empty for disable',0,0,'1111',0,12,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('test','f_frq','Function calculate frequency (Hz)',2,0,'1000',0,0,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('test','f_start','Function start flag',3,0,'0',0,1,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('test','f_stop','Function stop flag',3,0,'0',0,2,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('test','this','This controller object link',4,0,'0',0,3,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','emailServer','Output transport for SMTP connection, empty for disable',0,0,'Sockets.out_SMTP',0,4,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','emailAuth','Auth, empty for disable',0,0,'user:pass',0,5,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','emailSender','Sender',0,0,'noreply@oscada.org',0,6,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','emailReceiver','Destination receiver address',0,0,'test@oscada.org',0,7,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','SMSTel','SMS destination receiver, tel. number',0,0,'+380XXXXXXXXX',0,13,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','emailState','Email current state',0,1,'',0,3,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','SMSState','SMS current state',0,1,'',0,10,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','SMSTextMd','SMS in text mode, else PDU',3,0,'0',0,14,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','messLev','Messages level, negative for alarms',1,0,'1',0,1,'','','','');
+INSERT INTO "lib_Controllers_io" VALUES('ntfDispatch','messCat','Messages category, template or regular expression',0,0,'al*:*',0,2,'','','','');
 CREATE TABLE 'lib_servProc_io' ("F_ID" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"TYPE" INTEGER DEFAULT '' ,"MODE" INTEGER DEFAULT '' ,"DEF" TEXT DEFAULT '' ,"HIDE" INTEGER DEFAULT '' ,"POS" INTEGER DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#DEF" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DEF" TEXT DEFAULT '' , PRIMARY KEY ("F_ID","ID"));
 INSERT INTO "lib_servProc_io" VALUES('procArh','fromarch','From archive',0,0,'Archive.va_ai3_code',0,0,'З архіву','','Из архива','');
 INSERT INTO "lib_servProc_io" VALUES('procArh','toarch','To archive',0,0,'Archive.va_ai3_dP',0,1,'У архів','','В архив','');
@@ -2867,6 +2876,29 @@ INSERT INTO "Trs" VALUES('ns','','');
 INSERT INTO "Trs" VALUES('Allowed variables','','');
 INSERT INTO "Trs" VALUES('No data','','');
 INSERT INTO "Trs" VALUES('No a data','','');
+INSERT INTO "Trs" VALUES('Disable ECHO error: %1','','');
+INSERT INTO "Trs" VALUES('Check for PIN-code error: %1','','');
+INSERT INTO "Trs" VALUES('Set PIN error: %1','','');
+INSERT INTO "Trs" VALUES('Set SMS Text mode error: %1','','');
+INSERT INTO "Trs" VALUES('Sent SMS error: %1','','');
+INSERT INTO "Trs" VALUES('Sent SMS PDU error: %1','','');
+INSERT INTO "Trs" VALUES('Set SMS PDU mode error: %1','','');
+INSERT INTO "Trs" VALUES('Impossible connect to the SMTP-server.','','');
+INSERT INTO "Trs" VALUES('No a response.','','');
+INSERT INTO "Trs" VALUES('HELLO error: %1.','','');
+INSERT INTO "Trs" VALUES('Unsupported auth methods: %1.','','');
+INSERT INTO "Trs" VALUES('Auth required: %1.','','');
+INSERT INTO "Trs" VALUES('AUTH error: %1.','','');
+INSERT INTO "Trs" VALUES('AUTH USER error: %1.','','');
+INSERT INTO "Trs" VALUES('AUTH PASS error: %1.','','');
+INSERT INTO "Trs" VALUES('MAIL FROM error: %1.','','');
+INSERT INTO "Trs" VALUES('RCPT TO error: %1.','','');
+INSERT INTO "Trs" VALUES('DATA error: %1.','','');
+INSERT INTO "Trs" VALUES('DATA send error: %1.','','');
+INSERT INTO "Trs" VALUES('Alarm','','');
+INSERT INTO "Trs" VALUES('Norm','','');
+INSERT INTO "Trs" VALUES('Sent %1. In queue %2.','','');
+INSERT INTO "Trs" VALUES('Error: %1.','','');
 CREATE TABLE 'tmplib_DevLib' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"PROGRAM" TEXT DEFAULT '' ,"uk#PROGRAM" TEXT DEFAULT '' ,"ru#PROGRAM" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "tmplib_DevLib" VALUES('SCU750','EDWARDS TURBOMOLECULAR PUMPS','','','Typical EDWARDS TURBOMOLECULAR PUMPS (http://edwardsvacuum.com) data request by SCU750 Cotrol Unit protocol.
 Author: Roman Savochenko <rom_as@oscada.org>
@@ -4282,7 +4314,7 @@ if(t_err.length) {
 }
 else f_err = "0: " + u_err;','','',1445606346);
 INSERT INTO "tmplib_DevLib" VALUES('IEC60870','IEC-60870','','','IEC 60870 part 5 is one of the IEC 60870 set of standards which define systems used for telecontrol (supervisory control and data acquisition) in electrical engineering and power system automation applications. Part 5 provides a communication profile for sending basic telecontrol messages between two systems, which uses permanent directly connected data circuits between the systems. The template implements part 104 (Ethernet transport) for client and followed services: STARTDT, STOPDT, TESTFR, Ack, C_IC_NA_1, C_CI_NA_1, C_SC_NA_1, M_SP_NA_1, M_ME_NB_1, C_CS_NA_1. For acquired and control data primarily used an object into attribute "items" for next the control as the object with the data provide as table, alarming and allowing set writable attributes. To the data control by attributes at once you can its describe into "itemsSet". Into the template for the first time used the non request mode of an output transport and free attributes creation wile performing.
-Version: 1.0.1
+Version: 1.0.2
 Author: Roman Savochenko <rom_as@oscada.org>
 Sponsored: Ustijancev Michael.','','',10,0,'JavaLikeCalc.JavaScript
 if(f_start)	{
@@ -4574,7 +4606,7 @@ if(t_err.length) {
 	}
 	f_err = t_err;
 }
-else f_err = "0";','','',1476207406);
+else f_err = "0";','','',1477584171);
 INSERT INTO "tmplib_DevLib" VALUES('PCF8591','','','','I2C 8-bit 4xA/D and D/A converter. Connect through a Serial output transport into the I2C mode.
 Author: Roman Savochenko <rom_as@oscada.org>
 Version: 1.0.1','','',10,0,'JavaLikeCalc.JavaScript
@@ -7415,7 +7447,7 @@ for( var i_rw = 0; i_rw < DBTbl.length; i_rw++ )
   for( var i_fld = 0; i_fld < DBTbl[i_rw].length; i_fld++ )
     rec += DBTbl[i_rw][i_fld]+"\t";
   SYS.messDebug("TEST DB","Row "+i_rw+": "+rec);
-}*/','','',1476985516);
+}*/','','',1477566656);
 INSERT INTO "lib_Controllers" VALUES('test1','test1','','test1','','','',1,10,0,'//clc=0;
 //First getting previous time
 //if(!p_tm){ p_tm = Special.FLibSYS.tmTime(); break; }
@@ -7441,27 +7473,35 @@ INSERT INTO "lib_Controllers" VALUES('test1','test1','','test1','','','',1,10,0,
 INSERT INTO "lib_Controllers" VALUES('ntfDispatch','Notifications dispatcher','','','Notifications dispatcher by EMail and SMS for alarms.
 Author: Roman Savochenko <rom_as@oscada.org>
 Sponsor: Oleksandr Knestyapin <olexanderrr@gmail.com>
-Version: 1.0.0','','',1,10,0,'//Initial
+Version: 1.3.1','','',1,30,0,'//Initial
 if(f_start) {
 	queue = new Object();
 	queueSMS = new Object();
 	prTm = SYS.time();
 	prTmU = 0;
+	emailSentN = SMSSentN = 0;
+	emailServer_ = emailServer;
+	SMTPTr = emailServer.length ? SYS.Transport.nodeAt(emailServer,".") : false;
 	SMSTrId_ = SMSTrId;
-	SMSTr = SMSTrId.length ? SYS.Transport.Serial["out_"+SMSTrId] : false;
+	SMSTr = SMSTrId.length ? SYS.Transport.Serial.nodeAt("out_"+SMSTrId) : false;
+}
+if(f_stop)	{ emailState = SMSState = ""; return; }
+if(emailServer_ != emailServer) {
+	SMTPTr = emailServer.length ? SYS.Transport.nodeAt(emailServer,".") : false;
+	emailServer_ = emailServer;
 }
 if(SMSTrId_ != SMSTrId)	{
-	SMSTr = SMSTrId.length ? SYS.Transport.Serial["out_"+SMSTrId] : false;
+	SMSTr = SMSTrId.length ? SYS.Transport.Serial.nodeAt("out_"+SMSTrId) : false;
 	SMSTrId_ = SMSTrId;
 }
 
 //Current alarms reading, and the queue of dispatching update
-mess = SYS.Archive.messGet(prTm, SYS.time(), "al*:*", 1, "<buffer>");
+mess = SYS.Archive.messGet(prTm, SYS.time(), messCat, abs(messLev), "<buffer>");
 for(iM = 0; iM < mess.length; iM++) {
 	oM = mess[iM];
-	if(oM.tm == prTm && oM.utm <= prTmU)	continue;
+	if((oM.tm == prTm && oM.utm <= prTmU) || (messLev < 0 && oM.level >= 0))	continue;
 
-	if(server.length)	queue[oM.level.toString()+oM.tm.toString()+oM.categ] = oM;
+	if(emailServer.length)	queue[oM.level.toString()+oM.tm.toString()+oM.categ] = oM;
 	if(SMSTr)	queueSMS[oM.level.toString()+oM.tm.toString()+oM.categ] = oM;
 
 	prTm = oM.tm; prTmU = oM.utm;
@@ -7470,88 +7510,155 @@ for(iM = 0; iM < mess.length; iM++) {
 
 //The notifications mail queue process in a cycle limited by overall time
 stTm = SYS.time();
+emailQueueN = 0;
+emailErr = "";
 for(var nM in queue) {
+	if(!SMTPTr)	break;
+	if((SYS.time()-stTm) > tmOut)	{ emailQueueN++; continue; }
 	oM = queue[nM];
 	//SYS.messInfo("NTF","Send mess \""+nM+"\": "+oM.mess);
 
 	topic = emailTopic + " (" + ((oM.level < 0)?tr("Alarm"):tr("Norm")) + ")";
 	mess = emailMess + SYS.strftime(oM.tm) + ": " + oM.mess;
-	req = "sendemail -q -f " + sender + " -t " + defReceiver +
-		" -u \"=?utf8?B?" + SYS.strEncode(topic,"Base64") + "?=\" -m \"" + mess + "\" -s " + server;
-	if(auth.length)	req += " -xu " + auth.parse(0,":") + " -xp " + auth.parse(1,":");
+
+	req = SYS.XMLNode("send");
+	req.setAttr("ProtIt", "SMTP").setAttr("auth", emailAuth).setAttr("from", emailSender).setAttr("to", emailReceiver).setAttr("topic", topic).setText(mess);
+	SMTPTr.messIO(req, "UserProtocol");
+	//SYS.messInfo("NTF", "Send error: "+req.attr("err"));
+	if(!req.attr("err").toInt()) { delete queue[nM]; emailSentN++; }
+	else {
+		emailQueueN++;
+		if(!emailErr.length)	emailErr = req.attr("err");
+	}
+
+	/*req = "sendemail -q -f " + emailSender + " -t " + emailReceiver +
+			" -u \"=?utf8?B?" + SYS.strEncode(topic,"Base64") + "?=\" -m \"" + mess + "\" -s " + emailServer;
+	if(emailAuth.length)	req += " -xu " + emailAuth.parse(0,":") + " -xp " + emailAuth.parse(1,":");
 	req += " -o tls=no -o message-charset=utf8";
 	//SYS.messInfo("NTF","Send mess: "+req);
 	rez = SYS.system(req, true);
-	if(!rez)	queue[nM] = EVAL;
-
-	if((SYS.time()-stTm) > tmOut)	break;
+	if(!rez) { delete queue[nM]; emailSentN++; }
+	else {
+		emailQueueN++;
+		if(!emailErr.length)	emailErr = req.attr("err");
+	}*/
+}
+if(!SMTPTr)	emailState = "Disabled!";
+else {
+	emailState = tr("Sent %1. In queue %2.").replace("%1",emailSentN.toString()).replace("%2",emailQueueN.toString());
+	if(emailErr.length) emailState += " "+tr("Error: %1.").replace("%1",emailErr);
 }
 
 //The notifications SMS queue process in a cycle limited by overall time
 stTm = SYS.time();
+SMSQueueN = 0;
+SMSErr = "";
 for(var nM in queueSMS) {
 	if(!SMSTr)	break;
+	if((SYS.time()-stTm) > tmOut)	{ SMSQueueN++; continue; }
 	oM = queueSMS[nM];
 	//SYS.messInfo("NTF","Send SMS \""+nM+"\": "+oM.mess);
 
 	mess = oM.mess;
-	req = SYS.XMLNode("send"); req.setAttr("ProtIt", "SMS").setAttr("pin", SMSPin).setAttr("tel", SMSDefTel).setText(mess);
+	req = SYS.XMLNode("send"); req.setAttr("ProtIt", "SMS").setAttr("pin", SMSPin).setAttr("text",SMSTextMd).setAttr("tel", SMSTel).setText(mess);
 	SMSTr.messIO(req, "UserProtocol");
-	if(!req.attr("err").toInt())	queueSMS[nM] = EVAL;
-
-	if((SYS.time()-stTm) > tmOut)	break;
-}','','',1477239109);
+	if(!req.attr("err").toInt()) { delete queueSMS[nM]; SMSSentN++; }
+	else {
+		SMSQueueN++;
+		if(!SMSErr.length)	SMSErr = req.attr("err");
+	}
+}
+if(!SMSTr)	SMSState = "Disabled!";
+else {
+	SMSState = tr("Sent %1. In queue %2.").replace("%1",SMSSentN.toString()).replace("%2",SMSQueueN.toString());
+	if(SMSErr.length) SMSState += " "+tr("Error: %1.").replace("%1",SMSErr);
+}','','',1478202000);
 CREATE TABLE 'UserProtocol_uPrt' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"EN" INTEGER DEFAULT '0' ,"PR_TR" INTEGER DEFAULT '1' ,"WaitReqTm" INTEGER DEFAULT '0' ,"InPROG" TEXT DEFAULT '' ,"uk#InPROG" TEXT DEFAULT '' ,"OutPROG" TEXT DEFAULT '' ,"uk#OutPROG" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
-INSERT INTO "UserProtocol_uPrt" VALUES('SMS','SMS','','','Provides operations with SMS by GSM-modem connected as serial device. For now supported only sending SMS messages to a number of remote cell phone or GSM modem.
+INSERT INTO "UserProtocol_uPrt" VALUES('SMS','','','','Provides operations with SMS by GSM-modem connected as serial device. For now supported only sending SMS messages to a number of remote cell phone or GSM modem.
 Author: Roman Savochenko <rom_as@oscada.org>
-Version: 2.0.0','','',1,0,0,'','','JavaLikeCalc.JavaScript
+Version: 2.1.1','','',1,0,0,'','','JavaLikeCalc.JavaScript
 //Request form:
-//<cmd pin="1111" tel="+380XXXXXXXXX" addr="1" err="1:Error">{text}</cmd>**
+//<{cmd} pin="1111" tel="+380XXXXXXXXX" text="{0|1}" err="1:Error">{SMSText}</cmd>
 //  cmd - command, for now only "send" allowed;
 //  pin - PIN code to the SIM card access;
 //  tel - telephone number for receiver (remote cell phone or GSM modem);
-//  text - the message text;
+//  text{0,1} - SMS in the text mode, only ASCII
+//  SMSText - the message text;
 //  err - sets for the request result.
 
 //Transport''s timings check
-if(tr.timings() != "1000:100")	tr.timings("1000:100");
+if(tr.timings() != "5000:100")	tr.timings("5000:100");
 
 if(io.name() == "send") {
-	//Prepare PDU
-	pdu = "001100";	//SMS center number (default) + SMS-Submit
-	//Telephone number encode
 	tel = io.attr("tel");
 	if(!tel.length || tel[0] != "+") { io.setAttr("err", "100:"+tr("Telephone number error.")); return; }
-	tel = tel.slice(1);
-	pdu += tel.length.toString(16,2) + "91";	//Telephone length and type
-	while(tel.length < 12) tel += "F";
-	for(i = 0; i < 6; i++) pdu += tel[i*2+1]+tel[i*2];
-	//Message encode
-	text = SYS.strCodeConv(io.text(),"","UCS2");
-	if((text.length/2) > 70) { io.setAttr("err", "101:"+tr("Long length (%1) of the message.").replace("%1",(text.length/2))); return; }
-	pdu += "0018C1"+(text.length).toString(16,2);
-	for(i = 0; i < text.length/2; i++) pdu += text.charCodeAt(i*2+1).toString(16,2)+text.charCodeAt(i*2).toString(16,2);
-	//SYS.messDebug("TEST SMS","PDU :"+pdu);
-	//Send request
+
+	//Disable ECHO
+	rez = tr.messIO("ATE0\r");
+	while(rez.length && (trez=tr.messIO("")).length) rez += trez;
+	if(rez.indexOf("OK\r") < 0)	{ io.setAttr("err", "101:"+tr("Disable ECHO error: %1").replace("%1",rez)); return; }
+
+	//Set PIN
 	if(io.attr("pin").length) {
-		rez = tr.messIO("AT+CPIN="+io.attr("pin")+"\r");
+		//Check for PIN
+		rez = tr.messIO("AT+CPIN?\r");
 		while(rez.length && (trez=tr.messIO("")).length) rez += trez;
-		if(rez.search("OK\r") < 0)	{ io.setAttr("err", "10:"+tr("Error set PIN-code.")); return; }
+		if(rez.indexOf("OK\r") < 0)	{ io.setAttr("err", "102:"+tr("Check for PIN-code error: %1").replace("%1",rez)); return; }
+		if(rez.indexOf("+CPIN: READY\r") < 0) {	//PIN is needed
+			rez = tr.messIO("AT+CPIN="+io.attr("pin")+"\r");
+			while(rez.length && (trez=tr.messIO("")).length) rez += trez;
+			if(rez.indexOf("OK\r") < 0)	{ io.setAttr("err", "102:"+tr("Set PIN error: %1").replace("%1",rez)); return; }
+		}
 	}
-	// Switch to PDU SMS mode
-	rez = tr.messIO("AT+CMGF=0\r");
-	while(rez.length && (trez=tr.messIO("")).length) rez += trez;
-	if(rez.search("OK\r") < 0)	{ io.setAttr("err", "10:"+tr("Error set PDU mode.")); return; }
-	// Send the PDU message
-	rez = tr.messIO("AT+CMGS="+(pdu.length/2-1)+"\r");
-	while(rez.length && (trez=tr.messIO("")).length) rez += trez;
-	if(rez.search(">") < 0)	{ io.setAttr("err", "10:"+tr("Error sent SMS.")); return; }
-	rez = tr.messIO(pdu+"\x1A");
-	for(var iTr = 0; iTr < 100 && rez.search("OK\r") < 0; iTr++) rez += tr.messIO("");	//Up to 10 seconds wait for reply
-	if(rez.search("OK\r") < 0)	{ io.setAttr("err", "10:"+tr("Error sent SMS PDU.")); return; }
+
+	if(io.attr("text").toInt()) {	//SMS in the text mode
+		//Switch to Text SMS mode
+		rez = tr.messIO("AT+CMGF=1\r");
+		while(rez.length && (trez=tr.messIO("")).length) rez += trez;
+		if(rez.indexOf("OK\r") < 0)	{ io.setAttr("err", "103:"+tr("Set SMS Text mode error: %1").replace("%1",rez)); return; }
+
+		//Send the Telephone number
+		rez = tr.messIO("AT+CMGS=\""+tel+"\"\r");
+		while(rez.length && (trez=tr.messIO("")).length) rez += trez;
+		if(rez.indexOf(">") < 0)	{ io.setAttr("err", "104:"+tr("Sent SMS error: %1").replace("%1",rez)); return; }
+		rez = tr.messIO(io.text()+"\x1A");
+		while(rez.length && (trez=tr.messIO("")).length) rez += trez;
+		//for(var iTr = 0; iTr < 100 && rez.indexOf("OK\r") < 0; iTr++) rez += tr.messIO("");	//Up to 10 seconds wait for reply
+		if(rez.indexOf("OK\r") < 0)	{ io.setAttr("err", "104:"+tr("Sent SMS PDU error: %1").replace("%1",rez)); return; }
+	}
+	else {	//SMS in the PDU mode
+		// Switch to PDU SMS mode
+		rez = tr.messIO("AT+CMGF=0\r");
+		while(rez.length && (trez=tr.messIO("")).length) rez += trez;
+		if(rez.indexOf("OK\r") < 0)	{ io.setAttr("err", "103:"+tr("Set SMS PDU mode error: %1").replace("%1",rez)); return; }
+
+		//Prepare PDU
+		pdu = "001100";	//SMS center number (default) + SMS-Submit
+		//Telephone number encode
+		tel = tel.slice(1);
+		pdu += tel.length.toString(16,2) + "91";	//Telephone length and type
+		while(tel.length < 12) tel += "F";
+		for(i = 0; i < 6; i++) pdu += tel[i*2+1]+tel[i*2];
+		//Message encode
+		text = SYS.strCodeConv(io.text(),"","UCS2");
+		if((text.length/2) > 70)	text = text.slice(0,140);
+		//{ io.setAttr("err", "104:"+tr("Too long length (%1) of the message.").replace("%1",(text.length/2).toString())); return; }
+		pdu += "0018C1"+(text.length).toString(16,2);
+		for(i = 0; i < text.length/2; i++) pdu += text.charCodeAt(i*2+1).toString(16,2)+text.charCodeAt(i*2).toString(16,2);
+		//SYS.messDebug("TEST SMS","PDU :"+pdu);
+
+		// Send the PDU message
+		rez = tr.messIO("AT+CMGS="+(pdu.length/2-1)+"\r");
+		while(rez.length && (trez=tr.messIO("")).length) rez += trez;
+		if(rez.indexOf(">") < 0)	{ io.setAttr("err", "104:"+tr("Sent SMS error: %1").replace("%1",rez)); return; }
+		rez = tr.messIO(pdu+"\x1A");
+		while(rez.length && (trez=tr.messIO("")).length) rez += trez;
+		//for(var iTr = 0; iTr < 100 && rez.indexOf("OK\r") < 0; iTr++) rez += tr.messIO("");	//Up to 10 seconds wait for reply
+		if(rez.indexOf("OK\r") < 0)	{ io.setAttr("err", "104:"+tr("Sent SMS PDU error: %1").replace("%1",rez)); return; }
+		//SYS.messDebug("TEST SMS","PDU REZ :"+rez);
+	}
 	io.setAttr("err", "0");
-	//SYS.messDebug("TEST SMS","PDU REZ :"+rez);*/
-}','',1477239339);
+}','',1478107736);
 INSERT INTO "UserProtocol_uPrt" VALUES('SCU750','EDWARDS TURBOMOLECULAR PUMPS','','','Protocol level of typical EDWARDS TURBOMOLECULAR PUMPS (http://edwardsvacuum.com) data request by SCU750 Cotrol Unit protocol.
 Author: Roman Savochenko <rom_as@oscada.org>
 Sponsored: Vasiliy Grigoriev from "Vacuum technologies laboratory (http://e-beam.ru)".','','',1,0,0,'','','JavaLikeCalc.JavaScript
@@ -8096,4 +8203,102 @@ if(resp.length > 9)	{ io.setAttr("err","4:"+tr("Respond too long, possible conti
 for(CS = 0, i = 1; i < resp.length-1; i++)	CS += resp.charCodeAt(i);
 if(resp.charCodeAt(resp.length-1) != (CS&0xFF))	{ io.setAttr("err","5:"+tr("CRC error")); return; }
 io.setText(resp.slice(1,resp.length-1));','',1445606112);
+INSERT INTO "UserProtocol_uPrt" VALUES('SMTP','SMTP','SMTP','','Provides EMAIL sending by the protocol SMTP.
+Author: Roman Savochenko <rom_as@oscada.org>
+Version: 1.0.0','Provides EMAIL sending by the protocol SMTP.
+Author: Roman Savochenko <rom_as@oscada.org>
+Version: 1.1.0','',1,0,0,'','','JavaLikeCalc.JavaScript
+//Request form:
+//<send auth="{user}:{pass}" from="{FromAddr}" to="{ToAddr}" topic="{My Topic}" err="1:Error">{MessageText}</send>
+//  topic - the message topic;
+//  from - sender address;
+//  to - destination address of the receiver;
+//  auth - authenticate user and password;
+//  MessageText - the message text;
+//  err - sets for the request result.
+
+//Transport''s timings check
+if(tr.timings() != "5:1")	tr.timings("5:1");
+if(!tr.start(true))	{ io.setAttr("err", "10:"+tr("Impossible connect to the SMTP-server.")); return; }
+
+//Wait for a greeting after the connection
+rez = "";
+for(iTr = 0; iTr < 5 && !rez.length; iTr++) rez += tr.messIO("");
+while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+
+auth = io.attr("auth");
+
+//Send HELLO
+rez = tr.messIO("EHLO "+SYS.system("hostname -f").parse(0,"\n")+"\x0D\x0A");
+while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+if(!rez.length)	{ io.setAttr("err", "100:"+tr("No a response.")); return; }
+for(off = 0; (sit=rez.parse(0,"\x0D\x0A",off)).length; )
+	if(sit.toInt() != 250)	{ io.setAttr("err", "101:"+tr("HELLO error: %1.").replace("%1",sit)); return; }
+	else if(sit.indexOf("AUTH LOGIN") >= 0) {
+		if(sit.indexOf("PLAIN") < 0)	{ io.setAttr("err", "101:"+tr("Unsupported auth methods: %1.").replace("%1",sit)); return; }
+		else if(!auth.length)				{ io.setAttr("err", "101:"+tr("Auth required: %1.").replace("%1",sit)); return; }
+	}
+
+//Send AUTH
+if(auth.length) {
+	rez = tr.messIO("AUTH LOGIN\x0D\x0A");
+	while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+	if(!rez.length)	{ io.setAttr("err", "100:"+tr("No a response.")); return; }
+	if(rez.toInt() != 334)	{ io.setAttr("err", "102:"+tr("AUTH error: %1.").replace("%1",rez)); return; }
+
+	rez = tr.messIO(SYS.strEncode(io.attr("auth").parse(0,":"),"Base64")+"\x0D\x0A");
+	while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+	if(!rez.length)	{ io.setAttr("err", "100:"+tr("No a response.")); return; }
+	if(rez.toInt() != 334)	{ io.setAttr("err", "102:"+tr("AUTH USER error: %1.").replace("%1",rez)); return; }
+
+	rez = tr.messIO(SYS.strEncode(io.attr("auth").parse(1,":"),"Base64")+"\x0D\x0A");
+	while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+	if(!rez.length)	{ io.setAttr("err", "100:"+tr("No a response.")); return; }
+	if(rez.toInt() != 235)	{ io.setAttr("err", "102:"+tr("AUTH PASS error: %1.").replace("%1",rez)); return; }
+}
+
+//Send FROM
+rez = tr.messIO("MAIL FROM:<"+io.attr("from")+">\x0D\x0A");
+while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+if(!rez.length)	{ io.setAttr("err", "100:"+tr("No a response.")); return; }
+if(rez.toInt() != 250)	{ io.setAttr("err", "103:"+tr("MAIL FROM error: %1.").replace("%1",rez)); return; }
+
+//Send TO
+rez = tr.messIO("RCPT TO:<"+io.attr("to")+">\x0D\x0A");
+while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+if(!rez.length)	{ io.setAttr("err", "100:"+tr("No a response.")); return; }
+if(rez.toInt() != 250)	{ io.setAttr("err", "104:"+tr("RCPT TO error: %1.").replace("%1",rez)); return; }
+
+//Prepare and send DATA
+rez = tr.messIO("DATA\x0D\x0A");
+while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+if(!rez.length)	{ io.setAttr("err", "100:"+tr("No a response.")); return; }
+if(rez.toInt() != 354)	{ io.setAttr("err", "105:"+tr("DATA error: %1.").replace("%1",rez)); return; }
+
+// Req version
+reqVer = SYS.XMLNode("get").setAttr("path","/%2fgen%2fver"); SYS.cntrReq(reqVer);
+
+data = "Message-ID: <"+rand(999999).toString()+"."+rand(999999999).toString()+"-OpenSCADA@"+SYS.system("hostname").parse(0,"\n")+">\x0D\x0A"+
+			"From: \""+io.attr("from")+"\" <"+io.attr("from")+">\x0D\x0A"+
+			"To: \""+io.attr("to")+"\" <"+io.attr("to")+">\x0D\x0A"+
+			"Subject: =?utf8?B?"+SYS.strEncode(io.attr("topic"),"Base64")+"?=\x0D\x0A"+
+			"Date: "+SYS.system("LANG=en date \"+%a, %d %b %Y %T %z\"").parse(0,"\n")+"\x0D\x0A"+
+			//"Date: "+SYS.strftime(SYS.time(),"%a, %d %b %Y %T %z")+"\x0D\x0A"+
+			"X-Mailer: OpenSCADA "+reqVer.text()+"\x0D\x0A"+
+			"Content-type: text/plain;charset=utf-8\x0D\x0A\x0D\x0A"+
+			io.text()+"\x0D\x0A"+
+			"\x0D\x0A.\x0D\x0A";	//End for code 354
+rez = tr.messIO(data);
+while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+if(!rez.length)	{ io.setAttr("err", "100:"+tr("No a response.")); return; }
+if(rez.toInt() != 250)	{ io.setAttr("err", "105:"+tr("DATA send error: %1.").replace("%1",rez)); return; }
+
+//Send QUIT
+rez = tr.messIO("QUIT\x0D\x0A");
+while(rez.length && rez.slice(-2) != "\x0D\x0A" && (trez=tr.messIO("")).length) rez += trez;
+
+//SYS.messInfo("SMTP", "Response: "+rez);
+
+//Disconnect from the SMTP-server
+tr.start(false);','',1477849632);
 COMMIT;
