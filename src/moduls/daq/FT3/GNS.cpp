@@ -198,7 +198,7 @@ uint8_t KA_GNS::SKANSchannel::SetNewFunction(uint8_t addr, uint16_t prmID, uint8
 }
 
 KA_GNS::KA_GNS(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), ID(id), count_n(n), with_params(has_params), config(0xF | (n << 4) | (3 << 10))
+	DA(prm), ID(id), count_n(n), with_params(has_params), config(0xF | (n << 4) | (3 << 10)), max_count_data(40)
 {
     mTypeFT3 = KA;
     chan_err.clear();
@@ -352,14 +352,19 @@ uint16_t KA_GNS::RefreshParams(void)
 
 uint16_t KA_GNS::RefreshData(void)
 {
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = AddrReq;
-    for(int i = 1; i <= count_n; i++) {
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+    uint16_t rc;
+    for(int j = 0; j < count_n / max_count_data; j++) {
+	tagMsg Msg;
+	Msg.L = 0;
+	Msg.C = AddrReq;
+	for(int i = j * max_count_data + 1; i <= (count_n < ((j + 1) * max_count_data) ? count_n : (j + 1) * 40); i++) {
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+	}
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if(rc == ERROR) break;
     }
-    Msg.L += 3;
-    return mPrm.owner().DoCmd(&Msg);
+    return rc;
 }
 
 void KA_GNS::loadIO(bool force)

@@ -44,6 +44,7 @@ namespace FT3
 	~KA_GNS();
 	uint16_t ID;
 	uint16_t count_n;
+	uint16_t max_count_data;
 	uint16_t GetState(void);
 	uint16_t SetParams(void);
 	uint16_t RefreshParams(void);
