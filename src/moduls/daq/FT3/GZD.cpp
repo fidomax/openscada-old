@@ -385,7 +385,7 @@ uint16_t KA_GZD::RefreshParams(void)
 uint16_t KA_GZD::RefreshData(void)
 {
     uint16_t rc;
-    for(int j = 0; j < count_n / max_count_data; j++) {
+    for(int j = 0; j <= count_n / max_count_data; j++) {
 	tagMsg Msg;
 	Msg.L = 0;
 	Msg.C = AddrReq;
