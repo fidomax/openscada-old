@@ -996,24 +996,23 @@ uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
 uint16_t TMdContr::ParsePacket(char *t, uint16_t l, tagMsg * msg)
 {
     if(l == 1) {
-	if(((*t) & 0x3F) == msg->A) {
+	if(((*t) & 0x3F) == devAddr) {
 	    msg->L = 1;
-	    uint8_t tt = msg->A;
-	    msg->A = msg->B;
-	    msg->B = tt;
+	    msg->A = nChannel;
+	    msg->B = devAddr;
 	    if((*t) & 0xC0)
 		msg->C = (((*t) >> 1) & 0x20) | GOOD3;
 	    else
 		msg->C = BAD3;
 	    return 0;
 	} else {
-	    if((*t) == ((uint8_t) (~msg->A & 0x3F) | 0x80)) {
+	    if((*t) == ((uint8_t) (~devAddr & 0x3F) | 0x80)) {
 		return 2;
 	    }
 	    return 1;
 	}
     } else {
-	if((msg->A == t[5]) && (msg->B == t[4])) {
+	if((devAddr == t[5]) && (nChannel == t[4])) {
 	    uint16_t x, y, z;
 	    y = 0;
 	    x = 8;
@@ -1033,7 +1032,7 @@ uint16_t TMdContr::ParsePacket(char *t, uint16_t l, tagMsg * msg)
 	    }
 	    return 0;
 	} else {
-	    if((msg->A == t[4]) && (msg->B == t[5]))
+	    if((devAddr == t[4]) && (nChannel == t[5]))
 		return 2;
 	    else
 		return 1;
