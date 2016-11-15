@@ -582,7 +582,7 @@ TController *TTpContr::ContrAttach(const string &name, const string &daq_db)
 //*************************************************
 TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
 	TController(name_c, daq_db, cfgelem), prc_st(false), endrun_req(false), tm_gath(0), CntrState(StateNoConnection), NeedInit(true), enRes(true),
-	eventRes(true), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR").getId()), mReqRepeat(cfg("REPEAT").getId())
+	eventRes(true), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR").getId())
 {
     cfg("PRM_BD_BUC").setS("FT3Prm_BUC_" + name_c);
     cfg("PRM_BD_BVTS").setS("FT3Prm_BVTS_" + name_c);
@@ -1133,6 +1133,7 @@ void TMdContr::start_()
     nChannel = cfg("NCHANNEL").getI();
     Channels.clear();
     devAddr = vmin(63, vmax(1,cfg("NODE").getI()));
+    mReqRepeat= cfg("REPEAT").getI();
     SetCntrState(StateNoConnection);
 //> Start the gathering data task
     if(!prc_st) {
