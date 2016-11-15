@@ -37,6 +37,7 @@
 #include "GNS.h"
 #include "GKR.h"
 #include "TANK.h"
+#include "UPZ.h"
 
 #include "mod_FT3.h"
 #include "FT3_prt.h"
@@ -474,6 +475,7 @@ void TTpContr::postEnable(int flag)
     fldAdd(new TFld("PRM_BD_GNS", _("GNS Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_GKR", _("GKR Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_TANK", _("TANK Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_UPZ", _("UPZ Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("SCHEDULE", _("Acquisition schedule"), TFld::String, TFld::NoFlag, "100", "1"));
 //    fldAdd(new TFld("PERIOD", _("Gather data period (s)"), TFld::Integer, TFld::NoFlag, "3", "1", "0;100"));
     fldAdd(new TFld("PRIOR", _("Gather task priority"), TFld::Integer, TFld::NoFlag, "2", "0", "-1;199"));
@@ -566,6 +568,11 @@ void TTpContr::postEnable(int flag)
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
+    t_prm = tpParmAdd("tp_UPZ", "PRM_BD_UPZ", _("UPZ"));
+    tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "11", "0;15"));
+    tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
+    tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
+
     elPrmIO.fldAdd(new TFld("PRM_ID", _("Parameter ID"), TFld::String, TCfg::Key, i2s(atoi(OBJ_ID_SZ) * 6).c_str()));
     elPrmIO.fldAdd(new TFld("ID", _("ID"), TFld::String, TCfg::Key, OBJ_ID_SZ));
     elPrmIO.fldAdd(new TFld("VALUE", _("Value"), TFld::String, TFld::NoFlag, "200"));
@@ -599,6 +606,7 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
     cfg("PRM_BD_GNS").setS("FT3Prm_GNS_" + name_c);
     cfg("PRM_BD_GKR").setS("FT3Prm_GKR_" + name_c);
     cfg("PRM_BD_TANK").setS("FT3Prm_TANK_" + name_c);
+    cfg("PRM_BD_UPZ").setS("FT3Prm_UPZ_" + name_c);
 
     MtxAlloc res(eventRes, true);
 
@@ -1637,6 +1645,7 @@ void TMdPrm::enable()
 	    mDA = new KA_GZD(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("VALVE_TYPE").getI());
 	if(type().name == "tp_GNS") mDA = new KA_GNS(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	if(type().name == "tp_TANK") mDA = new KA_TANK(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_UPZ") mDA = new KA_UPZ(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	if(type().name == "tp_BTU") mDA = new KA_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
     } else {
 	if(type().name == "tp_BUC") mDA = new B_BUC(*this, cfg("DEV_ID").getI(), cfg("MOD").getI());
