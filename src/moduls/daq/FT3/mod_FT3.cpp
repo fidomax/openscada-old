@@ -483,6 +483,7 @@ void TTpContr::postEnable(int flag)
     fldAdd(new TFld("NCHANNEL", _("Channels count/Stantion address"), TFld::Integer, TFld::NoFlag, "2", "1", "1;63"));
     fldAdd(new TFld("IGNORE_FCB2", _("Ignore FCB2"), TFld::Boolean, TFld::NoFlag, "1", "0"));
     fldAdd(new TFld("PRM_REFRESH", _("Params refresh"), TFld::String, TFld::Selected, "5", "DB", "DB;PLC", _("DB;PLC")));
+    fldAdd(new TFld("REPEAT", _("Request repeats"), TFld::Integer, TFld::NoFlag, "3", "1", "1;255"));
     //> Parameter type bd structure
 
     int t_prm = tpParmAdd("tp_BUC", "PRM_BD_BUC", _("BUC"));
@@ -581,7 +582,7 @@ TController *TTpContr::ContrAttach(const string &name, const string &daq_db)
 //*************************************************
 TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
 	TController(name_c, daq_db, cfgelem), prc_st(false), endrun_req(false), tm_gath(0), CntrState(StateNoConnection), NeedInit(true), enRes(true),
-	eventRes(true), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR").getId())
+	eventRes(true), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR").getId()), mReqRepeat(cfg("REPEAT").getId())
 {
     cfg("PRM_BD_BUC").setS("FT3Prm_BUC_" + name_c);
     cfg("PRM_BD_BVTS").setS("FT3Prm_BVTS_" + name_c);
@@ -635,188 +636,228 @@ uint16_t TMdContr::CRC(const string &data, uint16_t n, uint16_t length)
     return ~CRC;
 }
 
-uint16_t TMdContr::DoCmd(tagMsg * pMsg)
+uint16_t TMdContr::ResetChannel()
 {
-    uint8_t Cmd = pMsg->C;
-    if(Transact(pMsg)) {
-	switch(Cmd) {
-	case ReqData:
-	case ReqData1:
-	case ReqData2:
-	case AddrReq:
-	    if((pMsg->C & 0x0F) == GOOD3) {
-		if(mess_lev() == TMess::Debug) {
-		    string dump;
-		    for(int i = 0; i < (pMsg->L - 3); i++) {
-			dump += TSYS::strMess("%02X ", pMsg->D[i]);
-		    }
-		    mess_sys(TMess::Debug, _("data arrived L:%d %s"), (pMsg->L - 3), dump.c_str());
-		}
-		uint16_t l = pMsg->L - 6, m = 0, n = 3;
-		while(l) {
-		    vector<string> lst;
-		    pMsg->D[3] = pMsg->D[n];
-		    pMsg->D[4] = pMsg->D[n + 1];
-		    l -= 2;
-		    n += 2;
-		    list(lst);
-		    for(int i_l = 0; !m && i_l < lst.size(); i_l++) {
-//			if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("---l:%d n:%d"), l, n);
-			AutoHD<TMdPrm> t = at(lst[i_l]);
-			m = t.at().HandleEvent(((int64_t) DateTimeToTime_t(pMsg->D)) * 1000000, pMsg->D + n);
-		    }
-		    if(m) {
-			l -= m;
-			n += m;
-//			if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("%d bytes handled, total l:%d remaining:%d"), m, l, n);
-			m = 0;
-		    } else {
-			string dump;
-			for(int i = 0; i < (pMsg->L - 3); i++) {
-			    dump += TSYS::strMess("%02X ", pMsg->D[i]);
-			}
-			mess_sys(TMess::Info, _("Unhandled data  %04X at %d"), TSYS::getUnalign16(pMsg->D + n), n);
-			mess_sys(TMess::Info, _("%d, %s"), (pMsg->L - 3), dump.c_str());
-			break;
-		    }
-		}
-	    }
-
-	}
-	return pMsg->C & 0x0F;
+    tagMsg req, answ;
+    req.L = 3;
+    req.C = ResetChan;
+    if(Transact(&req, &answ)) {
+	return answ.C & 0x0F;
     } else {
 	return ERROR;
     }
 
 }
 
-bool TMdContr::Transact(tagMsg * pMsg)
+uint16_t TMdContr::DoCmd(tagMsg * req)
+{
+    uint8_t nRep = mReqRepeat;
+    uint8_t rRep = mReqRepeat;
+    while(nRep) {
+	uint8_t cmd = req->C;
+	tagMsg answ;
+	if(Transact(req, &answ)) {
+	    switch(cmd) {
+	    case ReqData:
+	    case ReqData1:
+	    case ReqData2:
+	    case AddrReq:
+		if((answ.C & 0x0F) == GOOD3) {
+		    if(mess_lev() == TMess::Debug) {
+			string dump;
+			for(int i = 0; i < (answ.L - 3); i++) {
+			    dump += TSYS::strMess("%02X ", answ.D[i]);
+			}
+			mess_sys(TMess::Debug, _("data arrived L:%d %s"), (answ.L - 3), dump.c_str());
+		    }
+		    uint16_t l = answ.L - 6, m = 0, n = 3;
+		    while(l) {
+			vector<string> lst;
+			answ.D[3] = answ.D[n];
+			answ.D[4] = answ.D[n + 1];
+			l -= 2;
+			n += 2;
+			list(lst);
+			for(int i_l = 0; !m && i_l < lst.size(); i_l++) {
+			    AutoHD<TMdPrm> t = at(lst[i_l]);
+			    m = t.at().HandleEvent(((int64_t) DateTimeToTime_t(answ.D)) * 1000000, answ.D + n);
+			}
+			if(m) {
+			    l -= m;
+			    n += m;
+			    m = 0;
+			} else {
+			    string dump;
+			    for(int i = 0; i < (answ.L - 3); i++) {
+				dump += TSYS::strMess("%02X ", answ.D[i]);
+			    }
+			    mess_sys(TMess::Info, _("Unhandled data  %04X at %d"), TSYS::getUnalign16(answ.D + n), n);
+			    mess_sys(TMess::Info, _("%d, %s"), (answ.L - 3), dump.c_str());
+			    break;
+			}
+		    }
+		}
+		return answ.C & 0x0F;
+		break;
+	    case SetData:
+		if ((answ.C & 0x0F == BAD2) || (answ.C & 0x0F == BAD3)){
+		    rRep = mReqRepeat;
+		    while(rRep) {
+			if(ResetChannel() == GOOD2) {
+			    break;
+			}
+			rRep--;
+		    }
+		    if(rRep == 0) {
+			return ERROR;
+		    }
+		} else {
+		    return answ.C & 0x0F;
+		}
+		break;
+	    default:
+		return answ.C & 0x0F;
+		break;
+
+	    }
+
+	} else {
+	    //sync lost
+	    rRep = mReqRepeat;
+	    while(rRep) {
+		if(ResetChannel() == GOOD2) {
+		    break;
+		}
+		rRep--;
+	    }
+	    if(rRep == 0) {
+		return ERROR;
+	    }
+	}
+	nRep--;
+    }
+    return ERROR;
+
+}
+
+bool TMdContr::Transact(tagMsg * req, tagMsg * answ)
 {
 
     AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(cfg("ADDR").getS(), 0, '.')).at().outAt(
 	    TSYS::strSepParse(cfg("ADDR").getS(), 1, '.'));
     ResAlloc resN(tr.at().nodeRes(), true);
     uint16_t l = 0;
-    uint8_t Cmd = pMsg->C;
-    pMsg->A = devAddr;
-    pMsg->B = nChannel;
+    uint8_t cmd = req->C;
     string data_s = "";
     char io_buf[4096];
     string msg;
-    switch(Cmd) {
-    case SetData:
-	pMsg->C |= Channels[0].FCB2;
-	break;
-    case ReqData1:
-    case ReqData2:
-	pMsg->C |= Channels[0].FCB3;
-	break;
-    case ReqData:
-	if(pMsg->L != 1) pMsg->C |= Channels[0].FCB3;
-	break;
-    }
     uint16_t rc;
-    msg.reserve(Len(pMsg->L));
-    MakePacket(pMsg, msg);
-    uint8_t nRep = 5;
-    while(nRep) {
-	try {
-	    if(!tr.at().startStat()) tr.at().start();
-	    //> Send request
-	    bool errPresent = true;
-	    pMsg->L = 0;
+    msg.reserve(Len(req->L));
+    MakePacket(req, msg);
 
+    try {
+	if(!tr.at().startStat()) tr.at().start();
+	//> Send request
+	bool errPresent = true;
+	answ->L = 0;
+
+	if(mess_lev() == TMess::Debug) {
 	    data_s = "";
 	    for(int i = 0; i < msg.length(); i++) {
 		data_s += TSYS::int2str((uint8_t) msg[i], TSYS::Hex) + " ";
 	    }
-	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("request: %s"), data_s.c_str());
+	    mess_sys(TMess::Debug, _("request: %s"), data_s.c_str());
+	}
 
-	    int resp_len = tr.at().messIO(msg.data(), msg.length(), io_buf, 8, 0, true);
-	    l = resp_len;
-	    while(resp_len) {
-		try {
-		    resp_len = tr.at().messIO(NULL, 0, io_buf + l, 8 - l, 0, true);
-		} catch (TError er) {
-		    resp_len = 0;
-		}
-		l += resp_len;
+	int resp_len = tr.at().messIO(msg.data(), msg.length(), io_buf, 8, 0, true);
+	l = resp_len;
+	while(resp_len) {
+	    try {
+		resp_len = tr.at().messIO(NULL, 0, io_buf + l, 8 - l, 0, true);
+	    } catch (TError er) {
+		resp_len = 0;
 	    }
-	    if((l == 8) && (3 <= (unsigned char) io_buf[2]) && (TSYS::getUnalign16(io_buf + 6) == CRC(io_buf + 2, 4))) {
-		uint16_t x = (unsigned char) io_buf[2] - 3;
-		uint16_t y = x >> 4;
-		if(x & 0x000F) y++;
-		y <<= 1; // CRC
-		y += x;
+	    l += resp_len;
+	}
+	if((l == 8) && (3 <= (unsigned char) io_buf[2]) && (TSYS::getUnalign16(io_buf + 6) == CRC(io_buf + 2, 4))) {
+	    uint16_t x = (unsigned char) io_buf[2] - 3;
+	    uint16_t y = x >> 4;
+	    if(x & 0x000F) y++;
+	    y <<= 1; // CRC
+	    y += x;
 
-		//> Wait tail
-		if(y) {
-		    do {
-			try {
-			    resp_len = tr.at().messIO(NULL, 0, io_buf + l, y, 0, true);
-			} catch (TError er) {
-			    resp_len = 0;
-			}
-			l += resp_len;
-			y -= resp_len;
-		    } while(resp_len);
-		}
-	    } else {
-		mess_sys(TMess::Info, _("bad header found!"));
-		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), l);
+	    //> Wait tail
+	    if(y) {
+		do {
+		    try {
+			resp_len = tr.at().messIO(NULL, 0, io_buf + l, y, 0, true);
+		    } catch (TError er) {
+			resp_len = 0;
+		    }
+		    l += resp_len;
+		    y -= resp_len;
+		} while(resp_len);
+	    }
+	} else {
+	    mess_sys(TMess::Info, _("bad header found!"));
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), l);
+	    if(mess_lev() == TMess::Debug) {
 		data_s = "";
 		for(int i = 0; i < l; i++) {
 		    data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
 		}
-		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("io_buf: %s"), data_s.c_str());
-		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("CRC %04X"), CRC(io_buf + 2, 4));
-
+		mess_sys(TMess::Debug, _("io_buf: %s"), data_s.c_str());
 	    }
-	    errPresent = false;
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("CRC %04X"), CRC(io_buf + 2, 4));
+
+	}
+	errPresent = false;
+	if(mess_lev() == TMess::Debug) {
 	    data_s = "";
 	    for(int i = 0; i < l; i++) {
 		data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
 	    }
-	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("response: %s"), data_s.c_str());
+	    mess_sys(TMess::Debug, _("response: %s"), data_s.c_str());
+	}
 
-	    if(l) {
-		rc = VerifyPacket(io_buf, &l);
-		if(!rc) {
-		    rc = ParsePacket(io_buf, l, pMsg);
+	if(l) {
+	    rc = VerifyPacket(io_buf, &l);
+	    if(!rc) {
+		rc = ParsePacket(io_buf, l, answ);
 
-		    if(rc == 1) {
-			mess_sys(TMess::Info, _("Parse error %d"), rc);
-			pMsg->L = 0;
-		    } else {
-
-		    }
-
+		if(rc == 1) {
+		    mess_sys(TMess::Info, _("Parse error %d"), rc);
+		    answ->L = 0;
 		} else {
-		    mess_sys(TMess::Info, _("Verify error %d"), rc);
+
+		}
+
+	    } else {
+		mess_sys(TMess::Info, _("Verify error %d"), rc);
+		if(mess_lev() == TMess::Debug) {
 		    data_s = "";
 		    for(int i = 0; i < l; i++) {
 			data_s += TSYS::int2str((uint8_t) io_buf[i], TSYS::Hex) + " ";
 		    }
-		    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("io_buf: %s"), data_s.c_str());
-		    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), l);
-		    pMsg->L = 0;
+		    mess_sys(TMess::Debug, _("io_buf: %s"), data_s.c_str());
 		}
-
-	    } else {
-		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Receive error %d"), l);
-		pMsg->L = 0;
+		if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), l);
+		answ->L = 0;
 	    }
-	} catch (...) {
-	    pMsg->L = 0;
-	    mess_sys(TMess::Info, _("messIO error"));
+
+	} else {
+	    if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Receive error %d"), l);
+	    answ->L = 0;
 	}
-	nRep--;
-	if(pMsg->L) break;
+    } catch (...) {
+	answ->L = 0;
+	mess_sys(TMess::Info, _("messIO error"));
     }
-    if(pMsg->L) switch(Cmd) {
+    if(answ->L) switch(cmd) {
     case Reset:
     case ResetChan:
 	Channels[0].FCB2 = 0x20;
+	Channels[0].FCB3 = 0x20;
 	break;
     case SetData:
 	Channels[0].FCB2 ^= 0x20;
@@ -829,38 +870,52 @@ bool TMdContr::Transact(tagMsg * pMsg)
 	break;
 
     }
-    return pMsg->L;
+    return answ->L;
 }
 
 void TMdContr::MakePacket(tagMsg *msg, string &io_buf)
 {
+    uint8_t cmd = msg->C;
+    switch(cmd) {
+    case SetData:
+	cmd |= Channels[0].FCB2;
+	break;
+    case ReqData1:
+    case ReqData2:
+	cmd |= Channels[0].FCB3;
+	break;
+    case ReqData:
+	if(msg->L != 1) cmd |= Channels[0].FCB3;
+	break;
+    }
+
     uint16_t x, y, l, z;
     uint16_t w;
-    if((msg->L == 1) && ((msg->C & 0x0F) == ReqData)) {
+    if((msg->L == 1) && ((cmd & 0x0F) == ReqData)) {
 	//one byte req
-	io_buf = (~msg->A & 0x3F) | 0x80;
+	io_buf = (~devAddr & 0x3F) | 0x80;
     } else {
 	//full packet
 	io_buf += 0x05;
 	io_buf += 0x64;
 	io_buf += msg->L;
 	if((cfg("PRTTYPE").getS() == "KA")) {
-	    switch((msg->C & 0x0F)) {
+	    switch((cmd & 0x0F)) {
 	    case ResetChan:
 	    case ResData2:
 	    case AddrReq:
 	    case Reset:
-		io_buf += (msg->C | 0x40);
+		io_buf += (cmd | 0x40);
 		break;
 	    default:
-		io_buf += (msg->C | 0x50);
+		io_buf += (cmd | 0x50);
 		break;
 	    }
 	} else {
-	    io_buf += (msg->C | 0x50);
+	    io_buf += (cmd | 0x50);
 	}
-	io_buf += msg->A;
-	io_buf += msg->B;
+	io_buf += devAddr;
+	io_buf += nChannel;
 	uint16_t crc = CRC(io_buf, 2, 4);
 	io_buf += crc;
 	io_buf += (crc >> 8);
@@ -905,8 +960,8 @@ uint16_t TMdContr::VerifyPacket(char *t, uint16_t *l)
     for(int i = 0; i < *l; i++) {
 	data_s += TSYS::int2str((uint8_t) t[i], TSYS::Hex) + " ";
     }
-    //   if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("in VerifyPacket io_buf: %s"), data_s.c_str());
-    //   if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), *l);
+//   if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("in VerifyPacket io_buf: %s"), data_s.c_str());
+//   if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("l %d"), *l);
     if((*l == 1)) {
 	//one byte req
 	return 0;
@@ -1080,7 +1135,7 @@ void TMdContr::start_()
     Channels.clear();
     devAddr = vmin(63, vmax(1,cfg("NODE").getI()));
     SetCntrState(StateNoConnection);
-    //> Start the gathering data task
+//> Start the gathering data task
     if(!prc_st) {
 	if(cfg("CTRTYPE").getS() == "DAQ") {
 	    //for(int i = 0; i <= nChannel; i++) {
@@ -1102,7 +1157,7 @@ void TMdContr::start_()
 
 void TMdContr::stop_()
 {
-    //> Stop the request and calc data task
+//> Stop the request and calc data task
     if(prc_st) SYS->taskDestroy(nodePath('.', true), &endrun_req);
 }
 
@@ -1187,9 +1242,7 @@ void *TMdContr::DAQTask(void *icntr)
 	switch(cntr.CntrState) {
 
 	case StateNoConnection:
-	    Msg.L = 3;
-	    Msg.C = ResetChan;
-	    if(cntr.DoCmd(&Msg) == GOOD2) {
+	    if(cntr.ResetChannel() == GOOD2) {
 		cntr.SetCntrState(StateUnknown);
 	    }
 	    break;
@@ -1224,7 +1277,7 @@ void *TMdContr::DAQTask(void *icntr)
 			if(IsSetup) {
 			    cntr.SetCntrState(StateSoftReset);
 			} else {
-			    if(cntr.cfg("PRM_REFRESH").getS() == "PLC"){
+			    if(cntr.cfg("PRM_REFRESH").getS() == "PLC") {
 				cntr.SetCntrState(StateRefreshParams);
 			    } else {
 				cntr.SetCntrState(StateLoadParams);
@@ -1513,14 +1566,14 @@ void *TMdContr::LogicTask(void *icntr)
 void TMdContr::cntrCmdProc(XMLNode *opt)
 {
 
-    //> Get page info
+//> Get page info
     if(opt->name() == "info") {
 	TController::cntrCmdProc(opt);
 	ctrMkNode("fld", opt, -1, "/cntr/cfg/ADDR", cfg("ADDR").fld().descr(), enableStat() ? R_R_R_ : RWRWR_, "root", SDAQ_ID, 3, "tp", "str", "dest",
 		"select", "select", "/cntr/cfg/trLst");
 	return;
     }
-    //> Process command to page
+//> Process command to page
     string a_path = opt->attr("path");
     if(a_path == "/cntr/cfg/trLst" && ctrChkNode(opt)) {
 	vector<string> sls;
@@ -1555,7 +1608,7 @@ void TMdPrm::postEnable(int flag)
     if(!vlElemPresent(&p_el)) vlElemAtt(&p_el);
 }
 
-TMdContr &TMdPrm::owner( ) const
+TMdContr &TMdPrm::owner() const
 {
     return (TMdContr&) TParamContr::owner();
 }
@@ -1565,7 +1618,7 @@ void TMdPrm::enable()
     if(enableStat()) return;
 
     TParamContr::enable();
-    //> Delete DAQ parameter's attributes
+//> Delete DAQ parameter's attributes
     for(unsigned i_f = 0; i_f < p_el.fldSize();) {
 	try {
 	    p_el.fldDel(i_f);
@@ -1575,7 +1628,7 @@ void TMdPrm::enable()
 	}
     }
 
-    //> Connect device's code
+//> Connect device's code
     if(owner().cfg("PRTTYPE").getS() == "KA") {
 	if(type().name == "tp_BUC") mDA = new KA_BUC(*this, cfg("DEV_ID").getI());
 	if(type().name == "tp_BVTS") mDA = new KA_BVTC(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
@@ -1636,7 +1689,7 @@ uint16_t TMdPrm::Task(uint16_t cod)
 uint16_t TMdPrm::BlckGetState(void)
 {
     uint16_t rc = BlckStateNone;
-    //mess_sys(TMess::Error, _("GetState"));
+//mess_sys(TMess::Error, _("GetState"));
     if(mDA) {
 	rc = mDA->GetState();
     }
@@ -1763,7 +1816,6 @@ uint16_t TMdPrm::BlckLoadParams(void)
     return rc;
 }
 
-
 uint16_t TMdPrm::HandleEvent(time_t tm, uint8_t * D)
 {
     if(mDA) {
@@ -1850,7 +1902,7 @@ void TMdPrm::vlGet(TVal &val)
 
 void TMdPrm::load_()
 {
-    //TParamContr::load_();
+//TParamContr::load_();
     if(enableStat() && mDA) mDA->loadIO();
 }
 

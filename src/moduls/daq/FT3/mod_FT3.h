@@ -312,7 +312,8 @@ namespace FT3
 
 	bool isLogic();
 	uint16_t DoCmd(tagMsg * t);
-	bool Transact(tagMsg * t);
+	uint16_t ResetChannel();
+	bool Transact(tagMsg * req, tagMsg * answ);
 	bool ProcessMessage(tagMsg *, tagMsg *);
 	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
 	void SetCntrState(eCntrState nState);
@@ -374,6 +375,7 @@ namespace FT3
 	//!!! The links to the controller's background task properties into config.
 	int64_t mPer;
 	int64_t &mPrior;			//Process task priority
+	uint8_t mReqRepeat;			//Request repeats
 
 	//!!! Background task's sync properties
 	bool prc_st,		// Process task active
