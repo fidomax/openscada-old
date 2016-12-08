@@ -362,7 +362,7 @@ class DA: public TElem
 		{
 		    union
 		    {
-			    uint16_t v;
+			    uint32_t v;
 			    uint8_t c[4];
 		    } dt;
 		    dt.v = lnk.vlattr.at().getI(0, true);
@@ -430,7 +430,7 @@ class DA: public TElem
 		{
 		    union
 		    {
-			    uint16_t v;
+			    float v;
 			    uint8_t c[4];
 		    } dt;
 		    dt.v = lnk.vlattr.at().getR(0, true);
