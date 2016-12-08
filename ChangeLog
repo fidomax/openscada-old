@@ -1,3 +1,23 @@
+2016-12-07 Roman (stable)
+- DB.LibsDB.OscadaLibs: DevLib is appended by GPIO devices' templates: Humidity Sensors DHT11, DHT12, AM2302, AM2320 and LCD Display Module 1602A.
+    DevLib.SCU750 changed to IO fix for type "int8".
+- DB.AGLKS.St: Modbus controller objects fixed for logical type's storing table.
+- DB.{SQLite,MySQL,PostgreSQL,FireBird}: Message about rows missing at get some appended.
+- FIX:DAQ.ModBus: Fixed and adapted to user attributes processing pass.
+- FIX:Special.FLibSYS: IO is fixed for types "int8" and "char" split processing, mostly in its read.
+- UI.QTCfg: Allow page update after warnings at items loading.
+
+
+2016-12-06 Roman (JavaLikeCalc_testing)
+- DB.LibsDB.OscadaLibs: Templates base.{anUnif,anUnifSt} expanded by attribute "alDelay" for split it from "Tf" for alarms delay and
+	propogate it for all alarm types.
+    Notifications dispatcher is pevented from early starting at "f_start".
+- DAQ: Program translation sign of templates set to disabled by default.
+- !!!!:DAQ.JavaLikeCalc: Dynamic linking to external functions support is added in way: function {nm} = "{addr}"; {nm}();.
+    External functions link and call optimized at all.
+- FIX:DAQ.LogicLev: User attributes removing prevented at the parameter's object enable, for passive ones.
+
+
 2016-12-02 Roman (core_testing)
 - !!!!:FIX:SYS: TCfg was fixed to use TVariant string as a constant for STL string.
     TVariant expanded for STL string using always except fields marked as "stdStringOmit", mostly for TCfg as string constants (DB table's keys).

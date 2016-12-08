@@ -10,7 +10,7 @@ Allow realisation of the main templates.','Автор: Роман Савочен
 Версия: 1.0.1
 Предоставляет реализацию базовых шаблонов.');
 INSERT INTO "ParamTemplLibs" VALUES('DevLib','Devices lib','Бібліотека пристроїв','The templates library provides common templates and related functions for custom access to wide range of devices'' data with simple protocol to implement into User Protocol module, present complex protocols (ModBus, OPC_UA, HTTP) or direct at internal language and also for some integration the devices data.
-Version: 1.6.0','','tmplib_DevLib','Библиотека устройств','');
+Version: 1.7.0','','tmplib_DevLib','Библиотека устройств','');
 INSERT INTO "ParamTemplLibs" VALUES('PrescrTempl','Prescription templates','Шаблони рецепту','','','tmplib_PrescrTempl','Шаблоны рецепта','');
 CREATE TABLE 'UserFuncLibs' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"DB" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"PROG_TR" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "UserFuncLibs" VALUES('techApp','Technological devices','The models of the technological process devices.
@@ -57,7 +57,6 @@ INSERT INTO "UserFuncLibs" VALUES('web','XHTML-template','Pages processing funct
 Author: Roman Savochenko
 Version: 0.1.0
 License: GPL','flb_web','XHTML-шаблон','Бібліотека функцій обробки сторінок XHTML-шаблонів користувацткого Web-інтерфейсу.','XHTML-шаблон','Библиотека функций обработки страниц XHTML-шаблонов пользовательского Web-интерфейса.',0);
-INSERT INTO "UserFuncLibs" VALUES('lowLevDevs','Low level devices','Devices access like text displays by DIO, temporary.','flb_lowLevDevs','','','','','');
 CREATE TABLE 'flb_doc' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '' ,"FORMULA" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"uk#FORMULA" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"ru#FORMULA" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "flb_doc" VALUES('getVal','Getting value from archive','Query the value for a specified time from the assigned archive and issuing the result with the specified number of decimal points.',10,'using Special.FLibSYS;
 srcTime = time;
@@ -1206,6 +1205,21 @@ INSERT INTO "tmplib_DevLib_io" VALUES('DS3231','t','T, °С',2,16,'',4,'','','',
 INSERT INTO "tmplib_DevLib_io" VALUES('DS3231','p32k','Enable 32768Hz',3,32,'',5,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('DS3231','pSQW','Enable SQUARE-WAVE OUTPUT',3,32,'',6,'','','','');
 INSERT INTO "tmplib_DevLib_io" VALUES('DS3231','pSQWf','SQUARE-WAVE OUTPUT frequency: 0-1Hz, 1-1.024kHz, 2-4.096kHz, 3-8.192kHz',1,32,'',7,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('DHT','addr','GPIO address with functions mode(), get() and put(), mostly it''s BCM2835',0,64,'DAQ.BCM2835.pi.pi',0,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('DHT','pin','IO pin number of the GPIO',1,64,'17',1,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('DHT','tries','Tries [1...5]',1,64,'2',2,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('DHT','dev','Device (0-DHT11, 1-DHT22)',1,64,'1',3,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('DHT','t','T, °С',2,16,'',4,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('DHT','h','H, %',2,16,'',5,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('1602A','addr','GPIO address with function put(), mostly it''s BCM2835',0,64,'DAQ.BCM2835.pi.pi',0,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('1602A','RS','Pin: Reset',1,64,'7',1,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('1602A','E','Pin: Enable',1,64,'8',2,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('1602A','D4','Pin: Data4',1,64,'25',3,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('1602A','D5','Pin: Data5',1,64,'24',4,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('1602A','D6','Pin: Data6',1,64,'23',5,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('1602A','D7','Pin: Data7',1,64,'18',6,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('1602A','ln1','Line 1',0,32,'',7,'','','','');
+INSERT INTO "tmplib_DevLib_io" VALUES('1602A','ln2','Line 2',0,32,'',8,'','','','');
 CREATE TABLE 'tmplib_PrescrTempl_io' ("TMPL_ID" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"TYPE" INTEGER DEFAULT '' ,"FLAGS" INTEGER DEFAULT '' ,"VALUE" TEXT DEFAULT '' ,"POS" INTEGER DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#VALUE" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#VALUE" TEXT DEFAULT '' , PRIMARY KEY ("TMPL_ID","ID"));
 INSERT INTO "tmplib_PrescrTempl_io" VALUES('timer','run','Command: run',3,32,'0',4,'Команда: исполнение','','Команда: виконання','');
 INSERT INTO "tmplib_PrescrTempl_io" VALUES('timer','pause','Command: pause',3,32,'0',5,'Команда: пауза','','Команда: пауза','');
@@ -1455,20 +1469,20 @@ INSERT INTO "tmplib_base_io" VALUES('anUnif','ed','Dimension',0,32,' ',3,'Од. 
 INSERT INTO "tmplib_base_io" VALUES('anUnif','min','Scale:minimum',2,32,'0',4,'Шкала:мінімум','','Шкала:минимум','');
 INSERT INTO "tmplib_base_io" VALUES('anUnif','max','Scale:maximum',2,32,'100',5,'Шкала:максимум','','Шкала:максимум','');
 INSERT INTO "tmplib_base_io" VALUES('anUnif','scSqr','Scale:square',3,32,'0',6,'Шкала:квадратична','','Шкала:квадратичная','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','aMin','Border down alarm',2,32,'0',10,'Границя нижня ав.','','Граница нижняя ав.','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','aMax','Border up alarm',2,32,'0',11,'Границя верхня аварійна','','Граница верхняя ав.','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','wMin','Border down warning',2,32,'0',12,'Границя нижня попереджув.','','Граница нижняя пред.','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','wMax','Border up warning',2,32,'0',13,'Границя верхня попереджув.','','Граница верхняя пред.','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','speed','Motion speed (%/cycle)',2,32,'0',15,'Швидкість зміни (%/цикл)','','Скорость изменения (%/цикл)','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','prec','Precision (signs)',1,32,'2',16,'Точність (знаків)','','Точность (знаков)','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','Tf','Filter time (s)',2,32,'0',18,'Час фільтру (с)','','Время фильтрации (с)','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','iAdd','Input addon',2,64,'0',19,'Додаток до входу','','Дополнение ко входу','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','iMult','Input multiplication',2,64,'1',20,'Множник входу','','Множитель ко входу','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','plcMin','Minimum module scale',2,64,'0',21,'Мінімум шкали модуля','','Минимум шкалы модуля','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','plcMax','Maximum module scale',2,64,'0',22,'Максимум шкали модуля','','Максимум шкалы модуля','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','plcExcess','Allowed scale exceeding (%)',2,64,'0',23,'Дозволене перевищення шкали (%)','','Допустимое превышение шкалы модуля (%)','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','plcImit','PLC imitation',3,64,'0',24,'Імітація ПЛК','','Имитация ПЛК','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','plcImitIn','PLC imitation input',2,128,'Imitation|var',25,'Вхід імітації ПЛК','Імітація|var','Вход имитации ПЛК','Имитация|var');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','aMin','Border down alarm',2,32,'0',11,'Границя нижня ав.','','Граница нижняя ав.','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','aMax','Border up alarm',2,32,'0',12,'Границя верхня аварійна','','Граница верхняя ав.','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','wMin','Border down warning',2,32,'0',13,'Границя нижня попереджув.','','Граница нижняя пред.','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','wMax','Border up warning',2,32,'0',14,'Границя верхня попереджув.','','Граница верхняя пред.','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','speed','Motion speed (%/cycle)',2,32,'0',16,'Швидкість зміни (%/цикл)','','Скорость изменения (%/цикл)','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','prec','Precision (signs)',1,32,'2',17,'Точність (знаків)','','Точность (знаков)','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','Tf','Filter time, s',2,32,'0',19,'Час фільтру (с)','','Время фильтрации (с)','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','iAdd','Input addon',2,64,'0',20,'Додаток до входу','','Дополнение ко входу','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','iMult','Input multiplication',2,64,'1',21,'Множник входу','','Множитель ко входу','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','plcMin','Minimum module scale',2,64,'0',22,'Мінімум шкали модуля','','Минимум шкалы модуля','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','plcMax','Maximum module scale',2,64,'0',23,'Максимум шкали модуля','','Максимум шкалы модуля','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','plcExcess','Allowed scale exceeding, %',2,64,'0',24,'Дозволене перевищення шкали (%)','','Допустимое превышение шкалы модуля (%)','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','plcImit','PLC imitation',3,64,'0',25,'Імітація ПЛК','','Имитация ПЛК','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','plcImitIn','PLC imitation input',2,128,'Imitation|var',26,'Вхід імітації ПЛК','Імітація|var','Вход имитации ПЛК','Имитация|var');
 INSERT INTO "tmplib_base_io" VALUES('digitBlockUnif','com','Command "Open"',3,161,'Crane|com',0,'Команда "Відкрити"','Кран|com','Команда "Открыть"','Кран|com');
 INSERT INTO "tmplib_base_io" VALUES('digitBlockUnif','close','Command "Close"',3,161,'Crane|close',1,'Команда "Закрити"','Кран|close','Команда "Закрыть"','Кран|close');
 INSERT INTO "tmplib_base_io" VALUES('digitBlockUnif','stop','Command "Stop"',3,161,'Crane|stop',2,'Команда "Зупинити"','Кран|stop','Команда "Стоп"','Кран|stop');
@@ -1538,21 +1552,21 @@ INSERT INTO "tmplib_base_io" VALUES('anUnifSt','ed','Dimension',0,32,' ',8,'Од
 INSERT INTO "tmplib_base_io" VALUES('anUnifSt','min','Scale:minimum',2,32,'0',9,'Шкала:мінімум','','Шкала:минимум','');
 INSERT INTO "tmplib_base_io" VALUES('anUnifSt','max','Scale:maximum',2,32,'100',10,'Шкала:максимум','','Шкала:максимум','');
 INSERT INTO "tmplib_base_io" VALUES('anUnifSt','scSqr','Scale:square',3,32,'0',11,'Шкала:квадратична','','Шкала:квадратичная','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','aMin','Border down alarm',2,32,'0',15,'Границя нижня ав.','','Граница нижняя ав.','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','aMax','Border up alarm',2,32,'0',16,'Границя верхня аварійна','','Граница верхняя ав.','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','wMin','Border down warning',2,32,'0',17,'Границя нижня попереджув.','','Граница нижняя пред.','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','wMax','Border up warning',2,32,'0',18,'Границя верхня попереджув.','','Граница верхняя пред.','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','HystBnd','Hysteresis of boders violation',2,32,'0',19,'Гистерезис нарушений границ','','Гистерезиз наруш. границ','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','speed','Motion speed (%/cycle)',2,32,'0',20,'Швидкість зміни (%/цикл)','','Скорость изменения (%/цикл)','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','prec','Precision (signs)',1,32,'2',21,'Точність (знаків)','','Точность (знаков)','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','Tf','Filter time (s)',2,32,'0',23,'Час фільтру (с)','','Время фильтрации (с)','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','iAdd','Input addon',2,64,'0',24,'Додаток до входу','','Дополнение ко входу','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','iMult','Input multiplication',2,64,'1',25,'Множник входу','','Множитель ко входу','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcMin','Minimum module scale',2,64,'1',26,'Мінімум шкали модуля','','Минимум шкалы модуля','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcMax','Maximum module scale',2,64,'5',27,'Максимум шкали модуля','','Максимум шкалы модуля','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcExcess','Allowed scale exceeding (%)',2,64,'0',28,'Дозволене перевищення шкали (%)','','Допустимое превышение шкалы модуля (%)','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcImit','PLC imitation',3,64,'0',29,'Імітація ПЛК','','Имитация ПЛК','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcImitIn','PLC imitation input',2,128,'Imitation|var',30,'Вхід імітації ПЛК','Імітація|var','Вход имитации ПЛК','Имитация|var');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','aMin','Border down alarm',2,32,'0',16,'Границя нижня ав.','','Граница нижняя ав.','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','aMax','Border up alarm',2,32,'0',17,'Границя верхня аварійна','','Граница верхняя ав.','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','wMin','Border down warning',2,32,'0',18,'Границя нижня попереджув.','','Граница нижняя пред.','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','wMax','Border up warning',2,32,'0',19,'Границя верхня попереджув.','','Граница верхняя пред.','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','HystBnd','Hysteresis of boders violation',2,32,'0',20,'Гистерезис нарушений границ','','Гистерезиз наруш. границ','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','speed','Motion speed (%/cycle)',2,32,'0',21,'Швидкість зміни (%/цикл)','','Скорость изменения (%/цикл)','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','prec','Precision (signs)',1,32,'2',22,'Точність (знаків)','','Точность (знаков)','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','Tf','Filter time, s',2,32,'0',24,'Час фільтру (с)','','Время фильтрации (с)','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','iAdd','Input addon',2,64,'0',25,'Додаток до входу','','Дополнение ко входу','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','iMult','Input multiplication',2,64,'1',26,'Множник входу','','Множитель ко входу','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcMin','Minimum module scale',2,64,'1',27,'Мінімум шкали модуля','','Минимум шкалы модуля','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcMax','Maximum module scale',2,64,'5',28,'Максимум шкали модуля','','Максимум шкалы модуля','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcExcess','Allowed scale exceeding, %',2,64,'0',29,'Дозволене перевищення шкали (%)','','Допустимое превышение шкалы модуля (%)','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcImit','PLC imitation',3,64,'0',30,'Імітація ПЛК','','Имитация ПЛК','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','plcImitIn','PLC imitation input',2,128,'Imitation|var',31,'Вхід імітації ПЛК','Імітація|var','Вход имитации ПЛК','Имитация|var');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','in','Input',2,128,'Signal|in',0,'Вхід','','Вход','Signal|in');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','sp','Setpoint',2,160,'PID|sp',1,'Завдання','ПІД|sp','Задание','ПИД|sp');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','var','Variable',2,16,'0',2,'Змінна','','Переменная','');
@@ -1599,22 +1613,22 @@ INSERT INTO "tmplib_base_io" VALUES('pidUnif','plcImit','PLC imitation',3,64,'0'
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','plcImitIn','PLC imitation input',2,128,'Imitation|var',43,'Вхід імітації ПЛК','Імітація|var','Вход имитации ПЛК','Имитация|var');
 INSERT INTO "tmplib_base_io" VALUES('manInUnif','varIn','Variable input',2,32,'0',2,'Введення змінної','','Ввод переменной','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','SHIFR','Code',0,0,'',45,'Шифр','','Шифр','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','this','Object',4,1,'',31,'Об''єкт','','Объект','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','SHIFR','Code',0,0,'',32,'Шифр','','Шифр','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','NAME','Name',0,0,'',33,'Ім''я','','Имя','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','DESCR','Description',0,0,'',34,'Опис','','Описание','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','this','Object',4,1,'',26,'Об''єкт','','Объект','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','this','Object',4,1,'',32,'Об''єкт','','Объект','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','SHIFR','Code',0,0,'',33,'Шифр','','Шифр','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','NAME','Name',0,0,'',34,'Ім''я','','Имя','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','DESCR','Description',0,0,'',35,'Опис','','Описание','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','this','Object',4,1,'',27,'Об''єкт','','Объект','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','NAME','Name',0,0,'',46,'Ім''я','','Имя','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','this','Object',4,1,'',44,'Об''єкт','','Объект','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','SHIFR','Code',0,0,'',27,'Шифр','','Шифр','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','NAME','Name',0,0,'',28,'Ім''я','','Имя','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','DESCR','Description',0,0,'',29,'Опис','','Описание','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','SHIFR','Code',0,0,'',28,'Шифр','','Шифр','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','NAME','Name',0,0,'',29,'Ім''я','','Имя','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','DESCR','Description',0,0,'',30,'Опис','','Описание','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnif','DESCR','Description',0,0,'',47,'Опис','','Описание','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnifImp','this','Object',4,1,'',50,'Об''єкт','','Объект','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnifImp','SHIFR','Code',0,0,'',51,'Шифр','','Шифр','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnifImp','NAME','Name',0,0,'',52,'Ім''я','','Имя','');
 INSERT INTO "tmplib_base_io" VALUES('pidUnifImp','DESCR','Description',0,0,'',53,'Опис','','Описание','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','HystBnd','Hysteresis of boders violation',2,32,'1',14,'Гістерезиз поруш. границь','','Гистерезиз наруш. границ','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','HystBnd','Hysteresis of boders violation',2,32,'1',15,'Гістерезиз поруш. границь','','Гистерезиз наруш. границ','');
 INSERT INTO "tmplib_base_io" VALUES('anUnif','inProc','Input processing procedure',0,68,'',1,'Процедура обробки входу','','Процедура обработки входа','');
 INSERT INTO "tmplib_base_io" VALUES('anUnif','subMode','Substitute:mode (0-no; 1-last; 2-substitute)',1,32,'0',7,'Заміна:режим (0-немає; 1-останне; 2-заміна)','','Замена:режим (0-нет; 1-последний; 2-замена)','');
 INSERT INTO "tmplib_base_io" VALUES('anUnif','subVar','Substitute:variable',2,32,'0',8,'Заміна:змінна','','Замена:переменная','');
@@ -1638,17 +1652,19 @@ INSERT INTO "tmplib_base_io" VALUES('SNMP','SHIFR','Code',0,0,'',4,'Шифр',''
 INSERT INTO "tmplib_base_io" VALUES('SNMP','NAME','Name',0,0,'',5,'Ім''я','','Имя','');
 INSERT INTO "tmplib_base_io" VALUES('SNMP','DESCR','Description',0,0,'',6,'Опис','','Описание','');
 INSERT INTO "tmplib_base_io" VALUES('digAlarm','alrm','Alarm "{st}:{lev}:{mess}"',0,64,' ',0,'Сигнал "{st}:{lev}:{mess}"','','Сигнал "{st}:{lev}:{mess}"','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','SHIFR','Code',0,0,'',6,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','NAME','Name',0,0,'',7,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','DESCR','Description',0,0,'',8,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','this','The object',4,0,'',9,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('anUnif','log','Logarithmic scale',3,32,'0',17,'Логарифмічна шкала','','Логарифмическая шкала','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','SHIFR','Code',0,0,'',6,'Шифр','','Шифр','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','NAME','Name',0,0,'',7,'Ім''я','','Имя','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','DESCR','Description',0,0,'',8,'Опис','','Описание','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','this','The object',4,0,'',9,'Опис','','Описание','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','log','Logarithmic scale',3,32,'0',18,'Логарифмічна шкала','','Логарифмическая шкала','');
 INSERT INTO "tmplib_base_io" VALUES('manInUnif','log','Logarithmic scale',3,32,'0',15,'Логарифмічна шкала','','Логарифмическая шкала','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','stInv','State inverse',3,64,'',1,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','st_open','State "Opened"',3,16,'',4,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','st_close','State "Closed"',3,16,'',5,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('anUnifSt','log','Logarithmic scale',3,32,'0',22,'','','','');
-INSERT INTO "tmplib_base_io" VALUES('digAlarm','inProc','Input processing procedure',0,68,'',3,'','','','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','stInv','State inverse',3,64,'',1,'Інверсія стану','','Инверсия состояния','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','st_open','State "Opened"',3,16,'',4,'Стан "Відкрито"','','Состояние "Открыто"','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','st_close','State "Closed"',3,16,'',5,'Стан "Закрито"','','Состояние "Закрыто"','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','log','Logarithmic scale',3,32,'0',23,'Логарифмічна шкала','','Логарифмическая шкала','');
+INSERT INTO "tmplib_base_io" VALUES('digAlarm','inProc','Input processing procedure',0,68,'',3,'Процедура обробки входу','','Процедура обработки входа','');
+INSERT INTO "tmplib_base_io" VALUES('anUnif','alDelay','Alarms delay, s',2,32,'0',10,'Затримка порушення, с','','Задержка нарушения, с','');
+INSERT INTO "tmplib_base_io" VALUES('anUnifSt','alDelay','Alarms delay, s',2,32,'',15,'Затримка порушення, с','','Задержка нарушения, с','');
 CREATE TABLE 'DAQ_JavaLikeCalc' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ENABLE" INTEGER DEFAULT '0' ,"START" INTEGER DEFAULT '0' ,"MESS_LEV" INTEGER DEFAULT '3' ,"REDNT" INTEGER DEFAULT '0' ,"REDNT_RUN" TEXT DEFAULT '<high>' ,"PRM_BD" TEXT DEFAULT 'system' ,"FUNC" TEXT DEFAULT '' ,"SCHEDULE" TEXT DEFAULT '1' ,"PRIOR" INTEGER DEFAULT '0' ,"ITER" INTEGER DEFAULT '1' , PRIMARY KEY ("ID"));
 CREATE TABLE 'DAQ_LogicLev' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ENABLE" INTEGER DEFAULT '0' ,"START" INTEGER DEFAULT '0' ,"MESS_LEV" INTEGER DEFAULT '3' ,"REDNT" INTEGER DEFAULT '0' ,"REDNT_RUN" TEXT DEFAULT '<high>' ,"PRM_BD" TEXT DEFAULT '' ,"PRM_BD_REFL" TEXT DEFAULT '' ,"PERIOD" INTEGER DEFAULT '0' ,"SCHEDULE" TEXT DEFAULT '1' ,"PRIOR" INTEGER DEFAULT '0' , PRIMARY KEY ("ID"));
 CREATE TABLE 'flb_web_io' ("F_ID" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"TYPE" INTEGER DEFAULT '' ,"MODE" INTEGER DEFAULT '' ,"DEF" TEXT DEFAULT '' ,"HIDE" INTEGER DEFAULT '' ,"POS" INTEGER DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' , PRIMARY KEY ("F_ID","ID"));
@@ -2955,6 +2971,10 @@ INSERT INTO "Trs" VALUES('Enable Current Accumulator','','');
 INSERT INTO "Trs" VALUES('Enable Current Accumulator Shadow','','');
 INSERT INTO "Trs" VALUES('Disconnect time','','');
 INSERT INTO "Trs" VALUES('End of charge time','','');
+INSERT INTO "Trs" VALUES('No link to external functions on ''%1''.','','');
+INSERT INTO "Trs" VALUES('Unknown device %1 [0-DHT11, 1-DHT22].','','');
+INSERT INTO "Trs" VALUES('Tries number %1 out of range [1...5].','','');
+INSERT INTO "Trs" VALUES('Get data after %1 tries error.','','');
 CREATE TABLE 'tmplib_DevLib' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"PROGRAM" TEXT DEFAULT '' ,"uk#PROGRAM" TEXT DEFAULT '' ,"ru#PROGRAM" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "tmplib_DevLib" VALUES('SCU750','EDWARDS TURBOMOLECULAR PUMPS','','','Typical EDWARDS TURBOMOLECULAR PUMPS (http://edwardsvacuum.com) data request by SCU750 Cotrol Unit protocol.
 Author: Roman Savochenko <rom_as@oscada.org>
@@ -4702,7 +4722,7 @@ f_err = t_err;','','',1478967014);
 INSERT INTO "tmplib_DevLib" VALUES('SSCP','Shark Slave Communication Protocol','Shark Slave Communication Protocol','','Shark Slave Communication Protocol from EnergoCentrum PLUS, s.r.o.
 Author: Roman Savochenko <rom_as@oscada.org>
 Sponsored: Costumer Faster CZ (http://faster.cz)
-Version: 0.6.1','Shark Slave Communication Protocol from EnergoCentrum PLUS, s.r.o.
+Version: 0.6.2','Shark Slave Communication Protocol from EnergoCentrum PLUS, s.r.o.
 Author: Roman Savochenko <rom_as@oscada.org>
 Sponsored: Costumer Faster CZ (http://faster.cz)','',30,0,'JavaLikeCalc.JavaScript
 //Same request to the device
@@ -4855,7 +4875,7 @@ else {
 				if(t_err.toInt()) tVl = EVAL;
 				else {
 					if(vO.Type.indexOf("bool") != -1 && vO.Length == 1)
-						tVl = io.read("char", 1).charCodeAt(0);
+						tVl = io.read("int8", 1);
 					else if(vO.Type.indexOf("real") != -1 && (vO.Length == 4 || vO.Length == 8))
 						tVl = io.read((vO.Length==8)?"double":"float", 1);
 					else if(vO.Type.indexOf("int") != -1 && (vO.Length == 2 || vO.Length == 4))
@@ -4888,7 +4908,7 @@ else {
 	}
 }
 
-f_err = t_err;','','',1476811531);
+f_err = t_err;','','',1481104555);
 INSERT INTO "tmplib_DevLib" VALUES('1W_DS9097U','One Wire by DS9097U','One Wire by DS9097U','','One Wire sensors bus implementing by 1Wire-adapter DS9097U. Supported direct and parasite powering for the temperature sensors.
 Supported 1Wire-devices: DS1820, DS1820/DS18S20/DS1920 (not tested), DS1822 (not tested), DS2413, DS2408, DS2450, DS2438.
 Author: Roman Savochenko <rom_as@oscada.org>
@@ -6014,6 +6034,137 @@ else {
 
 if(t_err.toInt() && !f_err.toInt()) t = p = EVAL;
 f_err = t_err;','','',1479651485);
+INSERT INTO "tmplib_DevLib" VALUES('DHT','GPIO: DHT11,22 (AM23XX)','','','Digital Temperature and Humidity Sensor for models: DHT11, DHT12, AM2302, AM2320, ...
+The module designed for the sensors connect through GPIO, mostly it''s Raspberry PI BCM2835 GPIO.
+Conditions: Exclusively realtime planing in the priority 199 (FIFO-99).
+Author: Roman Savochenko <rom_as@oscada.org>
+Version: 1.0.0','','',10,0,'JavaLikeCalc.JavaScript
+using Special.FLibSYS;
+
+//Set link to fast external functions
+if(f_start)	f_err = "0", addr_ = "";
+
+t_err = "0";
+
+//Check for the address change and link
+if(addr != addr_)	{
+	addr_ = addr;
+	function mode = addr+".fnc_mode";
+	function get = addr+".fnc_get";
+	function put = addr+".fnc_put";
+}
+
+//Read sensor''s data function declaration
+function read() {
+	vl = 0;						//Meassured value
+	cntHoldMax = 100;		//Maximum wait counter
+
+	//Call the device to a respond
+	mode(pin, 4); put(pin, true); tmSleep(500e-3);	//Set pin to output mode and next to true for 500ms
+	put(pin, false); tmSleep(20e-3);							//Set output to false for 20ms
+	mode(pin, 2);														//Set pin to input mode
+
+	//Read
+	// Wait for pull pin low.
+	for(cntHold = 0; get(pin); cntHold++)
+		if(cntHold > cntHoldMax) return 0;
+
+	//Meassure the typical pulse length
+	for(cntHold = 0; !get(pin); cntHold++)
+		if(cntHold > cntHoldMax) return 0;
+	for(cntHold = 0; get(pin); cntHold++)
+		if(cntHold > cntHoldMax) return 0;
+	cntPulse = cntHold;
+
+	//Read meassured value
+	for(iB = 0; iB < 40; iB++) {
+		//stg = iB;
+		for(cntHold = 0; !get(pin); cntHold++)
+			if(cntHold > cntHoldMax) return 0;
+		for(cntHold = 0; get(pin); cntHold++)
+			if(cntHold > cntHoldMax) return 0;
+		vl = vl << 1;
+		if(cntHold > cntPulse/2)	vl = vl | 1;
+	}
+
+	return vl;
+}
+
+//Main processing
+if(!mode)	t_err = "1:"+tr("No link to external functions on ''%1''.").replace("%1",addr);
+else if(!(dev == 0 || dev == 1))	t_err = "2:"+tr("Unknown device %1 [0-DHT11, 1-DHT22].").replace("%1",dev.toString());
+else if(tries < 1 || tries > 5)	t_err = "3:"+tr("Tries number %1 out of range [1...5].").replace("%1",tries.toString());
+else {
+	for(i = 0; i < tries; i++) {
+		if(i) tmSleep(2);	//Retry after two seconds
+		if((vl=read()) && (vl&0xFF) == ((((vl>>8)&0xFF)+((vl>>16)&0xFF)+((vl>>24)&0xFF)+((vl>>32)&0xFF))&0xFF)) {
+			//SYS.messInfo("/DHT","vl="+vl.toString(16));
+			if(dev == 1) {
+				h = 0.1*(((vl>>32)&0xFF)*256+((vl>>24)&0xFF));
+				t = 0.1*(((vl>>16)&0xFF)*256+((vl>>8)&0xFF));
+				break;
+			}
+			h = ((vl>>32)&0xFF) + 20; t = (vl>>16)&0xFF;
+		}
+	}
+	if(i >= tries)	t_err = "10:"+tr("Get data after %1 tries error.").replace("%1",tries.toString());
+}
+
+if(t_err.toInt() && !f_err.toInt()) t = h = EVAL;
+f_err = t_err;','','',1481127790);
+INSERT INTO "tmplib_DevLib" VALUES('1602A','GPIO: 1602A(HD44780)','','','LCD Module 1602A, STN, BLUB, 16 Character x 2 Line,  5 x 8 Dots
+The module designed for the sensors connect through GPIO, mostly it''s Raspberry PI BCM2835 GPIO.
+Conditions: Default planing policy but realtime one preferred.
+Author: Roman Savochenko <rom_as@oscada.org>
+Version: 1.0.0','','',10,0,'JavaLikeCalc.JavaScript
+using Special.FLibSYS;
+
+//Set link to fast external functions
+if(f_start)	f_err = "0", addr_ = ln1_ = ln2_ = "";
+
+t_err = "0";
+
+//Check for the address change and link
+if(addr != addr_)	{
+	addr_ = addr;
+	function put = addr+".fnc_put";
+}
+
+//Write a byte function declaration
+function byte(vl, md, dl) {
+	if(md == EVAL_BOOL) md = false;
+	if(dl == EVAL_BOOL) dl = 50e-6;
+	put(RS, md);
+	put(D4, vl&0x10); put(D5, vl&0x20); put(D6, vl&0x40); put(D7, vl&0x80);
+	tmSleep(dl); put(E, true); tmSleep(dl); put(E, false); tmSleep(dl);
+	put(D4, vl&0x01); put(D5, vl&0x02); put(D6, vl&0x04); put(D7, vl&0x08);
+	tmSleep(dl); put(E, true); tmSleep(dl); put(E, false); tmSleep(dl);
+}
+
+//Main processing
+if(!put)	t_err = "1:"+tr("No link to external functions on ''%1''.").replace("%1",addr);
+else if(ln1 != ln1_ || ln2 != ln2_) {
+	ln1_ = ln1; ln2_ = ln2;	
+
+	//Init
+	byte(0x33); byte(0x32); byte(0x28); byte(0x0C); byte(0x06); byte(0x01);
+	//Line 1
+	if(ln1.length) {
+		tmSleep(2e-3);
+		byte(0x80);
+		for(iC = 0; iC < min(16,ln1.length); iC++)
+			byte(ln1.charCodeAt(iC), true);
+	}
+	//Line 2
+	if(ln2.length) {
+		tmSleep(2e-3);
+		byte(0xC0);
+		for(iC = 0; iC < min(16,ln2.length); iC++)
+			byte(ln2.charCodeAt(iC), true);
+	}
+}
+
+f_err = t_err;','','',1481127568);
 CREATE TABLE 'tmplib_PrescrTempl' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"PROGRAM" TEXT DEFAULT '' ,"uk#PROGRAM" TEXT DEFAULT '' ,"ru#PROGRAM" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "tmplib_PrescrTempl" VALUES('timer','Timer','Таймер','Таймер','Typical timer. Hold run up to time elapse.','Типовий таймер. Утримує виконання до завершення часу.','Типовой таймер. Удерживает выполнение до завершения времени.',10,0,'JavaLikeCalc.JavaScript
 //Reset to default
@@ -6225,7 +6376,7 @@ levErr = 0;
 tErr = "0";
 //Input data check and postprocess
 if(in.isEVal()) {
-	if(Tf > 0 && conDelay_ < Tf && (conDelay_=conDelay_+1/f_frq) < Tf) return;
+	//if(alDelay > 0 && conDelay_ < alDelay){ conDelay_ += 1/f_frq; return; }
 	tErr = "1:"+tr("No data or connection with source"); levErr = -5;
 	var = EVAL_REAL;
 	if(subMode == 1) var = prevVar;
@@ -6271,6 +6422,9 @@ if(!tErr) {
 //Alarms forming
 if(alSup == 1)	f_err = "0";
 else {
+	if(alDelay > 0 && conDelay_ <= 0 && tErr.toInt() != f_err.toInt())	tErr1 = tErr.toInt();
+	if(alDelay > 0 && conDelay_ > 0 && tErr.toInt() != tErr1)	{ conDelay_ = 0; tErr1 = tErr.toInt(); }
+	if(alDelay > 0 && conDelay_ < alDelay){ conDelay_ += 1/f_frq; return; }
 	if(tErr.toInt() && tErr.toInt() != f_err.toInt())
 		this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tErr.parse(1,":"), levErr, SHIFR);
 	else if(f_err.toInt() && !tErr.toInt())
@@ -6278,8 +6432,8 @@ else {
 	toSave = (alSup == 2 && f_err != tErr);
 	f_err = tErr;
 	if(toSave) SYS.cntrReq(SYS.XMLNode("save").setAttr("path",this.nodePath()+"/%2fobj").setAttr("force",1));
-}
-conDelay_ = 0;','','',1467708902);
+	conDelay_ = 0;
+}','','',1480875955);
 INSERT INTO "tmplib_base" VALUES('digitBlockUnif','Diskret block (Unif)','Блок дискретних (Уніф)','Блок дискр. (Униф)','The block for union of Diskret parameters for one device control.','Блок поєднання дискретних сигналів контролю одним пристроєм.','Блок для дискретных параметров управляющих одним аппаратом.',10,0,'JavaLikeCalc.JavaScript
 set = false;
 if(!com.isEVal() && com && last_cmd != 1)		last_cmd = 1, set = true;
@@ -6380,7 +6534,7 @@ levErr = 0;
 tErr = "0";
 //Input data check and postprocess
 if(in.isEVal()) {
-	if(Tf > 0 && conDelay_ < Tf && (conDelay_=conDelay_+1/f_frq) < Tf) return;
+	//if(alDelay > 0 && conDelay_ < alDelay){ conDelay_ += 1/f_frq; return; }
 	tErr = "1:"+tr("No data or connection with source"); levErr = -5;
 	var = EVAL_REAL;
 	if(subMode == 1) var = prevVar;
@@ -6429,6 +6583,9 @@ else {
 //Alarms forming
 if(alSup == 1)	f_err = "0";
 else {
+	if(alDelay > 0 && conDelay_ <= 0 && tErr.toInt() != f_err.toInt())	tErr1 = tErr.toInt();
+	if(alDelay > 0 && conDelay_ > 0 && tErr.toInt() != tErr1)	{ conDelay_ = 0; tErr1 = tErr.toInt(); }
+	if(alDelay > 0 && conDelay_ < alDelay){ conDelay_ += 1/f_frq; return; }
 	if(tErr.toInt() && tErr.toInt() != f_err.toInt())
 		this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tErr.parse(1,":"), levErr, SHIFR);
 	else if(f_err.toInt() && !tErr.toInt())
@@ -6436,8 +6593,8 @@ else {
 	toSave = (alSup == 2 && f_err != tErr);
 	f_err = tErr;
 	if(toSave) SYS.cntrReq(SYS.XMLNode("save").setAttr("path",this.nodePath()+"/%2fobj").setAttr("force",1));
-}
-conDelay_ = 0;','','',1467708877);
+	conDelay_ = 0;
+}','','',1480876320);
 INSERT INTO "tmplib_base" VALUES('pidUnif','PID sign. (Unif, stats)','ПІД сигнал (Уніф, стани)','ПИД сигнал (Униф, состояния)','The unified template for process analog signals with properties PID.','Уніфікований шаблон для обробки аналогового сигналу з властивостями ПІД.','Унифицированный шаблон обработки аналогового сигнала со свойствами ПИД.',10,0,'JavaLikeCalc.JavaScript
 if(f_start) f_err = "0";
 
@@ -6567,101 +6724,6 @@ if(tErr.toInt() && tErr.toInt() != f_err.toInt())
 else if(f_err.toInt() && !tErr.toInt())
 	this.cntr().alarmSet((NAME.length?NAME:SHIFR)+": "+DESCR+": "+tr("NORMA"), 1, SHIFR);
 f_err = tErr;','','',1416765601);
-CREATE TABLE 'flb_lowLevDevs_io' ("F_ID" TEXT DEFAULT '' ,"ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"TYPE" INTEGER DEFAULT '' ,"MODE" INTEGER DEFAULT '' ,"DEF" TEXT DEFAULT '' ,"HIDE" INTEGER DEFAULT '' ,"POS" INTEGER DEFAULT '' , PRIMARY KEY ("F_ID","ID"));
-INSERT INTO "flb_lowLevDevs_io" VALUES('1602A','ln1','Line 1',0,0,'',0,0);
-INSERT INTO "flb_lowLevDevs_io" VALUES('1602A','ln2','Line 2',0,0,'',0,1);
-INSERT INTO "flb_lowLevDevs_io" VALUES('DHT','res','Result',0,2,'',0,0);
-INSERT INTO "flb_lowLevDevs_io" VALUES('DHT','pin','GPIO Pin',1,0,'17',0,1);
-INSERT INTO "flb_lowLevDevs_io" VALUES('DHT','tries','Tries',1,0,'3',0,2);
-INSERT INTO "flb_lowLevDevs_io" VALUES('DHT','dev','Device (0-DHT11, 1-DHT22)',1,0,'0',0,3);
-CREATE TABLE 'flb_lowLevDevs' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"START" INTEGER DEFAULT '1' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"FORMULA" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
-INSERT INTO "flb_lowLevDevs" VALUES('1602A','Display 1602A','Description: LCD Module 1602A, STN, BLUB, 16 Character x 2 Line,  5 x 8 Dots
-Depends: Raspbery Pi, DAQ.BCM2835.pi2.pi2, Special.FLibSYS
-Connection: GPIO7(RS), GPIO8(E), GPIO25(D4), GPIO24(D5), GPIO23(D6), GPIO18(D7)
-Conditions: Default planing policy but realtime better.',0,10,0,'using DAQ.BCM2835.pi2.pi2;
-using Special.FLibSYS;
-
-function byte(vl, md, dl) {
-	if(md == EVAL_BOOL) md = false;
-	if(dl == EVAL_BOOL) dl = 50e-6;
-	RS = 7, E = 8, D4 = 25, D5 = 24, D6 = 23, D7 = 18;
-	fnc_put(RS, md);
-	fnc_put(D4, vl&0x10); fnc_put(D5, vl&0x20); fnc_put(D6, vl&0x40); fnc_put(D7, vl&0x80);
-	tmSleep(dl); fnc_put(E, true); tmSleep(dl); fnc_put(E, false); tmSleep(dl);
-	fnc_put(D4, vl&0x01); fnc_put(D5, vl&0x02); fnc_put(D6, vl&0x04); fnc_put(D7, vl&0x08);
-	tmSleep(dl); fnc_put(E, true); tmSleep(dl); fnc_put(E, false); tmSleep(dl);
-}
-
-//Init
-byte(0x33); byte(0x32); byte(0x28); byte(0x0C); byte(0x06); byte(0x01);
-//Line 1
-if(ln1.length) {
-	tmSleep(2e-3);
-	byte(0x80);
-	for(iC = 0; iC < min(16,ln1.length); iC++)
-		byte(ln1.charCodeAt(iC), true);
-}
-
-//Line 2
-if(ln2.length) {
-	tmSleep(2e-3);
-	byte(0xC0);
-	for(iC = 0; iC < min(16,ln2.length); iC++)
-		byte(ln2.charCodeAt(iC), true);
-}',1463511761);
-INSERT INTO "flb_lowLevDevs" VALUES('DHT','DHT (AOSONG)','Description: Reading temperature and humidity module DHT11, AM2320, DHT22 (AM2302)
-Depends: Raspbery Pi, DAQ.BCM2835.pi2.pi2, Special.FLibSYS
-Connection: GPIO (17 by default)
-Conditions: Exclusively realtime planing in the prioroty 199 (FIFO-99).
-Version: 1.1.0',0,10,0,'using DAQ.BCM2835.pi2.pi2;
-using Special.FLibSYS;
-
-function read() {
-	vl = 0;						//Meassured value
-	cntHoldMax = 100;		//Maximum wait counter
-
-	//Call the device to a respond
-	fnc_mode(pin, 4); fnc_put(pin, true); tmSleep(500e-3);	//Set pin to output mode and next to true for 500ms
-	fnc_put(pin, false); tmSleep(20e-3);								//Set output to false for 20ms
-	fnc_mode(pin, 2);																//Set pin to input mode
-
-	//Read
-	// Wait for to pull pin low.
-	for(cntHold = 0; fnc_get(pin); cntHold++)
-		if(cntHold > cntHoldMax) return 0;
-
-	//Meassure the typical pulse length
-	for(cntHold = 0; !fnc_get(pin); cntHold++)
-		if(cntHold > cntHoldMax) return 0;
-	for(cntHold = 0; fnc_get(pin); cntHold++)
-		if(cntHold > cntHoldMax) return 0;
-	cntPulse = cntHold;
-
-	//Read meassured value
-	for(iB = 0; iB < 40; iB++) {
-		for(cntHold = 0; !fnc_get(pin); cntHold++)
-			if(cntHold > cntHoldMax) return 0;
-		for(cntHold = 0; fnc_get(pin); cntHold++)
-			if(cntHold > cntHoldMax) return 0;
-		vl = vl << 1;
-		if(cntHold > cntPulse/2)	vl = vl | 1;
-	}
-
-	return vl;
-}
-
-for(i = 0; i < tries; i++) {
-	if(i) tmSleep(2);	//Retry after two seconds
-	if((vl=read()) && (vl&0xFF) == ((((vl>>8)&0xFF)+((vl>>16)&0xFF)+((vl>>24)&0xFF)+((vl>>32)&0xFF))&0xFF)) {
-		if(dev == 1) {
-			hum = 0.1*(((vl>>32)&0xFF)*256+((vl>>24)&0xFF));
-			tmp = 0.1*(((vl>>16)&0xFF)*256+((vl>>8)&0xFF));
-			return hum.toFixed(1) + ":" + tmp.toFixed(1);
-		}
-		hum = (vl>>32)&0xFF; tmp = (vl>>16)&0xFF;
-		return (hum+20).toString() + ":" + tmp.toString();
-	}
-}',1472580871);
 CREATE TABLE 'lib_Controllers' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"START" INTEGER DEFAULT '1' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '1' ,"FORMULA" TEXT DEFAULT '' ,"ru#FORMULA" TEXT DEFAULT '' ,"uk#FORMULA" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "lib_Controllers" VALUES('prescr','Prescriptions manager','','','Prescriptions manager and controller. Used in addition with user interface''s cadre "Prescription: editing" and "Prescription: runtime" for which into a parameter of the controller you must pass that parameters: "mode", "prog", "startTm", "curCom", "comLs", "work".
 Author: Roman Savochenko <rom_as@oscada.org>
@@ -7143,6 +7205,7 @@ if(f_start) {
 	SMTPTr = emailServer.length ? SYS.Transport.nodeAt(emailServer,".") : false;
 	SMSTrId_ = SMSTrId;
 	SMSTr = SMSTrId.length ? SYS.Transport.Serial.nodeAt("out_"+SMSTrId) : false;
+	return;	//Don''t real process at start
 }
 if(f_stop)	{ emailState = SMSState = ""; return; }
 if(emailServer_ != emailServer) {
@@ -7231,7 +7294,7 @@ if(!SMSTr)	SMSState = "Disabled!";
 else {
 	SMSState = tr("Sent %1. In queue %2.").replace("%1",SMSSentN.toString()).replace("%2",SMSQueueN.toString());
 	if(SMSErr.length) SMSState += " "+tr("Error: %1.").replace("%1",SMSErr);
-}','','',1479051264);
+}','','',1480872892);
 CREATE TABLE 'UserProtocol_uPrt' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"EN" INTEGER DEFAULT '0' ,"PR_TR" INTEGER DEFAULT '1' ,"WaitReqTm" INTEGER DEFAULT '0' ,"InPROG" TEXT DEFAULT '' ,"uk#InPROG" TEXT DEFAULT '' ,"OutPROG" TEXT DEFAULT '' ,"uk#OutPROG" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "UserProtocol_uPrt" VALUES('SMS','','','','Provides operations with SMS by GSM-modem connected as serial device. For now supported only sending SMS messages to a number of remote cell phone or GSM modem.
 Author: Roman Savochenko <rom_as@oscada.org>
