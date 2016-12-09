@@ -301,7 +301,8 @@ uint16_t KA_BVT::PostInit(void)
 	Msg.L += 3;
 	rc = mPrm.owner().DoCmd(&Msg);
     }
-    return rc;}
+    return rc;
+}
 
 uint16_t KA_BVT::RefreshData(void)
 {
@@ -323,7 +324,8 @@ uint16_t KA_BVT::RefreshData(void)
 	Msg.L += 3;
 	rc = mPrm.owner().DoCmd(&Msg);
     }
-    return rc;}
+    return rc;
+}
 
 void KA_BVT::loadIO(bool force)
 {

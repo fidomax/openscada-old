@@ -27,86 +27,75 @@
 
 using namespace FT3;
 
+bool KA_GZD::SKAZDchannel::IsTUParamChanged()
+{
+    bool vl_change = false;
+    vl_change |= TUOpen.CheckUpdate();
+    vl_change |= TimeOpen.CheckUpdate();
+    vl_change |= TUClose.CheckUpdate();
+    vl_change |= TimeClose.CheckUpdate();
+    vl_change |= TUStop.CheckUpdate();
+    vl_change |= TimeStop.CheckUpdate();
+    vl_change |= TURemote.CheckUpdate();
+    vl_change |= TimeRemote.CheckUpdate();
+    vl_change |= TUManual.CheckUpdate();
+    vl_change |= TimeManual.CheckUpdate();
+    vl_change |= TUStopEx.CheckUpdate();
+    vl_change |= TimeStopEx.CheckUpdate();
+    return vl_change;
+}
+
+bool KA_GZD::SKAZDchannel::IsTCParamChanged()
+{
+    bool vl_change = false;
+    vl_change |= TCOpen.CheckUpdate();
+    vl_change |= TCClose.CheckUpdate();
+    vl_change |= TCMode.CheckUpdate();
+    vl_change |= TCOpenErr.CheckUpdate();
+    vl_change |= TCCloseErr.CheckUpdate();
+    return vl_change;
+}
+
 void KA_GZD::SKAZDchannel::UpdateTUParam(uint16_t ID, uint8_t cl)
 {
-    ui8w tmp[6][2];
-    tmp[0][0].w = TUOpen.Get();
-    tmp[0][1].w = TimeOpen.Get();
-    tmp[1][0].w = TUClose.Get();
-    tmp[1][1].w = TimeClose.Get();
-    tmp[2][0].w = TUStop.Get();
-    tmp[2][1].w = TimeStop.Get();
-    tmp[3][0].w = TURemote.Get();
-    tmp[3][1].w = TimeRemote.Get();
-    tmp[4][0].w = TUManual.Get();
-    tmp[4][1].w = TimeManual.Get();
-    tmp[5][0].w = TUStopEx.Get();
-    tmp[5][1].w = TimeStopEx.Get();
-
-    if(valve_type == vt_5TU) {
-	if(tmp[0][0].w != TUOpen.vl || tmp[0][1].w != TimeOpen.vl || tmp[1][0].w != TUClose.vl || tmp[1][1].w != TimeClose.vl || tmp[2][0].w != TUStop.vl
-		|| tmp[2][1].w != TimeStop.vl || tmp[3][0].w != TURemote.vl || tmp[3][1].w != TimeRemote.vl || tmp[4][0].w != TUManual.vl
-		|| tmp[4][1].w != TimeManual.vl) {
-	    TUOpen.s = 0;
-	    TUOpen.Update(tmp[0][0].w);
-	    TimeOpen.Update(tmp[0][1].w);
-	    TUClose.Update(tmp[1][0].w);
-	    TimeClose.Update(tmp[1][1].w);
-	    TUStop.Update(tmp[2][0].w);
-	    TimeStop.Update(tmp[2][1].w);
-	    TURemote.Update(tmp[3][0].w);
-	    TimeRemote.Update(tmp[3][1].w);
-	    TUManual.Update(tmp[4][0].w);
-	    TimeManual.Update(tmp[4][1].w);
-	    uint8_t E[21] = { 0, tmp[0][0].b[0], tmp[0][0].b[1], tmp[0][1].b[0], tmp[0][1].b[1], tmp[1][0].b[0], tmp[1][0].b[1], tmp[1][1].b[0], tmp[1][1].b[1],
-		    tmp[2][0].b[0], tmp[2][0].b[1], tmp[2][1].b[0], tmp[2][1].b[1], tmp[3][0].b[0], tmp[3][0].b[1], tmp[3][1].b[0], tmp[3][1].b[1],
-		    tmp[4][0].b[0], tmp[4][0].b[1], tmp[4][1].b[0], tmp[4][1].b[1] };
+    if(IsTUParamChanged()) {
+	TUOpen.s = 0;
+	uint8_t E[25];
+	uint8_t l = 0;
+	l += SerializeB(E + l, TUOpen.s);
+	l += TUOpen.Serialize(E + l);
+	l += TimeOpen.Serialize(E + l);
+	l += TUClose.Serialize(E + l);
+	l += TimeClose.Serialize(E + l);
+	l += TUStop.Serialize(E + l);
+	l += TimeStop.Serialize(E + l);
+	l += TURemote.Serialize(E + l);
+	l += TimeRemote.Serialize(E + l);
+	l += TUManual.Serialize(E + l);
+	l += TimeManual.Serialize(E + l);
+	l += TUStopEx.Serialize(E + l);
+	l += TimeStopEx.Serialize(E + l);
+	if(valve_type == vt_5TU) {
+	    da->PushInBE(cl, sizeof(E) - 4, ID, E);
+	}
+	if(valve_type == vt_6TU) {
 	    da->PushInBE(cl, sizeof(E), ID, E);
 	}
     }
-    if(valve_type == vt_6TU) {
-	if(tmp[0][0].w != TUOpen.vl || tmp[0][1].w != TimeOpen.vl || tmp[1][0].w != TUClose.vl || tmp[1][1].w != TimeClose.vl || tmp[2][0].w != TUStop.vl
-		|| tmp[2][1].w != TimeStop.vl || tmp[3][0].w != TURemote.vl || tmp[3][1].w != TimeRemote.vl || tmp[4][0].w != TUManual.vl
-		|| tmp[4][1].w != TimeManual.vl || tmp[5][0].w != TUStopEx.vl || tmp[5][1].w != TimeStopEx.vl) {
-	    TUOpen.s = 0;
-	    TUOpen.Update(tmp[0][0].w);
-	    TimeOpen.Update(tmp[0][1].w);
-	    TUClose.Update(tmp[1][0].w);
-	    TimeClose.Update(tmp[1][1].w);
-	    TUStop.Update(tmp[2][0].w);
-	    TimeStop.Update(tmp[2][1].w);
-	    TURemote.Update(tmp[3][0].w);
-	    TimeRemote.Update(tmp[3][1].w);
-	    TUManual.Update(tmp[4][0].w);
-	    TimeManual.Update(tmp[4][1].w);
-	    TUStopEx.Update(tmp[5][0].w);
-	    TimeStopEx.Update(tmp[5][1].w);
-	    uint8_t E[25] = { 0, tmp[0][0].b[0], tmp[0][0].b[1], tmp[0][1].b[0], tmp[0][1].b[1], tmp[1][0].b[0], tmp[1][0].b[1], tmp[1][1].b[0], tmp[1][1].b[1],
-		    tmp[2][0].b[0], tmp[2][0].b[1], tmp[2][1].b[0], tmp[2][1].b[1], tmp[3][0].b[0], tmp[3][0].b[1], tmp[3][1].b[0], tmp[3][1].b[1],
-		    tmp[4][0].b[0], tmp[4][0].b[1], tmp[4][1].b[0], tmp[4][1].b[1], tmp[5][0].b[0], tmp[5][0].b[1], tmp[5][1].b[0], tmp[5][1].b[1] };
-	    da->PushInBE(cl, sizeof(E), ID, E);
-	}
-    }
-
 }
 
 void KA_GZD::SKAZDchannel::UpdateTCParam(uint16_t ID, uint8_t cl)
 {
-    ui8w tmp[5];
-    tmp[0].w = TCOpen.Get();
-    tmp[1].w = TCClose.Get();
-    tmp[2].w = TCMode.Get();
-    tmp[3].w = TCOpenErr.Get();
-    tmp[4].w = TCCloseErr.Get();
-
-    if(tmp[0].w != TCOpen.vl || tmp[1].w != TCClose.vl || tmp[2].w != TCMode.vl || tmp[3].w != TCOpenErr.vl || tmp[4].w != TCCloseErr.vl) {
+    if(IsTCParamChanged()) {
 	TCOpen.s = 0;
-	TCOpen.Update(tmp[0].w);
-	TCClose.Update(tmp[1].w);
-	TCMode.Update(tmp[2].w);
-	TCOpenErr.Update(tmp[3].w);
-	TCCloseErr.Update(tmp[4].w);
-	uint8_t E[11] = { 0, tmp[0].b[0], tmp[0].b[1], tmp[1].b[0], tmp[1].b[1], tmp[2].b[0], tmp[2].b[1], tmp[3].b[0], tmp[3].b[1], tmp[4].b[0], tmp[4].b[1] };
+	uint8_t E[11];
+	uint8_t l = 0;
+	l += SerializeB(E + l, TCOpen.s);
+	l += TCOpen.Serialize(E + l);
+	l += TCClose.Serialize(E + l);
+	l += TCMode.Serialize(E + l);
+	l += TCOpenErr.Serialize(E + l);
+	l += TCCloseErr.Serialize(E + l);
 	da->PushInBE(cl, sizeof(E), ID, E);
     }
 }
@@ -220,7 +209,7 @@ uint8_t KA_GZD::SKAZDchannel::SetNewFunction(uint8_t addr, uint16_t prmID, uint8
 }
 
 KA_GZD::KA_GZD(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, uint32_t v_type) :
-	DA(prm), ID(id), count_n(n), with_params(has_params), valve_type(v_type), config(0xF | (n << 4) | (2 << 10)),max_count_data(40)
+	DA(prm), ID(id), count_n(n), with_params(has_params), valve_type(v_type), config(0xF | (n << 4) | (2 << 10)), max_count_data(40)
 {
     mTypeFT3 = KA;
     chan_err.clear();
@@ -385,15 +374,24 @@ uint16_t KA_GZD::RefreshParams(void)
 uint16_t KA_GZD::RefreshData(void)
 {
     uint16_t rc;
+    tagMsg Msg;
     for(int j = 0; j <= count_n / max_count_data; j++) {
-	tagMsg Msg;
 	Msg.L = 0;
 	Msg.C = AddrReq;
 	for(int i = j * max_count_data + 1; i <= (count_n < ((j + 1) * max_count_data) ? count_n : (j + 1) * 40); i++) {
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+	    if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
+		Msg.L += 3;
+		rc = mPrm.owner().DoCmd(&Msg);
+		Msg.L = 0;
+		Msg.C = AddrReq;
+		if(rc == ERROR) break;
+	    }
 	}
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
+	if(Msg.L) {
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	}
 	if(rc == ERROR) break;
     }
     return rc;
