@@ -124,11 +124,22 @@ uint16_t KA_BTU::RefreshData(void)
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = AddrReq;
+    uint16_t rc;
     for(int i = 1; i <= count_nu; i++) {
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+	if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	    Msg.L = 0;
+	    Msg.C = AddrReq;
+	    if(rc == ERROR) break;
+	}
     }
-    Msg.L += 3;
-    return mPrm.owner().DoCmd(&Msg);
+    if(Msg.L) {
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+    }
+    return rc;
 }
 
 uint16_t KA_BTU::RefreshParams(void)
