@@ -104,9 +104,19 @@ uint16_t KA_BTU::SetParams(void)
 	for(int j = 0; j < 16; j++) {
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, j + 1));
 	    Msg.L += TUdata[i].Time[j].Serialize(Msg.D + Msg.L);
+	    if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
+		Msg.L += 3;
+		rc = mPrm.owner().DoCmd(&Msg);
+		Msg.L = 0;
+		Msg.C = SetData;
+		if((rc == BAD2) || (rc == BAD3) || (rc == ERROR)) break;
+	    }
+
 	}
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
+	if(Msg.L) {
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	}
 	if((rc == BAD2) || (rc == BAD3)) {
 	    mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
 	} else {
