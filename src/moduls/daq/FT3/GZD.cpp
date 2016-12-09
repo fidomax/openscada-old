@@ -303,6 +303,7 @@ uint16_t KA_GZD::GetState()
 uint16_t KA_GZD::SetParams(void)
 {
     uint16_t rc;
+    bool err = false;
     tagMsg Msg;
     loadParam();
     for(int i = 0; i < count_n; i++) {
@@ -327,15 +328,26 @@ uint16_t KA_GZD::SetParams(void)
 		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUStopEx.lnk.vlattr.at().getI(0, true));
 		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeStopEx.lnk.vlattr.at().getI(0, true));
 	    }
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOpen.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCClose.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCMode.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOpenErr.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCCloseErr.lnk.vlattr.at().getI(0, true));
+	    if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
+		Msg.L += 3;
+		rc = mPrm.owner().DoCmd(&Msg);
+		Msg.L = 0;
+		Msg.C = SetData;
+		if((rc == BAD2) || (rc == BAD3) || (rc == ERROR)) err = true;
+	    }
+	    if(!err) {
+		Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
+		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOpen.lnk.vlattr.at().getI(0, true));
+		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCClose.lnk.vlattr.at().getI(0, true));
+		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCMode.lnk.vlattr.at().getI(0, true));
+		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOpenErr.lnk.vlattr.at().getI(0, true));
+		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCCloseErr.lnk.vlattr.at().getI(0, true));
+	    }
 	}
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
+	if(Msg.L) {
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	}
 	if((rc == BAD2) || (rc == BAD3)) {
 	    mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
 	} else {
