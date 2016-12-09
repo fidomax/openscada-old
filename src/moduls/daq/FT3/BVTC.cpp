@@ -91,12 +91,23 @@ uint16_t KA_BVTC::PreInit(void)
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = SetData;
+    uint16_t rc;
     for(int i = 0; i < count_n; i++) {
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
 	Msg.L += SerializeB(Msg.D + Msg.L, TC_DISABLED);
+	if (Msg.L>mPrm.owner().cfg("MAXREQ").getI()){
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	    Msg.L = 0;
+	    Msg.C = SetData;
+	    if (rc==ERROR) break;
+	}
     }
-    Msg.L += 3;
-    return mPrm.owner().DoCmd(&Msg);
+    if (Msg.L){
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+    }
+    return rc;
 }
 
 uint16_t KA_BVTC::SetParams(void)
@@ -156,13 +167,24 @@ uint16_t KA_BVTC::PostInit(void)
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = SetData;
+    uint16_t rc;
     for(int i = 0; i < count_n; i++) {
 	loadVal(data[i].Value.lnk);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
 	Msg.L += data[i].Value.SerializeAttr(Msg.D + Msg.L);
+	if (Msg.L>mPrm.owner().cfg("MAXREQ").getI()){
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	    Msg.L = 0;
+	    Msg.C = SetData;
+	    if (rc==ERROR) break;
+	}
     }
-    Msg.L += 3;
-    return mPrm.owner().DoCmd(&Msg);
+    if (Msg.L){
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+    }
+    return rc;
 }
 
 uint16_t KA_BVTC::RefreshData(void)
@@ -170,11 +192,22 @@ uint16_t KA_BVTC::RefreshData(void)
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = AddrReq;
+    uint16_t rc;
     for(int i = 1; i <= count_n; i++) {
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+	if (Msg.L>mPrm.owner().cfg("MAXREQ").getI()){
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	    Msg.L = 0;
+	    Msg.C = AddrReq;
+	    if (rc==ERROR) break;
+	}
     }
-    Msg.L += 3;
-    return mPrm.owner().DoCmd(&Msg);
+    if (Msg.L){
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+    }
+    return rc;
 }
 
 void KA_BVTC::loadIO(bool force)

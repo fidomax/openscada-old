@@ -486,6 +486,7 @@ void TTpContr::postEnable(int flag)
     fldAdd(new TFld("IGNORE_FCB2", _("Ignore FCB2"), TFld::Boolean, TFld::NoFlag, "1", "0"));
     fldAdd(new TFld("PRM_REFRESH", _("Params refresh"), TFld::String, TFld::Selected, "5", "DB", "DB;PLC", _("DB;PLC")));
     fldAdd(new TFld("REPEAT", _("Request repeats"), TFld::Integer, TFld::NoFlag, "3", "1", "1;255"));
+    fldAdd(new TFld("MAXREQ", _("Max request length"), TFld::Integer, TFld::NoFlag, "3", "200", "1;253"));
     //> Parameter type bd structure
 
     int t_prm = tpParmAdd("tp_BUC", "PRM_BD_BUC", _("BUC"));
