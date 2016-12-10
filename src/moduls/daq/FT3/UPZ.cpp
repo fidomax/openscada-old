@@ -105,6 +105,7 @@ uint16_t KA_UPZ::GetState()
 uint16_t KA_UPZ::SetParams(void)
 {
     uint16_t rc;
+    bool err = false;
     tagMsg Msg;
     loadParam();
     for(int i = 0; i < count_n; i++) {
@@ -116,20 +117,31 @@ uint16_t KA_UPZ::SetParams(void)
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
 	    Msg.L += data[i].Addr_obj1.SerializeAttr(Msg.D + Msg.L);
 	    Msg.L += data[i].Addr_obj2.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
-	    Msg.L += data[i].Alarm_obj1.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Time1.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Number_function1.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Number_object1.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Alarm_obj2.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Time2.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Number_function2.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Number_object2.SerializeAttr(Msg.D + Msg.L);
-	    for(int j = 0; j < 18; j++) {//костыль
-		Msg.L += SerializeUi16(Msg.D + Msg.L, 0);
+	    if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
+		Msg.L += 3;
+		rc = mPrm.owner().DoCmd(&Msg);
+		Msg.L = 0;
+		Msg.C = SetData;
+		if((rc == BAD2) || (rc == BAD3) || (rc == ERROR)) err = true;
 	    }
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
+	    if(!err) {
+		Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
+		Msg.L += data[i].Alarm_obj1.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += data[i].Time1.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += data[i].Number_function1.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += data[i].Number_object1.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += data[i].Alarm_obj2.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += data[i].Time2.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += data[i].Number_function2.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += data[i].Number_object2.SerializeAttr(Msg.D + Msg.L);
+		for(int j = 0; j < 18; j++) { //костыль
+		    Msg.L += SerializeUi16(Msg.D + Msg.L, 0);
+		}
+	    }
+	    if(Msg.L) {
+		Msg.L += 3;
+		rc = mPrm.owner().DoCmd(&Msg);
+	    }
 	    if((rc == BAD2) || (rc == BAD3)) {
 		mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
 	    } else {
@@ -174,11 +186,22 @@ uint16_t KA_UPZ::RefreshData(void)
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = AddrReq;
+    uint16_t rc;
     for(int i = 1; i <= count_n; i++) {
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+	if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	    Msg.L = 0;
+	    Msg.C = AddrReq;
+	    if(rc == ERROR) break;
+	}
     }
-    Msg.L += 3;
-    return mPrm.owner().DoCmd(&Msg);
+    if(Msg.L) {
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+    }
+    return rc;
 }
 
 void KA_UPZ::loadIO(bool force)
@@ -410,8 +433,8 @@ uint16_t KA_UPZ::setVal(TVal &val)
 	Msg.L += data[ft3ID.k - 1].Time2.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += data[ft3ID.k - 1].Number_function2.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += data[ft3ID.k - 1].Number_object2.SerializeAttr(Msg.D + Msg.L);
-	for(int i = 0; i < 18; i++) {//костыль
-		Msg.L += SerializeUi16(Msg.D + Msg.L, 0);
+	for(int i = 0; i < 18; i++) {	//костыль
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, 0);
 	}
 	break;
     case 3:
