@@ -709,7 +709,7 @@ uint16_t TMdContr::DoCmd(tagMsg * req)
 		return answ.C & 0x0F;
 		break;
 	    case SetData:
-		if ((answ.C & 0x0F == BAD2) || (answ.C & 0x0F == BAD3)){
+		if((answ.C & 0x0F == BAD2) || (answ.C & 0x0F == BAD3)) {
 		    rRep = mReqRepeat;
 		    while(rRep) {
 			if(ResetChannel() == GOOD2) {
@@ -1142,7 +1142,7 @@ void TMdContr::start_()
     nChannel = cfg("NCHANNEL").getI();
     Channels.clear();
     devAddr = vmin(63, vmax(1,cfg("NODE").getI()));
-    mReqRepeat= cfg("REPEAT").getI();
+    mReqRepeat = cfg("REPEAT").getI();
     SetCntrState(StateNoConnection);
 //> Start the gathering data task
     if(!prc_st) {
@@ -1744,7 +1744,7 @@ uint16_t TMdPrm::BlckPreInit(void)
 uint16_t TMdPrm::BlckSetParams(void)
 {
     uint16_t rc = GOOD2;
-    if(mDA && cfg("WITH_PARAMS").getB()) {
+    if(mDA && cfgPresent("WITH_PARAMS") && cfg("WITH_PARAMS").getB()) {
 	rc = mDA->SetParams();
     }
     if((rc != GOOD2) && (rc != GOOD3)) {
@@ -1804,7 +1804,7 @@ uint16_t TMdPrm::BlckRefreshData(void)
 uint16_t TMdPrm::BlckRefreshParams(void)
 {
     uint16_t rc = GOOD2;
-    if(mDA && cfg("WITH_PARAMS").getB()) {
+    if(mDA && cfgPresent("WITH_PARAMS") && cfg("WITH_PARAMS").getB()) {
 	rc = mDA->RefreshParams();
     }
     if((rc == BAD2) || (rc == BAD3)) {
@@ -1820,7 +1820,7 @@ uint16_t TMdPrm::BlckRefreshParams(void)
 uint16_t TMdPrm::BlckLoadParams(void)
 {
     uint16_t rc = GOOD2;
-    if(mDA && cfg("WITH_PARAMS").getB()) {
+    if(mDA && cfgPresent("WITH_PARAMS") && cfg("WITH_PARAMS").getB()) {
 	mDA->loadParam();
     }
     return rc;
