@@ -238,8 +238,10 @@ void KA_BVTC::saveParam(void)
 {
     for(int i = 0; i < count_n; i++) {
 	saveVal(data[i].Value.lnk);
-	saveVal(data[i].Count.lnk);
-	saveVal(data[i].Period.lnk);
+	if(with_params) {
+	    saveVal(data[i].Count.lnk);
+	    saveVal(data[i].Period.lnk);
+	}
     }
 }
 
@@ -247,8 +249,10 @@ void KA_BVTC::loadParam(void)
 {
     if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
     for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].Period.lnk);
-	loadVal(data[i].Count.lnk);
+	if(with_params) {
+	    loadVal(data[i].Period.lnk);
+	    loadVal(data[i].Count.lnk);
+	}
     }
 }
 

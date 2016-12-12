@@ -1744,7 +1744,7 @@ uint16_t TMdPrm::BlckPreInit(void)
 uint16_t TMdPrm::BlckSetParams(void)
 {
     uint16_t rc = GOOD2;
-    if(mDA) {
+    if(mDA && cfg("WITH_PARAMS").getB()) {
 	rc = mDA->SetParams();
     }
     if((rc != GOOD2) && (rc != GOOD3)) {
@@ -1804,7 +1804,7 @@ uint16_t TMdPrm::BlckRefreshData(void)
 uint16_t TMdPrm::BlckRefreshParams(void)
 {
     uint16_t rc = GOOD2;
-    if(mDA) {
+    if(mDA && cfg("WITH_PARAMS").getB()) {
 	rc = mDA->RefreshParams();
     }
     if((rc == BAD2) || (rc == BAD3)) {
@@ -1820,7 +1820,7 @@ uint16_t TMdPrm::BlckRefreshParams(void)
 uint16_t TMdPrm::BlckLoadParams(void)
 {
     uint16_t rc = GOOD2;
-    if(mDA) {
+    if(mDA && cfg("WITH_PARAMS").getB()) {
 	mDA->loadParam();
     }
     return rc;
