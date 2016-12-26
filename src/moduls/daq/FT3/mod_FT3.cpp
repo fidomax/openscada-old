@@ -731,16 +731,18 @@ uint16_t TMdContr::DoCmd(tagMsg * req)
 	    }
 
 	} else {
-	    //sync lost
-	    rRep = mReqRepeat;
-	    while(rRep) {
-		if(ResetChannel() == GOOD2) {
-		    break;
+	    if(cmd == SetData) {
+		//sync lost
+		rRep = mReqRepeat;
+		while(rRep) {
+		    if(ResetChannel() == GOOD2) {
+			break;
+		    }
+		    rRep--;
 		}
-		rRep--;
-	    }
-	    if(rRep == 0) {
-		return ERROR;
+		if(rRep == 0) {
+		    return ERROR;
+		}
 	    }
 	}
 	nRep--;
