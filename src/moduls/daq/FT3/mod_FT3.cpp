@@ -758,18 +758,6 @@ bool TMdContr::Transact(tagMsg * req, tagMsg * answ)
     string data_s = "";
     char io_buf[4096];
     string msg;
-    switch(Cmd) {
-    case SetData:
-	pMsg->C |= Channels[0].FCB2;
-	break;
-    case ReqData1:
-    case ReqData2:
-	pMsg->C |= Channels[0].FCB3;
-	break;
-    case ReqData:
-	if(pMsg->L != 1) pMsg->C |= Channels[0].FCB3;
-	break;
-    }
     uint16_t rc;
     msg.reserve(Len(req->L));
     MakePacket(req, msg);
