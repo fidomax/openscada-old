@@ -83,7 +83,7 @@ void KA_GNS::SKANSchannel::UpdateTUParam(uint16_t ID, uint8_t cl)
 	l += TimeRemote.Serialize(E + l);
 	l += TUManual.Serialize(E + l);
 	l += TimeManual.Serialize(E + l);
-	da->PushInBE(cl, sizeof(E), ID, E);
+	da->PushInBE(cl, l, ID, E);
     }
 }
 
@@ -97,7 +97,7 @@ void KA_GNS::SKANSchannel::UpdateTCParam(uint16_t ID, uint8_t cl)
 	l += TCOn.Serialize(E + l);
 	l += TCOff.Serialize(E + l);
 	l += TCMode.Serialize(E + l);
-	da->PushInBE(cl, sizeof(E), ID, E);
+	da->PushInBE(cl, l, ID, E);
     }
 }
 
@@ -116,20 +116,20 @@ void KA_GNS::SKANSchannel::UpdateTime(uint16_t ID, uint8_t cl)
 
 uint8_t KA_GNS::SKANSchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
+    const struct KANSTUParams *params = (const struct KANSTUParams *) val;
     if(TUOn.lnk.Connected() || TimeOn.lnk.Connected() || TUOff.lnk.Connected() || TimeOff.lnk.Connected() || TUStop.lnk.Connected() || TimeOn.lnk.Connected()
 	    || TUManual.lnk.Connected() || TimeManual.lnk.Connected() || TURemote.lnk.Connected() || TimeRemote.lnk.Connected()) {
 	TUOn.s = addr;
-	TUOn.Set(TSYS::getUnalign16(val));
-	TimeOn.Set(TSYS::getUnalign16(val + 2));
-	TUOff.Set(TSYS::getUnalign16(val + 4));
-	TimeOff.Set(TSYS::getUnalign16(val + 6));
-	TUStop.Set(TSYS::getUnalign16(val + 8));
-	TimeStop.Set(TSYS::getUnalign16(val + 10));
-	TURemote.Set(TSYS::getUnalign16(val + 12));
-	TimeRemote.Set(TSYS::getUnalign16(val + 14));
-	TUManual.Set(TSYS::getUnalign16(val + 16));
-	TimeManual.Set(TSYS::getUnalign16(val + 18));
-
+	TUOn.Set(params->TUOn);
+	TimeOn.Set(params->TimeOn);
+	TUOff.Set(params->TUOff);
+	TimeOff.Set(params->TimeOff);
+	TUStop.Set(params->TUStop);
+	TimeStop.Set(params->TimeStop);
+	TURemote.Set(params->TURemote);
+	TimeRemote.Set(params->TimeRemote);
+	TUManual.Set(params->TUManual);
+	TimeManual.Set(params->TimeManual);
 	uint8_t E[21];
 	E[0] = addr;
 	memcpy(E + 1, val, 20);
@@ -142,12 +142,12 @@ uint8_t KA_GNS::SKANSchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_
 
 uint8_t KA_GNS::SKANSchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
+    const struct KANSTCParams *params = (const struct KANSTCParams *) val;
     if(TCOn.lnk.Connected() || TCOff.lnk.Connected() || TCMode.lnk.Connected()) {
 	TCOn.s = addr;
-	TCOn.Set(TSYS::getUnalign16(val));
-	TCOff.Set(TSYS::getUnalign16(val + 2));
-	TCMode.Set(TSYS::getUnalign16(val + 4));
-
+	TCOn.Set(params->TCOn);
+	TCOff.Set(params->TCOff);
+	TCMode.Set(params->TCMode);
 	uint8_t E[7];
 	E[0] = addr;
 	memcpy(E + 1, val, 6);
@@ -292,25 +292,26 @@ uint16_t KA_GNS::SetParams(void)
 	Msg.L = 0;
 	Msg.C = SetData;
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
+	//Msg.L += data[i].State.SerializeAttr(Msg.D + Msg.L);  TODO: need to fix
 	Msg.L += SerializeB(Msg.D + Msg.L, data[i].State.lnk.vlattr.at().getI(0, true) & 0x0F);
 	if((data[i].State.lnk.vlattr.at().getI(0, true) & 0x0F) != NAS_REP) {
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOn.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOn.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOff.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOff.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUStop.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeStop.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TURemote.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeRemote.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUManual.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeManual.lnk.vlattr.at().getI(0, true));
+	    Msg.L += data[i].TUOn.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeOn.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TUOff.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeOff.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TUStop.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeStop.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TURemote.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeRemote.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TUManual.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeManual.SerializeAttr(Msg.D + Msg.L);
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOn.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOff.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCMode.lnk.vlattr.at().getI(0, true));
+	    Msg.L += data[i].TCOn.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TCOff.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TCMode.SerializeAttr(Msg.D + Msg.L);
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 4));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].Time.lnk.vlattr.at().getI(0, true));
+	    Msg.L += data[i].Time.SerializeAttr(Msg.D + Msg.L);
 	}
 	Msg.L += 3;
 	rc = mPrm.owner().DoCmd(&Msg);

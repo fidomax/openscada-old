@@ -36,6 +36,27 @@ namespace FT3
     {
 	KA_GNS_Error = 0x0, KA_GNS_Normal = 0x1
     };
+    struct KANSTUParams  // FT3 ID
+    {
+	uint16_t TUOn;
+	uint16_t TimeOn;
+	uint16_t TUOff;
+	uint16_t TimeOff;
+	uint16_t TUStop;
+	uint16_t TimeStop;
+	uint16_t TURemote;
+	uint16_t TimeRemote;
+	uint16_t TUManual;
+	uint16_t TimeManual;
+    }__attribute__((packed));
+    struct KANSTCParams  // FT3 ID
+    {
+	uint16_t TCOn;
+	uint16_t TCOff;
+	uint16_t TCMode;
+    }__attribute__((packed));
+
+
     class KA_GNS: public DA
     {
     public:
