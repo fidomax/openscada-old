@@ -169,7 +169,7 @@ class TMdContr: public TController
 
 	string getStatus( );
 
-	long long period( )	{ return mPer; }
+	int64_t period( )	{ return mPer; }
 	string	cron( )		{ return mSched; }
 	int	prior( )	{ return mPrior; }
 
@@ -235,8 +235,8 @@ class TMdContr: public TController
 	void setCntrDelay( const string &err );
 
 	//Attributes
-	pthread_mutex_t	enRes;
-	Res     req_res;
+	//pthread_mutex_t	enRes;
+	ResMtx     enRes, req_res;
 	int64_t	&mPrior,			//Process task priority
 	    &mNode;             //MSO Addres
 	TCfg	&mSched,			// Calc schedule

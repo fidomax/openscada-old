@@ -27,7 +27,8 @@
 #include <string>
 #include <map>
 
-#include <tprotocols.h>
+//#include <tprotocols.h>
+#include <tsys.h>
 
 #undef _
 #define _(mess) modPrt->I18N(mess)
@@ -154,7 +155,7 @@ class Node : public TFunction, public TConfig
 	static void *Task( void *icntr );
 
 	//Attributes
-	Res	nRes;
+	ResRW	nRes;
 	SData	*data;
 	TCfg	&mId, &mName, &mDscr;
 	double	&mPer;
@@ -202,7 +203,7 @@ class TProt: public TProtocol
 	TElem &nodeEl( )	{ return mNodeEl; }
 	TElem &nodeIOEl( )	{ return mNodeIOEl; }
 
-	Res &nodeRes( )		{ return nRes; }
+	ResRW &nodeRes( )		{ return nRes; }
 
     protected:
 	//Methods
@@ -229,7 +230,7 @@ class TProt: public TProtocol
 
 	TElem	mNodeEl, mNodeIOEl;
 
-	Res	nRes;
+	ResRW	nRes;
 };
 
 extern TProt *modPrt;

@@ -18,19 +18,19 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <getopt.h>
+//#include <getopt.h>
 #include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+//#include <sys/types.h>
+//#include <sys/stat.h>
 #include <fcntl.h>
-#include <termios.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <string.h>
-#include <stdint.h>
+//#include <termios.h>
+//#include <unistd.h>
+//#include <sys/ioctl.h>
+//#include <string.h>
+//#include <stdint.h>
 
 #include <ttypeparam.h>
-#include <tdaqs.h>
+//#include <tdaqs.h>
 
 #include <sys/socket.h>
 #include <linux/can.h>
@@ -122,14 +122,14 @@ TController *TTpContr::ContrAttach(const string &name, const string &daq_db)
 //* TMdContr                                           *
 //******************************************************
 TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
-	TController(name_c, daq_db, cfgelem), prc_st(false), endrun_req(false), tmGath(0), numRx(0), numTx(0), mSched(cfg("SCHEDULE")),
-	mPrior(cfg("PRIOR").getId()), mAddr(cfg("ADDR")), mNode(cfg("NODE").getId()), reqTm(cfg("TM_REQ").getId())
+	TController(name_c, daq_db, cfgelem), enRes(true), req_res(true), prc_st(false), endrun_req(false), tmGath(0), numRx(0), numTx(0),
+	mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR").getId()), mAddr(cfg("ADDR")), mNode(cfg("NODE").getId()), reqTm(cfg("TM_REQ").getId())
 {
-    pthread_mutexattr_t attrM;
-    pthread_mutexattr_init(&attrM);
-    pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&enRes, &attrM);
-    pthread_mutexattr_destroy(&attrM);
+    /*pthread_mutexattr_t attrM;
+     pthread_mutexattr_init(&attrM);
+     pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
+     pthread_mutex_init(&enRes, &attrM);
+     pthread_mutexattr_destroy(&attrM);*/
 
     cfg("PRM_BD_MSO").setS("MSOPrm_MSO_" + name_c);
     cfg("PRM_BD_TT").setS("MSOPrm_TT_" + name_c);
@@ -144,7 +144,7 @@ TMdContr::~TMdContr()
 {
     if(startStat()) stop();
 
-    pthread_mutex_destroy(&enRes);
+//    pthread_mutex_destroy(&enRes);
 }
 
 string TMdContr::getStatus()
@@ -185,7 +185,9 @@ bool TTpContr::DataIn(const string &ireqst, const uint32_t node)
     unsigned int type = (node >> 18) & 0xFF;
     unsigned int param = (node) & 0x7;
     unsigned int flag = (node >> 26) & 0x7;
-    if (mess_lev() == TMess::Debug) mess_debug( _("/DAQ/MSO/DataIn")/*nodePath().c_str()*/, _("Data in: sender<%u> mso<%u> channel<%u> type<%u> param<%u> flag<%u>"), node, mso, channel, type, param, flag);
+    if(mess_lev() == TMess::Debug)
+	mess_debug(_("/DAQ/MSO/DataIn")/*nodePath().c_str()*/,_("Data in: sender<%u> mso<%u> channel<%u> type<%u> param<%u> flag<%u>"), node, mso, channel,
+		type, param, flag);
     vector<string> lst;
     SYS->daq().at().at("MSO").at().list(lst);
     for(int i_l = 0; i_l < lst.size(); i_l++) {
@@ -355,7 +357,7 @@ void *TMdContr::Task(void *icntr)
 	    } else {
 		cntr.NeedUpdate = true;
 	    }
-	    TSYS::taskSleep(cntr.period(), cntr.period() ? 0 : TSYS::cron(cntr.cron()));
+	    TSYS::taskSleep(cntr.period(), cntr.period() ? "" : cntr.cron());
 	}
     } catch (TError err) {
 	mess_err(err.cat.c_str(), err.mess.c_str());
@@ -458,7 +460,7 @@ TMdPrm::TMdPrm(string name, TTypeParam *tp_prm) :
 TMdPrm::~TMdPrm()
 {
     nodeDelAll();
-    if (mDA) delete mDA;
+    if(mDA) delete mDA;
 }
 
 void TMdPrm::postEnable(int flag)
