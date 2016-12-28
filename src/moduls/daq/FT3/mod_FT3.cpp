@@ -460,22 +460,22 @@ void TTpContr::postEnable(int flag)
     //> Controler's bd structure
     fldAdd(new TFld("CTRTYPE", _("Type"), TFld::String, TFld::Selected, "5", "Logic", "Logic;DAQ", _("Logic;DAQ")));
     fldAdd(new TFld("PRTTYPE", _("Protocol"), TFld::String, TFld::Selected, "5", "GRS", "GRS;KA", _("GRS;KA")));
-    fldAdd(new TFld("PRM_BD_BUC", _("BUC Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_BVTS", _("BVTS Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_BVT", _("BVT Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_BVI", _("BVI Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_BIP", _("BIP Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_PAUK", _("PAUK Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_BTU", _("BTU Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_ACCOUNT", _("ACCOUNT Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_BTR", _("BTR Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_BTE", _("BTE Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_ODOR", _("ODOR Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_GZD", _("GZD Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_GNS", _("GNS Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_GKR", _("GKR Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_TANK", _("TANK Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
-    fldAdd(new TFld("PRM_BD_UPZ", _("UPZ Parameteres table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_BUC", _("BUC Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_BVTS", _("BVTS Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_BVT", _("BVT Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_BVI", _("BVI Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_BIP", _("BIP Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_PAUK", _("PAUK Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_BTU", _("BTU Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_ACCOUNT", _("ACCOUNT Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_BTR", _("BTR Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_BTE", _("BTE Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_ODOR", _("ODOR Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_GZD", _("GZD Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_GNS", _("GNS Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_GKR", _("GKR Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_TANK", _("TANK Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_UPZ", _("UPZ Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("SCHEDULE", _("Acquisition schedule"), TFld::String, TFld::NoFlag, "100", "1"));
 //    fldAdd(new TFld("PERIOD", _("Gather data period (s)"), TFld::Integer, TFld::NoFlag, "3", "1", "0;100"));
     fldAdd(new TFld("PRIOR", _("Gather task priority"), TFld::Integer, TFld::NoFlag, "2", "0", "-1;199"));
@@ -566,11 +566,6 @@ void TTpContr::postEnable(int flag)
 
     t_prm = tpParmAdd("tp_TANK", "PRM_BD_TANK", _("TANK"));
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "7", "0;15"));
-    tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
-    tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
-
-    t_prm = tpParmAdd("tp_UPZ", "PRM_BD_UPZ", _("UPZ"));
-    tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "11", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
@@ -744,6 +739,7 @@ uint16_t TMdContr::DoCmd(tagMsg * req)
 		    return ERROR;
 		}
 	    }
+
 	}
 	nRep--;
     }
@@ -762,6 +758,18 @@ bool TMdContr::Transact(tagMsg * req, tagMsg * answ)
     string data_s = "";
     char io_buf[4096];
     string msg;
+    switch(Cmd) {
+    case SetData:
+	pMsg->C |= Channels[0].FCB2;
+	break;
+    case ReqData1:
+    case ReqData2:
+	pMsg->C |= Channels[0].FCB3;
+	break;
+    case ReqData:
+	if(pMsg->L != 1) pMsg->C |= Channels[0].FCB3;
+	break;
+    }
     uint16_t rc;
     msg.reserve(Len(req->L));
     MakePacket(req, msg);
