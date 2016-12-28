@@ -44,6 +44,8 @@ class DA: public TElem
 	virtual string id( ) = 0;
 	virtual string name( ) = 0;
 
+	virtual bool isSlow( )	{ return false; }
+
 	virtual void init( TMdPrm *prm ) 	{ }
 	virtual void deInit( TMdPrm *prm )	{ }
 

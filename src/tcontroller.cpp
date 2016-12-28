@@ -50,9 +50,9 @@ string TController::objName( )	{ return TCntrNode::objName()+":TController"; }
 
 string TController::DAQPath( )	{ return owner().DAQPath()+"."+id(); }
 
-TCntrNode &TController::operator=( TCntrNode &node )
+TCntrNode &TController::operator=( const TCntrNode &node )
 {
-    TController *src_n = dynamic_cast<TController*>(&node);
+    const TController *src_n = dynamic_cast<const TController*>(&node);
     if(!src_n) return *this;
 
     //Individual DB names store
@@ -94,7 +94,7 @@ void TController::postDisable( int flag )
 {
     if(flag) {
 	//Delete DB record
-	SYS->db().at().dataDel(fullDB(),owner().nodePath()+"DAQ",*this,true);
+	SYS->db().at().dataDel(fullDB(), owner().nodePath()+"DAQ", *this, true);
 
 	//Delete parameter's tables
 	for(unsigned i_tp = 0; i_tp < owner().tpPrmSize(); i_tp++) {
@@ -105,7 +105,7 @@ void TController::postDisable( int flag )
     }
 }
 
-TTypeDAQ &TController::owner( )	{ return *(TTypeDAQ*)nodePrev(); }
+TTypeDAQ &TController::owner( ) const	{ return *(TTypeDAQ*)nodePrev(); }
 
 string TController::workId( )	{ return owner().modId()+"."+id(); }
 
@@ -345,11 +345,11 @@ void TController::redntDataUpdate( )
 	    unsigned rC = 0;
 	    for(unsigned iV = 0; iV < listV.size(); iV++) {
 		AutoHD<TVal> vl = prmC.at().vlAt(listV[iV]);
-		if(!vl.at().arch().freeStat() || vl.at().reqFlg()) { prmNd->childAdd("el")->setAttr("id",listV[iV]); rC++; }
 		if(!vl.at().arch().freeStat())
 		    prmNd->childAdd("ael")->setAttr("id",listV[iV])->
 					    setAttr("tm",ll2s(vmax(vl.at().arch().at().end(""),
 								   TSYS::curTime()-(int64_t)(3.6e9*owner().owner().rdRestDtTm()))));
+		if(!vl.at().arch().freeStat() || vl.at().reqFlg()) { prmNd->childAdd("el")->setAttr("id",listV[iV]); rC++; }
 	    }
 	    if(rC > listV.size()/2) { prmNd->childClear("el"); prmNd->setAttr("sepReq", "0"); }
 	    //if(s2i(prmNd->attr("sepReq")) && !prmNd->childSize()) req.childDel(prmNd);
@@ -383,7 +383,7 @@ void TController::redntDataUpdate( )
 		TValBuf buf(vl.at().arch().at().valType(),0,per,false,true);
 		for(unsigned i_v = 0; i_v < aNd->childSize(); i_v++)
 		    buf.setS(aNd->childGet(i_v)->text(),btm+per*i_v);
-		vl.at().arch().at().setVals(buf,buf.begin(),buf.end(),"");
+		vl.at().arch().at().setVals(buf, buf.begin(), buf.end(), "");
 	    }
 	    else if(aNd->name() == "del" && prm.at().dynElCntr()) {
 		MtxAlloc res(prm.at().dynElCntr()->resEl(), true);

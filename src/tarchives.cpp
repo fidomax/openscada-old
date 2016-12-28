@@ -66,7 +66,7 @@ TArchiveS::TArchiveS( ) :
     elVal.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"200"));
     elVal.fldAdd(new TFld("START",_("To start"),TFld::Boolean,0,"1","0"));
     elVal.fldAdd(new TFld("ADDR",_("Address"),TFld::String,0,"100"));
-    elVal.fldAdd(new TFld("V_PER",_("Value period (sec)"),TFld::Real,0,"12.6","1","0;1000000"));
+    elVal.fldAdd(new TFld("V_PER",_("Value period (sec)"),TFld::Real,0,"12.6","1","0;100000"));
     elVal.fldAdd(new TFld("A_PER",_("Period archiving (sec)"),TFld::Integer,0,"4","60","0;1000"));
     elVal.fldAdd(new TFld("SEL_PR",_("Selection priority"),TFld::Integer,0,"4","10","0;1000"));
 
@@ -262,7 +262,7 @@ string TArchiveS::optDescr(  )
 
 void TArchiveS::subStart( )
 {
-    mess_sys(TMess::Error, _("Start/update subsystem."));
+    mess_sys(TMess::Debug, _("Start/update subsystem."));
 
     subStarting = true;
     toUpdate = false;	//Moved to start for prevent possible changes the toUpdate at processing
@@ -343,7 +343,7 @@ void TArchiveS::subStart( )
     if(!prcStMess) SYS->taskCreate(nodePath('.',true)+".mess", 0, TArchiveS::ArhMessTask, this);
     if(!prcStVal)  SYS->taskCreate(nodePath('.',true)+".vals", valPrior(), TArchiveS::ArhValTask, this);
 
-    TSubSYS::subStart( );
+    TSubSYS::subStart();
 
     subStarting = false;
 }
@@ -505,8 +505,7 @@ time_t TArchiveS::messGet( time_t bTm, time_t eTm, vector<TMess::SRec> &recs,
 	    AutoHD<TMArchivator> archtor = at(tLst[iT]).at().messAt(oLst[iO]);
 	    if(archtor.at().startStat() && (!archMap.size() || archMap[archtor.at().workId()]))
 		//!! But possible only one archiver, from all, processing and next continued by the limit
-		result = vmin(result, archtor.at().get(bTm,eTm,recs,category,level,arch.size()?upTo:0));
-
+		result = fmin(result, archtor.at().get(bTm,eTm,recs,category,level,arch.size()?upTo:0));
 	}
     }
 
@@ -687,7 +686,7 @@ void TArchiveS::rdActArchMList( vector<string> &ls, bool isRun )
 	at(mls[iM]).at().messList(cls);
 	for(unsigned iC = 0; iC < cls.size(); iC++) {
 	    archM = at(mls[iM]).at().messAt(cls[iC]);
-	    if(archM.at().startStat() && (!isRun || (isRun && !archM.at().redntUse())))
+	    if(archM.at().startStat() && (!isRun || !archM.at().redntUse()))
 		ls.push_back(archM.at().workId());
 	}
     }
@@ -719,7 +718,7 @@ string TArchiveS::rdStRequest( const string &arch, XMLNode &req, const string &p
 	}
     }
 
-    at(TSYS::strParse(arch,0,".")).at().messAt(TSYS::strParse(arch,1,".")).at().setRedntUse(false);
+    if(prevSt.empty()) at(TSYS::strParse(arch,0,".")).at().messAt(TSYS::strParse(arch,1,".")).at().setRedntUse(false);
 
     return "";
 }
@@ -861,7 +860,7 @@ TVariant TArchiveS::objFuncCall( const string &iid, vector<TVariant> &prms, cons
 				((prms.size()>=4) ? prms[3].getI() : 0), ((prms.size()>=5) ? prms[4].getS() : string("")),
 				vmin((upTm<0)?SYS->sysTm()+abs(upTm):upTm,SYS->sysTm()+STD_INTERF_TM));
 	TArrayObj *rez = new TArrayObj();
-	rez->propSet("tm", ll2s(result));
+	rez->propSet("tm", (int64_t)result);
 	for(unsigned iM = 0; iM < recs.size(); iM++) {
 	    TVarObj *am = new TVarObj();
 	    am->propSet("tm", (int)recs[iM].time);
@@ -965,17 +964,17 @@ void TArchiveS::cntrCmdProc( XMLNode *opt )
 		"tp","dec","min",i2s(BUF_SIZE_DEF).c_str());
 	    ctrMkNode("fld",opt,-1,"/m_arch/per",_("Archiving period (s)"),RWRWR_,"root",SARH_ID,1,"tp","dec");
 	    if(ctrMkNode("area",opt,-1,"/m_arch/view",_("View messages"),R_R___,"root",SARH_ID)) {
-		ctrMkNode("fld",opt,-1,"/m_arch/view/tm",_("Time"),RWRW__,"root",SARH_ID,1,"tp","time");
-		ctrMkNode("fld",opt,-1,"/m_arch/view/size",_("Size (s)"),RWRW__,"root",SARH_ID,1,"tp","dec");
-		ctrMkNode("fld",opt,-1,"/m_arch/view/cat",_("Category pattern"),RWRW__,"root",SARH_ID,2,"tp","str","help",
-		    _("Messages category template or regular expression.\n"
-		      "Use template symbols for group selection:\n  '*' - any substring;\n  '?' - any symbol.\n"
-		      "Regular expression enclosed in symbols '/' (/mod_(System|LogicLev)/)."));
-		ctrMkNode("fld",opt,-1,"/m_arch/view/lvl",_("Level"),RWRW__,"root",SARH_ID,5,"tp","dec","dest","select",
+		ctrMkNode("fld",opt,-1,"/m_arch/view/tm",_("Time, size (s) and level"),RWRW__,"root",SARH_ID,1,"tp","time");
+		ctrMkNode("fld",opt,-1,"/m_arch/view/size","",RWRW__,"root",SARH_ID,1,"tp","dec");
+		ctrMkNode("fld",opt,-1,"/m_arch/view/lvl","",RWRW__,"root",SARH_ID,5,"tp","dec", "dest","select",
 		    "sel_id","0;1;2;3;4;5;6;7;-1;-2;-3;-4;-5;-6;-7",
 		    "sel_list",_("Debug (0);Information (1);Notice (2);Warning (3);Error (4);Critical (5);Alert (6);Emergency (7);"
 			         "Information (1), ALARMS;Notice (2), ALARMS;Warning (3), ALARMS;Error (4), ALARMS;Critical (5), ALARMS;Alert (6), ALARMS;Emergency (7), ALARMS"),
 		    "help",_("Get messages for level more and equal it."));
+		ctrMkNode("fld",opt,-1,"/m_arch/view/cat",_("Category pattern"),RWRW__,"root",SARH_ID,2,"tp","str","help",
+		    _("Messages category template or regular expression.\n"
+		      "Use template symbols for group selection:\n  '*' - any substring;\n  '?' - any symbol.\n"
+		      "Regular expression enclosed in symbols '/' (/mod_(System|LogicLev)/)."));
 		ctrMkNode("fld",opt,-1,"/m_arch/view/archtor",_("Archivators"),RWRW__,"root",SARH_ID,4,"tp","str","dest","sel_ed","select","/m_arch/lstAMess",
 		    "help",_("Message archivators.\nNo set archivator for process by buffer and all archivators.\nSet '<buffer>' for process by buffer."));
 		if(ctrMkNode("table",opt,-1,"/m_arch/view/mess",_("Messages"),R_R___,"root",SARH_ID)) {
@@ -1165,7 +1164,7 @@ TTypeArchivator::TTypeArchivator( const string &id ) : TModule(id)
 
 TTypeArchivator::~TTypeArchivator( )	{ nodeDelAll(); }
 
-TArchiveS &TTypeArchivator::owner( )	{ return (TArchiveS &)TModule::owner(); }
+TArchiveS &TTypeArchivator::owner( ) const	{ return (TArchiveS &)TModule::owner(); }
 
 void TTypeArchivator::messAdd(const string &name, const string &idb )	{ chldAdd(mMess, AMess(name,idb)); }
 
@@ -1231,9 +1230,9 @@ TMArchivator::TMArchivator(const string &iid, const string &idb, TElem *cf_el) :
     mId = iid;
 }
 
-TCntrNode &TMArchivator::operator=( TCntrNode &node )
+TCntrNode &TMArchivator::operator=( const TCntrNode &node )
 {
-    TMArchivator *src_n = dynamic_cast<TMArchivator*>(&node);
+    const TMArchivator *src_n = dynamic_cast<const TMArchivator*>(&node);
     if(!src_n) return *this;
 
     //Configuration copy
@@ -1258,7 +1257,7 @@ void TMArchivator::postDisable( int flag )
     if(flag) SYS->db().at().dataDel(fullDB(), SYS->archive().at().nodePath()+tbl(), *this, true);
 }
 
-TTypeArchivator &TMArchivator::owner( )	{ return *(TTypeArchivator*)nodePrev(); }
+TTypeArchivator &TMArchivator::owner( ) const	{ return *(TTypeArchivator*)nodePrev(); }
 
 string TMArchivator::workId( )		{ return string(owner().modId())+"."+id(); }
 
@@ -1306,15 +1305,13 @@ void TMArchivator::redntDataUpdate( )
     mRdFirst = false;
     mRdTm = s2ll(req.attr("tm"))+1;
 
-    //printf("TEST 01: end=%s; '%s': %s\n", atm2s(mRdTm).c_str(), id().c_str(), req.save().c_str());
-
     //Process the result
     mess.clear();
     XMLNode *mO = NULL;
     for(unsigned iM = 0; iM < req.childSize(); ++iM)
 	if((mO=req.childGet(iM)) && mO->name() == "it")
 	    mess.push_back(TMess::SRec(s2ll(mO->attr("tm")),s2i(mO->attr("tmu")),mO->attr("cat"),s2i(mO->attr("lev")),mO->text()));
-    owner().owner().messPut(mess, workId()+";"ALRM_ARCH_NM, true);
+    owner().owner().messPut(mess, workId() + ";" ALRM_ARCH_NM, true);
 }
 
 void TMArchivator::start( )
@@ -1347,10 +1344,7 @@ bool TMArchivator::put( vector<TMess::SRec> &mess, bool force )
 		if(mess[iM].time < end()) messLoc.push_back(mess[iM]);
 	    }
 	    mess = messLoc;
-	    if(req.childSize()) {
-		//printf("TEST 01: Slave write: end=%s; '%s': %s\n", atm2s(end()).c_str(), id().c_str(), req.save().c_str());
-		return owner().owner().rdStRequest(workId(),req).size();
-	    }
+	    if(req.childSize()) return owner().owner().rdStRequest(workId(),req).size();
 	    return true;
 	}
 	else {			//for master
@@ -1359,7 +1353,6 @@ bool TMArchivator::put( vector<TMess::SRec> &mess, bool force )
 		    req.childAdd("it")->setAttr("tm", ll2s(mess[iM].time))->setAttr("tmu", i2s(mess[iM].utime))->
 					setAttr("cat", mess[iM].categ)->setAttr("lev", i2s(mess[iM].level))->setText(mess[iM].mess);
 	    if(req.childSize()) {
-		//printf("TEST 01: Master write: '%s': %s\n", id().c_str(), req.save().c_str());
 		string lstStat;
 		int successWrs = 0;
 		while((lstStat=owner().owner().rdStRequest(workId(),req,lstStat,false)).size()) successWrs++;	//To all hosts
@@ -1427,7 +1420,7 @@ void TMArchivator::cntrCmdProc( XMLNode *opt )
 	    for(unsigned iM = 0; iM < opt->childSize(); ++iM)
 		if((mO=opt->childGet(iM)) && mO->name() == "it")
 		    mess.push_back(TMess::SRec(s2ll(mO->attr("tm")),s2i(mO->attr("tmu")),mO->attr("cat"),s2i(mO->attr("lev")),mO->text()));
-	    if(s2i(opt->attr("redundancy"))) owner().owner().messPut(mess, workId()+";"ALRM_ARCH_NM, true);
+	    if(s2i(opt->attr("redundancy"))) owner().owner().messPut(mess, workId() + ";" ALRM_ARCH_NM, true);
 	    else put(mess);
 	    opt->childClear("it");
 	}
@@ -1459,16 +1452,16 @@ void TMArchivator::cntrCmdProc( XMLNode *opt )
 	    }
 	}
 	if(runSt && ctrMkNode("area",opt,-1,"/mess",_("Messages"),R_R___,"root",SARH_ID)) {
-	    ctrMkNode("fld",opt,-1,"/mess/tm",_("Time"),RWRW__,"root",SARH_ID,1,"tp","time");
-	    ctrMkNode("fld",opt,-1,"/mess/size",_("Size (s)"),RWRW__,"root",SARH_ID,1,"tp","dec");
-	    ctrMkNode("fld",opt,-1,"/mess/cat",_("Category pattern"),RWRW__,"root",SARH_ID,2,"tp","str","help",
-		_("Messages category template or regular expression.\n"
-		  "Use template symbols for group selection:\n  '*' - any substring;\n  '?' - any symbol.\n"
-		  "Regular expression enclosed in symbols '/' (/mod_(System|LogicLev)/)."));
-	    ctrMkNode("fld",opt,-1,"/mess/lvl",_("Level"),RWRW__,"root",SARH_ID,5,"tp","dec","dest","select",
+	    ctrMkNode("fld",opt,-1,"/mess/tm",_("Time, size (s) and level"),RWRW__,"root",SARH_ID,1,"tp","time");
+	    ctrMkNode("fld",opt,-1,"/mess/size","",RWRW__,"root",SARH_ID,1,"tp","dec");
+	    ctrMkNode("fld",opt,-1,"/mess/lvl","",RWRW__,"root",SARH_ID,5,"tp","dec", "dest","select",
 		"sel_id","0;1;2;3;4;5;6;7",
 		"sel_list",_("Debug (0);Information (1);Notice (2);Warning (3);Error (4);Critical (5);Alert (6);Emergency (7)"),
 		"help",_("Get messages for level more and equal it."));
+	    ctrMkNode("fld",opt,-1,"/mess/cat",_("Category pattern"),RWRW__,"root",SARH_ID,2,"tp","str", "help",
+		_("Messages category template or regular expression.\n"
+		  "Use template symbols for group selection:\n  '*' - any substring;\n  '?' - any symbol.\n"
+		  "Regular expression enclosed in symbols '/' (/mod_(System|LogicLev)/)."));
 	    if(ctrMkNode("table",opt,-1,"/mess/mess",_("Messages"),R_R___,"root",SARH_ID)) {
 		ctrMkNode("list",opt,-1,"/mess/mess/0",_("Time"),R_R___,"root",SARH_ID,1,"tp","time");
 		ctrMkNode("list",opt,-1,"/mess/mess/0a",_("mcsec"),R_R___,"root",SARH_ID,1,"tp","dec");
@@ -1520,20 +1513,26 @@ void TMArchivator::cntrCmdProc( XMLNode *opt )
 	string cat = TBDS::genDBGet(nodePath()+"messCat","",opt->attr("user"));
 	char   lev = s2i(TBDS::genDBGet(nodePath()+"messLev","0",opt->attr("user")));
 
+	int64_t stTm;
+	if(mess_lev() == TMess::Debug) stTm = TSYS::curTime();
+
 	get(beg, end, rec, cat, lev);
 
-	XMLNode *n_tm	= ctrMkNode("list",opt,-1,"/mess/mess/0","",R_R___,"root",SARH_ID);
-	XMLNode *n_tmu	= ctrMkNode("list",opt,-1,"/mess/mess/0a","",R_R___,"root",SARH_ID);
-	XMLNode *n_cat	= ctrMkNode("list",opt,-1,"/mess/mess/1","",R_R___,"root",SARH_ID);
-	XMLNode *n_lvl	= ctrMkNode("list",opt,-1,"/mess/mess/2","",R_R___,"root",SARH_ID);
-	XMLNode *n_mess	= ctrMkNode("list",opt,-1,"/mess/mess/3","",R_R___,"root",SARH_ID);
-	for(int i_rec = rec.size()-1; i_rec >= 0; i_rec--) {
-	    if(n_tm)	n_tm->childAdd("el")->setText(i2s(rec[i_rec].time));
-	    if(n_tmu)	n_tmu->childAdd("el")->setText(i2s(rec[i_rec].utime));
-	    if(n_cat)	n_cat->childAdd("el")->setText(rec[i_rec].categ);
-	    if(n_lvl)	n_lvl->childAdd("el")->setText(i2s(rec[i_rec].level));
-	    if(n_mess)	n_mess->childAdd("el")->setText(rec[i_rec].mess);
+	XMLNode *nTm	= ctrMkNode("list",opt,-1,"/mess/mess/0","",R_R___,"root",SARH_ID);
+	XMLNode *nTmu	= ctrMkNode("list",opt,-1,"/mess/mess/0a","",R_R___,"root",SARH_ID);
+	XMLNode *nCat	= ctrMkNode("list",opt,-1,"/mess/mess/1","",R_R___,"root",SARH_ID);
+	XMLNode *nLvl	= ctrMkNode("list",opt,-1,"/mess/mess/2","",R_R___,"root",SARH_ID);
+	XMLNode *nMess	= ctrMkNode("list",opt,-1,"/mess/mess/3","",R_R___,"root",SARH_ID);
+	for(int iRec = rec.size()-1; iRec >= 0; iRec--) {
+	    if(nTm)	nTm->childAdd("el")->setText(i2s(rec[iRec].time));
+	    if(nTmu)	nTmu->childAdd("el")->setText(i2s(rec[iRec].utime));
+	    if(nCat)	nCat->childAdd("el")->setText(rec[iRec].categ);
+	    if(nLvl)	nLvl->childAdd("el")->setText(i2s(rec[iRec].level));
+	    if(nMess)	nMess->childAdd("el")->setText(rec[iRec].mess);
 	}
+
+	if(mess_lev() == TMess::Debug)
+	    mess_sys(TMess::Debug, _("Requested %d records for time %s."), rec.size(), tm2s(1e-6*(TSYS::curTime()-stTm)).c_str());
     }
     else TCntrNode::cntrCmdProc(opt);
 }

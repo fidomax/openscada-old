@@ -1,7 +1,7 @@
 
 //OpenSCADA system module Archive.FSArch file: val.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -104,13 +104,13 @@ void ModVArch::start( )
     TVArchivator::start();
 
     //First scan dir. Load and connect archive files
-    try { checkArchivator(true); } catch(TError &err) { stop(); throw; }
+    try { checkArchivator(true); } catch(TError&) { stop(); throw; }
 }
 
-void ModVArch::stop( )
+void ModVArch::stop( bool full_del )
 {
     //Stop getting data cicle an detach archives
-    TVArchivator::stop();
+    TVArchivator::stop(full_del);
 }
 
 bool ModVArch::filePrmGet( const string &anm, string *archive, TFld::Type *vtp, int64_t *abeg, int64_t *aend, int64_t *aper )
@@ -260,8 +260,11 @@ void ModVArch::checkArchivator( bool now, bool toLimits )
 		varch = owner().owner().valAt(ArhNm);
 		varch.at().setToStart(true);
 		varch.at().setValType(ArhTp);
-		varch.at().start();
+		//varch.at().start();
 	    }
+	    //  Check for archive's start state and it starts early for propper redundancy sync
+	    if(!varch.at().startStat() && varch.at().toStart())
+		try { varch.at().start(); } catch(TError&) { continue; }	//!!!! Pass wrong archives
 	    //  Check for attached
 	    if(!varch.at().archivatorPresent(workId()))	varch.at().archivatorAttach(workId());
 	    //  Try connect new file
@@ -448,7 +451,7 @@ void ModVArch::cntrCmdProc( XMLNode *opt )
 		_("The command, which allows you to immediately start checking the archives,\n"
 		  "for example, after manual changes to the directory archiver."));
 	}
-	ctrMkNode("list",opt,-1,"/arch/arch/3",_("Files size"),R_R_R_,"root",SARH_ID,1,"tp","str");
+	ctrMkNode("list",opt,-1,"/arch/arch/4",_("Files size"),R_R_R_,"root",SARH_ID,1,"tp","str");
 	if(ctrMkNode("comm",opt,-1,"/arch/exp",_("Export"),RWRW__,"root",SARH_ID)) {
 	    ctrMkNode("fld",opt,-1,"/arch/exp/arch",_("Archive"),RWRW__,"root",SARH_ID,3,"tp","str","dest","select","select","/arch/lst");
 	    ctrMkNode("fld",opt,-1,"/arch/exp/beg",_("Begin"),RWRW__,"root",SARH_ID,1,"tp","time");
@@ -508,13 +511,15 @@ void ModVArch::cntrCmdProc( XMLNode *opt )
 	XMLNode *n_arch = ctrMkNode("list",opt,-1,"/arch/arch/0","");
 	XMLNode *n_per  = ctrMkNode("list",opt,-1,"/arch/arch/1","");
 	XMLNode *n_size = ctrMkNode("list",opt,-1,"/arch/arch/2","");
-	XMLNode *f_size = ctrMkNode("list",opt,-1,"/arch/arch/3","");
+	XMLNode *n_lstRd = ctrMkNode("list",opt,-1,"/arch/arch/3","");
+	XMLNode *f_size = ctrMkNode("list",opt,-1,"/arch/arch/4","");
 
 	ResAlloc res(archRes, false);
 	for(map<string,TVArchEl*>::iterator iel = archEl.begin(); iel != archEl.end(); ++iel) {
 	    if(n_arch)	n_arch->childAdd("el")->setText(iel->second->archive().id());
 	    if(n_per)	n_per->childAdd("el")->setText(r2s((double)iel->second->archive().period()/1e6,6));
 	    if(n_size)	n_size->childAdd("el")->setText(i2s(iel->second->archive().size()));
+	    if(n_lstRd)	n_lstRd->childAdd("el")->setText(atm2s(iel->second->mLastGet*1e-6)+"."+i2s(iel->second->mLastGet%1000000));
 	    if(f_size)	f_size->childAdd("el")->setText(TSYS::cpct2str((double)((ModVArchEl *)iel->second)->size()));
 	}
     }
@@ -771,7 +776,7 @@ TVariant ModVArchEl::getValProc( int64_t *tm, bool up_ord )
     return EVAL_REAL;
 }
 
-bool ModVArchEl::setValsProc( TValBuf &buf, int64_t beg, int64_t end )
+int64_t ModVArchEl::setValsProc( TValBuf &buf, int64_t beg, int64_t end, bool toAccum )
 {
     //Check border
     if(!buf.vOK(beg,end)) return false;
@@ -790,7 +795,7 @@ bool ModVArchEl::setValsProc( TValBuf &buf, int64_t beg, int64_t end )
 	if(!files[i_a]->err() && beg <= end) {
 	    // Create new file for old data
 	    if(beg < files[i_a]->begin()) {
-		if(!mChecked)	return false;	//Wait for checking
+		if(!mChecked)	return 0;	//Wait for checking
 
 		//  Calc file limits
 		int64_t n_end, n_beg;	//New file end position
@@ -812,7 +817,7 @@ bool ModVArchEl::setValsProc( TValBuf &buf, int64_t beg, int64_t end )
 		    files[i_a]->delFile();
 		    delete files[i_a];
 		    files.erase(files.begin()+i_a);
-		    return false;
+		    return 0;
 		}
 	    }
 
@@ -829,7 +834,7 @@ bool ModVArchEl::setValsProc( TValBuf &buf, int64_t beg, int64_t end )
 	}
     //Create new file for new data
     while(end >= beg) {
-	if(!mChecked)	return false;	//Wait for checking
+	if(!mChecked)	return 0;	//Wait for checking
 	char c_buf[30];
 	time_t tm = beg/1000000;
 	struct tm tm_tm;
@@ -844,7 +849,7 @@ bool ModVArchEl::setValsProc( TValBuf &buf, int64_t beg, int64_t end )
 	    files.back()->delFile();
 	    delete files.back();
 	    files.pop_back();
-	    return false;
+	    return 0;
 	}
 	n_end = (end > n_end) ? n_end : end;
 
@@ -854,7 +859,7 @@ bool ModVArchEl::setValsProc( TValBuf &buf, int64_t beg, int64_t end )
 	beg = n_end + v_per;
     }
 
-    return wrOK;
+    return wrOK ? end : 0;
 }
 
 //*************************************************
@@ -887,7 +892,6 @@ VFileArch::VFileArch( const string &iname, int64_t ibeg, int64_t iend, int64_t i
 	mErr = true;
 	return;
     }
-    bool fOK = true;
 
     //Prepare and write the file archive header
     FHead head;
@@ -902,7 +906,7 @@ VFileArch::VFileArch( const string &iname, int64_t ibeg, int64_t iend, int64_t i
     head.hgrid = owner().archive().hardGrid();
     head.hres = owner().archive().highResTm();
     head.term = 0x55;
-    fOK = (write(hd,&head,sizeof(FHead)) == sizeof(FHead));
+    bool fOK = (write(hd,&head,sizeof(FHead)) == sizeof(FHead));
 
     //Create bit table and init first value
     mpos = (end()-begin())/period();

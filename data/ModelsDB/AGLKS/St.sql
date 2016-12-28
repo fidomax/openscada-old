@@ -124,15 +124,6 @@ INSERT INTO "Archive_val" VALUES('SurgeKM302_var','','',1,2,'BlockCalc.Anast1to2
 INSERT INTO "Archive_val" VALUES('SurgeKM302_out','','',1,2,'BlockCalc.Anast1to2node_cntr.SurgeKM302.out',4,1.0,100,1,0,'FSArch.1s;','','','','',0);
 INSERT INTO "Archive_val" VALUES('SurgeKM302_auto','','',1,2,'BlockCalc.Anast1to2node_cntr.SurgeKM302.auto',0,1.0,100,1,0,'FSArch.1s;','','','','',0);
 INSERT INTO "Archive_val" VALUES('test_t1_1','','',1,0,'',4,1.0,100,1,0,'FSArch.1h;','','','','',0);
-CREATE TABLE 'Archive_val_proc' ("ID" TEXT DEFAULT '' ,"MODUL" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"START" INTEGER DEFAULT '' ,"ADDR" TEXT DEFAULT '' ,"V_PER" DOUBLE DEFAULT '' ,"A_PER" INTEGER DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"A_PRMS" TEXT DEFAULT '' , PRIMARY KEY ("ID","MODUL"));
-INSERT INTO "Archive_val_proc" VALUES('1m','FSArch','','Minute''s archive',1,'ARCHIVES/VAL/1m',60.0,60,'','Хвилинний архів','','Минутный архив','<prms TmSize="800" NFiles="100" MaxCapacity="0" Round="0.01" PackTm="10" CheckTm="60" PackInfoFiles="0" />
-');
-INSERT INTO "Archive_val_proc" VALUES('1s','FSArch','','Second''s archive',1,'ARCHIVES/VAL/1s',1.0,60,'','Секундний архів','','Секундный архив','<prms TmSize="800" NFiles="100" MaxCapacity="0" Round="0.01" PackTm="10" CheckTm="60" PackInfoFiles="1" />
-');
-INSERT INTO "Archive_val_proc" VALUES('1s','DBArch','','',0,'MySQL.arch',1.0,60,'','','','','<prms Size="25" />
-');
-INSERT INTO "Archive_val_proc" VALUES('1h','FSArch','','Hour''s archive',1,'ARCHIVES/VAL/1h',3600.0,60,'','Годинковий архів.','','Часовой архив.','<prms TmSize="800" NFiles="100" MaxCapacity="0" Round="0.01" PackTm="10" CheckTm="60" PackInfoFiles="0" />
-');
 CREATE TABLE 'BFN_SymbAlarm' ("ID" INTEGER DEFAULT '' ,"CODE" INTEGER DEFAULT '' ,"TEXT" TEXT DEFAULT '' ,"ru#TEXT" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "BFN_SymbAlarm" VALUES(0,10,'Сбой датчика внутренней темп.','Сбой датчика внутренней темп.');
 INSERT INTO "BFN_SymbAlarm" VALUES(1,10,'Высокая темп., Лето','Высокая темп., Лето');
@@ -1425,15 +1416,14 @@ R_i4:0,3:rw:int:Int
 R_b1:0:rw:rebBit:rebBit
 R_i2:0:rw:int16:Int16');
 CREATE TABLE 'DAQ_ModBus' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"ENABLE" INTEGER DEFAULT '0' ,"START" INTEGER DEFAULT '0' ,"MESS_LEV" INTEGER DEFAULT '3' ,"REDNT" INTEGER DEFAULT '0' ,"REDNT_RUN" TEXT DEFAULT '<high>' ,"PRM_BD" TEXT DEFAULT '' ,"PRM_BD_L" TEXT DEFAULT '' ,"SCHEDULE" TEXT DEFAULT '1' ,"PRIOR" INTEGER DEFAULT '0' ,"PROT" TEXT DEFAULT 'TCP' ,"ADDR" TEXT DEFAULT '' ,"NODE" INTEGER DEFAULT '1' ,"FRAG_MERGE" INTEGER DEFAULT '0' ,"WR_MULTI" INTEGER DEFAULT '0' ,"WR_ASYNCH" INTEGER DEFAULT '0' ,"TM_REQ" INTEGER DEFAULT '0' ,"TM_REST" INTEGER DEFAULT '30' ,"REQ_TRY" INTEGER DEFAULT '1' ,"MAX_BLKSZ" INTEGER DEFAULT '200' , PRIMARY KEY ("ID"));
-INSERT INTO "DAQ_ModBus" VALUES('testRTU','','','','','','',1,0,3,0,'<high>','ModBusPrm_testRTU','','1',0,'RTU','Serial.testModBus',1,1,0,0,0,30,1,200);
-INSERT INTO "DAQ_ModBus" VALUES('testTCP','','','','','','',1,1,3,0,'<high>','ModBusPrm_testTCP','','1',0,'TCP','Sockets.testModBus',1,1,0,0,0,30,3,200);
+INSERT INTO "DAQ_ModBus" VALUES('testRTU','','','','','','',1,0,3,0,'<high>','ModBusPrm_testRTU','ModBusPrmL_testRTU','1',0,'RTU','Serial.testModBus',1,1,0,0,0,30,1,200);
+INSERT INTO "DAQ_ModBus" VALUES('testTCP','','','','','','',1,1,3,0,'<high>','ModBusPrm_testTCP','ModBusPrmL_testTCP','1',0,'TCP','Sockets.testModBus',1,1,0,0,0,30,3,200);
 CREATE TABLE 'DAQ_DAQGate' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ENABLE" INTEGER DEFAULT '0' ,"START" INTEGER DEFAULT '0' ,"MESS_LEV" INTEGER DEFAULT '3' ,"REDNT" INTEGER DEFAULT '0' ,"REDNT_RUN" TEXT DEFAULT '<high>' ,"PRM_BD" TEXT DEFAULT '' ,"PERIOD" INTEGER DEFAULT '0' ,"SCHEDULE" TEXT DEFAULT '1' ,"PRIOR" INTEGER DEFAULT '0' ,"TM_REST" INTEGER DEFAULT '30' ,"TM_REST_DT" DOUBLE DEFAULT '1' ,"GATH_MESS_LEV" INTEGER DEFAULT '1' ,"SYNCPER" DOUBLE DEFAULT '0' ,"STATIONS" TEXT DEFAULT '' ,"CNTRPRM" TEXT DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "DAQ_DAQGate" VALUES('test','Test','Тест','Тест',' ',' ',' ',1,1,3,0,'<high>','DAQGatePrm_test',0,'1',0,30,1.0,1,60.0,'loop','System.AutoDA
 ModBus.testTCP.test');
 CREATE TABLE 'DAQGatePrm_test' ("SHIFR" TEXT DEFAULT '' ,"OWNER" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"EN" INTEGER DEFAULT '0' ,"PRM_ADDR" TEXT DEFAULT '' ,"ATTRS" TEXT DEFAULT '' , PRIMARY KEY ("SHIFR","OWNER"));
 INSERT INTO "DAQGatePrm_test" VALUES('CPU0Load','','CPU Load: 0','Нагрузка процессора: 0','Навантаження CPU: 0','','','',1,'System/AutoDA/prm_CPU0Load','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="load" nm="Load (%)" tp="4" flg="772" />
@@ -1444,7 +1434,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('CPU0Load','','CPU Load: 0','Нагрузк
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('CPU1Load','','CPU Load: 1','Нагрузка процессора: 1','Навантаження CPU: 1','','','',1,'System/AutoDA/prm_CPU1Load','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="load" nm="Load (%)" tp="4" flg="772" />
@@ -1455,7 +1444,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('CPU1Load','','CPU Load: 1','Нагрузк
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('CPULoad','','Full CPU Load','Общая нагрузка процессора','Повне навантаження процесору','','','',1,'System/AutoDA/prm_CPULoad','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="load" nm="Load (%)" tp="4" flg="772" />
@@ -1466,7 +1454,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('CPULoad','','Full CPU Load','Общая н
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('Interface_eth0','','Interface statistic: eth0','Статистика интерфейсов: eth0','Статистика інтерфейсу: eth0','','','',1,'System/AutoDA/prm_Interface_eth0','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="rcv" nm="Receive (B)" tp="4" flg="772" />
@@ -1477,7 +1464,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('Interface_eth0','','Interface statistic: e
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('Interface_lo','','Interface statistic: lo','Статистика интерфейсов: lo','Статистика інтерфейсу: lo','','','',1,'System/AutoDA/prm_Interface_lo','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="rcv" nm="Receive (B)" tp="4" flg="772" />
@@ -1488,7 +1474,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('Interface_lo','','Interface statistic: lo'
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('Interface_wlan0','','Interface statistic: wlan0','Статистика интерфейсов: wlan0','Статистика інтерфейсу: wlan0','','','',1,'System/AutoDA/prm_Interface_wlan0','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="rcv" nm="Receive (B)" tp="4" flg="772" />
@@ -1499,7 +1484,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('Interface_wlan0','','Interface statistic: 
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('MemInfo','','Memory info','Информация про память','Інформація про пам''ять','','','',1,'System/AutoDA/prm_MemInfo','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="free" nm="Free (kB)" tp="1" flg="772" />
@@ -1514,7 +1498,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('MemInfo','','Memory info','Информа�
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('SensorsData','','Data sensors','Данные сенсоров','Дані сенсорів','','','',1,'System/AutoDA/prm_SensorsData','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="thinkpad_fan1" nm="thinkpad fan1" tp="4" flg="772" />
@@ -1534,7 +1517,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('SensorsData','','Data sensors','Данны
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('Statistic_sda','','HDD statistic: sda','Статистика НЖМД: sda','Статистика НЖМД: sda','','','',1,'System/AutoDA/prm_Statistic_sda','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="rd" nm="Read (B)" tp="4" flg="772" />
@@ -1545,7 +1527,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('Statistic_sda','','HDD statistic: sda','С
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('Statistic_sda1','','HDD statistic: sda1','Статистика НЖМД: sda1','Статистика НЖМД: sda1','','','',1,'System/AutoDA/prm_Statistic_sda1','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="rd" nm="Read (B)" tp="4" flg="772" />
@@ -1556,7 +1537,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('Statistic_sda1','','HDD statistic: sda1','
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('Statistic_sda2','','HDD statistic: sda2','Статистика НЖМД: sda2','Статистика НЖМД: sda2','','','',1,'System/AutoDA/prm_Statistic_sda2','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="rd" nm="Read (B)" tp="4" flg="772" />
@@ -1567,7 +1547,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('Statistic_sda2','','HDD statistic: sda2','
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('UpTimeStation','','Station up time','Время работы станции','Час роботи станції','','','',1,'System/AutoDA/prm_UpTimeStation','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="full" nm="Full seconds" tp="1" flg="772" />
@@ -1579,7 +1558,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('UpTimeStation','','Station up time','Вр�
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('UpTimeSystem','','System up time','Время работы системы','Час роботи системи','','','',1,'System/AutoDA/prm_UpTimeSystem','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="full" nm="Full seconds" tp="1" flg="772" />
@@ -1591,7 +1569,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('UpTimeSystem','','System up time','Вре�
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('test','','','','','','','',1,'ModBus/testTCP/prm_test','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="reg0" nm="Register 0" tp="1" flg="772" />
@@ -1604,7 +1581,6 @@ INSERT INTO "DAQGatePrm_test" VALUES('test','','','','','','','',1,'ModBus/testT
 ');
 INSERT INTO "DAQGatePrm_test" VALUES('test1','test','','','','','','',1,'ModBus/testTCP/prm_test/prm_test1','<Attrs>
 <a id="SHIFR" nm="ID" tp="5" flg="772" />
-<a id="OWNER" nm="Owner" tp="5" flg="772" />
 <a id="NAME" nm="Name" tp="5" flg="768" />
 <a id="DESCR" nm="Description" tp="5" flg="776" />
 <a id="i6" nm="Integer32 [6,7]" tp="1" flg="768" />
@@ -2082,4 +2058,13 @@ INSERT INTO "ModBus_node" VALUES('gate','','','','','','',0,2,'Sockets.testModBu
 CREATE TABLE 'SYS' ("user" TEXT DEFAULT '' ,"id" TEXT DEFAULT '' ,"val" TEXT DEFAULT '' , PRIMARY KEY ("user","id"));
 INSERT INTO "SYS" VALUES('root','/sub_Protocol/mod_HTTP/AuthTime','10');
 INSERT INTO "SYS" VALUES('root','/sub_Protocol/mod_HTTP/AutoLogin','<aLog><it addrs="*" user="user" /></aLog>');
+CREATE TABLE 'Archive_val_proc' ("ID" TEXT DEFAULT '' ,"MODUL" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"START" INTEGER DEFAULT '0' ,"ADDR" TEXT DEFAULT '' ,"V_PER" DOUBLE DEFAULT '1' ,"A_PER" INTEGER DEFAULT '60' ,"SEL_PR" INTEGER DEFAULT '10' ,"A_PRMS" TEXT DEFAULT '' , PRIMARY KEY ("ID","MODUL"));
+INSERT INTO "Archive_val_proc" VALUES('1m','FSArch','','','','Minute''s archive','Хвилинний архів','Минутный архив',1,'ARCHIVES/VAL/1m',60.0,60,10,'<prms TmSize="8600" NFiles="100" MaxCapacity="1000" Round="0.01" PackTm="10" CheckTm="60" PackInfoFiles="0" />
+');
+INSERT INTO "Archive_val_proc" VALUES('1s','FSArch','','','','Second''s archive','Секундний архів','Секундный архив',1,'ARCHIVES/VAL/1s',1.0,60,10,'<prms TmSize="720" NFiles="100" MaxCapacity="5000" Round="0.01" PackTm="10" CheckTm="60" PackInfoFiles="1" />
+');
+INSERT INTO "Archive_val_proc" VALUES('1s','DBArch','','','','','','',0,'MySQL.arch',1.0,60,10,'<prms Size="25" />
+');
+INSERT INTO "Archive_val_proc" VALUES('1h','FSArch','','','','Hour''s archive','Годинковий архів.','Часовой архив.',1,'ARCHIVES/VAL/1h',3600.0,60,10,'<prms TmSize="8600" NFiles="100" MaxCapacity="1000" Round="0.01" PackTm="10" CheckTm="60" PackInfoFiles="0" />
+');
 COMMIT;

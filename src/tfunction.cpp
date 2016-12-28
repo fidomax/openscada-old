@@ -35,6 +35,13 @@ TFunction::TFunction( const string &iid, const char *igrp, const string &istor )
     if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
 }
 
+TFunction::TFunction( const TFunction &src ) : runSt(false), beStart(false), mTVal(NULL), grp(NULL)
+{
+    operator=(src);
+
+    if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), 1);
+}
+
 TFunction::~TFunction( )
 {
     for(unsigned iIO = 0; iIO < mIO.size(); iIO++) delete mIO[iIO];
@@ -42,7 +49,7 @@ TFunction::~TFunction( )
     if(mess_lev() == TMess::Debug) SYS->cntrIter(objName(), -1);
 }
 
-TFunction &TFunction::operator=( TFunction &func )
+TFunction &TFunction::operator=( const TFunction &func )
 {
     //Copy IO
     // Clear no present IO
@@ -81,15 +88,15 @@ void TFunction::setId( const string &vl )
     if(!nodePrev(true)) mId = vl;
 }
 
-int TFunction::ioSize( )	{ return mIO.size(); }
+int TFunction::ioSize( ) const	{ return mIO.size(); }
 
-IO *TFunction::io( int iid )
+IO *TFunction::io( int iid ) const
 {
     if(iid >= (int)mIO.size()) throw err_sys(_("Index %d is broken!"), iid);
     return mIO[iid];
 }
 
-int TFunction::ioId( const string &id )
+int TFunction::ioId( const string &id ) const
 {
     for(int iIO = 0; iIO < (int)mIO.size(); iIO++)
 	if(mIO[iIO]->id() == id) return iIO;
@@ -377,18 +384,18 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 //*************************************************
 //* IO                                            *
 //*************************************************
-IO::IO( const char *iid, const char *iname, IO::Type itype,  unsigned iflgs, const char *idef, bool ihide, const char *irez )
+IO::IO( const char *iid, const char *iname, IO::Type itype,  unsigned iflgs, const char *idef, bool ihide, const char *irez ) :
+    mId(iid), mName(iname), mType(itype), mFlg(iflgs), mHide(ihide), mDef(idef), mRez(irez), owner(NULL)
 {
-    mId		= iid;
-    mName	= iname;
-    mType	= itype;
-    mFlg	= iflgs;
-    mHide	= ihide;
-    mDef	= idef;
-    mRez	= irez;
+
 }
 
-IO &IO::operator=( IO &iio )
+IO::IO( const IO &src ) : mType(Real), mFlg(0), mHide(false), owner(NULL)
+{
+    operator=(src);
+}
+
+IO &IO::operator=( const IO &iio )
 {
     setId(iio.id());
     setName(iio.name());
@@ -455,15 +462,12 @@ void IO::setRez( const string &val )
 TValFunc::TValFunc( const string &iname, TFunction *ifunc, bool iblk, const string &iuser ) :
     exCtx(NULL), mName(iname), mUser(iuser), mBlk(iblk), mMdfChk(false), mFunc(NULL)
 {
-    pthread_mutex_init(&mRes, NULL);
     setFunc(ifunc);
 }
 
 TValFunc::~TValFunc( )
 {
     if(mFunc) funcDisConnect();
-    pthread_mutex_lock(&mRes);
-    pthread_mutex_destroy(&mRes);
 }
 
 void TValFunc::setFunc( TFunction *ifunc, bool att_det )
@@ -555,9 +559,9 @@ string TValFunc::getS( unsigned id )
 	case IO::Boolean: { char tvl = getB(id);   return (tvl!=EVAL_BOOL) ? i2s((bool)tvl) : EVAL_STR; }
 	case IO::Object:  return getO(id).at().getStrXML();
 	case IO::String: {
-	    pthread_mutex_lock(&mRes);
+	    mRes.lock();
 	    string tvl(mVal[id].val.s->data(), mVal[id].val.s->size());
-	    pthread_mutex_unlock(&mRes);
+	    mRes.unlock();
 	    return tvl;
 	}
     }
@@ -608,9 +612,9 @@ AutoHD<TVarObj> TValFunc::getO( unsigned id )
 {
     if(id >= mVal.size()) throw TError("ValFnc", _("%s: Id or IO %d error!"), "getO()", id);
     if(mVal[id].tp != IO::Object) throw TError("ValFnc", _("Get object from not object's IO %d error!"), id);
-    pthread_mutex_lock(&mRes);
+    mRes.lock();
     AutoHD<TVarObj> rez = *mVal[id].val.o;
-    pthread_mutex_unlock(&mRes);
+    mRes.unlock();
 
     return rez;
 }
@@ -638,10 +642,10 @@ void TValFunc::setS( unsigned id, const string &val )
 	    setO(id, (val!=EVAL_STR) ? TVarObj::parseStrXML(val,NULL,*mVal[id].val.o) : new TEValObj());
 	    break;
 	case IO::String:
-	    pthread_mutex_lock(&mRes);
+	    mRes.lock();
 	    if(mdfChk() && val != *mVal[id].val.s) mVal[id].mdf = true;
 	    mVal[id].val.s->assign(val.data(), val.size());;
-	    pthread_mutex_unlock(&mRes);
+	    mRes.unlock();
 	    break;
     }
 }
@@ -700,10 +704,10 @@ void TValFunc::setO( unsigned id, AutoHD<TVarObj> val )
 	case IO::Integer: case IO::Real: case IO::Boolean:
 				setB(id, true);			break;
 	case IO::Object:
-	    pthread_mutex_lock(&mRes);
+	    mRes.lock();
 	    if(mdfChk() && !(val == *mVal[id].val.o)) mVal[id].mdf = true;
 	    *mVal[id].val.o = val;
-	    pthread_mutex_unlock(&mRes);
+	    mRes.unlock();
 	    return;
     }
 }

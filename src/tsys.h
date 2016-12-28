@@ -40,6 +40,7 @@
 #define BUF_ARCH_NM	"<buffer>"
 #define ALRM_ARCH_NM	"<alarms>"
 #define DB_CFG		"<cfg>"
+#define DB_NULL		"<NULL>"
 
 #include <signal.h>
 #include <unistd.h>
@@ -142,11 +143,11 @@ class TSYS : public TCntrNode
 	string	user( )		{ return mUser; }	//Run user name
 	string	host( );
 
-	void	list( vector<string> &list )	{ chldList(mSubst, list); }
-	bool	present( const string &name )	{ return chldPresent(mSubst, name); }
-	void	add( TSubSYS *sub )		{ chldAdd(mSubst, sub); }
-	void	del( const string &name )	{ chldDel(mSubst, name); }
-	AutoHD<TSubSYS> at( const string &name ){ return chldAt(mSubst, name); }
+	void	list( vector<string> &list ) const	{ chldList(mSubst, list); }
+	bool	present( const string &name ) const	{ return chldPresent(mSubst, name); }
+	void	add( TSubSYS *sub )			{ chldAdd(mSubst, sub); }
+	void	del( const string &name )		{ chldDel(mSubst, name); }
+	AutoHD<TSubSYS> at( const string &name ) const	{ return chldAt(mSubst, name); }
 
 	AutoHD<TUIS>		ui( )		{ return at("UI"); }
 	AutoHD<TArchiveS>	archive( )	{ return at("Archive"); }
@@ -266,7 +267,7 @@ class TSYS : public TCntrNode
 	static void *str2addr( const string &str );
 
 	// Path and string parse
-	static string strNoSpace( const string &val );
+	static string strTrim( const string &val, const string &cfg = " \n\t\r" );
 	static string strSepParse( const string &str, int level, char sep, int *off = NULL );
 	static string strParse( const string &str, int level, const string &sep, int *off = NULL, bool mergeSepSymb = false );
 	static string strLine( const string &str, int level, int *off = NULL );
@@ -355,8 +356,8 @@ class TSYS : public TCntrNode
 	enum MdfSYSFlds	{ MDF_WorkDir = 0x01, MDF_IcoDir = 0x02, MDF_ModDir = 0x04, MDF_LANG = 0x08, MDF_DocDir = 0x10 };
 
 	//Private methods
-	const char *nodeName( )		{ return mId.c_str(); }
-	const char *nodeNameSYSM( )	{ return mName.c_str(); }
+	const char *nodeName( ) const		{ return mId.c_str(); }
+	const char *nodeNameSYSM( ) const	{ return mName.c_str(); }
 	bool cfgFileLoad( );
 	void cfgFileSave( );
 	void cfgPrmLoad( );
@@ -420,6 +421,9 @@ class TSYS : public TCntrNode
 
 //*************************************************
 //* Global functions for OSCADA namespace         *
+template <class fVal> fVal fmin( fVal a, fVal b ) { return (a < b) ? a : b; }
+template <class fVal> fVal fmax( fVal a, fVal b ) { return (a > b) ? a : b; }
+
 inline string i2s( int val, TSYS::IntView view = TSYS::Dec )	{ return TSYS::int2str(val, view); }
 inline string u2s( unsigned val, TSYS::IntView view = TSYS::Dec ){ return TSYS::uint2str(val, view); }
 inline string ll2s( long long val, TSYS::IntView view = TSYS::Dec ){ return TSYS::ll2str(val, view); }
@@ -431,6 +435,8 @@ inline string tm2s( double tm )					{ return TSYS::time2str(tm); }
 inline int s2i( const string &val )		{ return atoi(val.c_str()); }
 inline long long s2ll( const string &val )	{ return atoll(val.c_str()); }
 inline double s2r( const string &val )		{ return atof(val.c_str()); }
+
+inline string sTrm( const string &val, const string &cfg = " \n\t\r") { return TSYS::strTrim(val, cfg); }
 
 extern TSYS *SYS;
 }

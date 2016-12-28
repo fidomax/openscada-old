@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.FT3 0.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-23 09:36+0300\n"
+"POT-Creation-Date: 2016-09-30 10:18+0300\n"
 "PO-Revision-Date: 2015-11-13 15:13+0300\n"
 "Last-Translator: Maxim Kochetkov <fido_max@inbox.ru>\n"
 "Language-Team: \n"
@@ -90,19 +90,35 @@ msgstr "Текущие дата-время"
 msgid "Stop datetime"
 msgstr "Дата-время последнего останова"
 
+msgid "Hard Reset"
+msgstr "Общий сброс"
+
+msgid "Channel reset"
+msgstr "Сброс канала"
+
+msgid "Data reset"
+msgstr "Сброс данных"
+
+msgid "10: Hard reset"
+msgstr "10: Общий сброс"
+
+msgid "0: Normal"
+msgstr "0: Норма"
+
+msgid "11: Soft reset"
+msgstr "11: Сброс с сохранением"
+
+msgid "12: Setup"
+msgstr "12: Установка"
+
+msgid "13: Startup"
+msgstr "13: Запуск"
+
 msgid "Delay 1"
 msgstr "Величина задержки 1"
 
 msgid "Delay 2"
 msgstr "Величина задержки 2"
-
-#, c-format
-msgid "UnpackID %d"
-msgstr ""
-
-#, c-format
-msgid "g %d k %d n %d"
-msgstr ""
 
 #, c-format
 msgid "MakePacket one byte req %02X"
@@ -158,6 +174,12 @@ msgstr "Разбор пакета байтового опроса A %02X"
 msgid "ResetChan"
 msgstr "Сброс канала"
 
+msgid "SynchronizationTimer"
+msgstr "Корректировка таймера"
+
+msgid "Clock is not set"
+msgstr "Часы не установлены"
+
 msgid "ReqData BAD FCB!!!"
 msgstr "Запрос данных неверный FCB"
 
@@ -194,53 +216,53 @@ msgstr "Протокол"
 msgid "GRS;KA"
 msgstr "ГРС;КА"
 
-msgid "BUC Parameteres table"
+msgid "BUC Parameters table"
 msgstr "Таблица параметров БУЦ"
 
-msgid "BVTS Parameteres table"
+msgid "BVTS Parameters table"
 msgstr "Таблица параметров БВТС"
 
-msgid "BVT Parameteres table"
+msgid "BVT Parameters table"
 msgstr "Таблица параметров БВТ"
 
-msgid "BVI Parameteres table"
+msgid "BVI Parameters table"
 msgstr "Таблица параметров БВИ"
 
-msgid "BIP Parameteres table"
+msgid "BIP Parameters table"
 msgstr "Таблица параметров БИП"
 
-msgid "PAUK Parameteres table"
+msgid "PAUK Parameters table"
 msgstr "Таблица параметров ПАУК"
 
-msgid "BTU Parameteres table"
+msgid "BTU Parameters table"
 msgstr "Таблица параметров БТУ"
 
-msgid "ACCOUNT Parameteres table"
+msgid "ACCOUNT Parameters table"
 msgstr "Таблица параметров Узла учета"
 
-msgid "BTR Parameteres table"
+msgid "BTR Parameters table"
 msgstr "Таблица параметров БТР"
 
-msgid "BTE Parameteres table"
+msgid "BTE Parameters table"
 msgstr "Таблица параметров БТЭ"
 
-msgid "ODOR Parameteres table"
+msgid "ODOR Parameters table"
 msgstr "Таблица параметров ОДОРИЗАТОР"
 
-msgid "GZD Parameteres table"
+msgid "GZD Parameters table"
 msgstr "Таблица параметров ГЗД"
 
-msgid "GNS Parameteres table"
+msgid "GNS Parameters table"
 msgstr "Таблица параметров ГНС"
 
-msgid "GKR Parameteres table"
+msgid "GKR Parameters table"
 msgstr "Таблица параметров ГКР"
 
-msgid "TANK Parameteres table"
+msgid "TANK Parameters table"
 msgstr "Таблица параметров РЕЗЕРВУАР"
 
-msgid "Gather data period (s)"
-msgstr "Период сбора данных"
+msgid "Acquisition schedule"
+msgstr "Планирование опроса"
 
 msgid "Gather task priority"
 msgstr "Уровень приоритета задачи"
@@ -256,6 +278,12 @@ msgstr "Число каналов/Адрес станции"
 
 msgid "Ignore FCB2"
 msgstr "Игнорировать FCB2"
+
+msgid "Params refresh"
+msgstr "Считывать параметры"
+
+msgid "DB;PLC"
+msgstr "БД;КП"
 
 msgid "BUC"
 msgstr "БУЦ"
@@ -317,6 +345,12 @@ msgstr "ОДОРИЗАТОР"
 msgid "GZD"
 msgstr "ГЗД"
 
+msgid "Valve type"
+msgstr "Тип задвижки"
+
+msgid "5 TU;6 TU"
+msgstr "5 ТУ;6 ТУ"
+
 msgid "GNS"
 msgstr "ГНС"
 
@@ -335,21 +369,12 @@ msgstr "ID"
 msgid "Value"
 msgstr "Значение"
 
+msgid "Attribute value"
+msgstr "Значение атрибута"
+
 #, c-format
 msgid "data arrived L:%d %s"
 msgstr "получены данные L:%d %s"
-
-#, c-format
-msgid "---l:%d n:%d"
-msgstr ""
-
-#, c-format
-msgid "%d bytes handled"
-msgstr "%d байт обработано"
-
-#, c-format
-msgid "l:%d n:%d"
-msgstr ""
 
 #, c-format
 msgid "Unhandled data  %04X at %d"
@@ -399,15 +424,96 @@ msgstr "Правильный заголовок"
 msgid "bad packet"
 msgstr "Плохой пакет"
 
-msgid "cutting packet"
-msgstr "Обрезание пакета"
+msgid "cutted packet"
+msgstr "обрезанный пакет"
+
+msgid "No connection"
+msgstr "Нет связи"
+
+msgid "Unknown state"
+msgstr "Неизвестное состояние"
+
+msgid "Hard reset"
+msgstr "Общий сброс"
+
+msgid "PreInit"
+msgstr "Предварительная инициализация"
+
+msgid "Set Params"
+msgstr "Установка параметров"
+
+msgid "PostInit"
+msgstr "Пост-инициализация"
+
+msgid "Starting"
+msgstr "Запуск"
+
+msgid "Refresh data"
+msgstr "Опрос значений"
+
+msgid "Refresh params"
+msgstr "Опрос параметров"
+
+msgid "Load params"
+msgstr "Загрузка параметров"
+
+msgid "Idle"
+msgstr "Ожидание событий"
 
 #, c-format
-msgid "Gather data time %.6g ms. "
-msgstr "Время сбора данных %.6g мс. "
+msgid ". Gather data time %.6g ms. "
+msgstr ". Время сбора данных %.6g мс. "
+
+msgid "Soft reset"
+msgstr "Сброс с сохранением"
+
+msgid "Setup Clock"
+msgstr "Установка часов"
 
 msgid "No one device selected."
 msgstr "Ничего не выбрано"
+
+msgid "Receiving block state error"
+msgstr "Ошибка опроса состояния блока"
+
+msgid "Can't SetupClock"
+msgstr "Невозможно установить часы"
+
+msgid "No answer to SetupClock"
+msgstr "Нет ответа на установку часов"
+
+msgid "Can't PreInit"
+msgstr "Невозможна предварительная инициализация"
+
+msgid "No answer to PreInit"
+msgstr "Нет ответа на предварительную инициализацию"
+
+msgid "Block SetParams error"
+msgstr "Ошибка установки параметров блока"
+
+msgid "Can't PostInit"
+msgstr "Невозможна пост-инициализация"
+
+msgid "No answer to PostInit"
+msgstr "Нет ответа на пост-инициализацию"
+
+msgid "Can't Start"
+msgstr "Невозможен запуск"
+
+msgid "No answer to Start"
+msgstr "Нет ответа на запуск"
+
+msgid "Can't RefreshData"
+msgstr "Невозможно опросить значения"
+
+msgid "No answer to RefreshData"
+msgstr "Нет ответа на опрос значений"
+
+msgid "Can't RefreshParams"
+msgstr "Невозможно опросить параметры"
+
+msgid "No answer to RefreshParams"
+msgstr "Нет ответа на опрос параметров"
 
 #, c-format
 msgid "TMdPrm::vlSet name %s "
@@ -790,12 +896,20 @@ msgid "TU close %d"
 msgstr "ТУ закрыть %d"
 
 #, c-format
+msgid "TU stop Ex %d"
+msgstr "ТУ стоп доп. %d"
+
+#, c-format
 msgid "Open time %d"
 msgstr "Время открыть %d"
 
 #, c-format
 msgid "Close time %d"
 msgstr "Время закрыть %d"
+
+#, c-format
+msgid "Stop time Ex %d"
+msgstr "Время стоп доп. %d"
 
 #, c-format
 msgid "Open TC %d"
@@ -822,6 +936,7 @@ msgstr "Максим Кочетков, Ольга Авдеева, Ольга К�
 msgid "Allow realization of FT3 master/slave service"
 msgstr "Предоставляет реализацию протокола FT3 для контроллеров АПСТМ"
 
+#, c-format
 msgid "Drop volume %d"
 msgstr "Объем капли %d"
 
@@ -876,4 +991,3 @@ msgstr "Состояние датчика ТС2 %d"
 #, c-format
 msgid "State Sens2 TC Not %d"
 msgstr "Состояние датчика ТС2 инв %d"
-

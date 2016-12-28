@@ -22,10 +22,50 @@
 
 #include <tsys.h>
 
-#include "mod_FT3.h"
 #include "da.h"
+#include "mod_FT3.h"
 
 using namespace FT3;
+
+uint16_t DA::Task(uint16_t uCod)
+{
+    return 0;
+}
+
+uint16_t DA::SetupClock(void)
+{
+    return GOOD2;
+}
+
+uint16_t DA::PreInit(void)
+{
+    return GOOD2;
+}
+
+uint16_t DA::SetParams(void)
+{
+    return GOOD2;
+}
+
+uint16_t DA::PostInit(void)
+{
+    return GOOD2;
+}
+
+uint16_t DA::Start(void)
+{
+    return GOOD2;
+}
+
+uint16_t DA::RefreshData(void)
+{
+    return GOOD2;
+}
+
+uint16_t DA::RefreshParams(void)
+{
+    return GOOD2;
+}
 
 void DA::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
 {
@@ -49,6 +89,20 @@ void DA::loadLnk(SLnk& lnk)
     }
 }
 
+void DA::loadVal(SLnk& lnk)
+{
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
+
+    cfg.cfg("ID").setS(lnk.prmName);
+    if(SYS->db().at().dataGet(io_bd, io_table, cfg, false, true)) {
+	lnk.vlattr.at().setS(cfg.cfg("ATTR_VALUE").getS(), 0, true);
+	//lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
+    }
+}
+
 void DA::saveLnk(SLnk& lnk)
 {
     TConfig cfg(&mPrm.prmIOE());
@@ -59,6 +113,18 @@ void DA::saveLnk(SLnk& lnk)
     cfg.cfg("VALUE").setS(lnk.prmAttr);
     SYS->db().at().dataSet(io_bd, io_table, cfg);
 }
+
+void DA::saveVal(SLnk& lnk)
+{
+    TConfig cfg(&mPrm.prmIOE());
+    cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
+    string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
+    string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
+    cfg.cfg("ID").setS(lnk.prmName);
+    cfg.cfg("ATTR_VALUE").setS(lnk.vlattr.at().getS());
+    SYS->db().at().dataSet(io_bd, io_table, cfg);
+}
+
 
 uint8_t DA::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 {
@@ -193,7 +259,7 @@ void DA::UpdateParamFl(flData& param, uint16_t ID, uint8_t cl)
     ui8fl tmpfl;
     tmpfl.f = param.Get();
     if(tmpfl.f != param.vl) {
-	param.Update(tmpfl.f, 0);
+	param.Update(tmpfl.f);
 	uint8_t E[5] = { 0, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
 	PushInBE(cl, sizeof(E), ID, E);
     }
@@ -204,7 +270,7 @@ void DA::UpdateParam32(ui32Data& param, uint16_t ID, uint8_t cl)
     ui832 tmp;
     tmp.ui32 = param.Get();
     if(tmp.ui32 != param.vl) {
-	param.Update(tmp.ui32, 0);
+	param.Update(tmp.ui32);
 	uint8_t E[5] = { 0, tmp.b[0], tmp.b[1], tmp.b[2], tmp.b[3] };
 	PushInBE(cl, sizeof(E), ID, E);
     }
@@ -216,10 +282,11 @@ void DA::UpdateParamFlState(flData& param, ui8Data& state, flData& sens, uint16_
     ui8fl tmpfl;
     tmpui8 = state.Get();
     tmpfl.f = param.Get();
-    param.Update(tmpfl.f, 0);
+    param.Update(tmpfl.f);
     if((fabs(tmpfl.f - param.vl_sens) > sens.vl) || (tmpui8 != state.vl)) {
 	state.Update(tmpui8);
-	param.Update(tmpfl.f, 1);
+	param.vl_sens = tmpfl.f;
+	//param.Update(tmpfl.f, 1);
 	uint8_t E[5] = { state.vl, tmpfl.b[0], tmpfl.b[1], tmpfl.b[2], tmpfl.b[3] };
 	PushInBE((tmpui8 != state.vl) ? 1 : cl, sizeof(E), ID, E);
     }
@@ -231,8 +298,8 @@ void DA::UpdateParam2Fl(flData& param1, flData& param2, uint16_t ID, uint8_t cl)
     tmpfl1.f = param1.Get();
     tmpfl2.f = param2.Get();
     if(tmpfl1.f != param1.vl || tmpfl2.f != param2.vl) {
-	param1.Update(tmpfl1.f, 0);
-	param2.Update(tmpfl2.f, 0);
+	param1.Update(tmpfl1.f);
+	param2.Update(tmpfl2.f);
 	uint8_t E[9] = { 0, tmpfl1.b[0], tmpfl1.b[1], tmpfl1.b[2], tmpfl1.b[3], tmpfl2.b[0], tmpfl2.b[1], tmpfl2.b[2], tmpfl2.b[3] };
 	PushInBE(1, sizeof(E), ID, E);
     }
@@ -253,7 +320,7 @@ void DA::UpdateParam28(ui8Data& param1, ui8Data& param2, uint16_t ID, uint8_t cl
 
 FT3ID DA::UnpackID(uint16_t ID)
 {
-    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, _("UnpackID %d"), ID);
+    //if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, _("UnpackID %d"), ID);
     FT3ID rc;
     switch(mTypeFT3) {
     case GRS:
@@ -267,7 +334,7 @@ FT3ID DA::UnpackID(uint16_t ID)
 	rc.n = (ID >> 10) & 0x3F;
 	break;
     }
-    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, _("g %d k %d n %d"), rc.g, rc.k, rc.n);
+    //if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, _("g %d k %d n %d"), rc.g, rc.k, rc.n);
     return rc;
 }
 
@@ -299,7 +366,7 @@ uint16_t DA::PackID(uint8_t g, uint8_t k, uint8_t n)
     return rc;
 }
 
-uint8_t DA::SerializeF(uint8_t * out, float vl)
+uint8_t FT3::SerializeF(uint8_t * out, float vl)
 {
     union
     {
@@ -312,7 +379,7 @@ uint8_t DA::SerializeF(uint8_t * out, float vl)
     return 4;
 }
 
-uint8_t DA::SerializeUi16(uint8_t * out, uint16_t vl)
+uint8_t FT3::SerializeUi16(uint8_t * out, uint16_t vl)
 {
     union
     {
@@ -325,7 +392,7 @@ uint8_t DA::SerializeUi16(uint8_t * out, uint16_t vl)
     return 2;
 }
 
-uint8_t DA::SerializeUi32(uint8_t * out, uint32_t vl)
+uint8_t FT3::SerializeUi32(uint8_t * out, uint32_t vl)
 {
     union
     {
@@ -339,7 +406,7 @@ uint8_t DA::SerializeUi32(uint8_t * out, uint32_t vl)
 }
 
 
-uint8_t DA::SerializeB(uint8_t * out, uint8_t vl)
+uint8_t FT3::SerializeB(uint8_t * out, uint8_t vl)
 {
     out[0] = vl;
     return 1;

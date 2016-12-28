@@ -44,9 +44,9 @@ Block::~Block( )
     if(enable()) setEnable(false);
 }
 
-TCntrNode &Block::operator=( TCntrNode &node )
+TCntrNode &Block::operator=( const TCntrNode &node )
 {
-    Block *src_n = dynamic_cast<Block*>(&node);
+    const Block *src_n = dynamic_cast<const Block*>(&node);
     if(!src_n) return *this;
 
     //Copy parameters
@@ -81,7 +81,7 @@ void Block::postDisable( int flag )
     }
 }
 
-Contr &Block::owner( )	{ return *(Contr*)nodePrev(); }
+Contr &Block::owner( ) const	{ return *(Contr*)nodePrev(); }
 
 string Block::name( )
 {
@@ -311,8 +311,6 @@ void Block::setLink( unsigned iid, LnkCmd cmd, LnkT lnk, const string &vlnk )
 
 void Block::calc( bool first, bool last, double frq )
 {
-    setMdfChk(outLnkWrChs());
-
     //Set fixed system attributes
     if(idFreq >= 0)	setR(idFreq, frq);
     if(idStart >= 0)	setB(idStart, first);
@@ -356,6 +354,7 @@ void Block::calc( bool first, bool last, double frq )
 
     //Calc function
     try {
+	setMdfChk(outLnkWrChs());
 	TValFunc::calc();
 	modif();
     } catch(TError &err) { mErrCnt++; throw; }

@@ -524,7 +524,7 @@ void ConfApp::treeSearch( )
 {
     if(!sender()) return;
     QLineEdit *sl = (QLineEdit*)sender();
-    QString wvl = TSYS::strNoSpace(sl->text().toStdString()).c_str();
+    QString wvl = sTrm(sl->text().toStdString()).c_str();
     bool fromCur = !sl->isModified();
     sl->setModified(false);
 
@@ -594,7 +594,7 @@ void ConfApp::itDBLoad( )
 {
     XMLNode req("load"); req.setAttr("path",selPath+"/%2fobj");
     if(cntrIfCmd(req)) mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TUIMod::Info,this);
-    else pageRefresh();
+    pageRefresh();	//Any time but warnings in the deep
 }
 
 void ConfApp::itDBSave( )
@@ -2297,7 +2297,7 @@ int ConfApp::cntrIfCmdHosts( XMLNode &node )
     //Mark commands in "primaryCmd", for redundant hosts mostly transfer
     // !!! Move further to the command's source
     if(node.name() == "set" || node.name() == "add" || node.name() == "ins" || node.name() == "del" || node.name() == "move" ||
-	    node.name() == "load" || node.name() == "save")
+	    node.name() == "load" || node.name() == "save" || node.name() == "copy")
 	node.setAttr("primaryCmd", "1");
 
     string hostId = TSYS::pathLev(node.attr("path"), 0);
@@ -2463,8 +2463,6 @@ void ConfApp::checkBoxStChange( int stat )
 void ConfApp::buttonClicked( )
 {
     QPushButton *button = (QPushButton *)sender();
-
-    XMLNode req();
 
     try {
 	XMLNode *n_el = SYS->ctrId(root, TSYS::strDecode(button->objectName().toStdString(),TSYS::PathEl));
@@ -3158,7 +3156,7 @@ void SCADAHost::run( )
 
 	//Interface's requests processing
 	mtx.lock();
-	if(!req || (req && reqDone)) cond.wait(mtx, 1000);
+	if(!req || reqDone) cond.wait(mtx, 1000);
 	if(req && !reqDone) {
 	    wuser = user;
 	    mtx.unlock();

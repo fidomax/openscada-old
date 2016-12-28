@@ -1,9 +1,293 @@
+2016-12-19 Roman (stable)
+- Protocol.OPC_UA.libOPC_UA: Subscription cycle's counter restore.
+- DB.LibsDB.OscadaLibs: User protocol "DCON" in the input part was fixed for commands detect "#" and "@".
+- Protocol.OPC_UA.libOPC_UA: Expanded to early publish requests processing after requests of subscription and monitored items creation,
+    for the init publish requests.
+
+
+2016-12-16 Roman (stable)
+- TArchive: EVAL_RFlt and EVAL_RDbl detection for values fix.
+- TConfig: EVAL forms conversion is added to TCfg::set{S,R,I,B}(). Integer conversion fix to 64bit.
+- !!!!:DB.{SQLite,MySQL,PostgreSQL,FireBird} : Expanded to NULL using for generic EVAL store/represent. getVal() was some expanded and unified.
+- !!:Archive.DBArch: Cleared and simplifyed for subtypes and its EVAL variants support.
+- DAQ.JavaLikeCalc: User API string's function toInt() is expanded to int64.
+
+
+2016-12-13 Roman (stable)
+- SYS: Debian packages building was appended by translation for module BCM2835.
+- DAQ.*: Wrong word "Parameteres" fixed.
+
+
+2016-12-11 Roman (stable)
+- DB.LibsDB.OscadaLibs: The template DevLib.UPS expanded by attribute "alDelay" for alarms delay control.
+- !:FIX:SYS: Function strNoSpace() expanded for processing symbols control and renamed to strTrim(). Default processing symbols set to " \n\t\r".
+	For function strTrim() created a short call sTrm() and it's used everywhere.
+    FIX:XMLNode's flag LD_NoTxtSpcRemEnBeg fixed for spaces in begin.
+- FIX:DAQ.BCM2835: Fixed for the static function place into the control interface.
+- DAQ.JavaLikeCalc: String functions list expanded by a function trim().
+- !!!:Protocol.SelfSystem: XML loading expanding by option LD_NoTxtSpcRemEnBeg using for allow spaces at begin and end of text items.
+
+
+2016-12-09 Roman (stable)
+- DB.LibsDB.OscadaLibs: The template DevLib.UPS expanded by alarms' borders.
+    Templates base.{anUnif,anUnifSt} expanded by attribute "var" into the input processing procedure for allow stored counters implement and so on.
+- DB.{AGLKS,Boiler}.St: Main archivators' limits some changed and set all archives's size limit.
+- !!!!:DAQ.OneWire: Removed by replacing proper user protocol templates.
+- DAQ.BCM2835 is appended by translations.
+- UI.WebVision: Some changed in ElFigure implementing code for crashes in Post.
+
+
+2016-12-07 Roman (stable)
+- DB.LibsDB.OscadaLibs: DevLib is appended by GPIO devices' templates: Humidity Sensors DHT11, DHT12, AM2302, AM2320 and LCD Display Module 1602A.
+    DevLib.SCU750 changed to IO fix for type "int8".
+- DB.AGLKS.St: Modbus controller objects fixed for logical type's storing table.
+- DB.{SQLite,MySQL,PostgreSQL,FireBird}: Message about rows missing at get some appended.
+- FIX:DAQ.ModBus: Fixed and adapted to user attributes processing pass.
+- FIX:Special.FLibSYS: IO is fixed for types "int8" and "char" split processing, mostly in its read.
+- UI.QTCfg: Allow page update after warnings at items loading.
+
+
+2016-12-06 Roman (JavaLikeCalc_testing)
+- DB.LibsDB.OscadaLibs: Templates base.{anUnif,anUnifSt} expanded by attribute "alDelay" for split it from "Tf" for alarms delay and
+	propogate it for all alarm types.
+    Notifications dispatcher is pevented from early starting at "f_start".
+- DAQ: Program translation sign of templates set to disabled by default.
+- !!!!:DAQ.JavaLikeCalc: Dynamic linking to external functions support is added in way: function {nm} = "{addr}"; {nm}();.
+    External functions link and call optimized at all.
+- FIX:DAQ.LogicLev: User attributes removing prevented at the parameter's object enable, for passive ones.
+
+
+2016-12-02 Roman (core_testing)
+- !!!!:FIX:SYS: TCfg was fixed to use TVariant string as a constant for STL string.
+    TVariant expanded for STL string using always except fields marked as "stdStringOmit", mostly for TCfg as string constants (DB table's keys).
+- !!!!:DAQ.JavaLikeCalc: Object's functions call was optimized for the name direct pass into the calling command.
+
+
+2016-11-27 Roman
+- !!!!:DB.LibsDB.OscadaLibs: DevLib is appended by RTC chip on I2C DS3231 implementing.
+    DevLib.UPS: expanded for values in EVAL process.
+    DevLib.{1W_DS9097,W_DS9097U}: Expanded by support 1Wire chips: DS2408, DS2450, DS2438.
+    UserProtocol is appended by a memory chip AT24CXX access procedure.
+- !!:DAQ.DAQGate: Adapted to store parameters' assignment to stations for allow early restoring without need to sync.
+- FIX:DAQ.JavaLikeCalc: workRegControl() moved under function resource's locking.
+
+
+2016-11-16 Roman
+- FIX:SYS: Main config property "ClockRT" fixed for load only from the config-file and in its description.
+    TValue::chldAdd() fixed for the Archive subsystem mark as setToUpdate() only for successful appending.
+- FIX.Archive.{FSArch,DBArch}: checkArchivator() prevented from exception at wrong archive starting else pass it.
+- FIX:UI.Vision: Events notify objects removing at the master window minimizing fix.
+
+
+2016-11-15 Roman
+- !!:DAQ.DAQGate: Control for automatic removing parameters and attributes is added by an option.
+    Spent time expanded by the maximum value.
+- FIX:UI.VCAEngine: Widgets list into the widget's parent field expanded and fixed for list all items of project tree to any depth.
+- UI.Vision: Expanded for authentication message error detailing.
+
+
+2016-11-13 Roman
+- DB.LibsDB.OscadaLibs: DAQ.JavaLikeCalc service procedures, controllers and regulators libraries were cleaned and unified.
+    Devices template library was appended by template of the pressure I2C sensor BMP180.
+- Function,UI.VCAEngine: pthread_mutex_t was replaced to ResMtx.
+
+
+2016-11-09 Roman
+- SYS: sysSleep() moved to clock_nanosleep(), CLOCK_MONOTONIC and clock_gettime() for short times lesser to 300us.
+- FIX:DAQ.BCM2835: Librarie's function bcm2835_delayMicroseconds() moved to clock_gettime() for prevent crashes into the not privileged mode.
+- FIX:UI.VCAEngine: Static functions' name and description fixed.
+
+
+2016-11-08 Roman
+- Transport.Serial: "No stop on proceed" option is added to output transports.
+
+
+2016-11-07 Roman
+- TSecurity: User API function User::groups() and Group::user() is added.
+- DAQ.JavaLikeCalc: "Program translation allow" disabled by default. String's user API function parseLine() is added.
+
+
+2016-11-03 Roman
+- FIX:DB.LibsDB.OscadaLibs: Notifications dispatcher adapted to object's attributes deletion by the operator "delete".
+- FIX:DB.LibsDB.vcaBase: Main.ElViewGraph: Adapted to store static parameters in the selection mode.
+- SYS: TVariant.propClear() expanded to single property clean.
+- !!!!:DAQ.JavaLikeCalc: Expanded by operator "delete" for objects or its properties free.
+
+
+2016-11-02 Roman
+- FIX:SYS: Discard for attributes of object clear at EVAL assign.
+- !!:FIX:DB.LibsDB.OscadaLibs: Notifications dispatcher expanded by the notify messages criteria of its category and level.
+- SYS: data/openscada_start.in: expanded by first argument --ProjName={PNm} project's selection.
+- !!:DAQ.System: Expanded by "FS" data source. Automatic creation of sources expanded to modes of sources "Fast" and "Slow".
+- UI.QTStarter: X Session manager disabled from restart the closed at exit programms.
+
+
+2016-10-30 Roman
+- !!:FIX:DB.LibsDB.OscadaLibs: Notifications dispatcher unified, stabilized and status is added for SMS and EMail sent by direct OpenSCADA functions.
+    !!:Self SMS send implementing unified and expanded for: disable ECHO, check/set PIN, TEST and PDU SMS mode.
+    FIX:Self SMTP implementing fixed for localized field "Date" by use an external call for utility "date".
+- FIX:UI.Vision: Wrong sometime set cursor to current is fixed for primitive "Diagram".
+
+
+2016-10-29 Roman
+- FIX:Transport.SSL: TLSv1.1, TLSv1.2, DTLSv1 set to build for SSL version >= 0x1000114fL.
+- Transport.Serial: Char limit value expanded to 10000 ms, for output.
+- FIX:UI.QTStarter: Build for Qt5 fixed.
+
+
+2016-10-28 Roman
+- !!:FIX:DB.LibsDB.OscadaLibs: DevLib.IEC60870: Fix for the new behavior of attributes of Object free by EVAL set.
+    !!:Self implementing for EMail sent by SMTP is added as an user protocol's function, implemented: pure, SSL/TLS, AUTH.
+    !!:Notifications dispatcher Controllers.ntfDispatch expanded by using self SMTP implementing for EMail send.
+- !!!!:SYS: More functions set to constant after some objects appending by a copy constructor.
+    !!!!:More error and warning fixes from PVS-Studio report, thanks to Maksim Kochetkov:
+	TCntrNode: Possible wrong into copy node function by unsigned group's index.
+	TCntrNode,TConfig,TRegExp,Archive,DB.{MySQL,PostgreSQL},DAQ.{AMRDevs,JavaLikeCalc},Special.FLibSYS,UI.{Vision,WebVision}:
+	    Possible collision into a function argument or an internal variable name and the class method.
+	TVariant: Middle strings reallocation is set to the result check.
+	XMLNodeObj,DAQ.{*,AMRDevs,Siemens},Archive.{*,FSArch},UI.QTCfg: Some logic made simply.
+    !!: Adapting and some fixing for build by GCC v6 with C++11 by default.
+- DAQ.{Templates,JavaLikeCalc},Protocol.ModBus,UI.VCAEngine: Items deletion procedure termination at DB error is added.
+- FIX:Special.FLibSYS: FFT buffers "free" fix, instead "delete".
+- !:Transport.SSL: Expanded by methods TLSv1.1, TLSv1.2, DTLSv1.
+- UI.QTStarter: Adapted to Qt5 specific method QTranslator::translate().
+- FIX:UI.VCAEngine: Virtual function PrWidget::setEnable() fixed for second argument.
+
+
+2016-10-25 Roman
+- FIX:DB.LibsDB.vcaBase: Main.{grpGraph,grpGraph10,ElViewGraph} fixed to per-user saving selected graphics.
+- !!:FIX:DAQ.Templates,Archive.FSArch,DAQ.{JavaLikeCalc,ModBus}: Data fields removing at the preloaded SEEK fixed.
+
+
+2016-10-24 Roman
+- DB.LibsDB.vcaBase: Attributes Main.{grpGraph,grpGraph10}.grpName were removed at last.
+    Main.{grpGraph,grpGraph10,ElViewGraph} adapted to per-user saving selected graphics.
+- UI.VCAEngine: Programs translation by default set to false.
+- FIX:UI.Vision: Events MouseButtonPress, MouseButtonDblClick for put to next level widget into this container fixed.
+
+
+2016-10-23 Roman
+- FIX:DB.LibsDB.OscadaLibs: Notifications dispatcher Controllers.ntfDispatch as a JavaLikeCalc function is added for send EMail (by sendemail) and SMS.
+    UserProtocol.SMS: fixed, expanded and adapted for stated work.
+- SYS: TSecurity::access() function expanded for allow groups list as a separated by ',' one.
+    Base64 encoding/decoding method some expanded for line separator point as an argument.
+    TVarObj: pthread_mutexattr_t next replaced to ResMtx. Properties clear at EVAL set is added.
+- FIX:DAQ.JavaLikeCalc: Internal function's space split for temporary registers.
+- UI.{QTCfg,Vision,WebCfg,WebCfgD}: Primary commands expanded by "copy".
+- !:UI.Vision: Widget's tooltip and statustip show some fixed and included to put the events to next level widget into this container.
+
+
+2016-10-18 Roman
+- FIX:DB.LibsDB.OscadaLibs: DAQ template DevLib.SSCP: Loading of big LIST files performance some rised, by OpenSCADA core fix also.
+- !!!:SYS: TVariant for string type expanded to store too big data, more for STR_BUF_LEN(10000), as the standard string,
+    and then significant increase the performance.
+- !!!!:DAQ: Template's configure's field variant "Constant" renamed to "Variable" and "Public constant" to "Constant" respectively.
+- UI.Vision: Widget's tooltip and statustip set to show at not full transparent widget's parts.
+
+
+2016-10-11 Roman
+- DB.LibsDB.OscadaLibs: DevLib.IEC60870: Expanded for single items description.
+- FIX:SYS: LibZ functions were rewrote for some unification and the used memory optimization.
+- FIX:DAQ.{BlockCalc,LogicLev}: Input links processing moved out of the attributes modifications detection into calc().
+
+
+2016-09-28 Roman
+- FIX:DB.LibsDB.OscadaLibs: DAQ template DevLib.SSCP: Fix for bool type represent. Load big LIST files performance some rised.
+- FIX:SYS: The functional templates fmin() and fmax() were added.
+    FIX:TRegExp fix in function split(), for hang and crash prevent.
+- Archive: Into getMess() used fmin() for previous problem.
+    Attribute "tm" of the Array result of user API function "getMess" changed to type "int".
+- Archive.DBArch: Messages archivation part fixed for "needMeta" and deny an access to the archivator before the successful meta get.
+- FIX:DAQ.JavaLikeCalc: The syntax highlight some fixed for strings and backslash '\' in variant "\\".
+- Special.FLibSYS: Function strParse() expanded for multisymbols separation.
+
+
+2016-09-23 fido_max
+- DAQ.FT3: KA DAQ refactored and fully implemented (BTU, BVT, BVTC, GZD, GNS). Params save/load, set/refresh implemented.
+
+
+2016-09-22 Roman
+- FIX:Arhives: getMess() fix for double call modules' function get().
+    Some fields of the messages request dialogs are merged to single line.
+    Some debug messages are added to getMess().
+- UI.Vision: Source code of primitive ElFigure some addition cleaned.
+
+
+2016-09-21 Roman
+- !!:Archive.DBArch: Lost DB managing and early connection restoring is added and some tested.
+- !!:FIX:DB.*: EVAL writing fix. Detected and tested on PostgreSQL. Messages and errors forming moved to new API.
+- DB.PostgreSQL: Some tracing debug information is added. Error transactions commit is added.
+
+
+2016-09-20 Roman
+- DB.LibsDB.vcaBase: Main.{grpGraph,grpGraph10}: Set to the trend's control panel open on it start.
+- FIX:DAQ,Archive: The redundant request procedure fix for prevent the object stop at scaning requests, by previous host.
+- FIX:Archive: getVal() fix for request to current value but the buffer end() some lesser to it.
+- FIX:Archive.{*,FSArch,DBArch}: Exceptions into archivatorAttach() at the archivator's object stopped is prevented for allow the archive early start.
+    Archive.{FSArch,DBArch}: The modules adapted for early archivators init and archive's meta set from the physical archives.
+- !!!!:FIX:Archive.DBArch: Reading of value archives set optimal to the request time, up to ten times, through using "MARK" key and the seek request.
+    FIX: End of pushing accumulated values set to minimum from the data block's end and the group end.
+    Adapting to direct writing beyond the main accumulation process with limits and meta update.
+    Adapting to redundancy.
+    Values archivation period limited to the resolution in seconds.
+
+
+2016-09-16 Roman
+- !!:FIX:Archive.{*,FSArch}: Spare writings direct to the archivators prevent for TVArchive::setVals().
+    !!:FIX:Last read buffer information is added and the property using fix.
+- DAQ: For redundancy processing firstly readed the value archive's part.
+- FIX:Archive.DBArch: Set values processing mostly fix for return correct last time.
+
+
+2016-09-12 Roman
+- DB: LibsDB.OscadaLibs.db: DAQ template of the protocol "Temperature measurement IT-3 (IT3)" were expanded for detect the external connection lost.
+    Template PCF8574 is added to the library DevLib. PCF8574 is I2C 8DIO.
+- FIX:SYS: data/oscada_gentoo.init is some fixed by IrmIngeneer.
+- !!:FIX:Archive: Value archivator is expanded for the accumulation mode support, mostly for Archive.DBArch.
+    FIX:TValBuf: Fix for the object copy by the copy constructor appending and some fields lack.
+- FIX:TConfig: Fix for the object copy by the copy constructor appending and it's reserved for implementing of copying the items to single ones.
+- FIX:TElem: Fix for the object copy by the copy constructor appending and it's reserved for full implementing further.
+- FIX:Archive.FSArch: It's adapted to values accumulation API. Values archivator fix for the function stop() prototype.
+- !!!!:Archive.DBArch: The value archivation part expanded by the archives grouping into one group table, mostly for the archivation performance rise.
+    Checking of the module meta table is added for creation lack value archives, like into Archive.FSArch.
+    Value archives limit is rose to days.
+    Extended types int16_t, int32_t, int64_t, float and double archivation support is added.
+- FIX:UI.WebVision: The prototype "Media" processing some fix for "fit" toggle and container's scale change.
+
+
+2016-08-31 Roman
+- DB.LibsDB.vcaBase: tmplSO.graphSelPrm some improved.
+- FIX:SYS: Long locking at the redundancy state request is prevented by the resources reorder.
+- UI.VCAEngine: Sessions were expanded for diagnostic and profiling per pages/widgets and subtrees.
+
+
+2016-08-30 Roman
+- !!:DB.LibsDB.OscadaLibs: DAQ template DevLib.IT3 and the user protocol part expanded by a passive mode, by list a different session.
+    JavaLikeCalc function lowLevDevs.DHT expanded for AM2320, DHT22 (AM2302) support.
+- !!:DB.LibsDB.vcaBase: tmplSO.graphSelPrm significant expanded for selection from list and fast search.
+    Main.{grph_panel,grpGraph,grpGraph10} adapted to store scaling context by mouse's window.
+- DAQ.LogicLev: Expanded to allow writing from external to the RO attributes "err" and all other for the "f_err" EVAL.
+- !!:FIX:UI.VCAEngine: Session calculation time expanded by it's maximum value.
+    Attribute addition expanded and used at manual creation by the attribute "allInher" for it's creation inheritance.
+    New attribute's ID and NAME set to indexed.
+- !:UI.Vision: The view "List" of primitive "FormEl" expanded by appending the pointed but missed values to the list.
+- FIX:UI.{Vision,WebVision}: Current values tracing of primitive "Diagram" for big periodics, in days, is fixed.
+
+
+2016-08-26 Roman
+- !!:DB.LibsDB.OscadaLibs: DAQ template DevLib.1W_DS9097U finished and final working.
+- !!:DB.LibsDB.vcaBase: Main.grpGraph adapted for show self scale of a selected parameter.
+    Main.grph_panel fixed for restore after scale by window only for allowed data.
+    Main.ElViewGraph expanded for select by focus in also.
+- Transport.Serial: User API function sendbreak() is added to output transport.
+
+
 2016-08-25 Roman
 - !!!!:FIX:DB.LibsDB.OscadaLibs: DAQ template DevLib.oneWire renamed to DevLib.1W_DS9097 and some simplified.
     New DAQ template DevLib.1W_DS9097U is added for allow OneWire support by an adapter DS9097U, based on the chip DS2480.
     DAQ template DevLib.SSCP expanded for types "dt" and "time" support and the allowed to selection variables list moving to RO text attribute.
-- !!:DB.LibsDB.vcaBase: Groups of graphics and the control panel expanded to visualizer UI.Vision specific feature of selection/scalling
-    by window drawn by mouse. The attribute "enForce" naming of ElViewGraph fix.
+    Groups of graphics and the control panel expanded to visualizer UI.Vision specific feature of selection/scalling
+	by window drawn by mouse. The attribute "enForce" naming of ElViewGraph fix.
 - FIX:UI.VCAEngine: setEnable() of widget and it's succession was expanded by the argument "force" like to pages.
     FIX:Primitives force activation for not loaded active attributes is added after the widgets loading try, into the widgets libraries.
     FIX:Units removing after the preloaded seek is fixed.
@@ -16,7 +300,8 @@
 
 2016-08-25 fido_max
 - DAQ.FT3: General cleanup and refactoring of source code. KA DAQ implemented (BTU, BVT, BVTC, GZD, GNS). KA TANK object added.
-           Translation fixed. Major erros fixed.
+    Translation fixed. Major erros fixed.
+
 
 2016-08-16 Roman
 - UI.Vision: To primitive "Diagram" of mode "Trend" added sliding by mouse in the time axis.
@@ -417,8 +702,8 @@
 
 
 2016-04-08 fido_max
-- !! DAQ.FT3 ui32Data, flData sensivity deadband processing for event forming added. B_ODOR implemented.
-- DAQ.FT3 KA_GNS SetNewState, SetNewFunction implemented, version rise to 0.2.1.
+- !!:DAQ.FT3: ui32Data, flData sensivity deadband processing for event forming added. B_ODOR implemented.
+- DAQ.FT3: KA_GNS SetNewState, SetNewFunction implemented, version rise to 0.2.1.
 - Protocol.FT3: Version rise to 0.2.1.
 
 
@@ -885,6 +1170,7 @@
 
 2015-08-13 fido_max
 - FIX:DAQ:FT3: B_BVI, B_GKR constructor fixed
+
 
 2015-08-11 fido_max
 - !!!!:DAQ: New module "FT3" for support FT3 devices protocol is added. It is initial implementation of GRS and SUAP implementation.
@@ -1558,7 +1844,7 @@
 
 2014-11-13 Roman
 - LibsDB.vcaBase.db: Main.ElCadr mostly fixed for tooltips to the commands.
-- !!:FIX:Archive,Archive.FSArch: Final fixed for prevent doubles and wrong archives connection for later appended data sources.
+- !!:FIX:Archive,Archive.FSArch: Final fixed for prevent the doubles and wrong archives connection for later appended data sources.
 
 
 2014-11-09 Roman
@@ -1840,7 +2126,7 @@
 
 2014-07-20 Roman
 - FIX:Archive: Place to archive fix next for int64_t.
-- !!:FIX:UI.VCAEngine: Change parent trace for project and widget's library fix.
+- !!:FIX:UI.VCAEngine: Tracing of a parent change for project and widget's library fix.
 
 
 2014-07-18 Roman
@@ -1892,7 +2178,7 @@
 
 
 2014-07-05 Roman
-- Protocol.ModBus: Functions 0x2 (CI) and 0x4 (RI) implement is rewrote and clean up.
+- Protocol.ModBus: Functions 0x2 (CI) and 0x4 (RI) implement is rewrote and cleaned.
 
 
 2014-07-05 fido_max

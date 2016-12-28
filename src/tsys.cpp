@@ -56,7 +56,7 @@ pthread_key_t TSYS::sTaskKey;
 
 TSYS::TSYS( int argi, char ** argb, char **env ) : argc(argi), argv((const char **)argb), envp((const char **)env),
     mUser("root"), mConfFile(sysconfdir_full"/oscada.xml"), mId("EmptySt"), mName(_("Empty Station")),
-    mModDir(oscd_moddir_full), mIcoDir("icons;"oscd_datadir_full"/icons"), mDocDir("docs;"oscd_datadir_full"/docs"),
+    mModDir(oscd_moddir_full), mIcoDir("icons;" oscd_datadir_full "/icons"), mDocDir("docs;" oscd_datadir_full "/docs"),
     mWorkDB(DB_CFG), mSaveAtExit(false), mSavePeriod(0), rootModifCnt(0), sysModifFlgs(0), mStopSignal(-1), mN_CPU(1),
     mainPthr(0), mSysTm(time(NULL)), mClockRT(false), mRdStLevel(0), mRdRestConnTm(10), mRdTaskPer(1), mRdPrcTm(0), mRdPrimCmdTr(false)
 {
@@ -325,17 +325,18 @@ string TSYS::addr2str( void *addr )
 
 void *TSYS::str2addr( const string &str )	{ return (void *)strtoul(str.c_str(),NULL,16); }
 
-string TSYS::strNoSpace( const string &val )
+string TSYS::strTrim( const string &val, const string &cfg )
 {
     int beg = -1, end = -1;
 
-    for(unsigned i_s = 0; i_s < val.size(); i_s++)
-	if(val[i_s] != ' ' && val[i_s] != '\n' && val[i_s] != '\t') {
-	    if(beg < 0) beg = i_s;
-	    end = i_s;
-	}
+    for(unsigned iS = 0, iC = 0; iS < val.size(); iS++) {
+	for(iC = 0; iC < cfg.size() && val[iS] != cfg[iC]; iC++) ;
+	if(iC < cfg.size())	continue;
+	if(beg < 0) beg = iS;
+	end = iS;
+    }
 
-    return (beg>=0) ? val.substr(beg,end-beg+1) : "";
+    return (beg >= 0) ? val.substr(beg, end-beg+1) : "";
 }
 
 string TSYS::strMess( const char *fmt, ... )
@@ -424,8 +425,8 @@ string TSYS::optDescr( )
 	"Lang       <lang>	Work-internal language, like \"en_US.UTF-8\".\n"
 	"Lang2CodeBase <lang>	Base language for variable texts translation, two symbols code.\n"
 	"MainCPUs   <list>	Main used CPUs list (separated by ':').\n"
-	"ClockRT    <false>	Set for use REALTIME (else MONOTONIC) clock, some problematic with the system clock modification.\n"
-	"SaveAtExit <true>	Save the system at exit.\n"
+	"ClockRT    <0|1>	Set for use REALTIME (else MONOTONIC) clock, some problematic with the system clock modification.\n"
+	"SaveAtExit <0|1>	Save the system at exit.\n"
 	"SavePeriod <sec>	Save the system period.\n"
 	"RdStLevel  <lev>	Level of redundancy current station.\n"
 	"RdTaskPer  <s>		Call period of the redundant task.\n"
@@ -503,12 +504,12 @@ bool TSYS::cfgFileLoad( )
 
 	try {
 	    ResAlloc res(cfgRes(), true);
-	    rootN.load(s_buf, true);
+	    rootN.load(s_buf, XMLNode::LD_Full);
 	    if(rootN.name() == "OpenSCADA") {
 		XMLNode *stat_n = NULL;
-		for(int i_st = rootN.childSize()-1; i_st >= 0; i_st--)
-		    if(rootN.childGet(i_st)->name() == "station") {
-			stat_n = rootN.childGet(i_st);
+		for(int iSt = rootN.childSize()-1; iSt >= 0; iSt--)
+		    if(rootN.childGet(iSt)->name() == "station") {
+			stat_n = rootN.childGet(iSt);
 			if(stat_n->attr("id") == mId) break;
 		    }
 		if(stat_n && stat_n->attr("id") != mId) {
@@ -547,6 +548,7 @@ void TSYS::cfgFileSave( )
 void TSYS::cfgPrmLoad( )
 {
     //System parameters
+    setClockRT(s2i(TBDS::genDBGet(nodePath()+"ClockRT",i2s(clockRT()),"root",TBDS::OnlyCfg)));
     mName = TBDS::genDBGet(nodePath()+"StName",name(),"root",TBDS::UseTranslate);
     mWorkDB = TBDS::genDBGet(nodePath()+"WorkDB",workDB(),"root",TBDS::OnlyCfg);
     setWorkDir(TBDS::genDBGet(nodePath()+"Workdir","","root",TBDS::OnlyCfg).c_str(), true);
@@ -554,7 +556,6 @@ void TSYS::cfgPrmLoad( )
     setIcoDir(TBDS::genDBGet(nodePath()+"IcoDir",icoDir(),"root",TBDS::OnlyCfg), true);
     setDocDir(TBDS::genDBGet(nodePath()+"DocDir",docDir(),"root",TBDS::OnlyCfg), true);
     setMainCPUs(TBDS::genDBGet(nodePath()+"MainCPUs",mainCPUs()));
-    setClockRT(s2i(TBDS::genDBGet(nodePath()+"ClockRT",i2s(clockRT()))));
     setSaveAtExit(s2i(TBDS::genDBGet(nodePath()+"SaveAtExit","0")));
     setSavePeriod(s2i(TBDS::genDBGet(nodePath()+"SavePeriod","0")));
 
@@ -673,7 +674,7 @@ int TSYS::start( )
     cfgFileScan(true);
 
     //Register user API translations into config
-    Mess->translReg("", "uapi:"DB_CFG);
+    Mess->translReg("", "uapi:" DB_CFG);
 
     mess_sys(TMess::Info, _("Final starting!"));
 
@@ -1063,14 +1064,14 @@ string TSYS::strEncode( const string &in, TSYS::Code tp, const string &opt1 )
 	    sout.reserve(in.size()+10);
 	    char buf[4];
 	    for(iSz = 0; iSz < (int)in.size(); iSz++) {
-		unsigned i_smb;
-		for(i_smb = 0; i_smb < opt1.size(); i_smb++)
-		    if(in[iSz] == opt1[i_smb]) {
+		unsigned iSmb;
+		for(iSmb = 0; iSmb < opt1.size(); iSmb++)
+		    if(in[iSz] == opt1[iSmb]) {
 			snprintf(buf,sizeof(buf),"%%%02X",(unsigned char)in[iSz]);
 			sout += buf;
 			break;
 		    }
-		if(i_smb >= opt1.size()) sout += in[iSz];
+		if(iSmb >= opt1.size()) sout += in[iSz];
 	    }
 	    break;
 	}
@@ -1078,7 +1079,8 @@ string TSYS::strEncode( const string &in, TSYS::Code tp, const string &opt1 )
 	    sout.reserve(in.size()+in.size()/4+in.size()/57+10);
 	    const char *base64alph = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	    for(iSz = 0; iSz < (int)in.size(); iSz += 3) {
-		if(iSz && !(iSz%57))	sout.push_back('\n');
+		//if(iSz && !(iSz%57))	sout.push_back('\n');
+		if(iSz && !(iSz%57) && opt1.size())	sout += opt1;
 		sout.push_back(base64alph[(unsigned char)in[iSz]>>2]);
 		if((iSz+1) >= (int)in.size()) {
 		    sout.push_back(base64alph[((unsigned char)in[iSz]&0x03)<<4]);
@@ -1195,7 +1197,8 @@ string TSYS::strDecode( const string &in, TSYS::Code tp, const string &opt1 )
 	case TSYS::base64:
 	    sout.reserve(in.size());
 	    for(iSz = 0; iSz < in.size(); ) {
-		if(in[iSz] == '\n')	iSz += sizeof('\n');
+		//if(in[iSz] == '\n') iSz += sizeof('\n');
+		if(isspace(in[iSz])) { iSz++; continue; }
 		if((iSz+3) < in.size())
 		    if(in[iSz+1] != '=') {
 			char w_code1 = TSYS::getBase64Code(in[iSz+1]);
@@ -1227,17 +1230,34 @@ string TSYS::strDecode( const string &in, TSYS::Code tp, const string &opt1 )
 
 string TSYS::strCompr( const string &in, int lev )
 {
-    z_stream strm;
-
     if(in.empty())	return "";
 
+    string rez;
+    z_stream strm;
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
 
     if(deflateInit(&strm,lev) != Z_OK) return "";
 
-    uLongf comprLen = deflateBound(&strm,in.size());
+    strm.next_in = (Bytef*)in.data();
+    strm.avail_in = (uInt)in.size();
+
+    unsigned char out[vmax(100,vmin((in.size()/10)*10,STR_BUF_LEN))];
+
+    do {
+	strm.next_out = (Bytef*)out;
+	strm.avail_out = sizeof(out);
+	int ret = deflate(&strm, Z_FINISH);
+	if(ret == Z_STREAM_ERROR) { rez = ""; break; }
+	rez.append((char*)out, sizeof(out)-strm.avail_out);
+    } while(strm.avail_out == 0);
+
+    deflateEnd(&strm);
+
+    return rez;
+
+    /*uLongf comprLen = deflateBound(&strm, in.size());
     char out[comprLen];
 
     strm.next_in = (Bytef*)in.data();
@@ -1254,40 +1274,37 @@ string TSYS::strCompr( const string &in, int lev )
 
     deflateEnd(&strm);
 
-    return string(out,comprLen);
+    return string(out, comprLen);*/
 }
 
 string TSYS::strUncompr( const string &in )
 {
     int ret;
     z_stream strm;
-    unsigned char out[STR_BUF_LEN];
     string rez;
-
-    if(in.empty())	return "";
 
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
 
-    if(inflateInit(&strm) != Z_OK)	return "";
+    if(in.empty() || inflateInit(&strm) != Z_OK) return "";
+
+    unsigned char out[vmax(100,vmin(((in.size()*2)/10)*10,STR_BUF_LEN))];
 
     strm.avail_in = in.size();
     strm.next_in = (Bytef*)in.data();
     do {
 	strm.avail_out = sizeof(out);
 	strm.next_out = out;
-	ret = inflate(&strm,Z_NO_FLUSH);
-	if(ret == Z_STREAM_ERROR || ret == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR)
+	ret = inflate(&strm, Z_NO_FLUSH);
+	if(ret == Z_STREAM_ERROR || ret == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR || ret == Z_VERSION_ERROR)
 	    break;
-	rez.append((char*)out,sizeof(out)-strm.avail_out);
-    } while(strm.avail_out == 0);
+	rez.append((char*)out, sizeof(out)-strm.avail_out);
+    } while(strm.avail_out == 0 && ret != Z_STREAM_END);
 
     inflateEnd(&strm);
 
-    if(ret != Z_STREAM_END)	return "";
-
-    return rez;
+    return (ret == Z_STREAM_END) ? rez : "";
 }
 
 uint16_t TSYS::i16_LE( uint16_t in )
@@ -1683,7 +1700,7 @@ void TSYS::taskCreate( const string &path, int priority, void *(*start_routine)(
     if(priority > 0)	policy = SCHED_RR;
     if(priority >= 100)	policy = SCHED_FIFO;
     pthread_attr_setschedpolicy(pthr_attr, policy);
-    prior.sched_priority = vmax(sched_get_priority_min(policy),vmin(sched_get_priority_max(policy),priority%100));
+    prior.sched_priority = vmax(sched_get_priority_min(policy), vmin(sched_get_priority_max(policy),priority%100));
     pthread_attr_setschedparam(pthr_attr, &prior);
 
     try {
@@ -1930,29 +1947,46 @@ void *TSYS::RdTask( void *param )
 
 int TSYS::sysSleep( float tm )
 {
-    struct timespec sp_tm;
-    sp_tm.tv_sec = (time_t)tm;
-    sp_tm.tv_nsec = (long int)(1e9*(tm-floorf(tm)));
-    return nanosleep(&sp_tm, NULL);
+    struct timespec spTm;
+    clockid_t clkId = SYS->clockRT() ? CLOCK_REALTIME : CLOCK_MONOTONIC;
+
+    if(tm < 300e-6) {	//Wait into the direct cycle
+	for(int64_t stTm = 0, cTm, toTm = 1000000000ll*tm; true; ) {
+	    clock_gettime(clkId, &spTm);
+	    cTm = 1000000000ll*spTm.tv_sec + spTm.tv_nsec;
+	    if(!stTm) stTm = cTm;
+	    else if((cTm-stTm) >= toTm) break;
+	}
+	return 0;
+    }
+
+    spTm.tv_sec = (time_t)tm;
+    spTm.tv_nsec = (long)(1e9*(tm-floorf(tm)));
+    return clock_nanosleep(clkId, 0, &spTm, NULL);
+
+    /*struct timespec spTm;
+    spTm.tv_sec = (time_t)tm;
+    spTm.tv_nsec = (long int)(1e9*(tm-floorf(tm)));
+    return nanosleep(&spTm, NULL);*/
 }
 
 void TSYS::taskSleep( int64_t per, const string &icron, int64_t *lag )
 {
-    struct timespec sp_tm;
+    struct timespec spTm;
     STask *stsk = (STask*)pthread_getspecific(sTaskKey);
 
     if(icron.empty()) {
 	if(!per) per = 1000000000ll;
 	clockid_t clkId = SYS->clockRT() ? CLOCK_REALTIME : CLOCK_MONOTONIC;
-	clock_gettime(clkId, &sp_tm);
-	int64_t cur_tm = (int64_t)sp_tm.tv_sec*1000000000ll + sp_tm.tv_nsec,
+	clock_gettime(clkId, &spTm);
+	int64_t cur_tm = (int64_t)spTm.tv_sec*1000000000ll + spTm.tv_nsec,
 		pnt_tm = (cur_tm/per + 1)*per,
 		wake_tm = 0;
 	do {
-	    sp_tm.tv_sec = pnt_tm/1000000000ll; sp_tm.tv_nsec = pnt_tm%1000000000ll;
-	    if(clock_nanosleep(clkId,TIMER_ABSTIME,&sp_tm,NULL)) return;
-	    clock_gettime(clkId, &sp_tm);
-	    wake_tm = (int64_t)sp_tm.tv_sec*1000000000ll + sp_tm.tv_nsec;
+	    spTm.tv_sec = pnt_tm/1000000000ll; spTm.tv_nsec = pnt_tm%1000000000ll;
+	    if(clock_nanosleep(clkId,TIMER_ABSTIME,&spTm,NULL)) return;
+	    clock_gettime(clkId, &spTm);
+	    wake_tm = (int64_t)spTm.tv_sec*1000000000ll + spTm.tv_nsec;
 	} while(wake_tm < pnt_tm);
 
 	if(stsk) {
@@ -2012,11 +2046,11 @@ reload:
 	vbeg = vend = -1; vstep = 0;
 	sscanf(tEl.c_str(),"%d-%d/%d",&vbeg,&vend,&vstep);
 	if(vbeg < 0) { sscanf(tEl.c_str(),"*/%d",&vstep); vbeg=0; vend=59; }
-	if(vend < 0) vm = vmin(vm,vbeg+((ttm.tm_min>=vbeg)?60:0));
+	if(vend < 0) vm = vmin(vm, vbeg+((ttm.tm_min>=vbeg)?60:0));
 	else if((vbeg=vmax(0,vbeg)) < (vend=vmin(59,vend))) {
-	    if(ttm.tm_min < vbeg) vm = vmin(vm,vbeg);
+	    if(ttm.tm_min < vbeg) vm = vmin(vm, vbeg);
 	    else if((vstep>1 && ttm.tm_min >= (vbeg+((vend-vbeg)/vstep)*vstep)) || (vstep <= 0 && ttm.tm_min >= vend))
-		vm = vmin(vm,vbeg+60);
+		vm = vmin(vm, vbeg+60);
 	    else if(vstep>1 ) vm = vmin(vm, vbeg + vstep*(((ttm.tm_min+1)-vbeg)/vstep + ((((ttm.tm_min+1)-vbeg)%vstep)?1:0)));
 	    else vm = vmin(vm, ttm.tm_min+1);
 	}
@@ -2032,12 +2066,12 @@ reload:
 	vbeg = vend = -1; vstep = 0;
 	sscanf(tEl.c_str(),"%d-%d/%d",&vbeg,&vend,&vstep);
 	if(vbeg < 0) { sscanf(tEl.c_str(),"*/%d",&vstep); vbeg=0; vend=23; }
-	if(vend < 0) vm = vmin(vm,vbeg+((ttm.tm_hour>vbeg)?24:0));
+	if(vend < 0) vm = vmin(vm, vbeg+((ttm.tm_hour>vbeg)?24:0));
 	else if((vbeg=vmax(0,vbeg)) < (vend=vmin(23,vend))) {
-	    if(ttm.tm_hour < vbeg) vm = vmin(vm,vbeg);
+	    if(ttm.tm_hour < vbeg) vm = vmin(vm, vbeg);
 	    else if((vstep>1 && ttm.tm_hour > (vbeg+((vend-vbeg)/vstep)*vstep)) || (vstep <= 0 && ttm.tm_hour > vend))
-		vm = vmin(vm,vbeg+24);
-	    else if(vstep>1 ) vm = vmin(vm, vbeg + vstep*((ttm.tm_hour-vbeg)/vstep + (((ttm.tm_hour-vbeg)%vstep)?1:0)));
+		vm = vmin(vm, vbeg+24);
+	    else if(vstep > 1) vm = vmin(vm, vbeg + vstep*((ttm.tm_hour-vbeg)/vstep + (((ttm.tm_hour-vbeg)%vstep)?1:0)));
 	    else vm = vmin(vm, ttm.tm_hour);
 	}
 	if(vm == ttm.tm_hour) break;
@@ -2056,12 +2090,12 @@ reload:
 	    vbeg = vend = -1; vstep = 0;
 	    sscanf(tEl.c_str(),"%d-%d/%d",&vbeg,&vend,&vstep);
 	    if(vbeg < 0) { sscanf(tEl.c_str(),"*/%d",&vstep); vbeg=1; vend=31; }
-	    if(vend < 0) vm = vmin(vm,vbeg+((ttm.tm_mday>vbeg)?31:0));
+	    if(vend < 0) vm = vmin(vm, vbeg+((ttm.tm_mday>vbeg)?31:0));
 	    else if((vbeg=vmax(1,vbeg)) < (vend=vmin(31,vend))) {
-		if(ttm.tm_mday < vbeg) vm = vmin(vm,vbeg);
+		if(ttm.tm_mday < vbeg) vm = vmin(vm, vbeg);
 		else if((vstep>1 && ttm.tm_mday > (vbeg+((vend-vbeg)/vstep)*vstep)) || (vstep <= 0 && ttm.tm_mday > vend))
-		    vm = vmin(vm,vbeg+31);
-		else if(vstep>1 ) vm = vmin(vm, vbeg + vstep*((ttm.tm_mday-vbeg)/vstep + (((ttm.tm_mday-vbeg)%vstep)?1:0)));
+		    vm = vmin(vm, vbeg+31);
+		else if(vstep > 1) vm = vmin(vm, vbeg + vstep*((ttm.tm_mday-vbeg)/vstep + (((ttm.tm_mday-vbeg)%vstep)?1:0)));
 		else vm = vmin(vm, ttm.tm_mday);
 	    }
 	    if(vm == ttm.tm_mday) break;
@@ -2094,12 +2128,12 @@ reload:
 	vbeg = vend = -1; vstep = 0;
 	sscanf(tEl.c_str(),"%d-%d/%d",&vbeg,&vend,&vstep);
 	if(vbeg < 0) { sscanf(tEl.c_str(),"*/%d",&vstep); vbeg=1; vend=12; }
-	if(vend < 0) vm = vmin(vm,vbeg+(((ttm.tm_mon+1)>vbeg)?12:0));
+	if(vend < 0) vm = vmin(vm, vbeg+(((ttm.tm_mon+1)>vbeg)?12:0));
 	else if((vbeg=vmax(1,vbeg)) < (vend=vmin(12,vend))) {
-	    if((ttm.tm_mon+1) < vbeg) vm = vmin(vm,vbeg);
+	    if((ttm.tm_mon+1) < vbeg) vm = vmin(vm, vbeg);
 	    else if((vstep>1 && (ttm.tm_mon+1) > (vbeg+((vend-vbeg)/vstep)*vstep)) || (vstep <= 0 && (ttm.tm_mon+1) > vend))
-		vm = vmin(vm,vbeg+12);
-	    else if(vstep>1) vm = vmin( vm, vbeg + vstep*(((ttm.tm_mon+1)-vbeg)/vstep + ((((ttm.tm_mon+1)-vbeg)%vstep)?1:0)));
+		vm = vmin(vm, vbeg+12);
+	    else if(vstep > 1) vm = vmin(vm, vbeg + vstep*(((ttm.tm_mon+1)-vbeg)/vstep + ((((ttm.tm_mon+1)-vbeg)%vstep)?1:0)));
 	    else vm = vmin(vm, ttm.tm_mon+1);
 	}
 	if(vm == (ttm.tm_mon+1)) break;
@@ -2132,7 +2166,7 @@ TVariant TSYS::objFuncCall( const string &iid, vector<TVariant> &prms, const str
     if(iid == "messCrit" && prms.size() >= 2)	{ mess_crit(prms[0].getS().c_str(), "%s", prms[1].getS().c_str()); return 0; }
     if(iid == "messAlert" && prms.size() >= 2)	{ mess_alert(prms[0].getS().c_str(), "%s", prms[1].getS().c_str()); return 0; }
     if(iid == "messEmerg" && prms.size() >= 2)	{ mess_emerg(prms[0].getS().c_str(), "%s", prms[1].getS().c_str()); return 0; }
-    // string system(string cmd, bool noPipe = false) - calls the console commands <cmd> of OS returning the result by the channel
+    // {string|int} system(string cmd, bool noPipe = false) - calls the console commands <cmd> of OS returning the result by the channel
     //  cmd - command text
     //  noPipe - pipe result disable for background call
     if(iid == "system" && prms.size() >= 1) {
@@ -2152,9 +2186,9 @@ TVariant TSYS::objFuncCall( const string &iid, vector<TVariant> &prms, const str
     if(iid == "fileRead" && prms.size() >= 1) {
 	char buf[STR_BUF_LEN];
 	string rez;
-	int hd = open(prms[0].getS().c_str(),O_RDONLY);
+	int hd = open(prms[0].getS().c_str(), O_RDONLY);
 	if(hd >= 0) {
-	    for(int len = 0; (len=read(hd,buf,sizeof(buf))) > 0; ) rez.append(buf,len);
+	    for(int len = 0; (len=read(hd,buf,sizeof(buf))) > 0; ) rez.append(buf, len);
 	    close(hd);
 	}
 	return rez;
@@ -2203,11 +2237,14 @@ TVariant TSYS::objFuncCall( const string &iid, vector<TVariant> &prms, const str
     //  tm - wait time in seconds (precised up to nanoseconds), up to STD_INTERF_TM(5 seconds)
     //  ntm - wait time part in nanoseconds
     if(iid == "sleep" && prms.size() >= 1) {
-	struct timespec sp_tm;
-	sp_tm.tv_sec = prms[0].getI();
-	sp_tm.tv_nsec = 1000000000l*(prms[0].getR()-sp_tm.tv_sec) + ((prms.size()>=2)?prms[1].getI():0);
-	sp_tm.tv_sec = vmin(STD_INTERF_TM, sp_tm.tv_sec);
-	return nanosleep(&sp_tm, NULL);
+	return sysSleep(fmin(prms[0].getR()+1e-9*((prms.size()>=2)?prms[1].getI():0),(double)STD_INTERF_TM));
+	/*struct timespec spTm;
+	spTm.tv_sec = prms[0].getI();
+	spTm.tv_nsec = 1000000000l*(prms[0].getR()-spTm.tv_sec) + ((prms.size()>=2)?prms[1].getI():0);
+	spTm.tv_sec = vmin(STD_INTERF_TM, spTm.tv_sec);
+	clockid_t clkId = SYS->clockRT() ? CLOCK_REALTIME : CLOCK_MONOTONIC;
+	return clock_nanosleep(clkId, 0, &spTm, NULL);*/
+	//return nanosleep(&spTm, NULL);
     }
     // int time(int usec) - returns the absolute time in seconds from the epoch of 1/1/1970 and in microseconds, if <usec> is specified
     //  usec - microseconds of time
@@ -2682,7 +2719,6 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setRdPrimCmdTr(s2i(opt->text()));
     }
     else if(a_path == "/redund/sts") {
-	ResAlloc res(mRdRes, true);
 	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD)) {
 	    XMLNode *nSt	= ctrMkNode("list",opt,-1,"/redund/sts/st","",RWRWR_,"root","root");
 	    XMLNode *nName	= ctrMkNode("list",opt,-1,"/redund/sts/name","",R_R_R_,"root","root");
@@ -2690,6 +2726,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	    XMLNode *nLev	= ctrMkNode("list",opt,-1,"/redund/sts/lev","",R_R_R_,"root","root");
 	    XMLNode *nCnt	= ctrMkNode("list",opt,-1,"/redund/sts/cnt","",R_R_R_,"root","root");
 
+	    ResAlloc res(mRdRes, false);
 	    for(map<string,TSYS::SStat>::iterator sit = mSt.begin(); sit != mSt.end(); sit++) {
 		if(nSt)		nSt->childAdd("el")->setText(sit->first);
 		if(nName)	nName->childAdd("el")->setText(SYS->transport().at().extHostGet("*",sit->first).name);
@@ -2698,12 +2735,15 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		if(nCnt)	nCnt->childAdd("el")->setText(r2s(sit->second.cnt));
 	    }
 	}
-	if(ctrChkNode(opt,"add",RWRWR_,"root","root",SEC_WR))	{ mSt[_("<newStat>")] = SStat(0); modif(); }
-	if(ctrChkNode(opt,"del",RWRWR_,"root","root",SEC_WR))	{ mSt.erase(opt->attr("key_st")); modif(); }
-	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR) && opt->attr("col") == "st") {
-	    mSt.erase(opt->attr("key_st"));
-	    mSt[opt->text()] = SStat();
-	    modif();
+	else {
+	    ResAlloc res(mRdRes, true);
+	    if(ctrChkNode(opt,"add",RWRWR_,"root","root",SEC_WR))	{ mSt[_("<newStat>")] = SStat(0); modif(); }
+	    else if(ctrChkNode(opt,"del",RWRWR_,"root","root",SEC_WR))	{ mSt.erase(opt->attr("key_st")); modif(); }
+	    else if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR) && opt->attr("col") == "st") {
+		mSt.erase(opt->attr("key_st"));
+		mSt[opt->text()] = SStat();
+		modif();
+	    }
 	}
     }
     else if(a_path == "/redund/lsSt" && ctrChkNode(opt)) {

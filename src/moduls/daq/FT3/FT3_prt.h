@@ -42,7 +42,7 @@ using namespace OSCADA;
 #define PRT_NAME	_("FT3")
 #define PRT_TYPE	SPRT_ID
 #define PRT_SUBVER	SPRT_VER
-#define PRT_MVER	"0.2.3"
+#define PRT_MVER	"0.4.0"
 #define PRT_AUTORS	_("Maxim Kochetkov")
 #define PRT_DESCR	_("Allow realisation of FT3 protocols.")
 #define PRT_LICENSE	"GPL2"
@@ -66,7 +66,7 @@ namespace FT3
 
 	bool mess(const string &request, string &answer/*, const string &sender */);
 
-	TProt &owner();
+	TProt &owner( ) const;
 
     public:
 	//Attributes

@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.WebVision file: web_vision.cpp
 /***************************************************************************
- *   Copyright (C) 2007-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2016 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -33,9 +33,8 @@
 #define MOD_TYPE	SUI_ID
 #define VER_TYPE	SUI_VER
 #define SUB_TYPE	"WWW"
-#define MOD_VER		"1.6.6"
-#define AUTHORS		_("Roman Savochenko")
-#define DEVELOPERS	_("Roman Savochenko, Lysenko Maxim, Yashina Kseniya")
+#define MOD_VER		"1.6.11"
+#define AUTHORS		_("Roman Savochenko, Lysenko Maxim (2008-2012), Yashina Kseniya (2007)")
 #define DESCRIPTION	_("Visual operation user interface, based on WEB - front-end to VCA engine.")
 #define LICENSE		"GPL2"
 //************************************************
@@ -269,7 +268,6 @@ string TWEB::modInfo( const string &name )
 {
     if(name == "SubType")	return SUB_TYPE;
     if(name == "Auth")		return "1";
-    if(name == _("Developers"))	return DEVELOPERS;
     return TModule::modInfo(name);
 }
 
@@ -278,7 +276,6 @@ void TWEB::modInfo( vector<string> &list )
     TModule::modInfo(list);
     list.push_back("SubType");
     list.push_back("Auth");
-    list.push_back(_("Developers"));
 }
 
 void TWEB::vcaSesAdd( const string &name, bool isCreate )
@@ -356,13 +353,13 @@ string TWEB::pgHead( const string &head_els, const string &title, const string &
 	"'DTD/xhtml1-transitional.dtd'>\n"
 	"<html xmlns='http://www.w3.org/1999/xhtml'>\n"
 	"<head>\n"
-	"  <meta http-equiv='Content-Type' content='text/html; charset="+charset+"'/>\n"
+	"  <meta http-equiv='Content-Type' content='text/html; charset=" + charset + "'/>\n"
 	"  <meta http-equiv='Cache-Control' content='no-store, no-cache, must-revalidate'/>\n"
 	"  <meta http-equiv='Cache-Control' content='post-check=0, pre-check=0'/>\n"
 	"  <meta http-equiv='Content-Script-Type' content='text/javascript'/>\n"
-	"  <link rel='shortcut icon' href='/"MOD_ID"/ico' type='image' />\n"
-	"  <title>"+(title.empty()?(string(PACKAGE_NAME)+". "+_(MOD_NAME)):title)+"</title>\n"
-	"  <style type='text/css'>\n"+mCSStables+"</style>\n"+
+	"  <link rel='shortcut icon' href='/" MOD_ID "/ico' type='image' />\n"
+	"  <title>" + (title.empty()?(string(PACKAGE_NAME) + ". " + _(MOD_NAME)):title) + "</title>\n"
+	"  <style type='text/css'>\n" + mCSStables + "</style>\n"+
 	head_els+
 	"</head>\n"
 	"<body alink='#33ccff' link='#3366ff' text='#000000' vlink='#339999'>\n";
@@ -384,7 +381,7 @@ void TWEB::HttpGet( const string &url, string &page, const string &sender, vecto
 	//Get module icon and global image
 	else if(zero_lev == "ico" || zero_lev.compare(0,4,"img_") == 0) {
 	    string itp;
-	    ses.page = TUIS::icoGet(zero_lev=="ico"?"UI."MOD_ID:zero_lev.substr(4), &itp);
+	    ses.page = TUIS::icoGet(zero_lev=="ico"?"UI." MOD_ID:zero_lev.substr(4), &itp);
 	    page = httpHead("200 OK",ses.page.size(),string("image/")+itp)+ses.page;
 	    return;
 	}
@@ -406,7 +403,7 @@ void TWEB::HttpGet( const string &url, string &page, const string &sender, vecto
 			    (req.childGet(i_ch)->attr("user") != user ||
 			    (vcaSesPresent(req.childGet(i_ch)->text()) && vcaSesAt(req.childGet(i_ch)->text()).at().sender() != sender)))
 			continue;
-		    prjSesEls += "<tr><td style='text-align: center;'><a href='/"MOD_ID"/ses_"+req.childGet(i_ch)->text()+"/'>"+
+		    prjSesEls += "<tr><td style='text-align: center;'><a href='/" MOD_ID "/ses_" + req.childGet(i_ch)->text() + "/'>" +
 			req.childGet(i_ch)->text()+"</a>";
 		    if(req.childGet(i_ch)->attr("user") != user) prjSesEls += " - "+req.childGet(i_ch)->attr("user");
 		    if(vcaSesPresent(req.childGet(i_ch)->text()) && vcaSesAt(req.childGet(i_ch)->text()).at().sender() != sender)
@@ -430,7 +427,7 @@ void TWEB::HttpGet( const string &url, string &page, const string &sender, vecto
 		for(unsigned i_ch = 0; i_ch < req.childSize(); i_ch++) {
 		    if(!SYS->security().at().access(user,SEC_WR,"root","root",RWRWR_) && self_prjSess.find(req.childGet(i_ch)->attr("id")+";") != string::npos)
 			continue;
-		    prjSesEls += "<tr><td style='text-align: center;'><a href='/"MOD_ID"/prj_"+req.childGet(i_ch)->attr("id")+"/'>"+
+		    prjSesEls += "<tr><td style='text-align: center;'><a href='/" MOD_ID "/prj_" + req.childGet(i_ch)->attr("id") + "/'>" +
 			req.childGet(i_ch)->text()+"</a></td></tr>";
 		}
 		if(!prjSesEls.empty()) {
@@ -477,8 +474,8 @@ void TWEB::HttpGet( const string &url, string &page, const string &sender, vecto
 		    }
 		}
 		if(!sName.empty())
-		    ses.page = pgHead("<META HTTP-EQUIV='Refresh' CONTENT='0; URL=/"MOD_ID"/ses_"+sName+"/'/>")+
-			"<center>Go to session '"+sName+"' for project: '"+zero_lev.substr(4)+"'</center>\n<br/>";
+		    ses.page = pgHead("<META HTTP-EQUIV='Refresh' CONTENT='0; URL=/" MOD_ID "/ses_" + sName + "/'/>") +
+			"<center>Go to session '" + sName + "' for project: '" + zero_lev.substr(4) + "'</center>\n<br/>";
 	    }
 	    //Main session page data prepare
 	    else if(zero_lev.compare(0,4,"ses_") == 0) {
@@ -518,23 +515,23 @@ void TWEB::HttpGet( const string &url, string &page, const string &sender, vecto
 
 void TWEB::getAbout( SSess &ses )
 {
-    ses.page = ses.page+"<center><table class='page_auth'>\n"
-	"<TR><TD>"+PACKAGE+" "+VERSION+"</TD></TR>\n"
+    ses.page = ses.page + "<center><table class='page_auth'>\n"
+	"<TR><TD>" + PACKAGE + " " + VERSION + "</TD></TR>\n"
 	"<TR class='content'><TD>\n"
 	"<table border='0'>\n"
-	"<TR><TD><font color='Blue'>"+_("Name: ")+"</font></TD><TD>OpenSCADA</TD></TR>\n"
-	"<TR><TD><font color='Blue'>"+_("License: ")+"</font></TD><TD>GPL</TD></TR>\n"
-	"<TR><TD><font color='Blue'>"+_("Author: ")+"</font></TD><TD>Roman Savochenko</TD></TR>\n"
+	"<TR><TD><font color='Blue'>" + _("Name: ") + "</font></TD><TD>OpenSCADA</TD></TR>\n"
+	"<TR><TD><font color='Blue'>" + _("License: ") + "</font></TD><TD>GPL</TD></TR>\n"
+	"<TR><TD><font color='Blue'>" + _("Author: ") + "</font></TD><TD>Roman Savochenko</TD></TR>\n"
 	"</table>\n"
 	"</TD></TR></table><br/>\n"
 	"<table class='page_auth'>\n"
-	"<TR><TD>"MOD_ID" "MOD_VER"</TD></TR>\n"
+	"<TR><TD>" MOD_ID " " MOD_VER "</TD></TR>\n"
 	"<TR class='content'><TD>\n"
 	"<table border='0'>\n"
-	"<TR><TD><font color='Blue'>"+_("Name: ")+"</font></TD><TD>"+_(MOD_NAME)+"</TD></TR>"
-	"<TR><TD><font color='Blue'>"+_("Description: ")+"</font></TD><TD>"+_(DESCRIPTION)+"</TD></TR>"
-	"<TR><TD><font color='Blue'>"+_("License: ")+"</font></TD><TD>"+_(LICENSE)+"</TD></TR>"
-	"<TR><TD><font color='Blue'>"+_("Author: ")+"</font></TD><TD>"+_(AUTHORS)+"</TD></TR>"
+	"<TR><TD><font color='Blue'>" + _("Name: ") + "</font></TD><TD>" + _(MOD_NAME) + "</TD></TR>"
+	"<TR><TD><font color='Blue'>" + _("Description: ") + "</font></TD><TD>" + _(DESCRIPTION) + "</TD></TR>"
+	"<TR><TD><font color='Blue'>" + _("License: ") + "</font></TD><TD>" + _(LICENSE) + "</TD></TR>"
+	"<TR><TD><font color='Blue'>" + _("Author: ") + "</font></TD><TD>" + _(AUTHORS) + "</TD></TR>"
 	"</table>\n"
 	"</TD></TR>\n</table><br/></center>\n";
 }

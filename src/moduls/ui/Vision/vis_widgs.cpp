@@ -192,7 +192,7 @@ DlgUser::DlgUser( const QString &iuser, const QString &ipass, const QString &iVC
     if(!ico_t.load(TUIS::icoGet("button_cancel",NULL,true).c_str())) ico_t.load(":/images/button_cancel.png");
     but_box->button(QDialogButtonBox::Cancel)->setIcon(QPixmap::fromImage(ico_t));
     connect(but_box, SIGNAL(rejected()), this, SLOT(reject()));
-    dlg_lay->addWidget( but_box );
+    dlg_lay->addWidget(but_box);
 
     connect(this, SIGNAL(finished(int)), this, SLOT(finish(int)));
 
@@ -386,7 +386,7 @@ bool UserStBar::userSel( )
 	return true;
     }
     else if(rez == DlgUser::SelErr)
-	mod->postMess(mod->nodePath().c_str(), _("Auth wrong!!!"), TVision::Warning, this);
+	mod->postMess(mod->nodePath().c_str(), QString(_("Authentication error for user '%1'!!!")).arg(d_usr.user()), TVision::Warning, this);
 
     return false;
 }

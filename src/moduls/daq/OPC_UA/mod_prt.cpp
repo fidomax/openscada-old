@@ -96,13 +96,20 @@ Server::EP *TProt::epEnAt( const string &ep )
 
 bool TProt::inReq( string &request, const string &inPrtId, string *answ )
 {
+    ResAlloc res(enRes, false);
+    bool rez = Server::inReq(request, inPrtId, answ);
+    res.unlock();
+
 #ifdef POOL_OF_TR
     //Pool for subscriptions process
     AutoHD<TProtIn> ip = at(inPrtId);
     if(ip.at().waitReqTm() && !ip.at().mSubscrIn && epPresent(ip.at().mEp)) {
 	int64_t wTm = SYS->curTime();
-	if((wTm-ip.at().mPrevTm)/1000 >= ip.at().waitReqTm()) {
-	    ip.at().mSubscrCntr++;
+	AutoHD<OPCEndPoint> ep = epAt(ip.at().mEp);
+	bool tmToCall = (wTm-ip.at().mPrevTm)/1000 >= ip.at().waitReqTm();
+	if(tmToCall || ep.at().forceSubscrQueue) {
+	    if(tmToCall) ep.at().forceSubscrQueue = false;
+	    if(!ep.at().forceSubscrQueue) ip.at().mSubscrCntr++;
 	    ip.at().mPrevTm = wTm;
 	    ip.at().mSubscrIn = true;
 	    epAt(ip.at().mEp).at().subScrCycle(ip.at().mSubscrCntr, answ, inPrtId);
@@ -111,8 +118,7 @@ bool TProt::inReq( string &request, const string &inPrtId, string *answ )
     }
 #endif
 
-    ResAlloc res(enRes, false);
-    return Server::inReq(request, inPrtId, answ);
+    return rez;
 }
 
 int TProt::writeToClient( const string &inPrtId, const string &data )	{ return at(inPrtId).at().writeTo(data); }
@@ -237,7 +243,7 @@ TProtIn::TProtIn( string name ) : TProtocolIn(name), mSubscrIn(false), mPoolTm(0
 
 TProtIn::~TProtIn( )		{ }
 
-TProt &TProtIn::owner( )	{ return *(TProt*)nodePrev(); }
+TProt &TProtIn::owner( ) const	{ return *(TProt*)nodePrev(); }
 
 bool TProtIn::mess( const string &reqst, string &answ )
 {
@@ -266,9 +272,9 @@ OPCEndPoint::~OPCEndPoint( )
     try { setEnable(false); } catch(...) { }
 }
 
-TCntrNode &OPCEndPoint::operator=( TCntrNode &node )
+TCntrNode &OPCEndPoint::operator=( const TCntrNode &node )
 {
-    OPCEndPoint *src_n = dynamic_cast<OPCEndPoint*>(&node);
+    const OPCEndPoint *src_n = dynamic_cast<const OPCEndPoint*>(&node);
     if(!src_n) return *this;
 
     if(enableStat())	setEnable(false);
@@ -285,7 +291,7 @@ void OPCEndPoint::postDisable( int flag )
     if(flag) SYS->db().at().dataDel(fullDB(), owner().nodePath()+tbl(), *this, true);
 }
 
-TProt &OPCEndPoint::owner( )	{ return *(TProt*)nodePrev(); }
+TProt &OPCEndPoint::owner( ) const	{ return *(TProt*)nodePrev(); }
 
 string OPCEndPoint::name( )
 {
@@ -293,7 +299,7 @@ string OPCEndPoint::name( )
     return tNm.size() ? tNm : id();
 }
 
-string OPCEndPoint::tbl( )	{ return owner().modId()+"_ep"; }
+string OPCEndPoint::tbl( ) const	{ return owner().modId()+"_ep"; }
 
 string OPCEndPoint::cert( )	{ return cfg("ServCert").getS(); }
 
@@ -307,6 +313,7 @@ void *OPCEndPoint::Task( void *iep )
     OPCEndPoint &ep = *(OPCEndPoint *)iep;
 
     for(unsigned cntr = 0; !TSYS::taskEndRun(); cntr++) {
+	ep.forceSubscrQueue = false;	//Disable the forcing mechanism for the method
 	try { ep.subScrCycle(cntr); }
 	catch(OPCError &err)	{ mess_err(ep.nodePath().c_str(), err.mess.c_str()); }
 	catch(TError &err)	{ mess_err(err.cat.c_str(), err.mess.c_str()); }

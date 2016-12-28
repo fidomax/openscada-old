@@ -941,7 +941,7 @@ void VisRun::exportDoc( const string &idoc )
 				    rowSpn[i_cl] = s2i(tblRow->childGet(i_c)->attr("rowspan",false));
 				    val = tblRow->childGet(i_c)->text(true,true);
 				    for(size_t i_sz = 0; (i_sz=val.find("\"",i_sz)) != string::npos; i_sz += 2) val.replace(i_sz,1,2,'"');
-				    rez += "\""+TSYS::strNoSpace(val)+"\";";
+				    rez += "\""+sTrm(val)+"\";";
 				    //   Colspan process
 				    int colSpan = s2i(tblRow->childGet(i_c)->attr("colspan",false));
 				    for(int i_cs = 1; i_cs < colSpan; i_cs++) rez += ";";
@@ -1131,7 +1131,7 @@ void VisRun::usrStatus( const string &val, RunPageView *pg )
 	}
 }
 
-void VisRun::initSess( const string &prjSes_it, bool crSessForce )
+void VisRun::initSess( const string &iprjSes_it, bool icrSessForce )
 {
     bool isSess = false;
     src_prj = work_sess = "";
@@ -1139,8 +1139,8 @@ void VisRun::initSess( const string &prjSes_it, bool crSessForce )
 
     //Connect/create session
     int off = 0;
-    if((src_prj=TSYS::pathLev(prjSes_it,0,true,&off)).empty()) return;
-    if(off > 0 && off < prjSes_it.size()) openPgs = prjSes_it.substr(off);
+    if((src_prj=TSYS::pathLev(iprjSes_it,0,true,&off)).empty()) return;
+    if(off > 0 && off < iprjSes_it.size()) openPgs = iprjSes_it.substr(off);
     // Check for ready session connection or project
     if(src_prj.compare(0,4,"ses_") == 0) { work_sess = src_prj.substr(4); src_prj = ""; isSess = true; }
     else if(src_prj.compare(0,4,"prj_") == 0) src_prj.erase(0,4);
@@ -1149,7 +1149,7 @@ void VisRun::initSess( const string &prjSes_it, bool crSessForce )
     //Get opened sessions list for our page and put dialog for connection
     XMLNode req("list");
     req.setAttr("path","/%2fserv%2fsess")->setAttr("prj",src_prj);
-    if(!isSess && !crSessForce && !cntrIfCmd(req) && req.childSize()) {
+    if(!isSess && !icrSessForce && !cntrIfCmd(req) && req.childSize()) {
 	// Prepare and execute a session selection dialog
 	QImage ico_t;
 	if(!ico_t.load(TUIS::icoGet("vision_prj_run",NULL,true).c_str())) ico_t.load(":/images/prj_run.png");
@@ -1349,7 +1349,7 @@ void VisRun::callPage( const string& pg_it, bool updWdg )
     //Put to check for include
     else master_pg->callPage(pg_it, pgGrp, pgSrc);
 
-    //Get the notificators configuration and register thats
+    //Get the notificators configuration and register its
     for(unsigned iNtf = 0; iNtf < 7; iNtf++)
 	if(((chN=req.getElementBy("path","/%2fattr%2fnotifyVis"+mod->modId()+i2s(iNtf))) && !s2i(chN->attr("rez"))) ||
 		((chN=req.getElementBy("path","/%2fattr%2fnotify"+i2s(iNtf))) && !s2i(chN->attr("rez"))))
@@ -1358,19 +1358,19 @@ void VisRun::callPage( const string& pg_it, bool updWdg )
 
 void VisRun::pgCacheClear( )
 {
-    while(!cache_pg.empty()) {
-	delete cache_pg.front();
-	cache_pg.pop_front();
+    while(!cachePg.empty()) {
+	delete cachePg.front();
+	cachePg.pop_front();
     }
 }
 
 void VisRun::pgCacheAdd( RunPageView *wdg )
 {
     if(!wdg) return;
-    cache_pg.push_front(wdg);
-    while(cache_pg.size() > 100) {
-	delete cache_pg.back();
-	cache_pg.pop_back();
+    cachePg.push_front(wdg);
+    while(cachePg.size() > 100) {
+	delete cachePg.back();
+	cachePg.pop_back();
     }
 }
 
@@ -1378,10 +1378,10 @@ RunPageView *VisRun::pgCacheGet( const string &id )
 {
     RunPageView *pg = NULL;
 
-    for(unsigned i_pg = 0; i_pg < cache_pg.size(); i_pg++)
-	if(cache_pg[i_pg]->id() == id) {
-	    pg = cache_pg[i_pg];
-	    cache_pg.erase(cache_pg.begin()+i_pg);
+    for(unsigned i_pg = 0; i_pg < cachePg.size(); i_pg++)
+	if(cachePg[i_pg]->id() == id) {
+	    pg = cachePg[i_pg];
+	    cachePg.erase(cachePg.begin()+i_pg);
 	    break;
 	}
 
@@ -1516,8 +1516,6 @@ void VisRun::ntfReg( uint8_t tp, const string &props, const string &pgCrtor )
 	mNotify[tp] = new Notify(tp, pgCrtor+"\n"+props, this);
 	mNotify[tp]->pgPropsQ = pgPropsQ;
 	ntfSet |= (1<<tp);
-
-
     }
     //Take and place a notificator from the queue
     else if(pgPropsQ.size()) {
@@ -1614,10 +1612,10 @@ void VisRun::updatePage( )
     }
 
     //Old pages from cache for close checking
-    for(unsigned i_pg = 0; i_pg < cache_pg.size(); )
-	if(mod->cachePgLife() > 0.01 && (period()*(reqTm()-cache_pg[i_pg]->reqTm())/1000) > (unsigned)(mod->cachePgLife()*60*60)) {
-	    delete cache_pg[i_pg];
-	    cache_pg.erase(cache_pg.begin()+i_pg);
+    for(unsigned i_pg = 0; i_pg < cachePg.size(); )
+	if(mod->cachePgLife() > 0.01 && (period()*(reqTm()-cachePg[i_pg]->reqTm())/1000) > (unsigned)(mod->cachePgLife()*60*60)) {
+	    delete cachePg[i_pg];
+	    cachePg.erase(cachePg.begin()+i_pg);
 	}
 	else i_pg++;
 
@@ -1746,7 +1744,7 @@ VisRun::Notify::Notify( uint8_t itp, const string &ipgProps, VisRun *iown ) : pg
 
     //Apply to the current alarm status
     actAlrm->setVisible((owner()->alarmSt()>>8)&(1<<tp));
-    if(f_quittanceRet) actAlrm->setChecked(!(owner()->alarmSt()>>16)&(1<<tp));
+    if(f_quittanceRet) actAlrm->setChecked(!((owner()->alarmSt()>>16)&(1<<tp)));
     else actAlrm->setEnabled((owner()->alarmSt()>>16)&(1<<tp));
 
     if(mess_lev() == TMess::Debug) SYS->cntrIter("UI:Vision:Notify", 1);

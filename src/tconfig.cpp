@@ -30,6 +30,12 @@ TConfig::TConfig( TElem *Elements ) : mRes(true), mElem(NULL), mIncmplTblStrct(f
     setElem(Elements, true);
 }
 
+TConfig::TConfig( const TConfig &src ) : mRes(true), mElem(NULL), mIncmplTblStrct(false), mReqKeys(false)
+{
+    setElem(NULL, true);
+    operator=(src);
+}
+
 TConfig::~TConfig( )
 {
     //Deinit value
@@ -43,17 +49,22 @@ TConfig::~TConfig( )
     if(single) delete mElem;
 }
 
-TConfig &TConfig::operator=(TConfig &config)	{ return exclCopy(config); }
+TConfig &TConfig::operator=( const TConfig &config )	{ return exclCopy(config, "", true); }
 
-TConfig &TConfig::exclCopy( TConfig &config, const string &passCpLs )
+TConfig &TConfig::exclCopy( const TConfig &config, const string &passCpLs, bool cpElsToSingle )
 {
-    vector<string> list_el;
+    vector<string> listEl;
 
-    cfgList(list_el);
-    for(unsigned i_el = 0; i_el < list_el.size(); i_el++) {
-	if(!config.cfgPresent(list_el[i_el]) || passCpLs.find(list_el[i_el]+";") != string::npos) continue;
-	TCfg &s_cfg = config.cfg(list_el[i_el]);
-	TCfg &d_cfg = cfg(list_el[i_el]);
+    //Copy elements for single/builtin elements structure
+    if(cpElsToSingle && single && mElem) {
+	//????
+    }
+
+    cfgList(listEl);
+    for(unsigned iEl = 0; iEl < listEl.size(); iEl++) {
+	if(!config.cfgPresent(listEl[iEl]) || passCpLs.find(listEl[iEl]+";") != string::npos) continue;
+	TCfg &s_cfg = const_cast<TConfig*>(&config)->cfg(listEl[iEl]);
+	TCfg &d_cfg = cfg(listEl[iEl]);
 	switch(d_cfg.fld().type()) {
 	    case TFld::String:
 		d_cfg.setExtVal(s_cfg.extVal());
@@ -96,29 +107,29 @@ void TConfig::reqKeysUpdate( )
     for(unsigned i_c = 0; i_c < ls.size() && !mReqKeys; i_c++) mReqKeys = cfg(ls[i_c]).reqKey();
 }
 
-TCfg &TConfig::cfg( const string &n_val )
+TCfg &TConfig::cfg( const string &n_val ) const
 {
-    TCfgMap::iterator p = value.find(n_val);
+    TCfgMap::const_iterator p = value.find(n_val);
     if(p == value.end()) throw TError("TConfig", _("Attribute '%s' is not present!"), n_val.c_str());
 
     return *p->second;
 }
 
-TCfg *TConfig::at( const string &n_val, bool noExpt )
+TCfg *TConfig::at( const string &n_val, bool noExpt ) const
 {
-    TCfgMap::iterator p = value.find(n_val);
+    TCfgMap::const_iterator p = value.find(n_val);
     if(p != value.end()) return p->second;
     if(noExpt) return NULL;
     throw TError("TConfig", _("Attribute '%s' is not present!"), n_val.c_str());
 }
 
-void TConfig::cfgList( vector<string> &list )
+void TConfig::cfgList( vector<string> &list ) const
 {
     list.clear();
     if(mElem)	mElem->fldList(list);
 }
 
-bool TConfig::cfgPresent( const string &n_val )	{ return (value.find(n_val) != value.end()); }
+bool TConfig::cfgPresent( const string &n_val ) const	{ return (value.find(n_val) != value.end()); }
 
 void TConfig::cfgViewAll( bool val )
 {
@@ -167,9 +178,9 @@ void TConfig::cntrCmdMake( XMLNode *opt, const string &path, int pos, const stri
 {
     vector<string> list_c;
     cfgList(list_c);
-    for(unsigned i_el = 0; i_el < list_c.size(); i_el++)
-	if(cfg(list_c[i_el]).view())
-	    cfg(list_c[i_el]).fld().cntrCmdMake(opt, path, (pos<0)?pos:pos++, user, grp, perm);
+    for(unsigned iEl = 0; iEl < list_c.size(); iEl++)
+	if(cfg(list_c[iEl]).view())
+	    cfg(list_c[iEl]).fld().cntrCmdMake(opt, path, (pos<0)?pos:pos++, user, grp, perm);
 }
 
 void TConfig::cntrCmdProc( XMLNode *opt, const string &elem, const string &user, const string &grp, int perm )
@@ -228,7 +239,7 @@ TCfg::TCfg( TFld &fld, TConfig &owner ) : mView(true), mKeyUse(false), mNoTransl
     else mFld = &fld;
 
     switch(mFld->type()) {
-	case TFld::String:	setType(TVariant::String, true);  TVariant::setS(mFld->def());		break;
+	case TFld::String:	setType(TVariant::String, true, (fld.flg()&TCfg::Key)); TVariant::setS(mFld->def());	break;
 	case TFld::Integer:	setType(TVariant::Integer, true); TVariant::setI(s2ll(mFld->def()));	break;
 	case TFld::Real:	setType(TVariant::Real, true);	  TVariant::setR(s2r(mFld->def()));	break;
 	case TFld::Boolean:	setType(TVariant::Boolean, true); TVariant::setB((bool)s2i(mFld->def()));break;
@@ -237,14 +248,48 @@ TCfg::TCfg( TFld &fld, TConfig &owner ) : mView(true), mKeyUse(false), mNoTransl
     if(fld.flg()&TCfg::Hide)	mView = false;
 }
 
+TCfg::TCfg( const TCfg &src ) : mView(true), mKeyUse(false), mNoTransl(false), mReqKey(false), mExtVal(false), mOwner(src.mOwner)
+{
+    //Chek for self field for dinamic elements
+    if(src.mFld->flg()&TFld::SelfFld) {
+	mFld = new TFld();
+	*mFld = *src.mFld;
+    }
+    else mFld = src.mFld;
+
+    switch(mFld->type()) {
+	case TFld::String:	setType(TVariant::String, true, (src.mFld->flg()&TCfg::Key)); TVariant::setS(mFld->def());	break;
+	case TFld::Integer:	setType(TVariant::Integer, true); TVariant::setI(s2ll(mFld->def()));	break;
+	case TFld::Real:	setType(TVariant::Real, true);	  TVariant::setR(s2r(mFld->def()));	break;
+	case TFld::Boolean:	setType(TVariant::Boolean, true); TVariant::setB((bool)s2i(mFld->def()));break;
+	default: break;
+    }
+    if(src.mFld->flg()&TCfg::Hide)	mView = false;
+
+    operator=(src);
+}
+
 TCfg::~TCfg( )
 {
     if(mFld->flg()&TFld::SelfFld)	delete mFld;
 }
 
+TCfg &TCfg::operator=( const TCfg & cfg )
+{
+    switch(type()) {
+	case TVariant::String:	setS(cfg.getS());	break;
+	case TVariant::Integer:	setI(cfg.getI());	break;
+	case TVariant::Real:	setR(cfg.getR());	break;
+	case TVariant::Boolean:	setB(cfg.getB());	break;
+	default: break;
+    }
+
+    return *this;
+}
+
 const string &TCfg::name( )	{ return mFld->name(); }
 
-bool TCfg::isKey( )	{ return owner().reqKeys() ? reqKey() : fld().flg()&TCfg::Key; }
+bool TCfg::isKey( ) const	{ return owner().reqKeys() ? reqKey() : fld().flg()&TCfg::Key; }
 
 void TCfg::setReqKey( bool vl )
 {
@@ -265,7 +310,7 @@ string TCfg::getSEL( )
     return "";
 }
 
-string TCfg::getS( )
+string TCfg::getS( ) const
 {
     mOwner.mRes.lock();
     string rez = TVariant::getS();
@@ -297,7 +342,9 @@ string TCfg::getS( uint8_t RqFlg )
 const char *TCfg::getSd( )
 {
     if(type() != TVariant::String)	throw TError("Cfg", _("Element type is not string!"));
-    return (mSize < sizeof(val.sMini)) ? val.sMini : val.sPtr;
+    if(mStdString)	return val.s->c_str();
+    if(mSize < sizeof(val.sMini)) return val.sMini;
+    return val.sPtr;
 }
 
 double &TCfg::getRd( )
@@ -318,20 +365,20 @@ char &TCfg::getBd( )
     return val.b;
 }
 
-void TCfg::setS( const string &val )
+void TCfg::setS( const string &ival )
 {
     switch(type()) {
-	case TVariant::Integer:	setI(s2ll(val));	break;
-	case TVariant::Real:	setR(s2r(val));		break;
-	case TVariant::Boolean:	setB((bool)s2i(val));	break;
+	case TVariant::Integer:	setI((ival==EVAL_STR) ? EVAL_INT : s2ll(ival));	break;
+	case TVariant::Real:	setR((ival==EVAL_STR) ? EVAL_REAL : s2r(ival));	break;
+	case TVariant::Boolean:	setB((ival==EVAL_STR) ? EVAL_BOOL : (bool)s2i(ival));	break;
 	case TVariant::String: {
 	    mOwner.mRes.lock();
 	    string tVal = TVariant::getS();
-	    if(extVal() && (fld().flg()&TransltText) && !noTransl() && val.find(char(0)) == string::npos) {
-		if(Mess->lang2Code()==Mess->lang2CodeBase()) TVariant::setS(val+string(2,0)+getS(ExtValThree));
-		else TVariant::setS(getS(ExtValOne)+string(1,0)+val+string(1,0)+getS(ExtValThree));
+	    if(extVal() && (fld().flg()&TransltText) && !noTransl() && ival.find(char(0)) == string::npos) {
+		if(Mess->lang2Code()==Mess->lang2CodeBase()) TVariant::setS(ival+string(2,0)+getS(ExtValThree));
+		else TVariant::setS(getS(ExtValOne)+string(1,0)+ival+string(1,0)+getS(ExtValThree));
 	    }
-	    else TVariant::setS(val);
+	    else TVariant::setS(ival);
 	    mOwner.mRes.unlock();
 	    try {
 		if(!mOwner.cfgChange(*this,tVal)) {
@@ -351,17 +398,17 @@ void TCfg::setS( const string &val )
     }
 }
 
-void TCfg::setR( double val )
+void TCfg::setR( double ival )
 {
     switch(type()) {
-	case TVariant::String:	setS(r2s(val));	break;
-	case TVariant::Integer:	setI((int)val);	break;
-	case TVariant::Boolean:	setB((bool)val);break;
+	case TVariant::String:	setS((ival==EVAL_REAL) ? EVAL_STR : r2s(ival));		break;
+	case TVariant::Integer:	setI((ival==EVAL_REAL) ? EVAL_INT : (int64_t)ival);	break;
+	case TVariant::Boolean:	setB((ival==EVAL_REAL) ? EVAL_BOOL : (bool)ival);	break;
 	case TVariant::Real: {
 	    if(!(mFld->flg()&TFld::Selected) && mFld->selValR()[0] < mFld->selValR()[1])
-		val = vmin(mFld->selValR()[1],vmax(mFld->selValR()[0],val));
+		ival = vmin(mFld->selValR()[1], vmax(mFld->selValR()[0],ival));
 	    double tVal = TVariant::getR();
-	    TVariant::setR(val);
+	    TVariant::setR(ival);
 	    try{ if(!mOwner.cfgChange(*this,tVal)) TVariant::setR(tVal); }
 	    catch(TError &err) { TVariant::setR(tVal); throw; }
 	    break;
@@ -370,17 +417,17 @@ void TCfg::setR( double val )
     }
 }
 
-void TCfg::setI( int64_t val )
+void TCfg::setI( int64_t ival )
 {
     switch(type()) {
-	case TVariant::String:	setS(i2s(val));	break;
-	case TVariant::Real:	setR(val);	break;
-	case TVariant::Boolean:	setB((bool)val);break;
+	case TVariant::String:	setS((ival==EVAL_INT) ? EVAL_STR : ll2s(ival));	break;
+	case TVariant::Real:	setR((ival==EVAL_INT) ? EVAL_REAL : ival);	break;
+	case TVariant::Boolean:	setB((ival==EVAL_INT) ? EVAL_BOOL : (bool)ival);break;
 	case TVariant::Integer: {
 	    if(!(mFld->flg()&TFld::Selected) && mFld->selValI()[0] < mFld->selValI()[1])
-		val = vmin(mFld->selValI()[1],vmax(mFld->selValI()[0],val));
+		ival = vmin(mFld->selValI()[1], vmax(mFld->selValI()[0],ival));
 	    int tVal = TVariant::getI();
-	    TVariant::setI(val);
+	    TVariant::setI(ival);
 	    try{ if(!mOwner.cfgChange(*this,tVal)) TVariant::setI(tVal); }
 	    catch(TError &err) { TVariant::setI(tVal); throw; }
 	    break;
@@ -389,15 +436,15 @@ void TCfg::setI( int64_t val )
     }
 }
 
-void TCfg::setB( char val )
+void TCfg::setB( char ival )
 {
     switch(type()) {
-	case TVariant::String:	setS(i2s(val));	break;
-	case TVariant::Integer:	setI(val);	break;
-	case TVariant::Real:	setR(val);	break;
+	case TVariant::String:	setS((ival==EVAL_BOOL) ? EVAL_STR : i2s(ival));	break;
+	case TVariant::Integer:	setI((ival==EVAL_BOOL) ? EVAL_INT : ival);	break;
+	case TVariant::Real:	setR((ival==EVAL_BOOL) ? EVAL_REAL : ival);	break;
 	case TVariant::Boolean: {
 	    bool tVal = TVariant::getB();
-	    TVariant::setB(val);
+	    TVariant::setB(ival);
 	    try { if(!mOwner.cfgChange(*this,tVal)) TVariant::setB(tVal); }
 	    catch(TError &err) { TVariant::setB(tVal); throw; }
 	    break;
@@ -406,43 +453,43 @@ void TCfg::setB( char val )
     }
 }
 
-void TCfg::setSEL( const string &val, uint8_t RqFlg )
+void TCfg::setSEL( const string &ival, uint8_t RqFlg )
 {
     if(!(mFld->flg()&TFld::Selected)) throw TError("Cfg", _("Element type is not selected!"));
     switch(type()) {
-	case TVariant::String:	setS(mFld->selNm2VlS(val), RqFlg);	break;
-	case TVariant::Integer:	setI(mFld->selNm2VlI(val), RqFlg);	break;
-	case TVariant::Real:	setR(mFld->selNm2VlR(val), RqFlg);	break;
-	case TVariant::Boolean:	setB(mFld->selNm2VlB(val), RqFlg);	break;
+	case TVariant::String:	setS(mFld->selNm2VlS(ival), RqFlg);	break;
+	case TVariant::Integer:	setI(mFld->selNm2VlI(ival), RqFlg);	break;
+	case TVariant::Real:	setR(mFld->selNm2VlR(ival), RqFlg);	break;
+	case TVariant::Boolean:	setB(mFld->selNm2VlB(ival), RqFlg);	break;
 	default: break;
     }
 }
 
-void TCfg::setS( const string &val, uint8_t RqFlg )
+void TCfg::setS( const string &ival, uint8_t RqFlg )
 {
     if(!extVal() && (RqFlg&(ExtValTwo|ExtValOne|ExtValThree))) { mExtVal = true; setType(TVariant::String); }
-    if(!extVal()) setS(val);
-    else setS(((RqFlg&ExtValOne || !(RqFlg&(ExtValTwo|ExtValThree)))?val:getS(ExtValOne))+string(1,0)+
-		((RqFlg&ExtValTwo)?val:getS(ExtValTwo))+string(1,0)+
-		((RqFlg&ExtValThree)?val:getS(ExtValThree)));
+    if(!extVal()) setS(ival);
+    else setS(((RqFlg&ExtValOne || !(RqFlg&(ExtValTwo|ExtValThree)))?ival:getS(ExtValOne))+string(1,0)+
+		((RqFlg&ExtValTwo)?ival:getS(ExtValTwo))+string(1,0)+
+		((RqFlg&ExtValThree)?ival:getS(ExtValThree)));
     if(RqFlg&TCfg::ForceUse)	{ setView(true); setKeyUse(true); }
 }
 
-void TCfg::setR( double val, uint8_t RqFlg )
+void TCfg::setR( double ival, uint8_t RqFlg )
 {
-    setR(val);
+    setR(ival);
     if(RqFlg&TCfg::ForceUse)	{ setView(true); setKeyUse(true); }
 }
 
-void TCfg::setI( int64_t val, uint8_t RqFlg )
+void TCfg::setI( int64_t ival, uint8_t RqFlg )
 {
-    setI(val);
+    setI(ival);
     if(RqFlg&TCfg::ForceUse)	{ setView(true); setKeyUse(true); }
 }
 
-void TCfg::setB( char val, uint8_t RqFlg )
+void TCfg::setB( char ival, uint8_t RqFlg )
 {
-    setB(val);
+    setB(ival);
     if(RqFlg&TCfg::ForceUse)	{ setView(true); setKeyUse(true); }
 }
 
@@ -457,16 +504,4 @@ bool TCfg::operator==( TCfg &cfg )
 	    default: break;
 	}
     return false;
-}
-
-TCfg &TCfg::operator=(TCfg & cfg)
-{
-    switch(type()) {
-	case TVariant::String:	setS(cfg.getS());	break;
-	case TVariant::Integer:	setI(cfg.getI());	break;
-	case TVariant::Real:	setR(cfg.getR());	break;
-	case TVariant::Boolean:	setB(cfg.getB());	break;
-	default: break;
-    }
-    return *this;
 }

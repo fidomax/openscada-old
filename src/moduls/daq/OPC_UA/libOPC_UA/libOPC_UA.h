@@ -3,7 +3,7 @@
 /********************************************************************************
  *   Copyright (C) 2009-2016 by Roman Savochenko, <rom_as@oscada.org>		*
  *										*
- *   Version: 1.1.4								*
+ *   Version: 1.1.6								*
  *	* Packages sequence number managing for server part is fixed by		*
  *	  separating from the value of input packages.				*
  *	* Initial filters support is added into requests			*
@@ -724,7 +724,7 @@ class Server: public UA
 		virtual uint32_t limMonitItms( )	{ return 1000; }
 		virtual uint32_t limRetrQueueTm( )	{ return 0; }	//Time limit (seconds) for retransmission queue
 
-		bool enableStat( )	{ return mEn; }
+		bool enableStat( ) const		{ return mEn; }
 		virtual bool publishInPool( ) = 0;	//Publish in the pool mode of transport, otherwise that is an external task
 
 		virtual void setEnable( bool vl );
@@ -758,6 +758,9 @@ class Server: public UA
 		Subscr::MonitItem mItGet( uint32_t ssId, uint32_t mItId );
 
 		virtual uint32_t reqData( int reqTp, XML_N &req );
+
+		//Attributes
+		bool			forceSubscrQueue;	//Aperiodic subscription processing without checking to real data
 
 	    protected:
 		//Methods

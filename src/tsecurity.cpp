@@ -122,7 +122,7 @@ void TSecurity::grpDel( const string &name, bool complete )
     chldDel(mGrp, name, -1, complete);
 }
 
-char TSecurity::access( const string &user, char mode, const string &owner, const string &group, int access )
+char TSecurity::access( const string &user, char mode, const string &owner, const string &groups, int access )
 {
     char rez = 0;
 
@@ -132,8 +132,15 @@ char TSecurity::access( const string &user, char mode, const string &owner, cons
     if(rez == mode)	return rez;
     rez |= (access&07)&mode;
     if(rez == mode)	return rez;
-    //Check groupe permision
-    if(grpAt("root").at().user(user) || (grpPresent(group) && grpAt(group).at().user(user))) rez |= ((access&070)>>3)&mode;
+    //Check groups permision
+    bool grpAccs = false;
+    grpAccs = grpAt("root").at().user(user);
+    string grp;
+    for(int off = 0; !grpAccs && (grp=TSYS::strParse(groups,0,",",&off)).size(); )
+	grpAccs = (grpPresent(grp) && grpAt(grp).at().user(user));
+    if(grpAccs) rez |= ((access&070)>>3)&mode;
+
+    //if(grpAt("root").at().user(user) || (grpPresent(group) && grpAt(group).at().user(user))) rez |= ((access&070)>>3)&mode;
 
     return rez;
 }
@@ -320,9 +327,9 @@ TUser::~TUser( )
 
 }
 
-TCntrNode &TUser::operator=( TCntrNode &node )
+TCntrNode &TUser::operator=( const TCntrNode &node )
 {
-    TUser *src_n = dynamic_cast<TUser*>(&node);
+    const TUser *src_n = dynamic_cast<const TUser*>(&node);
     if(!src_n) return *this;
 
     exclCopy(*src_n, "NAME;");
@@ -370,9 +377,9 @@ void TUser::postDisable( int flag )
 	owner().grpAt(gls[i_g]).at().userDel(name());
 }
 
-TSecurity &TUser::owner( )	{ return *(TSecurity*)nodePrev(); }
+TSecurity &TUser::owner( ) const	{ return *(TSecurity*)nodePrev(); }
 
-string TUser::tbl( )		{ return string(owner().subId())+"_user"; }
+string TUser::tbl( )			{ return string(owner().subId())+"_user"; }
 
 void TUser::load_( TConfig *icfg )
 {
@@ -395,6 +402,20 @@ void TUser::save_( )
 
 TVariant TUser::objFuncCall( const string &iid, vector<TVariant> &prms, const string &user )
 {
+    // Array groups( ) - groups list of the user.
+    if(iid == "groups") {
+	TArrayObj *rez = new TArrayObj();
+	try {
+	    vector<string> ls;
+	    owner().grpList(ls);
+	    for(unsigned iG = 0, iGa = 0; iG < ls.size(); iG++)
+		if(owner().grpAt(ls[iG]).at().user(name()))
+		    rez->arSet(iGa++, ls[iG]);
+	} catch(...){ }
+
+	return rez;
+    }
+
     //Configuration functions call
     TVariant cfRez = objFunc(iid, prms, user);
     if(!cfRez.isNull()) return cfRez;
@@ -447,9 +468,9 @@ void TUser::cntrCmdProc( XMLNode *opt )
 	    XMLNode *vl  = ctrMkNode("list",opt,-1,"/prm/grps/vl","",RWRWR_);
 	    vector<string> ls;
 	    owner().grpList(ls);
-	    for(unsigned i_g = 0; i_g < ls.size(); i_g++) {
-		if(grp)	grp->childAdd("el")->setText(ls[i_g]);
-		if(vl)	vl->childAdd("el")->setText(i2s(owner().grpAt(ls[i_g]).at().user(name())));
+	    for(unsigned iG = 0; iG < ls.size(); iG++) {
+		if(grp)	grp->childAdd("el")->setText(ls[iG]);
+		if(vl)	vl->childAdd("el")->setText(i2s(owner().grpAt(ls[iG]).at().user(name())));
 	    }
 	}
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SSEC_ID,SEC_WR)) {
@@ -475,9 +496,9 @@ TGroup::~TGroup( )
 
 }
 
-TCntrNode &TGroup::operator=( TCntrNode &node )
+TCntrNode &TGroup::operator=( const TCntrNode &node )
 {
-    TGroup *src_n = dynamic_cast<TGroup*>(&node);
+    const TGroup *src_n = dynamic_cast<const TGroup*>(&node);
     if(!src_n) return *this;
 
     exclCopy(*src_n, "NAME;");
@@ -491,9 +512,9 @@ void TGroup::postDisable( int flag )
     if(flag) SYS->db().at().dataDel(fullDB(),owner().nodePath()+tbl(),*this,true);
 }
 
-TSecurity &TGroup::owner( )	{ return *(TSecurity*)nodePrev(); }
+TSecurity &TGroup::owner( ) const	{ return *(TSecurity*)nodePrev(); }
 
-string TGroup::tbl( )		{ return owner().subId()+"_grp"; }
+string TGroup::tbl( )			{ return owner().subId()+"_grp"; }
 
 void TGroup::load_( TConfig *icfg )
 {
@@ -534,13 +555,16 @@ void TGroup::userDel( const string &name )
     }
 }
 
-TVariant TGroup::objFuncCall( const string &iid, vector<TVariant> &prms, const string &user )
+TVariant TGroup::objFuncCall( const string &iid, vector<TVariant> &prms, const string &iuser )
 {
+    // bool user( string nm ) - check for the user including to the group.
+    if(iid == "user" && prms.size())	return user(prms[0].getS());
+
     //Configuration functions call
-    TVariant cfRez = objFunc(iid, prms, user);
+    TVariant cfRez = objFunc(iid, prms, iuser);
     if(!cfRez.isNull()) return cfRez;
 
-    return TCntrNode::objFuncCall(iid, prms, user);
+    return TCntrNode::objFuncCall(iid, prms, iuser);
 }
 
 void TGroup::cntrCmdProc( XMLNode *opt )

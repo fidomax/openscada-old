@@ -246,8 +246,7 @@ void ModMArch::checkArchivator( bool now )
 		if(f_arh->err()) files.push_back(f_arh);
 		else {
 		    for(iF = 0; iF < files.size(); iF++)
-			if(files[iF]->err() || f_arh->begin() >= files[iF]->begin())
-			{
+			if(files[iF]->err() || f_arh->begin() >= files[iF]->begin()) {
 			    files.insert(files.begin()+iF, f_arh);
 			    break;
 			}
@@ -543,7 +542,7 @@ void MFileArch::attach( const string &iname, bool full )
 		}
 	    }
 
-	    if(infoOK && (!mXML || (mXML && !full))) {
+	    if(infoOK && (!mXML || !full)) {
 		//  Get the file size
 		int hd = open(name().c_str(), O_RDONLY);
 		if(hd > 0) { mSize = lseek(hd,0,SEEK_END); close(hd); }

@@ -36,7 +36,7 @@
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
 #define SUB_TYPE	"LIB"
-#define MOD_VER		"3.2.5"
+#define MOD_VER		"3.6.1"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides based on java like language calculator and engine of libraries. \
  The user can create and modify functions and libraries.")
@@ -130,7 +130,7 @@ void TpContr::postEnable( int flag )
     fnc_el.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TCfg::TransltText,"300"));
     fnc_el.fldAdd(new TFld("START",_("To start"),TFld::Boolean,TFld::NoFlag,"1","1"));
     fnc_el.fldAdd(new TFld("MAXCALCTM",_("Maximum calculate time (sec)"),TFld::Integer,TFld::NoFlag,"4","10","0;3600"));
-    fnc_el.fldAdd(new TFld("PR_TR",_("Program translation allow"),TFld::Boolean,TFld::NoFlag,"1","1"));
+    fnc_el.fldAdd(new TFld("PR_TR",_("Program translation allow"),TFld::Boolean,TFld::NoFlag,"1","0"));
     fnc_el.fldAdd(new TFld("FORMULA",_("Formula"),TFld::String,TCfg::TransltText,"1000000"));
     fnc_el.fldAdd(new TFld("TIMESTAMP",_("Date of modification"),TFld::Integer,TFld::DateTimeDec));
 
@@ -146,8 +146,8 @@ void TpContr::postEnable( int flag )
 
     //Init named constant table
     double rvl;
-    rvl = 3.14159265358l; mConst.push_back(NConst(TFld::Real,"pi",string((char*)&rvl,sizeof(rvl))));
-    rvl = 2.71828182845l; mConst.push_back(NConst(TFld::Real,"e",string((char*)&rvl,sizeof(rvl))));
+    rvl = M_PI /*3.14159265358l*/; mConst.push_back(NConst(TFld::Real,"pi",string((char*)&rvl,sizeof(rvl))));
+    rvl = M_E /*2.71828182845l*/; mConst.push_back(NConst(TFld::Real,"e",string((char*)&rvl,sizeof(rvl))));
     rvl = EVAL_REAL;
     mConst.push_back(NConst(TFld::Real,"EVAL_REAL",string((char*)&rvl,sizeof(rvl))));
     mConst.push_back(NConst(TFld::Real,"EVAL",string((char*)&rvl,sizeof(rvl))));
@@ -199,11 +199,12 @@ void TpContr::compileFuncSynthHighl( const string &lang, XMLNode &shgl )
 {
     if(lang == "JavaScript") {
 	shgl.setAttr("font","Courier");
-	shgl.childAdd("rule")->setAttr("expr","(\"\"|\".*[^\\\\](|\\\\{2}|\\\\{4}|\\\\{6}|\\\\{8})\")")->setAttr("min","1")->setAttr("color","darkgreen")->
+	//shgl.childAdd("rule")->setAttr("expr","(\"\"|\".*[^\\\\](|\\\\{2}|\\\\{4}|\\\\{6}|\\\\{8})\")")->setAttr("min","1")->setAttr("color","darkgreen")->
+	shgl.childAdd("rule")->setAttr("expr","(\"(|\\\\{2}|\\\\{4}|\\\\{6}|\\\\{8})\"|\".*[^\\\\](|\\\\{2}|\\\\{4}|\\\\{6}|\\\\{8})\")")->setAttr("min","1")->setAttr("color","darkgreen")->
 	     childAdd("rule")->setAttr("expr","\\\\([xX][a-zA-Z0-9]{2}|[0-7]{3}|.{1})")->setAttr("color","green")->setAttr("font_weight","1");
 	shgl.childAdd("blk")->setAttr("beg","/\\*")->setAttr("end","\\*/")->setAttr("color","gray")->setAttr("font_italic","1");
 	shgl.childAdd("rule")->setAttr("expr","//.*$")->setAttr("color","gray")->setAttr("font_italic","1");
-	shgl.childAdd("rule")->setAttr("expr","\\b(if|else|for|while|using|new|break|continue|return|function|Array|Object|RegExp)\\b")->setAttr("color","darkblue")->setAttr("font_weight","1");
+	shgl.childAdd("rule")->setAttr("expr","\\b(if|else|for|while|using|new|delete|break|continue|return|function|Array|Object|RegExp)\\b")->setAttr("color","darkblue")->setAttr("font_weight","1");
 	shgl.childAdd("rule")->setAttr("expr","\\b(var|in)(?=\\s+\\w)")->setAttr("color","darkblue")->setAttr("font_weight","1");
 	shgl.childAdd("rule")->setAttr("expr","(\\?|\\:)")->setAttr("color","darkblue")->setAttr("font_weight","1");
 	shgl.childAdd("rule")->setAttr("expr","\\b(0[xX][0-9a-fA-F]*|[0-9]*\\.?[0-9]+|[0-9]*\\.?[0-9]+[eE][-+]?[0-9]*|true|false)\\b")->setAttr("color","darkorange");
@@ -390,7 +391,7 @@ BFunc *TpContr::bFuncGet( const char *nm )
 //*************************************************
 Contr::Contr(string name_c, const string &daq_db, ::TElem *cfgelem) :
     ::TController(name_c, daq_db, cfgelem), TValFunc(name_c.c_str(),NULL,false), prc_st(false), call_st(false), endrun_req(false),
-    mPrior(cfg("PRIOR").getId()), mIter(cfg("ITER").getId()), id_freq(-1), id_start(-1), id_stop(-1), tm_calc(0)
+    mPrior(cfg("PRIOR").getId()), mIter(cfg("ITER").getId()), id_freq(-1), id_start(-1), id_stop(-1), mPer(0), tm_calc(0)
 {
     cfg("PRM_BD").setS("JavaLikePrm_"+name_c);
 }
@@ -512,8 +513,8 @@ void Contr::save_( )
 	cfg.cfgViewAll(false);
 	for(int fldCnt = 0; SYS->db().at().dataSeek(val_bd,mod->nodePath()+bd_tbl,fldCnt++,cfg,false,&full); )
 	    if(ioId(cfg.cfg("ID").getS()) < 0) {
-		SYS->db().at().dataDel(val_bd, mod->nodePath()+bd_tbl, cfg, true, false, true);
-		fldCnt--;
+		if(!SYS->db().at().dataDel(val_bd,mod->nodePath()+bd_tbl,cfg,true,false,true))	break;
+		if(full.empty()) fldCnt--;
 	    }
     }
 }
@@ -633,7 +634,7 @@ void Contr::cntrCmdProc( XMLNode *opt )
 	    "tp","str","dest","sel_ed","sel_list",TMess::labSecCRONsel(),"help",TMess::labSecCRON());
 	ctrMkNode("fld",opt,-1,"/cntr/cfg/PRIOR",cfg("PRIOR").fld().descr(),startStat()?R_R_R_:RWRWR_,"root",SDAQ_ID,1,"help",TMess::labTaskPrior());
 	if(enableStat() && ctrMkNode("area",opt,-1,"/fnc",_("Calculation"))) {
-	    if(ctrMkNode("table",opt,-1,"/fnc/io",_("Data"),RWRWR_,"root",SDAQ_ID,2,"s_com","add,del,ins,move","rows","15")) {
+	    if(ctrMkNode("table",opt,-1,"/fnc/io",_("Data"),RWRWR_,"root",SDAQ_ID,1,"s_com","add,del,ins,move"/*,"rows","15"*/)) {
 		ctrMkNode("list",opt,-1,"/fnc/io/0",_("Id"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/fnc/io/1",_("Name"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/fnc/io/2",_("Type"),RWRWR_,"root",SDAQ_ID,5,"tp","dec","idm","1","dest","select",
@@ -830,7 +831,7 @@ void Prm::disable()
     TParamContr::disable();
 }
 
-Contr &Prm::owner( )	{ return (Contr&)TParamContr::owner(); }
+Contr &Prm::owner( ) const	{ return (Contr&)TParamContr::owner(); }
 
 void Prm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
 {

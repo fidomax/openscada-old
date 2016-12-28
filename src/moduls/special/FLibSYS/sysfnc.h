@@ -271,10 +271,9 @@ class strParse : public TFunction
 	string descr( )	{ return _("Use for parse string on separator."); }
 
 	void calc( TValFunc *val ) {
-	    string sep = val->getS(3);
 	    int off = val->getI(4);
-	    val->setS(0,TSYS::strSepParse(val->getS(1),val->getI(2),sep.size()?sep[0]:' ',&off));
-	    val->setI(4,off);
+	    val->setS(0, TSYS::strParse(val->getS(1),val->getI(2),val->getS(3),&off));
+	    val->setI(4, off);
 	}
 };
 
@@ -519,7 +518,7 @@ class CRC : public TFunction
 
 	void calc( TValFunc *val ) {
 	    int wdth = vmin(64, vmax(1,val->getI(3)));
-	    uint64_t mask = 0xFFFFFFFFFFFFFFFFll >> (64-wdth);
+	    uint64_t mask = 0xFFFFFFFFFFFFFFFFull >> (64-wdth);
 	    uint64_t CRC = val->getI(4) & mask;
 	    uint64_t pat = val->getI(2) & mask;
 	    string data = val->getS(1);

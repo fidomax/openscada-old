@@ -41,7 +41,7 @@
 #define MOD_NAME	_("Siemens DAQ")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"2.0.12"
+#define MOD_VER		"2.0.13"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides a data source PLC Siemens by means of Hilscher CIF cards, by using the MPI protocol,\
  and Libnodave library, or self, for the rest.")
@@ -493,7 +493,7 @@ string TMdContr::getStatus( )
     return rez;
 }
 
-TTpContr &TMdContr::owner( )	{ return *(TTpContr*)nodePrev(); }
+TTpContr &TMdContr::owner( ) const	{ return *(TTpContr*)nodePrev(); }
 
 TParamContr *TMdContr::ParamAttach( const string &name, int type ) { return new TMdPrm(name,&owner().tpPrmAt(type)); }
 
@@ -1724,7 +1724,7 @@ void TMdContr::oN( string &buf, uint32_t val, uint8_t sz, int off )
 {
     union { uint32_t v; char c[4]; } dt;
     dt.v = TSYS::i32_LE(val);
-    if(sz < 0 || sz > 4) for(sz = 4; sz > 1 && !dt.c[sz-1]; ) sz--;
+    if(/*sz < 0 || */sz > 4) for(sz = 4; sz > 1 && !dt.c[sz-1]; ) sz--;
     off = (off >= 0) ? std::min(off,(int)buf.size()) : buf.size();
     if((off+sz) > (int)buf.size()) buf.append(off+sz-buf.size(), char(0));
     while(sz) buf[off++] = dt.c[--sz];
@@ -1763,7 +1763,7 @@ void TMdPrm::postDisable( int flag )
     }
 }
 
-TMdContr &TMdPrm::owner( )	{ return (TMdContr&)TParamContr::owner(); }
+TMdContr &TMdPrm::owner( ) const	{ return (TMdContr&)TParamContr::owner(); }
 
 void TMdPrm::enable( )
 {
@@ -2113,7 +2113,7 @@ void TMdPrm::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("fld",opt,-1,"/cfg/only_off",_("Only DB offsets are to be shown"),RWRWR_,"root",SDAQ_ID,1,"tp","bool");
 	    if(ctrMkNode("area",opt,-1,"/cfg/prm",_("Parameters")))
 		for(int i_io = 0; i_io < ioSize(); i_io++) {
-		    if(!(func()->io(i_io)->flg()&(TPrmTempl::CfgLink|TPrmTempl::CfgPublConst)))
+		    if(!(func()->io(i_io)->flg()&(TPrmTempl::CfgLink|TPrmTempl::CfgConst)))
 			continue;
 		    // Check select param
 		    bool is_lnk = func()->io(i_io)->flg()&TPrmTempl::CfgLink;
@@ -2193,7 +2193,7 @@ void TMdPrm::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SDAQ_ID,SEC_RD)) {
 	    int i_io = s2i(a_path.substr(12));
 	    if(func()->io(i_io)->flg()&TPrmTempl::CfgLink)		opt->setText(lnk(lnkId(i_io)).dbAddr);
-	    else if(func()->io(i_io)->flg()&TPrmTempl::CfgPublConst)	opt->setText(getS(i_io));
+	    else if(func()->io(i_io)->flg()&TPrmTempl::CfgConst)	opt->setText(getS(i_io));
 	}
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SDAQ_ID,SEC_WR)) {
 	    int i_io = s2i(a_path.substr(12));
@@ -2201,7 +2201,7 @@ void TMdPrm::cntrCmdProc( XMLNode *opt )
 		lnk(lnkId(i_io)).dbAddr = opt->text();
 		initLnks();
 	    }
-	    else if(func()->io(i_io)->flg()&TPrmTempl::CfgPublConst) setS(i_io, opt->text());
+	    else if(func()->io(i_io)->flg()&TPrmTempl::CfgConst) setS(i_io, opt->text());
 	    modif();
 	}
     }

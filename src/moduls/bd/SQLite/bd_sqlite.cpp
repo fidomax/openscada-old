@@ -33,7 +33,7 @@
 #define MOD_NAME	_("DB SQLite")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"2.2.7"
+#define MOD_VER		"2.3.0"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("BD module. Provides support of the BD SQLite.")
 #define LICENSE		"GPL2"
@@ -109,7 +109,7 @@ void MBD::postDisable( int flag )
 
     if(flag && owner().fullDeleteDB())
 	if(remove(TSYS::strSepParse(addr(),0,';').c_str()) != 0)
-	    throw TError(nodePath().c_str(), _("Delete bd error: %s"), strerror(errno));
+	    throw err_sys(_("Delete bd error: %s"), strerror(errno));
 }
 
 void MBD::enable( )
@@ -122,7 +122,7 @@ void MBD::enable( )
     if(rc) {
 	string err = sqlite3_errmsg(m_db);
 	sqlite3_close(m_db);
-	throw TError(nodePath().c_str(), _("Open DB file error: %s"), err.c_str());
+	throw err_sys(_("Open DB file error: %s"), err.c_str());
     }
     trans_reqs = vmax(1, vmin(100,s2i(TSYS::strSepParse(addr(),1,';'))));
 
@@ -143,19 +143,19 @@ void MBD::disable( )
     sqlite3_close(m_db);
 }
 
-void MBD::allowList( vector<string> &list )
+void MBD::allowList( vector<string> &list ) const
 {
     if(!enableStat()) return;
     list.clear();
     vector< vector<string> > tbl;
-    sqlReq("SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%';", &tbl, false);
+    const_cast<MBD*>(this)->sqlReq("SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%';", &tbl, false);
     for(unsigned i_t = 1; i_t < tbl.size(); i_t++)
 	list.push_back(tbl[i_t][0]);
 }
 
 TTable *MBD::openTable( const string &inm, bool create )
 {
-    if(!enableStat()) throw TError(nodePath().c_str(), _("Error open table '%s'. DB is disabled."), inm.c_str());
+    if(!enableStat()) throw err_sys(_("Error open table '%s'. DB is disabled."), inm.c_str());
 
     try { sqlReq("SELECT * FROM '" + TSYS::strEncode(inm,TSYS::SQL,"'") + "' LIMIT 0;"); }
     catch(...) { if(!create) throw; }
@@ -184,19 +184,19 @@ void MBD::sqlReq( const string &req, vector< vector<string> > *tbl, char intoTra
     if(rc != SQLITE_OK) {
 	string err = _("Unknown error");
 	if(zErrMsg) { err = zErrMsg; sqlite3_free(zErrMsg); }
-	if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Request \"%s\" error: %s"), req.c_str(), err.c_str());
-	throw TError(100+rc, nodePath().c_str(), _("Request \"%s\" error: %s"), TSYS::strMess(50,"%s",req.c_str()).c_str(), err.c_str());
+	if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("Request \"%s\" error: %s"), req.c_str(), err.c_str());
+	throw err_sys(100+rc, _("Request \"%s\" error: %s"), TSYS::strMess(50,"%s",req.c_str()).c_str(), err.c_str());
     }
     if(tbl && ncol > 0) {
 	vector<string> row;
 	// Add head
-	for(int i = 0; i < ncol; i++) row.push_back(result[i]?result[i]:"");
+	for(int i = 0; i < ncol; i++) row.push_back(result[i]?result[i]:DB_NULL);
 	tbl->push_back(row);
 	// Add data
 	for(int i = 0; i < nrow; i++) {
 	    row.clear();
 	    for(int ii = 0; ii < ncol; ii++)
-		row.push_back(result[(i+1)*ncol+ii]?Mess->codeConvIn(cd_pg.c_str(),result[(i+1)*ncol+ii]):"");
+		row.push_back(result[(i+1)*ncol+ii]?Mess->codeConvIn(cd_pg.c_str(),result[(i+1)*ncol+ii]):DB_NULL);
 	    tbl->push_back(row);
 	}
     }
@@ -283,11 +283,11 @@ void MTable::postDisable( int flag )
 	catch(TError &err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 }
 
-MBD &MTable::owner()	{ return (MBD&)TTable::owner(); }
+MBD &MTable::owner( ) const	{ return (MBD&)TTable::owner(); }
 
 void MTable::fieldStruct( TConfig &cfg )
 {
-    if(tblStrct.empty()) throw TError(nodePath().c_str(), _("Table is empty."));
+    if(tblStrct.empty()) throw err_sys(_("Table is empty."));
     mLstUse = SYS->sysTm();
 
     for(unsigned iFld = 1; iFld < tblStrct.size(); iFld++) {
@@ -309,7 +309,7 @@ bool MTable::fieldSeek( int row, TConfig &cfg, vector< vector<string> > *full )
     vector< vector<string> >	inTbl,
 				&tbl = full ? *full : inTbl;
 
-    if(tblStrct.empty()) throw TError(nodePath().c_str(), _("Table is empty."));
+    if(tblStrct.empty()) throw err_sys(_("Table is empty."));
     mLstUse = SYS->sysTm();
 
     //Check for no present and no empty keys allow
@@ -382,7 +382,7 @@ void MTable::fieldGet( TConfig &cfg )
 {
     vector< vector<string> > tbl;
 
-    if(tblStrct.empty()) throw TError(nodePath().c_str(), _("Table is empty."));
+    if(tblStrct.empty()) throw err_sys(_("Table is empty."));
     mLstUse = SYS->sysTm();
 
     string sid;
@@ -416,7 +416,7 @@ void MTable::fieldGet( TConfig &cfg )
 
     //Query
     owner().sqlReq(req, &tbl, false);
-    if(tbl.size() < 2) throw TError(nodePath().c_str(), _("Row \"%s\" is not present."), req_where.c_str());
+    if(tbl.size() < 2) throw err_sys(_("Row \"%s\" is not present. Are you saved the object?"), req_where.c_str());
 
     //Processing of query
     for(unsigned iFld = 0; iFld < tbl[0].size(); iFld++) {
@@ -465,7 +465,7 @@ void MTable::fieldSet( TConfig &cfg )
     for(unsigned i_el = 0; i_el < cf_el.size(); i_el++) {
 	TCfg &u_cfg = cfg.cfg(cf_el[i_el]);
 	if(!u_cfg.isKey()) continue;
-	req_where += (next?" AND \"":"\"") + TSYS::strEncode(cf_el[i_el],TSYS::SQL,"\"") + "\"=" + getVal(u_cfg,true,TCfg::ExtValTwo);
+	req_where += (next?" AND \"":"\"") + TSYS::strEncode(cf_el[i_el],TSYS::SQL,"\"") + "\"=" + getVal(u_cfg,TCfg::ExtValTwo);
 	next = true;
 
 	if(!isForceUpdt && u_cfg.extVal()) isForceUpdt = true;
@@ -581,7 +581,7 @@ void MTable::fieldFix( TConfig &cfg )
 	for(unsigned iFld = 1; iFld < tblStrct.size(); iFld++) {
 	    all_flds += (all_flds.size()?",\"":"\"") + TSYS::strEncode(tblStrct[iFld][1],TSYS::SQL,"\"") + "\"";
 	    crtReq += (next?",\"":"\"") + TSYS::strEncode(tblStrct[iFld][1],TSYS::SQL,"\"") + "\" "+
-		tblStrct[iFld][2]+" DEFAULT " + tblStrct[iFld][4] + " ";
+		tblStrct[iFld][2]+" DEFAULT " + ((tblStrct[iFld][4]==DB_NULL)?"NULL":tblStrct[iFld][4]) + " ";
 	    next = true;
 	    if(s2i(tblStrct[iFld][5])) {
 		pr_keys += (next_key?",\"":"\"") + TSYS::strEncode(tblStrct[iFld][1],TSYS::SQL,"\"") + "\"";
@@ -610,10 +610,18 @@ void MTable::fieldFix( TConfig &cfg )
 
 	// Type
 	switch(cf.fld().type()) {
-	    case TFld::String:	tpCfg = "TEXT DEFAULT '" + TSYS::strEncode(cf.fld().def(),TSYS::SQL,"'") + "' ";	break;
-	    case TFld::Integer: case TFld::Boolean:
-				tpCfg = "INTEGER DEFAULT '" + TSYS::strEncode(cf.fld().def(),TSYS::SQL,"'") + "' ";	break;
-	    case TFld::Real:	tpCfg = "DOUBLE DEFAULT '" + TSYS::strEncode(cf.fld().def(),TSYS::SQL,"'") + "' ";	break;
+	    case TFld::String:
+		tpCfg = "TEXT DEFAULT " + ((cf.fld().def()==EVAL_STR)?"NULL ":"'"+TSYS::strEncode(cf.fld().def(),TSYS::SQL,"'")+"' ");
+		break;
+	    case TFld::Boolean:
+		tpCfg = "INTEGER DEFAULT " + ((s2i(cf.fld().def())==EVAL_BOOL)?"NULL ":"'"+i2s(s2i(cf.fld().def()))+"' ");
+		break;
+	    case TFld::Integer:
+		tpCfg = "INTEGER DEFAULT " + ((s2ll(cf.fld().def())==EVAL_INT)?"NULL ":"'"+ll2s(s2ll(cf.fld().def()))+"' ");
+		break;
+	    case TFld::Real:
+		tpCfg = "DOUBLE DEFAULT " + ((s2r(cf.fld().def())==EVAL_REAL)?"NULL ":"'"+r2s(s2r(cf.fld().def()))+"' ");
+		break;
 	    default:	break;
 	}
 
@@ -651,8 +659,8 @@ void MTable::fieldFix( TConfig &cfg )
 		    (cfg.cfg(cf_el[iCf]).fld().flg()&TCfg::TransltText && tblStrct[iFld][1].size() > 3 &&
 		    tblStrct[iFld][1].substr(2) == ("#"+cf_el[iCf]) && tblStrct[iFld][1].compare(0,2,Mess->lang2Code()) != 0))
 		break;
-	    if(iCf >= cf_el.size()) toUpdate = true;
-	}
+	if(iCf >= cf_el.size()) toUpdate = true;
+    }
 
     if(!toUpdate) return;
 
@@ -680,10 +688,11 @@ void MTable::fieldFix( TConfig &cfg )
     owner().sqlReq(req, &tblStrct, false);
 }
 
-string MTable::getVal( TCfg &cfg, bool toEnc, uint8_t RqFlg )
+string MTable::getVal( TCfg &cfg, uint8_t RqFlg )
 {
     string rez = cfg.getS(RqFlg);
-    if(cfg.fld().type() == TFld::String && toEnc) {
+    if(rez == EVAL_STR)	return "NULL";
+    if(cfg.fld().type() == TFld::String) {
 	string prntRes = rez;
 	bool isBin = false;
 	for(unsigned iCh = 0; !isBin && iCh < prntRes.size(); ++iCh)
@@ -694,29 +703,12 @@ string MTable::getVal( TCfg &cfg, bool toEnc, uint8_t RqFlg )
 	return isBin ? "X'"+TSYS::strDecode(rez, TSYS::Bin)+"'" : "'"+prntRes+"'";
     }
 
-    return toEnc ? "'"+rez+"'" : rez;
-
-    /*switch(cfg.fld().type()) {
-	case TFld::String: {
-	    if(!toEnc) return cfg.getS(RqFlg);
-	    string prntRes = cfg.getS(RqFlg);
-	    bool isBin = false;
-	    for(unsigned iCh = 0; !isBin && iCh < prntRes.size(); ++iCh)
-		switch(prntRes[iCh]) {
-		    case 0: isBin = true; break;
-		    case '\'':	prntRes.insert(iCh,1,prntRes[iCh]); ++iCh; break;
-		}
-	    return isBin ? "X'"+TSYS::strDecode(cfg.getS(RqFlg),TSYS::Bin)+"'" : "'"+prntRes+"'";
-	    break;
-	}
-	default: return toEnc ? "'"+cfg.getS(RqFlg)+"'" : cfg.getS(RqFlg);
-    }
-
-    return "";*/
+    return "'" + rez + "'";
 }
 
-void MTable::setVal( TCfg &cf, const string &val, bool tr )
+void MTable::setVal( TCfg &cf, const string &ival, bool tr )
 {
+    string val = (ival==DB_NULL) ? EVAL_STR : ival;
     if(!cf.extVal()) {
 	if(!tr || (cf.fld().flg()&TCfg::TransltText && !cf.noTransl())) cf.setS(val);
 	if(!tr && cf.fld().flg()&TCfg::TransltText && !cf.noTransl()) Mess->translReg(val, "db:"+fullDBName()+"#"+cf.name());

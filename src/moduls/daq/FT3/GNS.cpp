@@ -33,60 +33,71 @@ void KA_GNS::SKANSchannel::UpdateState(uint16_t ID, uint8_t cl)
     tmpui8 = State.Get();
     if(tmpui8 != State.vl) {
 	State.Update(tmpui8);
-	if((tmpui8 & 0x0F) == NAS_ON) Time.Update(Time.vl, 1);
+	if((tmpui8 & 0x0F) == NAS_ON){
+	    Time.vl_sens = Time.vl;
+	}
 	uint8_t E[2] = { 0, tmpui8 };
 	da->PushInBE(cl, sizeof(E), ID, E);
     }
 }
+
+bool KA_GNS::SKANSchannel::IsTUParamChanged()
+{
+    bool vl_change = false;
+    vl_change |= TUOn.CheckUpdate();
+    vl_change |= TimeOn.CheckUpdate();
+    vl_change |= TUOff.CheckUpdate();
+    vl_change |= TimeOff.CheckUpdate();
+    vl_change |= TUStop.CheckUpdate();
+    vl_change |= TimeStop.CheckUpdate();
+    vl_change |= TURemote.CheckUpdate();
+    vl_change |= TimeRemote.CheckUpdate();
+    vl_change |= TUManual.CheckUpdate();
+    vl_change |= TimeManual.CheckUpdate();
+    return vl_change;
+}
+
+bool KA_GNS::SKANSchannel::IsTCParamChanged()
+{
+    bool vl_change = false;
+    vl_change |= TCOn.CheckUpdate();
+    vl_change |= TCOff.CheckUpdate();
+    vl_change |= TCMode.CheckUpdate();
+    return vl_change;
+}
+
 void KA_GNS::SKANSchannel::UpdateTUParam(uint16_t ID, uint8_t cl)
 {
-    ui8w tmp[5][2];
-    tmp[0][0].w = TUOn.Get();
-    tmp[0][1].w = TimeOn.Get();
-    tmp[1][0].w = TUOff.Get();
-    tmp[1][1].w = TimeOff.Get();
-    tmp[2][0].w = TUStop.Get();
-    tmp[2][1].w = TimeStop.Get();
-    tmp[3][0].w = TURemote.Get();
-    tmp[3][1].w = TimeRemote.Get();
-    tmp[4][0].w = TUManual.Get();
-    tmp[4][1].w = TimeManual.Get();
-
-    if(tmp[0][0].w != TUOn.vl || tmp[0][1].w != TimeOn.vl || tmp[1][0].w != TUOff.vl || tmp[1][1].w != TimeOff.vl || tmp[2][0].w != TUStop.vl
-	    || tmp[2][1].w != TimeStop.vl || tmp[3][0].w != TUManual.vl || tmp[3][1].w != TimeManual.vl || tmp[4][0].w != TURemote.vl
-	    || tmp[4][1].w != TimeRemote.vl) {
+    if(IsTUParamChanged()) {
 	TUOn.s = 0;
-	TUOn.Update(tmp[0][0].w);
-	TimeOn.Update(tmp[0][1].w);
-	TUOff.Update(tmp[1][0].w);
-	TimeOff.Update(tmp[1][1].w);
-	TUStop.Update(tmp[2][0].w);
-	TimeStop.Update(tmp[2][1].w);
-	TURemote.Update(tmp[3][0].w);
-	TimeRemote.Update(tmp[3][1].w);
-	TUManual.Update(tmp[4][0].w);
-	TimeManual.Update(tmp[4][1].w);
-	uint8_t E[21] = { 0, tmp[0][0].b[0], tmp[0][0].b[1], tmp[0][1].b[0], tmp[0][1].b[1], tmp[1][0].b[0], tmp[1][0].b[1], tmp[1][1].b[0], tmp[1][1].b[1],
-		tmp[2][0].b[0], tmp[2][0].b[1], tmp[2][1].b[0], tmp[2][1].b[1], tmp[3][0].b[0], tmp[3][0].b[1], tmp[3][1].b[0], tmp[3][1].b[1], tmp[4][0].b[0],
-		tmp[4][0].b[1], tmp[4][1].b[0], tmp[4][1].b[1] };
-	da->PushInBE(cl, sizeof(E), ID, E);
+	uint8_t E[21];
+	uint8_t l = 0;
+	l += SerializeB(E + l, TUOn.s);
+	l += TUOn.Serialize(E + l);
+	l += TimeOn.Serialize(E + l);
+	l += TUOff.Serialize(E + l);
+	l += TimeOff.Serialize(E + l);
+	l += TUStop.Serialize(E + l);
+	l += TimeStop.Serialize(E + l);
+	l += TURemote.Serialize(E + l);
+	l += TimeRemote.Serialize(E + l);
+	l += TUManual.Serialize(E + l);
+	l += TimeManual.Serialize(E + l);
+	da->PushInBE(cl, l, ID, E);
     }
 }
 
 void KA_GNS::SKANSchannel::UpdateTCParam(uint16_t ID, uint8_t cl)
 {
-    ui8w tmp[3];
-    tmp[0].w = TCOn.Get();
-    tmp[1].w = TCOff.Get();
-    tmp[2].w = TCMode.Get();
-
-    if(tmp[0].w != TCOn.vl || tmp[1].w != TCOff.vl || tmp[2].w != TCMode.vl) {
+    if(IsTCParamChanged()) {
 	TCOn.s = 0;
-	TCOn.Update(tmp[0].w);
-	TCOff.Update(tmp[1].w);
-	TCMode.Update(tmp[2].w);
-	uint8_t E[7] = { 0, tmp[0].b[0], tmp[0].b[1], tmp[1].b[0], tmp[1].b[1], tmp[2].b[0], tmp[2].b[1] };
-	da->PushInBE(cl, sizeof(E), ID, E);
+	uint8_t E[7];
+	uint8_t l = 0;
+	l += SerializeB(E + l, TUOn.s);
+	l += TCOn.Serialize(E + l);
+	l += TCOff.Serialize(E + l);
+	l += TCMode.Serialize(E + l);
+	da->PushInBE(cl, l, ID, E);
     }
 }
 
@@ -94,10 +105,10 @@ void KA_GNS::SKANSchannel::UpdateTime(uint16_t ID, uint8_t cl)
 {
     ui832 tmp;
     tmp.ui32 = Time.Get();
-    Time.Update(tmp.ui32, 0);
+    Time.Update(tmp.ui32);
     if((tmp.ui32 - Time.vl_sens) > 36000) {
 	Time.s = 0;
-	Time.Update(tmp.ui32, 1);
+	Time.vl_sens = tmp.ui32;
 	uint8_t E[5] = { 0, tmp.b[0], tmp.b[1], tmp.b[2], tmp.b[3] };
 	da->PushInBE(cl, sizeof(E), ID, E);
     }
@@ -105,20 +116,20 @@ void KA_GNS::SKANSchannel::UpdateTime(uint16_t ID, uint8_t cl)
 
 uint8_t KA_GNS::SKANSchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
+    const struct KANSTUParams *params = (const struct KANSTUParams *) val;
     if(TUOn.lnk.Connected() || TimeOn.lnk.Connected() || TUOff.lnk.Connected() || TimeOff.lnk.Connected() || TUStop.lnk.Connected() || TimeOn.lnk.Connected()
 	    || TUManual.lnk.Connected() || TimeManual.lnk.Connected() || TURemote.lnk.Connected() || TimeRemote.lnk.Connected()) {
 	TUOn.s = addr;
-	TUOn.Set(TSYS::getUnalign16(val));
-	TimeOn.Set(TSYS::getUnalign16(val + 2));
-	TUOff.Set(TSYS::getUnalign16(val + 4));
-	TimeOff.Set(TSYS::getUnalign16(val + 6));
-	TUStop.Set(TSYS::getUnalign16(val + 8));
-	TimeStop.Set(TSYS::getUnalign16(val + 10));
-	TURemote.Set(TSYS::getUnalign16(val + 12));
-	TimeRemote.Set(TSYS::getUnalign16(val + 14));
-	TUManual.Set(TSYS::getUnalign16(val + 16));
-	TimeManual.Set(TSYS::getUnalign16(val + 18));
-
+	TUOn.Set(params->TUOn);
+	TimeOn.Set(params->TimeOn);
+	TUOff.Set(params->TUOff);
+	TimeOff.Set(params->TimeOff);
+	TUStop.Set(params->TUStop);
+	TimeStop.Set(params->TimeStop);
+	TURemote.Set(params->TURemote);
+	TimeRemote.Set(params->TimeRemote);
+	TUManual.Set(params->TUManual);
+	TimeManual.Set(params->TimeManual);
 	uint8_t E[21];
 	E[0] = addr;
 	memcpy(E + 1, val, 20);
@@ -131,12 +142,12 @@ uint8_t KA_GNS::SKANSchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_
 
 uint8_t KA_GNS::SKANSchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 {
+    const struct KANSTCParams *params = (const struct KANSTCParams *) val;
     if(TCOn.lnk.Connected() || TCOff.lnk.Connected() || TCMode.lnk.Connected()) {
 	TCOn.s = addr;
-	TCOn.Set(TSYS::getUnalign16(val));
-	TCOff.Set(TSYS::getUnalign16(val + 2));
-	TCMode.Set(TSYS::getUnalign16(val + 4));
-
+	TCOn.Set(params->TCOn);
+	TCOff.Set(params->TCOff);
+	TCMode.Set(params->TCMode);
 	uint8_t E[7];
 	E[0] = addr;
 	memcpy(E + 1, val, 6);
@@ -187,7 +198,7 @@ uint8_t KA_GNS::SKANSchannel::SetNewFunction(uint8_t addr, uint16_t prmID, uint8
 }
 
 KA_GNS::KA_GNS(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), ID(id), count_n(n), with_params(has_params), config(0xF | (n << 4) | (3 << 10))
+	DA(prm), ID(id), count_n(n), with_params(has_params), config(0xF | (n << 4) | (3 << 10)), max_count_data(40)
 {
     mTypeFT3 = KA;
     chan_err.clear();
@@ -251,6 +262,112 @@ string KA_GNS::getStatus(void)
     return rez;
 }
 
+uint16_t KA_GNS::GetState()
+{
+    tagMsg Msg;
+    uint16_t rc = BlckStateUnknown;
+    Msg.L = 5;
+    Msg.C = AddrReq;
+    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+    if(mPrm.owner().DoCmd(&Msg) == GOOD3) {
+	switch(mPrm.vlAt("state").at().getI(0, true)) {
+	case KA_GNS_Error:
+	    rc = BlckStateError;
+	    break;
+	case KA_GNS_Normal:
+	    rc = BlckStateNormal;
+	    break;
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_GNS::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    loadParam();
+    for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].State.lnk);
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
+	//Msg.L += data[i].State.SerializeAttr(Msg.D + Msg.L);  TODO: need to fix
+	Msg.L += SerializeB(Msg.D + Msg.L, data[i].State.lnk.vlattr.at().getI(0, true) & 0x0F);
+	if((data[i].State.lnk.vlattr.at().getI(0, true) & 0x0F) != NAS_REP) {
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
+	    Msg.L += data[i].TUOn.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeOn.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TUOff.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeOff.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TUStop.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeStop.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TURemote.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeRemote.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TUManual.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TimeManual.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
+	    Msg.L += data[i].TCOn.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TCOff.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += data[i].TCMode.SerializeAttr(Msg.D + Msg.L);
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 4));
+	    Msg.L += data[i].Time.SerializeAttr(Msg.D + Msg.L);
+	}
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if((rc == BAD2) || (rc == BAD3)) {
+	    mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
+	} else {
+	    if(rc == ERROR) {
+		mPrm.mess_sys(TMess::Error, "No answer to set channel %d", i + 1);
+		break;
+	    }
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_GNS::RefreshParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    for(int i = 1; i <= count_n; i++) {
+	Msg.L = 0;
+	Msg.C = AddrReq;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 1));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 2));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 4));
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if((rc == BAD2) || (rc == BAD3)) {
+	    mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", i);
+	} else {
+	    if(rc == ERROR) {
+		mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", i);
+		break;
+	    }
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_GNS::RefreshData(void)
+{
+    uint16_t rc;
+    for(int j = 0; j <= count_n / max_count_data; j++) {
+	tagMsg Msg;
+	Msg.L = 0;
+	Msg.C = AddrReq;
+	for(int i = j * max_count_data + 1; i <= (count_n < ((j + 1) * max_count_data) ? count_n : (j + 1) * 40); i++) {
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
+	}
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if(rc == ERROR) break;
+    }
+    return rc;
+}
+
 void KA_GNS::loadIO(bool force)
 {
     if(mPrm.owner().startStat() && !force) {
@@ -301,6 +418,48 @@ void KA_GNS::saveIO(void)
 
 }
 
+void KA_GNS::saveParam(void)
+{
+    for(int i = 0; i < count_n; i++) {
+	saveVal(data[i].State.lnk);
+	saveVal(data[i].TUOn.lnk);
+	saveVal(data[i].TUOff.lnk);
+	saveVal(data[i].TUStop.lnk);
+	saveVal(data[i].TURemote.lnk);
+	saveVal(data[i].TUManual.lnk);
+	saveVal(data[i].TimeOn.lnk);
+	saveVal(data[i].TimeOff.lnk);
+	saveVal(data[i].TimeStop.lnk);
+	saveVal(data[i].TimeRemote.lnk);
+	saveVal(data[i].TimeManual.lnk);
+	saveVal(data[i].TCOn.lnk);
+	saveVal(data[i].TCOff.lnk);
+	saveVal(data[i].TCMode.lnk);
+	saveVal(data[i].Time.lnk);
+    }
+}
+
+void KA_GNS::loadParam(void)
+{
+    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
+    for(int i = 0; i < count_n; i++) {
+	loadVal(data[i].TUOn.lnk);
+	loadVal(data[i].TUOff.lnk);
+	loadVal(data[i].TUStop.lnk);
+	loadVal(data[i].TURemote.lnk);
+	loadVal(data[i].TUManual.lnk);
+	loadVal(data[i].TimeOn.lnk);
+	loadVal(data[i].TimeOff.lnk);
+	loadVal(data[i].TimeStop.lnk);
+	loadVal(data[i].TimeRemote.lnk);
+	loadVal(data[i].TimeManual.lnk);
+	loadVal(data[i].TCOn.lnk);
+	loadVal(data[i].TCOff.lnk);
+	loadVal(data[i].TCMode.lnk);
+	loadVal(data[i].Time.lnk);
+    }
+}
+
 void KA_GNS::tmHandler(void)
 {
     for(int i = 0; i < count_n; i++) {
@@ -315,124 +474,73 @@ void KA_GNS::tmHandler(void)
     NeedInit = false;
 }
 
-uint16_t KA_GNS::Task(uint16_t uc)
-{
-    tagMsg Msg;
-    uint16_t rc = 0;
-    switch(uc) {
-    case TaskRefresh:
-	Msg.L = 5;
-	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = PackID(ID, 0, 0); //состояние
-	if(mPrm.owner().DoCmd(&Msg)) {
-	    if(Msg.C == GOOD3) {
-		NeedInit = false;
-		if(with_params) {
-		    for(int i = 1; i <= count_n; i++) {
-			if(chan_err[i].state == 1) continue;
-			Msg.L = 13;
-			Msg.C = AddrReq;
-			*((uint16_t *) Msg.D) = PackID(ID, i, 0); //Состояние задвижки
-			*((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 1); //Адреса ТУ
-			*((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 2); //Адреса ТС
-			*((uint16_t *) (Msg.D + 6)) = PackID(ID, i, 3); //Функция
-			*((uint16_t *) (Msg.D + 8)) = PackID(ID, i, 4); //Моторесурс
-
-			if(mPrm.owner().DoCmd(&Msg)) {
-			    if(Msg.C == GOOD3) {
-				chan_err[i].state = 1;
-				rc = 1;
-			    } else {
-				rc = 0;
-				chan_err[i].state = 2;
-				NeedInit = true;
-			    }
-			} else {
-			    rc = 0;
-			    chan_err[i].state = 3;
-			    NeedInit = true;
-			}
-
-		    }
-		} else {
-		    rc = 1;
-		}
-	    } else {
-		rc = 0;
-		NeedInit = true;
-	    }
-	}
-	break;
-    }
-    return rc;}
-
 uint16_t KA_GNS::HandleEvent(int64_t tm, uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
-     if(ft3ID.g != ID) return 0;
-     uint16_t l = 0;
-     switch(ft3ID.k) {
-     case 0:
- 	switch(ft3ID.n) {
- 	case 0:
- 	    mPrm.vlAt("state").at().setI(D[2], tm, true);
- 	    l = 3;
- 	    break;
- 	case 1:
- 	    l = 4;
- 	    break;
- 	case 2:
- 	    l = 2 + count_n * 2;
- 	    for(int j = 0; j < count_n; j++) {
- 		mPrm.vlAt(TSYS::strMess("state_%d", j)).at().setI(D[j * 2 + 3], tm, true);
- 	    }
- 	    break;
- 	}
- 	break;
-     default:
- 	if(ft3ID.k && (ft3ID.k <= count_n)) {
- 	    switch(ft3ID.n) {
- 	    case 0:
- 		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k)).at().setI(D[3], tm, true);
- 		l = 4;
- 		break;
- 	    case 1:
- 		if(with_params) {
- 		    mPrm.vlAt(TSYS::strMess("TUOn_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("TimeOn_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("TUOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("TimeOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 9), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 11), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 13), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 15), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 17), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 19), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 21), tm, true);
- 		}
- 		l = 3 + 20;
- 		break;
- 	    case 2:
- 		if(with_params) {
- 		    mPrm.vlAt(TSYS::strMess("TCOn_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("TCOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
- 		    mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
- 		}
- 		l = 3 + 6;
- 		break;
- 	    case 3:
- 		mPrm.vlAt(TSYS::strMess("function_%d", ft3ID.k)).at().setI(D[3], tm, true);
- 		l = 4;
- 		break;
- 	    case 4:
- 		mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k)).at().setI(TSYS::getUnalign32(D + 3), tm, true);
- 		l = 7;
- 		break;
+    if(ft3ID.g != ID) return 0;
+    uint16_t l = 0;
+    switch(ft3ID.k) {
+    case 0:
+	switch(ft3ID.n) {
+	case 0:
+	    mPrm.vlAt("state").at().setI(D[2], tm, true);
+	    l = 3;
+	    break;
+	case 1:
+	    l = 4;
+	    break;
+	case 2:
+	    l = 2 + count_n * 2;
+	    for(int j = 0; j < count_n; j++) {
+		mPrm.vlAt(TSYS::strMess("state_%d", j)).at().setI(D[j * 2 + 3], tm, true);
+	    }
+	    break;
+	}
+	break;
+    default:
+	if(ft3ID.k && (ft3ID.k <= count_n)) {
+	    switch(ft3ID.n) {
+	    case 0:
+		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k)).at().setI(D[3], tm, true);
+		l = 4;
+		break;
+	    case 1:
+		if(with_params) {
+		    mPrm.vlAt(TSYS::strMess("TUOn_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TimeOn_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TUOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TimeOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 9), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 11), tm, true);
+		    mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 13), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 15), tm, true);
+		    mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 17), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 19), tm, true);
+		    mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 21), tm, true);
+		}
+		l = 3 + 20;
+		break;
+	    case 2:
+		if(with_params) {
+		    mPrm.vlAt(TSYS::strMess("TCOn_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
+		    mPrm.vlAt(TSYS::strMess("TCOff_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
+		    mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
+		}
+		l = 3 + 6;
+		break;
+	    case 3:
+		mPrm.vlAt(TSYS::strMess("function_%d", ft3ID.k)).at().setI(D[3], tm, true);
+		l = 4;
+		break;
+	    case 4:
+		mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k)).at().setI(TSYS::getUnalign32(D + 3), tm, true);
+		l = 7;
+		break;
 
- 	    }
- 	}
-     }
+	    }
+	}
+    }
 
-     return l;
+    return l;
 }
 
 uint8_t KA_GNS::cmdGet(uint16_t prmID, uint8_t * out)
@@ -553,6 +661,7 @@ uint8_t KA_GNS::cmdSet(uint8_t * req, uint8_t addr)
 
 uint16_t KA_GNS::setVal(TVal &val)
 {
+    uint16_t rc = 0;
     int off = 0;
     FT3ID ft3ID;
     ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
@@ -579,18 +688,20 @@ uint16_t KA_GNS::setVal(TVal &val)
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k)).at().getI(0, true));
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k)).at().getI(0, true));
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k)).at().getI(0, true));
+	    rc = 1;
 	    break;
 	case 2:
-
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCOn_%d", ft3ID.k)).at().getI(0, true));
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TCOff_%d", ft3ID.k)).at().getI(0, true));
 	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().getI(0, true));
+	    rc = 1;
 	    break;
 	case 3:
 	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
 	    break;
 	case 4:
 	    Msg.L += SerializeUi32(Msg.D + Msg.L, val.getI(0, true));
+	    rc = 1;
 	    break;
 	}
     }
@@ -598,5 +709,5 @@ uint16_t KA_GNS::setVal(TVal &val)
 	Msg.L += 3;
 	mPrm.owner().DoCmd(&Msg);
     }
-    return 0;
+    return rc;
 }

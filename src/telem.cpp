@@ -33,6 +33,18 @@ TElem::TElem( const string &name ) : mName(name), mResEl(true)
 
 }
 
+TElem::TElem( const TElem &src ) : mName(src.mName), mResEl(true)
+{
+    operator=(src);
+}
+
+TElem &TElem::operator=( const TElem &src )
+{
+    //???? Implement on needs, for now pass it
+
+    return *this;
+}
+
 TElem::~TElem( )
 {
     while(cont.size())	cont[0]->detElem(this);
@@ -129,7 +141,7 @@ TFld::TFld( ) : mType(TFld::Integer), mFlg(0)
     mVal.s = NULL;
 }
 
-TFld::TFld( TFld &ifld, const char *name ) : mLen(0), mDec(0), mType(TFld::Integer), mFlg(0)
+TFld::TFld( const TFld &ifld, const char *name ) : mLen(0), mDec(0), mType(TFld::Integer), mFlg(0)
 {
     mSel	= NULL;
     mVal.s	= NULL;
@@ -196,7 +208,7 @@ TFld::Type TFld::type( IO::Type tp )
     return String;
 }
 
-IO::Type TFld::typeIO( )
+IO::Type TFld::typeIO( ) const
 {
     switch(type()) {
 	case Boolean:	return IO::Boolean;
@@ -217,7 +229,7 @@ void TFld::setFlg( unsigned iflg )
     mFlg = iflg;
 }
 
-string TFld::values( )
+string TFld::values( ) const
 {
     if(mVal.s == NULL) return "";
 
@@ -246,7 +258,7 @@ string TFld::values( )
     return rez.size()?rez.substr(0,rez.size()-1):"";
 }
 
-string TFld::selNames( )
+string TFld::selNames( ) const
 {
     if(mSel == NULL) return "";
 
@@ -329,37 +341,37 @@ void TFld::setSelNames( const string &slnms )
 	(*mSel)[i] = TSYS::strSepParse(slnms,0,';',&i_off);
 }
 
-const vector<string> &TFld::selValS( )
+const vector<string> &TFld::selValS( ) const
 {
     if(flg()&TFld::Selected && type() == TFld::String) return *mVal.s;
     throw TError("Field", _("Field is not String."));
 }
 
-const vector<int> &TFld::selValI( )
+const vector<int> &TFld::selValI( ) const
 {
     if(type() == TFld::Integer) return *mVal.i;
     throw TError("Field", _("Field is not Integer."));
 }
 
-const vector<double> &TFld::selValR( )
+const vector<double> &TFld::selValR( ) const
 {
     if(type() == TFld::Real) return *mVal.r;
     throw TError("Field", _("Field is not Real."));
 }
 
-const vector<bool> &TFld::selValB( )
+const vector<bool> &TFld::selValB( ) const
 {
     if(flg()&TFld::Selected && type() == TFld::Boolean) return *mVal.b;
     throw TError("Field", _("Field is not Boolean."));
 }
 
-const vector<string> &TFld::selNm( )
+const vector<string> &TFld::selNm( ) const
 {
     if(mSel && flg()&TFld::Selected) return *mSel;
     throw TError("Field", _("Field is not select type!"));
 }
 
-TFld &TFld::operator=( TFld &fld )
+TFld &TFld::operator=( const TFld &fld )
 {
     //Free old
     if(mSel)	delete mSel;

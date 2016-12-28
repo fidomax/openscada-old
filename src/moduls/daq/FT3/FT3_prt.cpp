@@ -237,7 +237,7 @@ TProtIn::~TProtIn()
     if(mess_lev() == TMess::Debug) mess_sys(TMess::Debug, _("delete TProtIn"));
 }
 
-TProt &TProtIn::owner()
+TProt &TProtIn::owner( ) const
 {
     return *(TProt*) nodePrev();
 }
@@ -262,11 +262,18 @@ bool TProtIn::mess(const string &ireqst, string &answer)
 	    SYS->daq().at().at("FT3").at().list(lst);
 	    for(i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdContr> t = SYS->daq().at().at("FT3").at().at(lst[i_l]);
-		if((t.at().cfg("CTRTYPE").getS() == "Logic") && (t.at().devAddr == msg.A) && (msg.B <= t.at().nChannel)) {
+		if((t.at().cfg("CTRTYPE").getS() == "Logic") && ((t.at().devAddr == msg.A) || (msg.A == 0xFF)) && (msg.B <= t.at().nChannel)) {
 		    answer = "";
 		    if(t.at().ProcessMessage(&msg, &msgOut)) {
 
 			modPrt->MakePacket(answer, &msgOut);
+			if(mess_lev() == TMess::Debug){
+			    data_s = "";
+			    for(int i = 0; i < answer.size(); i++) {
+			        data_s += TSYS::int2str((uint8_t) answer[i], TSYS::Hex) + " ";
+			    }
+			    mess_sys(TMess::Debug, _("response: %s"), data_s.c_str());
+			}
 		    }
 		}
 

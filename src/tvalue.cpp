@@ -135,8 +135,13 @@ TElem &TValue::vlElem( const string &name )
 
 void TValue::chldAdd( int8_t igr, TCntrNode *node, int pos, bool noExp )
 {
-    TCntrNode::chldAdd(igr, node, pos, noExp);
-    if(igr == mVl) SYS->archive().at().setToUpdate();
+    try {
+	TCntrNode::chldAdd(igr, node, pos);
+	if(igr == mVl) SYS->archive().at().setToUpdate();
+    }
+    catch(TError&) {
+	if(!noExp) throw;
+    }
 }
 
 void TValue::cntrCmdProc( XMLNode *opt )
@@ -394,7 +399,7 @@ string TVal::objName( )	{ return TCntrNode::objName()+":TVal"; }
 
 string TVal::DAQPath( )	{ return owner().DAQPath()+"."+name(); }
 
-TValue &TVal::owner( )	{ return *(TValue*)nodePrev(); }
+TValue &TVal::owner( ) const	{ return *(TValue*)nodePrev(); }
 
 void TVal::setFld( TFld &fld )
 {
@@ -437,15 +442,15 @@ void TVal::setCfg( TCfg &cfg )
     mCfg = true;
 }
 
-string TVal::name( )		{ return mCfg ? src.cfg->name().c_str() : src.fld->name().c_str(); }
+string TVal::name( )			{ return mCfg ? src.cfg->name().c_str() : src.fld->name().c_str(); }
 
-bool TVal::dataActive( )	{ return owner().dataActive(); }
+bool TVal::dataActive( )		{ return owner().dataActive(); }
 
-const char *TVal::nodeName( )	{ return mCfg ? src.cfg->name().c_str() : src.fld->name().c_str(); }
+const char *TVal::nodeName( ) const	{ return mCfg ? src.cfg->name().c_str() : src.fld->name().c_str(); }
 
-TFld &TVal::fld( )		{ return mCfg ? src.cfg->fld() : *src.fld; }
+TFld &TVal::fld( )			{ return mCfg ? src.cfg->fld() : *src.fld; }
 
-AutoHD<TVArchive> TVal::arch( )	{ return mArch; }
+AutoHD<TVArchive> TVal::arch( )		{ return mArch; }
 
 void TVal::setArch( const AutoHD<TVArchive> &vl )	{ mArch = vl; }
 
@@ -706,7 +711,7 @@ void TVal::setI( int64_t value, int64_t tm, bool sys )
 	    if(!sys && fld().flg()&TFld::NoWrite) return;	//throw TError("Val", _("Write access is denied!"));
 	    //Set current value and time
 	    if(!(fld().flg()&TFld::Selected) && fld().selValI()[1] > fld().selValI()[0] && value != EVAL_INT)
-		value = vmin(fld().selValI()[1],vmax(fld().selValI()[0],value));
+		value = vmin(fld().selValI()[1], vmax(fld().selValI()[0],value));
 	    int pvl = val.i; val.i = value;
 	    mTime = tm;
 	    if(!mTime) mTime = TSYS::curTime();
@@ -735,7 +740,7 @@ void TVal::setR( double value, int64_t tm, bool sys )
 	    if(!sys && fld().flg()&TFld::NoWrite) return;	//throw TError("Val", _("Write access is denied!"));
 	    //Set current value and time
 	    if(!(fld().flg()&TFld::Selected) && fld().selValR()[1] > fld().selValR()[0] && value != EVAL_REAL)
-		value = vmin(fld().selValR()[1],vmax(fld().selValR()[0],value));
+		value = vmin(fld().selValR()[1], vmax(fld().selValR()[0],value));
 	    double pvl = val.r; val.r = value;
 	    mTime = tm;
 	    if(!mTime) mTime = TSYS::curTime();

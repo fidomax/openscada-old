@@ -538,7 +538,7 @@ void TTransportS::cntrCmdProc( XMLNode *opt )
 		else host.pass = opt->text();
 	    }
 	    else if(col == "mode")	host.mode = s2i(opt->text());
-	    else if(col == "upRiseLev")	host.upRiseLev = vmax(0,vmin(9,s2i(opt->text())));
+	    else if(col == "upRiseLev")	host.upRiseLev = vmax(0, vmin(9,s2i(opt->text())));
 	    host.mdf = SYS->sysTm();
 	    extHostSet(host, sysHostAcs);
 	}
@@ -560,7 +560,7 @@ TTypeTransport::~TTypeTransport()
     nodeDelAll();
 }
 
-TTransportS &TTypeTransport::owner( )	{ return (TTransportS&)TModule::owner(); }
+TTransportS &TTypeTransport::owner( ) const	{ return (TTransportS&)TModule::owner(); }
 
 void TTypeTransport::inAdd( const string &name, const string &idb )	{ chldAdd(mIn, In(name,idb)); }
 
@@ -645,9 +645,9 @@ bool TTransportIn::cfgChange( TCfg &co, const TVariant &pc )
     return true;
 }
 
-TCntrNode &TTransportIn::operator=( TCntrNode &node )
+TCntrNode &TTransportIn::operator=( const TCntrNode &node )
 {
-    TTransportIn *src_n = dynamic_cast<TTransportIn*>(&node);
+    const TTransportIn *src_n = dynamic_cast<const TTransportIn*>(&node);
     if(!src_n) return *this;
 
     exclCopy(*src_n, "ID;");
@@ -657,7 +657,7 @@ TCntrNode &TTransportIn::operator=( TCntrNode &node )
     return *this;
 }
 
-TTypeTransport &TTransportIn::owner( )	{ return *(TTypeTransport*)nodePrev(); }
+TTypeTransport &TTransportIn::owner( ) const	{ return *(TTypeTransport*)nodePrev(); }
 
 string TTransportIn::name( )
 {
@@ -873,9 +873,9 @@ TTransportOut::~TTransportOut( )
     try{ stop(); } catch(...){ }
 }
 
-TCntrNode &TTransportOut::operator=( TCntrNode &node )
+TCntrNode &TTransportOut::operator=( const TCntrNode &node )
 {
-    TTransportOut *src_n = dynamic_cast<TTransportOut*>(&node);
+    const TTransportOut *src_n = dynamic_cast<const TTransportOut*>(&node);
     if(!src_n) return *this;
 
     exclCopy(*src_n, "ID;");
@@ -885,7 +885,7 @@ TCntrNode &TTransportOut::operator=( TCntrNode &node )
     return *this;
 }
 
-TTypeTransport &TTransportOut::owner( )	{ return *(TTypeTransport*)nodePrev(); }
+TTypeTransport &TTransportOut::owner( ) const	{ return *(TTypeTransport*)nodePrev(); }
 
 string TTransportOut::name( )
 {
@@ -1070,7 +1070,7 @@ void TTransportOut::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"get",RWRW__,"root",STR_ID,SEC_RD))
 	    opt->setText(TBDS::genDBGet(owner().nodePath()+"InBufSz",i2s(STR_BUF_LEN),opt->attr("user")));
 	if(ctrChkNode(opt,"set",RWRW__,"root",STR_ID,SEC_WR))
-	    TBDS::genDBSet(owner().nodePath()+"InBufSz",i2s(vmax(0,vmin(STR_BUF_LEN,s2i(opt->text())))), opt->attr("user"));
+	    TBDS::genDBSet(owner().nodePath()+"InBufSz", i2s(vmax(0,vmin(STR_BUF_LEN,s2i(opt->text())))), opt->attr("user"));
     }
     else if(a_path == "/req/req") {
 	if(ctrChkNode(opt,"get",RWRW__,"root",STR_ID,SEC_RD))	opt->setText(TBDS::genDBGet(owner().nodePath()+"ReqReq","",opt->attr("user")));

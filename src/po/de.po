@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-14 09:09+0300\n"
+"POT-Creation-Date: 2016-12-06 16:02+0200\n"
 "PO-Revision-Date: 2011-07-24 22:47+0400\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -222,11 +222,22 @@ msgstr "Archivierungsperiode (Sek.)"
 msgid "View messages"
 msgstr "Ansicht der Nachrichten"
 
-msgid "Time"
-msgstr "Zeit"
+msgid "Time, size (s) and level"
+msgstr "Zeit, Größe (sek.) und Niveau"
 
-msgid "Size (s)"
-msgstr "Größe (s)"
+msgid ""
+"Debug (0);Information (1);Notice (2);Warning (3);Error (4);Critical (5);"
+"Alert (6);Emergency (7);Information (1), ALARMS;Notice (2), ALARMS;Warning "
+"(3), ALARMS;Error (4), ALARMS;Critical (5), ALARMS;Alert (6), ALARMS;"
+"Emergency (7), ALARMS"
+msgstr ""
+"Debuggen (0);Information (1);Bemerkung (2);Warnung (3);Fehler (4);Kritisch "
+"(5);Wach (6);Notfall (7);Information (1), ALARM;Bemerkung (2), ALARM;Warnung "
+"(3), ALARM;Fehler (4), ALARM;Kritisch (5), ALARM;Wach (6), ALARM;Notfall "
+"(7), ALARM"
+
+msgid "Get messages for level more and equal it."
+msgstr "Empfang von Nachrichten für gleiche und höhere Stufe."
 
 msgid "Category pattern"
 msgstr "Kategoriemuster"
@@ -244,23 +255,6 @@ msgstr ""
 "  '?' - ein beliebiges Symbol.\n"
 "Regulärer Ausdruck in Symbolen umschlossen '/' (/mod_(System|LogicLev)/)."
 
-msgid "Level"
-msgstr "Stufe"
-
-msgid ""
-"Debug (0);Information (1);Notice (2);Warning (3);Error (4);Critical (5);"
-"Alert (6);Emergency (7);Information (1), ALARMS;Notice (2), ALARMS;Warning "
-"(3), ALARMS;Error (4), ALARMS;Critical (5), ALARMS;Alert (6), ALARMS;"
-"Emergency (7), ALARMS"
-msgstr ""
-"Debuggen (0);Information (1);Bemerkung (2);Warnung (3);Fehler (4);Kritisch "
-"(5);Wach (6);Notfall (7);Information (1), ALARM;Bemerkung (2), ALARM;Warnung "
-"(3), ALARM;Fehler (4), ALARM;Kritisch (5), ALARM;Wach (6), ALARM;Notfall "
-"(7), ALARM"
-
-msgid "Get messages for level more and equal it."
-msgstr "Empfang von Nachrichten für gleiche und höhere Stufe."
-
 msgid "Archivators"
 msgstr "Archivar"
 
@@ -276,6 +270,9 @@ msgstr ""
 
 msgid "Messages"
 msgstr "Nachrichten"
+
+msgid "Time"
+msgstr "Zeit"
 
 msgid "mcsec"
 msgstr "mks"
@@ -362,6 +359,13 @@ msgstr ""
 "  '?' - jeweiliges Symbol.\n"
 "Regulärer Ausdruck in Symbolen umschlossen '/' (/mod_(System|LogicLev)/)."
 
+msgid "Level"
+msgstr "Stufe"
+
+#, c-format
+msgid "Requested %d records for time %s."
+msgstr "Fordert %d Datensätze für Zeit %s."
+
 msgid "Value is not present."
 msgstr "Der Wert ist nicht vorhanden."
 
@@ -383,10 +387,6 @@ msgstr "Fehler beim Verbinden mit der Quelle '%s'."
 #, c-format
 msgid "The archive '%s' was already connected to target parameter '%s'."
 msgstr "Archiv '%s' ist bereits auf die Zielparameter '%s' verbunden."
-
-#, c-format
-msgid "Archivator '%s' error or it is not started."
-msgstr "Archivar '%s' Fehler oder Archivar ist nicht gestartet."
 
 #, c-format
 msgid "gdImageStringFT for font '%s' error: %s."
@@ -467,6 +467,9 @@ msgstr "Werte"
 msgid "Microseconds"
 msgstr "Mikrosekunden"
 
+msgid "Size (s)"
+msgstr "Größe (s)"
+
 msgid ""
 "Values archivator.\n"
 "No set archivator for process by buffer and all archivators.\n"
@@ -529,6 +532,9 @@ msgstr ""
 
 msgid "Buffer size"
 msgstr "Speichergrösse"
+
+msgid "Last read buffer"
+msgstr "Letzte Lesepuffer"
 
 msgid "Data Bases"
 msgstr "Datenbank"
@@ -691,6 +697,7 @@ msgstr "Der Knoten ist abgeschaltet!"
 msgid "Node '%s' no present!"
 msgstr "Der Knoten '%s' ist nicht vorhanden!"
 
+#, c-format
 msgid "Copy from '%s' to '%s' impossible."
 msgstr "Kopieren von '%s' nach '%s' ist nicht zulässig."
 
@@ -1384,8 +1391,8 @@ msgstr "Nicht Attribut;Nur Lesen;Voller Zugang"
 msgid "Configure"
 msgstr "Konfiguration"
 
-msgid "Constant;Public constant;Link"
-msgstr "Konstante;Konstante frei verfügbar;Verbindung"
+msgid "Variable;Constant;Link"
+msgstr "Variable;Konstante;Verbindung"
 
 msgid "Program language"
 msgstr "Programmsprache"
@@ -1415,8 +1422,8 @@ msgstr "Bibliothek der Parametervorlagen: "
 msgid "Library"
 msgstr "Bibliothek"
 
-msgid "Library BD"
-msgstr "Datenbank der Bibliothek"
+msgid "Library DB"
+msgstr "Bibliothek DB"
 
 msgid ""
 "DB address in format [<DB module>.<DB name>.<Table name>].\n"
@@ -1669,9 +1676,9 @@ msgid ""
 "Lang2CodeBase <lang>\tBase language for variable texts translation, two "
 "symbols code.\n"
 "MainCPUs   <list>\tMain used CPUs list (separated by ':').\n"
-"ClockRT    <false>\tSet for use REALTIME (else MONOTONIC) clock, some "
+"ClockRT    <0|1>\tSet for use REALTIME (else MONOTONIC) clock, some "
 "problematic with the system clock modification.\n"
-"SaveAtExit <true>\tSave the system at exit.\n"
+"SaveAtExit <0|1>\tSave the system at exit.\n"
 "SavePeriod <sec>\tSave the system period.\n"
 "RdStLevel  <lev>\tLevel of redundancy current station.\n"
 "RdTaskPer  <s>\t\tCall period of the redundant task.\n"
@@ -1721,9 +1728,9 @@ msgstr ""
 "Lang2CodeBase <Sprache> Grundsprache für die Übersetzung von Textvariablen, "
 "zwei Symbole.\n"
 "MainCPUs   <Liste>\tWichtigsten gebrauchte CPUs Liste (geteilt ':').\n"
-"ClockRT    <falsch>\tStellen Sie für die Verwendung REALTIME (elsa "
-"MONOTONIC) Uhr, einige problematische mit dem Systemtakt Modifikation.\n"
-"SaveAtExit <true>\tSystem beim Beenden Speichern.\n"
+"ClockRT    <0|1>\tStellen Sie für die Verwendung REALTIME (elsa MONOTONIC) "
+"Uhr, einige problematische mit dem Systemtakt Modifikation.\n"
+"SaveAtExit <0|1>\tSystem beim Beenden Speichern.\n"
 "SavePeriod <sec>\tZeitintervall für Systemspeicherung.\n"
 "RdStLevel  <lev>\tDas Niveau der laufenden Station im Bereitstellungschema.\n"
 "RdTaskPer  <s>\t\tDie Periodizität des Aufrufes der Bedinungsaufgabe.\n"
@@ -2387,8 +2394,8 @@ msgstr "Fehler beim Schreiben des Wertes ins Archiv: %s"
 msgid "Attribute doesn't have archive"
 msgstr "Attribut hat kein Archiv"
 
-msgid "Too big string length (> 130 MB)!"
-msgstr "Sehr große Größe der Zeichenfolge (> 130 MB)!"
+msgid "Too big string forced to the not STL string (> 30 MB)!"
+msgstr "Zu großer String gezwungen, die nicht STL-String (> 30 MB)!"
 
 #, c-format
 msgid "Memory alloc for big string length (%d) error!"
@@ -2525,12 +2532,3 @@ msgstr "Stellen Sie den Namen des Projekts an:"
 
 msgid "already started."
 msgstr "begonnen."
-
-#~ msgid "%s: Timeouted !!!"
-#~ msgstr "%s: Zeitüberschreitung !!!"
-
-#~ msgid "%s: Wait event..."
-#~ msgstr "%s: Warte auf Ereignis..."
-
-#~ msgid "Add module '%s'!"
-#~ msgstr "In Modul '%s'!"

@@ -40,9 +40,9 @@ TPrmTempl::~TPrmTempl( )
 
 }
 
-TCntrNode &TPrmTempl::operator=( TCntrNode &node )
+TCntrNode &TPrmTempl::operator=( const TCntrNode &node )
 {
-    TPrmTempl *src_n = dynamic_cast<TPrmTempl*>(&node);
+    const TPrmTempl *src_n = dynamic_cast<const TPrmTempl*>(&node);
     if(!src_n) return *this;
 
     exclCopy(*src_n, "ID;");
@@ -83,7 +83,7 @@ bool TPrmTempl::cfgChange( TCfg &co, const TVariant &pc )
     return true;
 }
 
-TPrmTmplLib &TPrmTempl::owner( )	{ return *(TPrmTmplLib*)nodePrev(); }
+TPrmTmplLib &TPrmTempl::owner( ) const	{ return *(TPrmTmplLib*)nodePrev(); }
 
 string TPrmTempl::name( )		{ string nm = cfg("NAME").getS(); return nm.size() ? nm : id(); }
 
@@ -93,7 +93,7 @@ string TPrmTempl::descr( )		{ return cfg("DESCR").getS(); }
 
 void TPrmTempl::setDescr( const string &idsc )	{ cfg("DESCR").setS(idsc); }
 
-string TPrmTempl::stor( )		{ return owner().DB(); }
+string TPrmTempl::stor( ) const		{ return owner().DB(); }
 
 int TPrmTempl::maxCalcTm( )		{ return cfg("MAXCALCTM").getI(); }
 
@@ -224,8 +224,8 @@ void TPrmTempl::save_( )
     for(int fld_cnt = 0; SYS->db().at().dataSeek(w_db+"_io",w_cfgpath+"_io",fld_cnt++,cfg,false,&full); ) {
 	string sio = cfg.cfg("ID").getS();
 	if(ioId(sio) < 0 || io(ioId(sio))->flg()&TPrmTempl::LockAttr) {
-	    SYS->db().at().dataDel(w_db+"_io",w_cfgpath+"_io",cfg,true,false,true);
-	    fld_cnt--;
+	    if(!SYS->db().at().dataDel(w_db+"_io",w_cfgpath+"_io",cfg,true,false,true))	break;
+	    if(full.empty()) fld_cnt--;
 	}
     }
 }
@@ -271,8 +271,8 @@ void TPrmTempl::cntrCmdProc( XMLNode *opt )
 		    "sel_id",TSYS::strMess("%d;%d;%d",IO::Default,TPrmTempl::AttrRead,TPrmTempl::AttrFull).c_str(),
 		    "sel_list",_("No attribute;Read only;Full access"));
 		ctrMkNode("list",opt,-1,"/io/io/5",_("Configure"),RWRWR_,"root",SDAQ_ID,5,"tp","dec","idm","1","dest","select",
-		    "sel_id",TSYS::strMess("%d;%d;%d",IO::Default,TPrmTempl::CfgPublConst,TPrmTempl::CfgLink).c_str(),
-		    "sel_list",_("Constant;Public constant;Link"));
+		    "sel_id",TSYS::strMess("%d;%d;%d",IO::Default,TPrmTempl::CfgConst,TPrmTempl::CfgLink).c_str(),
+		    "sel_list",_("Variable;Constant;Link"));
 		ctrMkNode("list",opt,-1,"/io/io/6",_("Value"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
 	    }
 	    ctrMkNode("fld",opt,-1,"/io/prog_lang",_("Program language"),RWRW__,"root",SDAQ_ID,3,"tp","str","dest","sel_ed","select","/io/plang_ls");
@@ -320,7 +320,7 @@ void TPrmTempl::cntrCmdProc( XMLNode *opt )
 		if(n_type)	n_type->childAdd("el")->setText(i2s(io(id)->type()|((io(id)->flg()&IO::FullText)<<8)));
 		if(n_mode)	n_mode->childAdd("el")->setText(i2s(io(id)->flg()&(IO::Output|IO::Return)));
 		if(n_attr)	n_attr->childAdd("el")->setText(i2s(io(id)->flg()&(TPrmTempl::AttrRead|TPrmTempl::AttrFull)));
-		if(n_accs)	n_accs->childAdd("el")->setText(i2s(io(id)->flg()&(TPrmTempl::CfgPublConst|TPrmTempl::CfgLink)));
+		if(n_accs)	n_accs->childAdd("el")->setText(i2s(io(id)->flg()&(TPrmTempl::CfgConst|TPrmTempl::CfgLink)));
 		if(n_val)	n_val->childAdd("el")->setText(io(id)->def());
 	    }
 	}
@@ -360,7 +360,7 @@ void TPrmTempl::cntrCmdProc( XMLNode *opt )
 		    break;
 		case 3:	io(row)->setFlg(io(row)->flg()^((io(row)->flg()^s2i(opt->text()))&(IO::Output|IO::Return)));		break;
 		case 4:	io(row)->setFlg(io(row)->flg()^((io(row)->flg()^s2i(opt->text()))&(TPrmTempl::AttrRead|TPrmTempl::AttrFull)));		break;
-		case 5:	io(row)->setFlg(io(row)->flg()^((io(row)->flg()^s2i(opt->text()))&(TPrmTempl::CfgPublConst|TPrmTempl::CfgLink)));	break;
+		case 5:	io(row)->setFlg(io(row)->flg()^((io(row)->flg()^s2i(opt->text()))&(TPrmTempl::CfgConst|TPrmTempl::CfgLink)));	break;
 		case 6:	io(row)->setDef(opt->text()); setStart(false); break;
 	    }
 	}
@@ -428,9 +428,9 @@ TPrmTmplLib::~TPrmTmplLib()
 
 }
 
-TCntrNode &TPrmTmplLib::operator=( TCntrNode &node )
+TCntrNode &TPrmTmplLib::operator=( const TCntrNode &node )
 {
-    TPrmTmplLib *src_n = dynamic_cast<TPrmTmplLib*>(&node);
+    const TPrmTmplLib *src_n = dynamic_cast<const TPrmTmplLib*>(&node);
     if(!src_n) return *this;
 
     //Configuration copy
@@ -469,7 +469,7 @@ void TPrmTmplLib::postDisable(int flag)
     }
 }
 
-TDAQS &TPrmTmplLib::owner( )	{ return *(TDAQS*)nodePrev(); }
+TDAQS &TPrmTmplLib::owner( ) const	{ return *(TDAQS*)nodePrev(); }
 
 string TPrmTmplLib::name( )	{ string nm = cfg("NAME").getS(); return nm.size() ? nm : id(); }
 
@@ -563,7 +563,7 @@ void TPrmTmplLib::cntrCmdProc( XMLNode *opt )
 	if(ctrMkNode("area",opt,-1,"/lib",_("Library"))) {
 	    if(ctrMkNode("area",opt,-1,"/lib/st",_("State"))) {
 		ctrMkNode("fld",opt,-1,"/lib/st/st",_("Accessing"),RWRWR_,"root",SDAQ_ID,1,"tp","bool");
-		ctrMkNode("fld",opt,-1,"/lib/st/db",_("Library BD"),RWRWR_,"root",SDAQ_ID,4,
+		ctrMkNode("fld",opt,-1,"/lib/st/db",_("Library DB"),RWRWR_,"root",SDAQ_ID,4,
 		    "tp","str","dest","sel_ed","select",("/db/tblList:tmplib_"+id()).c_str(),
 		    "help",_("DB address in format [<DB module>.<DB name>.<Table name>].\nFor use main work DB set '*.*'."));
 		ctrMkNode("fld",opt,-1,"/lib/st/timestamp",_("Date of modification"),R_R_R_,"root",SDAQ_ID,1,"tp","time");
