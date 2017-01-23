@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.FT3 0.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-30 10:18+0300\n"
+"POT-Creation-Date: 2017-01-23 13:16+0300\n"
 "PO-Revision-Date: 2015-11-13 15:13+0300\n"
 "Last-Translator: Maxim Kochetkov <fido_max@inbox.ru>\n"
 "Language-Team: \n"
@@ -168,6 +168,10 @@ msgid "L:%02d C:%02X A:%02d B:%02d "
 msgstr "L:%02d C:%02X A:%02d B:%02d"
 
 #, c-format
+msgid "response: %s"
+msgstr "ответ: %s"
+
+#, c-format
 msgid "ProcessMessage one byte req A %02X"
 msgstr "Разбор пакета байтового опроса A %02X"
 
@@ -261,6 +265,9 @@ msgstr "Таблица параметров ГКР"
 msgid "TANK Parameters table"
 msgstr "Таблица параметров РЕЗЕРВУАР"
 
+msgid "UPZ Parameters table"
+msgstr "Таблица параметров УПЗ"
+
 msgid "Acquisition schedule"
 msgstr "Планирование опроса"
 
@@ -284,6 +291,12 @@ msgstr "Считывать параметры"
 
 msgid "DB;PLC"
 msgstr "БД;КП"
+
+msgid "Request repeats"
+msgstr "Попыток запроса"
+
+msgid "Max request length"
+msgstr "Максимальная длина запроса"
 
 msgid "BUC"
 msgstr "БУЦ"
@@ -360,6 +373,9 @@ msgstr "ГКР"
 msgid "TANK"
 msgstr "РЕЗЕРВУАР"
 
+msgid "UPZ"
+msgstr "УПЗ"
+
 msgid "Parameter ID"
 msgstr "ID параметра"
 
@@ -398,10 +414,6 @@ msgstr "io_buf: %s"
 #, c-format
 msgid "CRC %04X"
 msgstr "CRC %04X"
-
-#, c-format
-msgid "response: %s"
-msgstr "ответ: %s"
 
 #, c-format
 msgid "Parse error %d"
@@ -991,3 +1003,38 @@ msgstr "Состояние датчика ТС2 %d"
 #, c-format
 msgid "State Sens2 TC Not %d"
 msgstr "Состояние датчика ТС2 инв %d"
+
+#, c-format
+msgid "Address object 1 %d"
+msgstr "Адрес объекта 1 %d"
+
+#, c-format
+msgid "Address object 2 %d"
+msgstr "Адрес объекта 2 %d"
+
+msgid "Alarm object 1 %d"
+msgstr "Объект тревоги 1 %d"
+
+msgid "Time1 %d"
+msgstr "Время1 %d"
+
+msgid "Number function 1 %d"
+msgstr "Номер функции 1 %d"
+
+#, c-format
+msgid "Number object 1 %d"
+msgstr "Номер объекта 1 %d"
+
+msgid "Alarm object 2 %d"
+msgstr "Объект тревоги 2 %d"
+
+msgid "Time2 %d"
+msgstr "Время2 %d"
+
+msgid "Number function 2 %d"
+msgstr "Номер функции 2 %d"
+
+#, c-format
+msgid "Number object 2 %d"
+msgstr "Номер объекта 2 %d"
+
