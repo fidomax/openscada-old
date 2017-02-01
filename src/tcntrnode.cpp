@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tcntrnode.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -510,8 +510,8 @@ bool TCntrNode::chldPresent( int8_t igr, const string &name ) const
 
 void TCntrNode::chldAdd( int8_t igr, TCntrNode *node, int pos, bool noExp )
 {
-    if(nodeMode() != Enabled)			{ delete node; throw err_sys(_("Node is not enabled!")); }
-    if(TSYS::strNoSpace(node->nodeName()).empty()) { delete node; throw err_sys(_("Add child id is empty!")); }
+    if(nodeMode() != Enabled)		{ delete node; throw err_sys(_("Node is not enabled!")); }
+    if(sTrm(node->nodeName()).empty())	{ delete node; throw err_sys(_("Add child id is empty!")); }
 
     MtxAlloc res(mChM, true);
     if(!chGrp || igr >= (int)chGrp->size())	{ delete node; throw err_sys(_("Group of childs %d error!"), igr); }
@@ -639,10 +639,10 @@ int TCntrNode::isModify( int f )
 	    TMap::iterator p;
 	    chldList(iG, chLs, true, false);
 	    for(iN = 0; iG < chGrp->size() && iN < chLs.size(); iN++) {
-		if((p=(*chGrp)[iG].elem.find(chLs[iN].c_str())) == (*chGrp)[iG].elem.end()) continue;
+		if((p=(*chGrp)[iG].elem.find(chLs[iN].c_str())) == (*chGrp)[iG].elem.end() || p->second->nodeMode() == Disabled) continue;
 		AutoHD<TCntrNode> ndO(p->second);
 		res2.unlock();
-		int chRflg = p->second->isModify(Self|Child);
+		int chRflg = ndO.at().isModify(Self|Child);
 		res2.lock();
 		if(chRflg) { rflg |= Child; break; }
 	    }
@@ -854,12 +854,12 @@ XMLNode *TCntrNode::_ctrMkNode( const char *n_nd, XMLNode *nd, int pos, const ch
     }
 
     //Go to element
-    for( ;(reqt=TSYS::pathLev(path,0,true,&woff)).size(); reqt1 = reqt) {
+    for(int itN = 0; (reqt=TSYS::pathLev(path,0,true,&woff)).size(); reqt1 = reqt, itN++) {
 	XMLNode *obj1 = obj->childGet("id", reqt, true);
 	if(obj1) { obj = obj1; continue; }
 	//int wofft = woff;
 	if(TSYS::pathLev(path,0,true,&woff).size())
-	    throw TError("ContrItfc", _("Some tags on path '%s' are missed!"), req.c_str());
+	    throw TError("ContrItfc", _("Entry %d of the path '%s' is missed!"), itN, path);
 	if(pos == -1)	obj = obj->childAdd();
 	else obj = obj->childIns((pos<0)?pos+1:pos);
     }

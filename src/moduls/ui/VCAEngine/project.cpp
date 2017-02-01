@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.VCAEngine file: project.cpp
 /***************************************************************************
- *   Copyright (C) 2007-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -35,7 +35,7 @@ using namespace VCA;
 Project::Project( const string &id, const string &name, const string &lib_db ) :
     TConfig(&mod->elProject()), enableByNeed(false), mId(cfg("ID")), workPrjDB(lib_db), mPermit(cfg("PERMIT").getId()),
     mPer(cfg("PER").getId())/*, mFlgs(cfg("FLGS").getId())*/, mStyleIdW(cfg("STYLE").getId()),
-    mEnable(false)
+    mEnable(false), mFuncM(true)
 {
     mId = id;
     cfg("NAME").setS(name);
@@ -327,7 +327,7 @@ bool Project::mimeDataGet( const string &iid, string &mimeType, string *mimeData
 	while((len=read(hd,buf,sizeof(buf))) > 0) rez.append(buf,len);
 	close(hd);
 
-	mimeType = ((filepath.rfind(".") != string::npos) ? filepath.substr(filepath.rfind(".")+1)+";" : "file/unknown;")+i2s(rez.size());
+	mimeType = TUIS::mimeGet(filepath, rez);
 	if(mimeData) *mimeData = TSYS::strEncode(rez,TSYS::base64);
 	return true;
     }
@@ -632,7 +632,7 @@ void Project::cntrCmdProc( XMLNode *opt )
 		    }
 	    }
 	}
-	if(ctrChkNode(opt,"add",RWRWR_,"root",SUI_ID,SEC_WR))	mimeDataSet("newMime","image/new;0","");
+	if(ctrChkNode(opt,"add",RWRWR_,"root",SUI_ID,SEC_WR))	mimeDataSet("newMime", "file/unknown;0", "");
 	if(ctrChkNode(opt,"del",RWRWR_,"root",SUI_ID,SEC_WR))	mimeDataDel(opt->attr("key_id"));
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SUI_ID,SEC_WR)) {
 	    // Request data
@@ -640,7 +640,7 @@ void Project::cntrCmdProc( XMLNode *opt )
 		string mimeType, mimeData;
 		// Copy mime data to new record
 		if(mimeDataGet("res:"+idmime, mimeType, &mimeData)) {
-		    mimeDataSet(opt->text(), mimeType, mimeData);
+		    mimeDataSet(opt->text(), TUIS::mimeGet(idmime,mimeData,mimeType), mimeData);
 		    mimeDataDel(idmime);
 		}
 	    }
@@ -652,11 +652,7 @@ void Project::cntrCmdProc( XMLNode *opt )
 	    }
 	    else if(idcol == "dt") {
 		string mimeType;
-		if(!mimeDataGet("res:"+idmime, mimeType)) {
-		    size_t extP = idmime.rfind(".");
-		    if(extP == string::npos || extP == 0 || extP == (idmime.size()-1)) mimeType = "media/unknown";
-		    else { mimeType = "media/"+idmime.substr(extP+1); idmime = idmime.substr(0,extP); }
-		}
+		if(!mimeDataGet("res:"+idmime, mimeType)) mimeType = TUIS::mimeGet(idmime, TSYS::strDecode(opt->text(),TSYS::base64));
 		mimeDataSet(idmime, TSYS::strSepParse(mimeType,0,';')+";"+r2s((float)opt->text().size()/1024,6),opt->text());
 	    }
 	}
@@ -847,10 +843,10 @@ void Page::postEnable( int flag )
 
     //Add main attributes
     if(flag&TCntrNode::NodeConnect) {
-	attrAdd(new TFld("pgOpen",_("Page:open state"),TFld::Boolean,TFld::NoFlag));
-	attrAdd(new TFld("pgNoOpenProc",_("Page:process no opened"),TFld::Boolean,TFld::NoFlag));
-	attrAdd(new TFld("pgGrp",_("Page:group"),TFld::String,TFld::NoFlag,"","","","",i2s(A_PG_GRP).c_str()));
-	attrAdd(new TFld("pgOpenSrc",_("Page:open source"),TFld::String,TFld::NoFlag,"","","","",i2s(A_PG_OPEN_SRC).c_str()));
+	attrAdd(new TFld("pgOpen",_("Page: open state"),TFld::Boolean,TFld::NoFlag));
+	attrAdd(new TFld("pgNoOpenProc",_("Page: process no opened"),TFld::Boolean,TFld::NoFlag));
+	attrAdd(new TFld("pgGrp",_("Page: group"),TFld::String,TFld::NoFlag,"","","","",i2s(A_PG_GRP).c_str()));
+	attrAdd(new TFld("pgOpenSrc",_("Page: open source"),TFld::String,TFld::NoFlag,"","","","",i2s(A_PG_OPEN_SRC).c_str()));
     }
 
     //Set owner key for this page
@@ -1128,8 +1124,8 @@ void Page::setEnable( bool val, bool force )
     }
 
     if(val) {
-	attrAdd(new TFld("pgOpen",_("Page:open state"),TFld::Boolean,TFld::NoFlag));
-	attrAdd(new TFld("pgNoOpenProc",_("Page:process no opened"),TFld::Boolean,TFld::NoFlag));
+	attrAdd(new TFld("pgOpen",_("Page: open state"),TFld::Boolean,TFld::NoFlag));
+	attrAdd(new TFld("pgNoOpenProc",_("Page: process no opened"),TFld::Boolean,TFld::NoFlag));
     }
 
     //Enable/disable included pages
@@ -1278,7 +1274,7 @@ TVariant Page::vlGet( Attr &a )
 TVariant Page::stlReq( Attr &a, const TVariant &vl, bool wr )
 {
     if(stlLock()) return vl;
-    string pid = TSYS::strNoSpace(a.cfgTempl());
+    string pid = sTrm(a.cfgTempl());
     if(pid.empty()) pid = a.id();
     if(!wr) return ownerProj()->stlPropGet(pid, vl.getS());
     if(ownerProj()->stlPropSet(pid,vl.getS())) return TVariant();

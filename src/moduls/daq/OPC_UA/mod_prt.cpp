@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.OPC_UA file: mod_prt.cpp
 /***************************************************************************
- *   Copyright (C) 2009-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2009-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -66,6 +66,22 @@ string TProt::productUri( )		{ return "urn:OpenSCADA:DAQ.OPC_UA";/*PACKAGE_SITE;
 
 string TProt::applicationName( )	{ return "OpenSCADA.OPC-UA Server"; }
 
+uint32_t TProt::clientRcvBufSz( const string &inPrtId )	{ return at(inPrtId).at().mRcvBufSz; }
+
+uint32_t TProt::clientSndBufSz( const string &inPrtId )	{ return at(inPrtId).at().mSndBufSz; }
+
+uint32_t TProt::clientMsgMaxSz( const string &inPrtId )	{ return at(inPrtId).at().mMsgMaxSz; }
+
+uint32_t TProt::clientChunkMaxCnt( const string &inPrtId ) { return at(inPrtId).at().mChunkMaxCnt; }
+
+void TProt::clientRcvBufSzSet( const string &inPrtId, uint32_t vl )	{ at(inPrtId).at().mRcvBufSz = vl; }
+
+void TProt::clientSndBufSzSet( const string &inPrtId, uint32_t vl )	{ at(inPrtId).at().mSndBufSz = vl; }
+
+void TProt::clientMsgMaxSzSet( const string &inPrtId, uint32_t vl )	{ at(inPrtId).at().mMsgMaxSz = vl; }
+
+void TProt::clientChunkMaxCntSet( const string &inPrtId, uint32_t vl )	{ at(inPrtId).at().mChunkMaxCnt = vl; }
+
 void TProt::epAdd( const string &iid, const string &db )
 {
     chldAdd(mEndPnt, new OPCEndPoint(iid,db,&endPntEl()));
@@ -96,13 +112,20 @@ Server::EP *TProt::epEnAt( const string &ep )
 
 bool TProt::inReq( string &request, const string &inPrtId, string *answ )
 {
+    ResAlloc res(enRes, false);
+    bool rez = Server::inReq(request, inPrtId, answ);
+    res.unlock();
+
 #ifdef POOL_OF_TR
     //Pool for subscriptions process
     AutoHD<TProtIn> ip = at(inPrtId);
     if(ip.at().waitReqTm() && !ip.at().mSubscrIn && epPresent(ip.at().mEp)) {
 	int64_t wTm = SYS->curTime();
-	if((wTm-ip.at().mPrevTm)/1000 >= ip.at().waitReqTm()) {
-	    ip.at().mSubscrCntr++;
+	AutoHD<OPCEndPoint> ep = epAt(ip.at().mEp);
+	bool tmToCall = (wTm-ip.at().mPrevTm)/1000 >= ip.at().waitReqTm();
+	if(tmToCall || ep.at().forceSubscrQueue) {
+	    if(tmToCall) ep.at().forceSubscrQueue = false;
+	    if(!ep.at().forceSubscrQueue) ip.at().mSubscrCntr++;
 	    ip.at().mPrevTm = wTm;
 	    ip.at().mSubscrIn = true;
 	    epAt(ip.at().mEp).at().subScrCycle(ip.at().mSubscrCntr, answ, inPrtId);
@@ -111,8 +134,7 @@ bool TProt::inReq( string &request, const string &inPrtId, string *answ )
     }
 #endif
 
-    ResAlloc res(enRes, false);
-    return Server::inReq(request, inPrtId, answ);
+    return rez;
 }
 
 int TProt::writeToClient( const string &inPrtId, const string &data )	{ return at(inPrtId).at().writeTo(data); }
@@ -233,7 +255,8 @@ void TProt::cntrCmdProc( XMLNode *opt )
 //*************************************************
 //* TProtIn                                       *
 //*************************************************
-TProtIn::TProtIn( string name ) : TProtocolIn(name), mSubscrIn(false), mPoolTm(0), mSubscrCntr(0), mPrevTm(0)	{ }
+TProtIn::TProtIn( string name ) : TProtocolIn(name), mSubscrIn(false), mPoolTm(0), mSubscrCntr(0), mPrevTm(0),
+	mRcvBufSz(0), mSndBufSz(0), mMsgMaxSz(0), mChunkMaxCnt(0)	{ }
 
 TProtIn::~TProtIn( )		{ }
 
@@ -307,6 +330,7 @@ void *OPCEndPoint::Task( void *iep )
     OPCEndPoint &ep = *(OPCEndPoint *)iep;
 
     for(unsigned cntr = 0; !TSYS::taskEndRun(); cntr++) {
+	ep.forceSubscrQueue = false;	//Disable the forcing mechanism for the method
 	try { ep.subScrCycle(cntr); }
 	catch(OPCError &err)	{ mess_err(ep.nodePath().c_str(), err.mess.c_str()); }
 	catch(TError &err)	{ mess_err(err.cat.c_str(), err.mess.c_str()); }

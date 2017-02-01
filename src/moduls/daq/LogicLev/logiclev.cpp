@@ -39,13 +39,13 @@
 #define MOD_NAME	_("Logic level")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.7.3"
+#define MOD_VER		"1.7.5"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides the logical level of parameters.")
 #define LICENSE		"GPL2"
 //*************************************************
 
-LogicLev::TTpContr *LogicLev::mod;  //Pointer for direct access to the module
+LogicLev::TTpContr *LogicLev::mod;	//Pointer for direct access to the module
 
 extern "C"
 {
@@ -55,7 +55,7 @@ extern "C"
     TModule::SAt module( int n_mod )
 #endif
     {
-	if(n_mod == 0)	return TModule::SAt(MOD_ID,MOD_TYPE,VER_TYPE);
+	if(n_mod == 0)	return TModule::SAt(MOD_ID, MOD_TYPE, VER_TYPE);
 	return TModule::SAt("");
     }
 
@@ -193,12 +193,12 @@ void TMdContr::prmEn( TMdPrm *p, bool val )
 {
     MtxAlloc res(enRes, true);
 
-    unsigned i_prm;
-    for(i_prm = 0; i_prm < pHd.size(); i_prm++)
-	if(&pHd[i_prm].at() == p) break;
+    unsigned iPrm;
+    for(iPrm = 0; iPrm < pHd.size(); iPrm++)
+	if(&pHd[iPrm].at() == p) break;
 
-    if(val && i_prm >= pHd.size())	pHd.push_back(p);
-    if(!val && i_prm < pHd.size())	pHd.erase(pHd.begin()+i_prm);
+    if(val && iPrm >= pHd.size())	pHd.push_back(p);
+    if(!val && iPrm < pHd.size())	pHd.erase(pHd.begin()+iPrm);
 }
 
 void *TMdContr::Task( void *icntr )
@@ -389,8 +389,9 @@ void TMdPrm::enable( )
 			    TVal::DirWrite|TVal::DirRead|(prmRefl->at().vlAt(list[i_l]).at().fld().flg()&TFld::NoWrite)));
 		    als.push_back(list[i_l]);
 		}
+
+		isProc = true;
 	    }
-	    isProc = true;
 	}
 	else if(isStd() && !tmpl->val.func()) {
 	    bool to_make = false;
@@ -446,8 +447,9 @@ void TMdPrm::enable( )
 		idDscr	= tmpl->val.ioId("DESCR");
 		int idThis = tmpl->val.ioId("this");
 		if(idThis >= 0) tmpl->val.setO(idThis, new TCntrNodeObj(AutoHD<TCntrNode>(this),"root"));
+
+		isProc = true;
 	    }
-	    isProc = true;
 	}
     } catch(...) { disable(); throw; }
 
@@ -686,7 +688,7 @@ TVariant TMdPrm::objFuncCall( const string &iid, vector<TVariant> &prms, const s
 	unsigned aId = pEl.fldId(prms[0].getS(), true);
 	if(aId < pEl.fldSize()) {
 	    if(prms.size() >= 2 && prms[1].getS().size()) pEl.fldAt(aId).setDescr(prms[1].getS());
-	    pEl.fldAt(aId).setFlg(pEl.fldAt(aId).flg()^((pEl.fldAt(aId).flg()^flg)&(TFld::Selected|TFld::SelEdit)));
+	    pEl.fldAt(aId).setFlg(pEl.fldAt(aId).flg()^((pEl.fldAt(aId).flg()^flg)&(TFld::Selected|TFld::SelEdit|TFld::FullText|TFld::NoWrite)));
 	    pEl.fldAt(aId).setValues(sVals);
 	    pEl.fldAt(aId).setSelNames(sNms);
 	    pEl.fldAt(aId).setLen(SYS->sysTm());

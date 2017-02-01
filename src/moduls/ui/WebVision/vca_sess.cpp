@@ -69,7 +69,7 @@ void VCASess::getReq( SSess &ses )
     //int64_t curTm = TSYS::curTime();
 
     map<string,string>::iterator prmEl = ses.prm.find("com"), prmEl1;
-    string first_lev = TSYS::pathLev(ses.url,1);
+    string first_lev = TSYS::pathLev(ses.url, 1);
     string wp_com = (prmEl!=ses.prm.end()) ? prmEl->second : "";
     if(wp_com.empty()) {
 	string prjNm, extJS;
@@ -98,10 +98,10 @@ void VCASess::getReq( SSess &ses )
     //Session/projects icon
     else if(wp_com == "ico") {
 	XMLNode req("get");
-	req.setAttr("path",ses.url+"/%2fico");
-	mod->cntrIfCmd(req,ses.user);
-	ses.page = TSYS::strDecode(req.text(),TSYS::base64);
-	ses.page = mod->httpHead("200 OK",ses.page.size(),"image/png")+ses.page;
+	req.setAttr("path", ses.url+"/%2fico");
+	mod->cntrIfCmd(req, ses.user);
+	ses.page = TSYS::strDecode(req.text(), TSYS::base64);
+	ses.page = mod->httpHead("200 OK",ses.page.size(),"image/png") + ses.page;
     }
     //Get open pages list
     else if(wp_com == "pgOpenList" && first_lev.empty()) {
@@ -172,9 +172,9 @@ void VCASess::getReq( SSess &ses )
 	prmEl = ses.prm.find("val");
 	if(prmEl != ses.prm.end()) {
 	    string mime;
-	    ses.page = resGet(prmEl->second,ses.url,ses.user,&mime);
+	    ses.page = resGet(prmEl->second, ses.url, ses.user, &mime);
 	    mod->imgConvert(ses);
-	    ses.page = mod->httpHead("200 OK",ses.page.size(),mime)+ses.page;
+	    ses.page = mod->httpHead("200 OK", ses.page.size(), mime)+ses.page;
 	} else ses.page = mod->httpHead("404 Not Found");
     }
     //Request to primitive object. Used for data caching
@@ -237,11 +237,11 @@ string VCASess::resGet( const string &res, const string &path, const string &use
     string ret = cacheResGet(res, mime);
     if(ret.empty()) {
 	XMLNode req("get");
-	req.setAttr("path",path+"/%2fwdg%2fres")->setAttr("id",res);
-	mod->cntrIfCmd(req,user);
-	ret = TSYS::strDecode(req.text(),TSYS::base64);
+	req.setAttr("path", path+"/%2fwdg%2fres")->setAttr("id", res);
+	mod->cntrIfCmd(req, user);
+	ret = TSYS::strDecode(req.text(), TSYS::base64);
 	if(!ret.empty()) {
-	    if(mime) *mime = req.attr("mime");
+	    if(mime) *mime = TUIS::mimeGet(res, ret, req.attr("mime"));
 	    cacheResSet(res, ret, req.attr("mime"));
 	}
     }
@@ -2269,14 +2269,11 @@ int VCAElFigure::drawElF( SSess &ses, double xSc, double ySc, Point clickPnt )
     bool flag_push_back;
     scaleHeight = (int)rRnd(height*ySc, POS_PREC_DIG, true);
     scaleWidth = (int)rRnd(width*xSc, POS_PREC_DIG, true);
-    if( xSc < ySc ) scale = xSc;
-    else scale = ySc;
-    if( scale != 1.0 )
-    {
-	for(unsigned i = 0; i < shapeItems.size(); i++)
-	{
-	    if( !shapeItems[i].flag_brd && shapeItems[i].border_width > 0 )
-	    {
+    if(scaleHeight < 0 || scaleHeight > 10000 || scaleWidth < 0 || scaleWidth > 10000)	return -1;
+    scale = vmin(xSc, ySc);
+    if(scale != 1) {
+	for(unsigned i = 0; i < shapeItems.size(); i++) {
+	    if(!shapeItems[i].flag_brd && shapeItems[i].border_width > 0) {
 		border_width = shapeItems[i].border_width;
 		border_width = border_width*scale;
 		shapeItems[i].border_width = (int)rRnd(border_width);
@@ -6681,7 +6678,7 @@ void VCADocument::setAttrs( XMLNode &node, const string &user )
 	if(req_el->name() != "el")	continue;
 	switch(s2i(req_el->attr("p"))) {
 	    case A_DocTmpl: case A_DocDoc: {
-		if(TSYS::strNoSpace(req_el->text()).empty())	break;
+		if(sTrm(req_el->text()).empty())	break;
 		const char *XHTML_entity =
 		    "<!DOCTYPE xhtml [\n"
 		    "  <!ENTITY nbsp \"&#160;\" >\n"

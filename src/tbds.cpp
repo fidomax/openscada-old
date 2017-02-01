@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tbds.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -744,7 +744,7 @@ TVariant TBD::objFuncCall( const string &iid, vector<TVariant> &prms, const stri
     // Array SQLReq(string req, bool tr = EVAL_BOOL) - formation of the SQL-request to the DB.
     //  req - SQL-request text
     if(iid == "SQLReq" && prms.size() >= 1) {
-	TArrayObj *rez = new TArrayObj();
+	TArrayObj *rez = new TArrayObj(); rez->propSet("err", "");
 	try {
 	    vector< vector<string> > rtbl;
 	    sqlReq(prms[0].getS(), &rtbl, ((prms.size()>=2)?prms[1].getB():EVAL_BOOL));
@@ -756,7 +756,7 @@ TVariant TBD::objFuncCall( const string &iid, vector<TVariant> &prms, const stri
 		}
 		rez->arSet(iR, row);
 	    }
-	} catch(...){ }
+	} catch(TError &err)	{ rez->propSet("err", err.cat+":"+err.mess); }
 
 	return rez;
     }
@@ -810,7 +810,7 @@ void TBD::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("list",opt,-1,"/tbls/otbl",_("Opened tables"),RWRW__,"root",SDB_ID,5,
 		"tp","br","idSz","255","s_com","add,del","br_pref","tbl_",
 		"help",_("Opened table list.\nAdding and deleting tables operations are really open and close tables operations."));
-	if(enableStat( ) && ctrMkNode("area",opt,-1,"/sql",_("SQL"),R_R___,"root",SDB_ID)) {
+	if(enableStat() && ctrMkNode("area",opt,-1,"/sql",_("SQL"),R_R___,"root",SDB_ID)) {
 	    ctrMkNode("fld",opt,-1,"/sql/req",_("Request"),RWRW__,"root",SDB_ID,3,"tp","str","cols","100","rows","5");
 	    ctrMkNode("fld",opt,-1,"/sql/trans",_("Transaction"),RWRW__,"root",SDB_ID,4,"tp","dec","dest","select",
 		"sel_id","0;1;2","sel_list",_("Out;Into;No matter"));

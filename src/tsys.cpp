@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tsys.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -325,17 +325,18 @@ string TSYS::addr2str( void *addr )
 
 void *TSYS::str2addr( const string &str )	{ return (void *)strtoul(str.c_str(),NULL,16); }
 
-string TSYS::strNoSpace( const string &val )
+string TSYS::strTrim( const string &val, const string &cfg )
 {
     int beg = -1, end = -1;
 
-    for(unsigned i_s = 0; i_s < val.size(); i_s++)
-	if(val[i_s] != ' ' && val[i_s] != '\n' && val[i_s] != '\t') {
-	    if(beg < 0) beg = i_s;
-	    end = i_s;
-	}
+    for(unsigned iS = 0, iC = 0; iS < val.size(); iS++) {
+	for(iC = 0; iC < cfg.size() && val[iS] != cfg[iC]; iC++) ;
+	if(iC < cfg.size())	continue;
+	if(beg < 0) beg = iS;
+	end = iS;
+    }
 
-    return (beg>=0) ? val.substr(beg,end-beg+1) : "";
+    return (beg >= 0) ? val.substr(beg, end-beg+1) : "";
 }
 
 string TSYS::strMess( const char *fmt, ... )
@@ -506,9 +507,9 @@ bool TSYS::cfgFileLoad( )
 	    rootN.load(s_buf, XMLNode::LD_Full);
 	    if(rootN.name() == "OpenSCADA") {
 		XMLNode *stat_n = NULL;
-		for(int i_st = rootN.childSize()-1; i_st >= 0; i_st--)
-		    if(rootN.childGet(i_st)->name() == "station") {
-			stat_n = rootN.childGet(i_st);
+		for(int iSt = rootN.childSize()-1; iSt >= 0; iSt--)
+		    if(rootN.childGet(iSt)->name() == "station") {
+			stat_n = rootN.childGet(iSt);
 			if(stat_n->attr("id") == mId) break;
 		    }
 		if(stat_n && stat_n->attr("id") != mId) {
@@ -1063,14 +1064,14 @@ string TSYS::strEncode( const string &in, TSYS::Code tp, const string &opt1 )
 	    sout.reserve(in.size()+10);
 	    char buf[4];
 	    for(iSz = 0; iSz < (int)in.size(); iSz++) {
-		unsigned i_smb;
-		for(i_smb = 0; i_smb < opt1.size(); i_smb++)
-		    if(in[iSz] == opt1[i_smb]) {
+		unsigned iSmb;
+		for(iSmb = 0; iSmb < opt1.size(); iSmb++)
+		    if(in[iSz] == opt1[iSmb]) {
 			snprintf(buf,sizeof(buf),"%%%02X",(unsigned char)in[iSz]);
 			sout += buf;
 			break;
 		    }
-		if(i_smb >= opt1.size()) sout += in[iSz];
+		if(iSmb >= opt1.size()) sout += in[iSz];
 	    }
 	    break;
 	}
@@ -1122,9 +1123,7 @@ string TSYS::strEncode( const string &in, TSYS::Code tp, const string &opt1 )
 	    string svl, evl;
 	    sout.reserve(in.size()/2);
 	    for(unsigned iCh = 0; iCh < in.size(); ++iCh)
-		if(isxdigit(in[iCh])) {
-		    sout += (char)strtol(in.substr(iCh,2).c_str(),NULL,16); iCh++;
-		}
+		if(isxdigit(in[iCh])) { sout += (char)strtol(in.substr(iCh,2).c_str(),NULL,16); iCh++; }
 	    break;
 	}
 	case TSYS::Reverse:

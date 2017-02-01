@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-16 14:06+0200\n"
+"POT-Creation-Date: 2017-01-19 17:17+0200\n"
 "PO-Revision-Date: 2011-07-24 22:47+0400\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -746,9 +746,8 @@ msgstr "Zu viele Benutzer für Knoten!!!"
 msgid "Function '%s' error or not enough parameters."
 msgstr "Fehler in der Funktion '%s' oder nicht genug Parameter."
 
-#, c-format
-msgid "Some tags on path '%s' are missed!"
-msgstr "Einige Namen im Pfad '%s' sind falsch!"
+msgid "Entry %d of the path '%s' is missed!"
+msgstr "Eintrag %d des Pfads '%s' wird verpasst!"
 
 #, c-format
 msgid "Error access to element '%s'!"
@@ -1422,8 +1421,8 @@ msgstr "Bibliothek der Parametervorlagen: "
 msgid "Library"
 msgstr "Bibliothek"
 
-msgid "Library BD"
-msgstr "Datenbank der Bibliothek"
+msgid "Library DB"
+msgstr "Bibliothek DB"
 
 msgid ""
 "DB address in format [<DB module>.<DB name>.<Table name>].\n"
@@ -1635,6 +1634,7 @@ msgstr ""
 msgid "B"
 msgstr ""
 
+#, c-format
 msgid ""
 "***************************************************************************\n"
 "********** %s v%s (%s-%s). *********\n"
@@ -1727,8 +1727,8 @@ msgstr ""
 "Lang2CodeBase <Sprache> Grundsprache für die Übersetzung von Textvariablen, "
 "zwei Symbole.\n"
 "MainCPUs   <Liste>\tWichtigsten gebrauchte CPUs Liste (geteilt ':').\n"
-"ClockRT    <0|1>\tStellen Sie für die Verwendung REALTIME (elsa "
-"MONOTONIC) Uhr, einige problematische mit dem Systemtakt Modifikation.\n"
+"ClockRT    <0|1>\tStellen Sie für die Verwendung REALTIME (elsa MONOTONIC) "
+"Uhr, einige problematische mit dem Systemtakt Modifikation.\n"
 "SaveAtExit <0|1>\tSystem beim Beenden Speichern.\n"
 "SavePeriod <sec>\tZeitintervall für Systemspeicherung.\n"
 "RdStLevel  <lev>\tDas Niveau der laufenden Station im Bereitstellungschema.\n"
@@ -2393,13 +2393,15 @@ msgstr "Fehler beim Schreiben des Wertes ins Archiv: %s"
 msgid "Attribute doesn't have archive"
 msgstr "Attribut hat kein Archiv"
 
+msgid "Too big string forced to the not STL string (> 30 MB)!"
+msgstr "Zu großer String gezwungen, die nicht STL-String (> 30 MB)!"
+
 #, c-format
 msgid "Memory alloc for big string length (%d) error!"
 msgstr "Fehler Zuweisung von Speicher für eine Reihe von Großformat (%d)!"
 
-#, c-format
-msgid "Double disconnection try: %d."
-msgstr "Ein Versuch, verdoppeln sich aus: %d."
+msgid "Double disconnection try!"
+msgstr "Doppelte Trennung versuchen!"
 
 #, c-format
 msgid "Deletion child '%d' error."
@@ -2528,6 +2530,3 @@ msgstr "Stellen Sie den Namen des Projekts an:"
 
 msgid "already started."
 msgstr "begonnen."
-
-#~ msgid "Too big string length (> 130 MB)!"
-#~ msgstr "Sehr große Größe der Zeichenfolge (> 130 MB)!"
