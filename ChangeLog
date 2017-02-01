@@ -1,3 +1,18 @@
+2017-01-31 Roman (stable)
+- SYS: MtxString expanded by the object's constructor.
+- !!:FIX:DAQ.ModBus: ResString in whole replaced to MtxString.
+    FIX:Attribute "addr" and "real" of the logic mode were placed to MtxString for prevent crashes on its modification at run.
+- UI.WebCfgD: New standard design some expanded and improved.
+- UI.WebVision: Primitive's "Text" and "FormEl.Button" set for "white-space: pre-line".
+
+
+2017-01-27 Roman (stable)
+- DB.PostgreSQL: Statistic of control the activity and lags expanded by the maximum time request.
+- UI.QTCfg: The window title forming some changed.
+- !!!!:UI.WebCfgD: A new design created.
+    Adapting to new HTTP call functions HTTP_GET, HTTP_POST and whole moving to the generic pages creator HTTP::pgCreator().
+
+
 2017-01-19 Roman (stable)
 - FIX:SYS: The message "Some tags on path '%s' are missed!" was fixed for the argument and rewrote to "Entry %d of the path '%s' is missed!"
 - SYS: The function  was rewrote TVarObj::AHDDisConnect() for prevent a messages into the lock section.
