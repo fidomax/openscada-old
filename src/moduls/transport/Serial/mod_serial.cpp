@@ -1,7 +1,7 @@
 
 //OpenSCADA system module Transport.Serial file: mod_serial.cpp
 /***************************************************************************
- *   Copyright (C) 2009-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2009-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,7 +22,11 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <linux/serial.h>
+
+#if HAVE_LINUX_I2C_DEV_H
 #include <linux/i2c-dev.h>
+#endif
+
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -44,7 +48,7 @@
 #define MOD_NAME	_("Serial interfaces")
 #define MOD_TYPE	STR_ID
 #define VER_TYPE	STR_VER
-#define MOD_VER		"1.6.1"
+#define MOD_VER		"1.6.3"
 #define AUTHORS		_("Roman Savochenko, Maxim Kochetkov")
 #define DESCRIPTION	_("Provides a serial interface. It is used to data exchange via the serial interfaces of type RS232, RS485, GSM and more.")
 #define LICENSE		"GPL2"
@@ -187,7 +191,7 @@ string TTr::expect( int fd, const string& expLst, int tm )
 }
 
 //************************************************
-//* TTrIn                                        *
+//* TTrIn					 *
 //************************************************
 TTrIn::TTrIn( string name, const string &idb, TElem *el ) :
     TTransportIn(name,idb,el), fd(-1), endrun(false), trIn(0), trOut(0), tmMax(0), mTaskPrior(0),
@@ -295,8 +299,8 @@ void TTrIn::connect( )
 	tio.c_oflag = 0;
 	tio.c_cflag |= (CREAD|CLOCAL);
 	tio.c_lflag = 0;
-	tio.c_cc[VTIME] = 0;           ///< inter-character timer unused
-	tio.c_cc[VMIN] = 0;            ///< blocking read until 0 character arrives*/
+	tio.c_cc[VTIME] = 0;		//< inter-character timer unused
+	tio.c_cc[VMIN] = 0;		//< blocking read until 0 character arrives
 	// Set speed
 	string speed = sTrm(TSYS::strParse(addr(),1,":"));
 	if(!speed.empty()) {
@@ -551,7 +555,7 @@ void *TTrIn::Task( void *tr_in )
 	//Send respond
 	if(answ.size()) {
 	    if(mess_lev() == TMess::Debug)
-		mess_debug(tr->nodePath().c_str(), _("Serial replied message '%d'."), answ.size());
+		mess_debug(tr->nodePath().c_str(), _("Serial is replied by message '%d'."), answ.size());
 	    // Pure RS-485 flow control: Clear RTS for transfer allow
 	    if(tr->mRTSfc) {
 		if(!tr->mRTSlvl) sec &= ~TIOCM_RTS;
@@ -719,7 +723,7 @@ void TTrIn::cntrCmdProc( XMLNode *opt )
 }
 
 //************************************************
-//* TTrOut                                   *
+//* TTrOut					 *
 //************************************************
 TTrOut::TTrOut(string name, const string &idb, TElem *el) :
     TTransportOut(name,idb,el), mNoStopOnProceed(false), fd(-1), mLstReqTm(0), mKeepAliveLstTm(0), trIn(0), trOut(0),

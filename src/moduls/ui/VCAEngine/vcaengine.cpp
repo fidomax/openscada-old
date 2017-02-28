@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.VCAEngine file: vcaengine.cpp
 /***************************************************************************
- *   Copyright (C) 2006-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2006-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -35,7 +35,7 @@
 #define MOD_TYPE	SUI_ID
 #define VER_TYPE	SUI_VER
 #define MOD_SUBTYPE	"VCAEngine"
-#define MOD_VER		"3.8.5"
+#define MOD_VER		"3.9.3"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("The main visual control area engine.")
 #define LICENSE		"GPL2"
@@ -286,18 +286,6 @@ void Engine::load_( )
 		if(itReg.find(dbLs[i_it]) == itReg.end() && SYS->chkSelDB(wlbAt(dbLs[i_it]).at().DB()))
 		    wlbDel(dbLs[i_it]);
 	}
-
-	/*if(mess_lev() == TMess::Debug)	d_tm = TSYS::curTime();
-
-	// Load present libraries
-	wlbList(dbLs);
-	for(unsigned lId = 0; lId < dbLs.size(); lId++) {
-	    wlbAt(dbLs[lId]).at().load();
-	    if(mess_lev() == TMess::Debug) {
-		mess_sys(TMess::Debug, _("Load library '%s' time: %f ms."), dbLs[lId].c_str(), 1e-3*(TSYS::curTime()-d_tm));
-		d_tm = TSYS::curTime();
-	    }
-	}*/
     } catch(TError &err) {
 	mess_err(err.cat.c_str(), "%s", err.mess.c_str());
 	mess_sys(TMess::Error, _("Load widgets libraries error."));
@@ -337,18 +325,6 @@ void Engine::load_( )
 		if(itReg.find(dbLs[i_it]) == itReg.end() && SYS->chkSelDB(prjAt(dbLs[i_it]).at().DB()))
 		    prjDel(dbLs[i_it]);
 	}
-
-	/*if(mess_lev() == TMess::Debug)	d_tm = TSYS::curTime();
-
-	// Load present projects
-	prjList(dbLs);
-	for(unsigned el_id = 0; el_id < dbLs.size(); el_id++) {
-	    prjAt(dbLs[el_id]).at().load();
-	    if(mess_lev() == TMess::Debug) {
-		mess_sys(TMess::Debug, _("Load project '%s' time: %f ms."), dbLs[el_id].c_str(), 1e-3*(TSYS::curTime()-d_tm));
-		d_tm = TSYS::curTime();
-	    }
-	}*/
     } catch(TError &err) {
 	mess_err(err.cat.c_str(), "%s", err.mess.c_str());
 	mess_sys(TMess::Error, _("Load projects error."));
@@ -492,30 +468,6 @@ void Engine::attrsLoad( Widget &w, const string &fullDB, const string &idw, cons
     string tbl = TSYS::strSepParse(wdb,2,';');
 
     vector<vector<string> > full;
-
-    /*TConfig cEl(&elWdgIO());		//Here strong sequence needs to follow!
-    cEl.cfg("IDW").setS(idw, true);
-    cEl.cfg("IDC").setS(idc, true);
-    cEl.cfg("IO_VAL").setExtVal(true);
-    cEl.cfg("CFG_VAL").setExtVal(true);
-    for(int fldCnt = 0; SYS->db().at().dataSeek(wdb,nodePath()+tbl,fldCnt++,cEl,false,&full); ) {
-	string tstr = cEl.cfg("ID").getS();
-	if(attrs.find(tstr+";") == string::npos || !w.attrPresent(tstr)) continue;
-	AutoHD<Attr> attr = w.attrAt(tstr);
-
-	if(idw == "FormElTests" && idc == "FormEl3") printf("TEST 01: '%s'\n", tstr.c_str());
-
-	if((ldGen && !(attr.at().flgGlob()&Attr::Generic)) ||
-		(!ldGen && (attr.at().flgGlob()&Attr::Generic || (!(attr.at().flgSelf()&Attr::IsInher) && attr.at().flgGlob()&Attr::IsUser))))
-	    continue;
-
-	if(idw == "FormElTests" && idc == "FormEl3") printf("TEST 02: '%s'\n", tstr.c_str());
-
-	attr.at().setS(attr.at().isTransl()?cEl.cfg("IO_VAL").getS():cEl.cfg("IO_VAL").getS(TCfg::ExtValOne), true);
-	attr.at().setFlgSelf((Attr::SelfAttrFlgs)cEl.cfg("SELF_FLG").getI());
-	attr.at().setCfgTempl(cEl.cfg("CFG_TMPL").getS());
-	attr.at().setCfgVal(attr.at().isTransl()?cEl.cfg("CFG_VAL").getS():cEl.cfg("CFG_VAL").getS(TCfg::ExtValOne));
-    }*/
 
     TConfig cEl(&elWdgIO());
     cEl.cfg("IDW").setS(idw);

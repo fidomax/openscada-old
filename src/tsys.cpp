@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tsys.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -1123,9 +1123,7 @@ string TSYS::strEncode( const string &in, TSYS::Code tp, const string &opt1 )
 	    string svl, evl;
 	    sout.reserve(in.size()/2);
 	    for(unsigned iCh = 0; iCh < in.size(); ++iCh)
-		if(isxdigit(in[iCh])) {
-		    sout += (char)strtol(in.substr(iCh,2).c_str(),NULL,16); iCh++;
-		}
+		if(isxdigit(in[iCh])) { sout += (char)strtol(in.substr(iCh,2).c_str(),NULL,16); iCh++; }
 	    break;
 	}
 	case TSYS::Reverse:
@@ -1256,25 +1254,6 @@ string TSYS::strCompr( const string &in, int lev )
     deflateEnd(&strm);
 
     return rez;
-
-    /*uLongf comprLen = deflateBound(&strm, in.size());
-    char out[comprLen];
-
-    strm.next_in = (Bytef*)in.data();
-    strm.avail_in = (uInt)in.size();
-    strm.next_out = (Bytef*)out;
-    strm.avail_out = comprLen;
-
-    if(deflate(&strm, Z_FINISH) != Z_STREAM_END) {
-	deflateEnd(&strm);
-	return "";
-    }
-
-    comprLen = strm.total_out;
-
-    deflateEnd(&strm);
-
-    return string(out, comprLen);*/
 }
 
 string TSYS::strUncompr( const string &in )

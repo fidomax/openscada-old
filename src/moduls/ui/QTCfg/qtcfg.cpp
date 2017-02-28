@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.QTCfg file: qtcfg.cpp
 /***************************************************************************
- *   Copyright (C) 2004-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2004-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -81,7 +81,7 @@ ConfApp::ConfApp( string open_user ) : reqPrgrs(NULL),
     QImage ico_t;
     mod->regWin(this);
 
-    setWindowTitle(TSYS::strMess(_("OpenSCADA QTCfg: %s"),trU(SYS->name(),open_user).c_str()).c_str());
+    setWindowTitle((PACKAGE_NAME " "+mod->modId()+": "+trU(SYS->name(),open_user)).c_str());
     setWindowIcon(mod->icon());
 
     //Init centrall widget
@@ -611,10 +611,10 @@ void ConfApp::itAdd( )
 
     //Load branches list
     vector<string> brs;
-    for(unsigned i_b = 0; i_b < branch->childSize(); i_b++)
-	if(s2i(branch->childGet(i_b)->attr("acs"))&SEC_WR)
-	    brs.push_back(branch->childGet(i_b)->attr("idSz")+"\n"+branch->childGet(i_b)->attr("idm")+"\n"+
-			  branch->childGet(i_b)->attr("id")+"\n"+branch->childGet(i_b)->attr("dscr"));
+    for(unsigned iB = 0; iB < branch->childSize(); iB++)
+	if(s2i(branch->childGet(iB)->attr("acs"))&SEC_WR)
+	    brs.push_back(branch->childGet(iB)->attr("idSz")+"\n"+branch->childGet(iB)->attr("idm")+"\n"+
+			  branch->childGet(iB)->attr("id")+"\n"+branch->childGet(iB)->attr("dscr"));
     if(!brs.size()) { mod->postMess(mod->nodePath().c_str(),_("No one editable container is present."),TUIMod::Info,this); return; }
 
     ReqIdNameDlg dlg(this, actItAdd->icon(), QString(_("Add item to node: '%1'.")).arg(selPath.c_str()),_("Add node"));
@@ -673,10 +673,10 @@ void ConfApp::itDel( const string &iit )
 	    if(cntrIfCmd(req) || !req.childGet(0,true)) return;
 
 	    XMLNode *branch = req.childGet(0);
-	    for(unsigned i_b = 0; i_b < branch->childSize(); i_b++) {
-		string b_id = branch->childGet(i_b)->attr("id");
-		if(b_id == sel_el.substr(0,b_id.size()) && s2i(branch->childGet(i_b)->attr("acs"))&SEC_WR) {
-		    bool idm = s2i(branch->childGet(i_b)->attr("idm"));
+	    for(unsigned iB = 0; iB < branch->childSize(); iB++) {
+		string b_id = branch->childGet(iB)->attr("id");
+		if(b_id == sel_el.substr(0,b_id.size()) && s2i(branch->childGet(iB)->attr("acs"))&SEC_WR) {
+		    bool idm = s2i(branch->childGet(iB)->attr("idm"));
 		    req.clear()->setName("del")->setAttr("path",sel_own+"/%2fbr%2f"+b_id);
 		    if(idm) req.setAttr("id",sel_el.substr(b_id.size()));
 		    else req.setText(sel_el.substr(b_id.size()));
@@ -714,7 +714,7 @@ void ConfApp::itCopy( )
 void ConfApp::itPaste( )
 {
     int off;
-    string s_el, s_elp, t_el, b_grp, copyEl, to_path, chSel;
+    string sEl, sElp, tEl, bGrp, copyEl, toPath, chSel;
     QCheckBox *prcReq = NULL, *prcAlrPres = NULL;
     XMLNode parNode("info"), *rootW = root;
     bool prcReqMiss = false, prcAlrPresMiss = false;
@@ -724,38 +724,38 @@ void ConfApp::itPaste( )
 
     for(int elOff = 1; (copyEl=TSYS::strParse(copyBuf,0,"\n",&elOff)).size(); ) {
 	rootW = root;
-	to_path = selPath;
+	toPath = selPath;
 
 	//Src elements calc
-	int n_sel = 0;
-	for(off = 0; !(t_el=TSYS::pathLev(copyEl,0,true,&off)).empty(); n_sel++)
-	{ if(n_sel) s_elp += ("/"+s_el); s_el = t_el; }
+	int nSel = 0;
+	for(off = 0; !(tEl=TSYS::pathLev(copyEl,0,true,&off)).empty(); nSel++)
+	{ if(nSel) sElp += ("/"+sEl); sEl = tEl; }
 
-	if(TSYS::pathLev(copyEl,0) != TSYS::pathLev(to_path,0))
+	if(TSYS::pathLev(copyEl,0) != TSYS::pathLev(toPath,0))
 	{ mod->postMess(mod->nodePath().c_str(), _("Copy is impossible."), TUIMod::Error, this); return; }
 
 	vector<string> brs;
-	if(copyEl == to_path) {	//For copy into the branch and no select direct the parent node
-	    to_path = s_elp;
-	    parNode.setAttr("path",to_path);
+	if(copyEl == toPath) {	//For copy into the branch and no select direct the parent node
+	    toPath = sElp;
+	    parNode.setAttr("path", toPath);
 	    if(cntrIfCmd(parNode)) continue;
 	    rootW = parNode.childGet(0);
 	}
 	if(s2i(rootW->attr("acs"))&SEC_WR) brs.push_back(string("-1\n0\n\n")+_("Selected"));
 
 	XMLNode *branch = rootW->childGet("id", "br", true);
-	for(unsigned i_b = 0; branch && i_b < branch->childSize(); i_b++)
-	    if(s2i(branch->childGet(i_b)->attr("acs"))&SEC_WR) {
-		string gbrId = branch->childGet(i_b)->attr("id");
-		brs.push_back(branch->childGet(i_b)->attr("idSz")+"\n0\n"+gbrId+"\n"+branch->childGet(i_b)->attr("dscr"));
-		if(s_el.substr(0,gbrId.size()) == gbrId) { brs[brs.size()-1] = brs[brs.size()-1]+"\n1"; b_grp = gbrId; }
+	for(unsigned iB = 0; branch && iB < branch->childSize(); iB++)
+	    if(s2i(branch->childGet(iB)->attr("acs"))&SEC_WR) {
+		string gbrId = branch->childGet(iB)->attr("id");
+		brs.push_back(branch->childGet(iB)->attr("idSz")+"\n0\n"+gbrId+"\n"+branch->childGet(iB)->attr("dscr"));
+		if(sEl.substr(0,gbrId.size()) == gbrId) { brs[brs.size()-1] = brs[brs.size()-1]+"\n1"; bGrp = gbrId; }
 	    }
 
 	//Make request dialog
 	ReqIdNameDlg dlg(this, actItAdd->icon(), "", _("Move or copy node"));
 	dlg.setTargets(brs);
-	dlg.setMess(QString(isCut?_("Move node '%1' to '%2'.\n"):_("Copy node '%1' to '%2'.\n")).arg(copyEl.c_str()).arg(to_path.c_str()));
-	dlg.setId(s_el.substr(b_grp.size()).c_str());
+	dlg.setMess(QString(isCut?_("Move node '%1' to '%2'.\n"):_("Copy node '%1' to '%2'.\n")).arg(copyEl.c_str()).arg(toPath.c_str()));
+	dlg.setId(sEl.substr(bGrp.size()).c_str());
 	if(isMult) {
 	    prcReq = new QCheckBox(_("Do not the question anymore."), &dlg);
 	    dlg.edLay->addWidget(prcReq, 5, 0, 1, 2);
@@ -765,13 +765,13 @@ void ConfApp::itPaste( )
 
 	string stat_nm, src_nm, dst_nm;
 	off = 0; stat_nm = TSYS::pathLev(copyEl, 0, true, &off);	src_nm = copyEl.substr(off);
-	off = 0; stat_nm = TSYS::pathLev(to_path, 0, true, &off);	dst_nm = to_path.substr(off);
+	off = 0; stat_nm = TSYS::pathLev(toPath, 0, true, &off);	dst_nm = toPath.substr(off);
 
 	if(s2i(TSYS::strSepParse(dlg.target(),0,'\n')) >= 0) {
 	    dst_nm += "/" +TSYS::strSepParse(dlg.target(),2,'\n') + dlg.id().toStdString();
 	    // Check for already present node
 	    XMLNode req("get");
-	    req.setAttr("path",to_path+"/%2fbr%2f"+TSYS::strSepParse(dlg.target(),2,'\n'));
+	    req.setAttr("path", toPath+"/%2fbr%2f"+TSYS::strSepParse(dlg.target(),2,'\n'));
 	    if(cntrIfCmd(req)) { mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TUIMod::Error,this); return; }
 	    for(unsigned i_lel = 0; i_lel < req.childSize(); i_lel++)
 		if((req.childGet(i_lel)->attr("id").size() && req.childGet(i_lel)->attr("id") == dlg.id().toStdString()) ||
@@ -791,7 +791,7 @@ void ConfApp::itPaste( )
 
 	//Copy visual item
 	XMLNode req("copy");
-	req.setAttr("path","/"+stat_nm+"/%2fobj")->setAttr("src",src_nm)->setAttr("dst",dst_nm);
+	req.setAttr("path", "/"+stat_nm+"/%2fobj")->setAttr("src", src_nm)->setAttr("dst", dst_nm);
 	if(cntrIfCmd(req)) { mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TUIMod::Error,this); return; }
 
 	//Remove source widget
@@ -810,25 +810,25 @@ void ConfApp::itPaste( )
 
 void ConfApp::editToolUpdate( )
 {
-    actItCut->setEnabled((!selPath.empty()&&root&&s2i(root->attr("acs"))&SEC_WR) ? true : false);
-    actItCopy->setEnabled(!selPath.empty());
+    actItCut->setEnabled(selPath.size() && root && s2i(root->attr("acs"))&SEC_WR);
+    actItCopy->setEnabled(selPath.size());
     actItPaste->setEnabled(false);
 
     if(TSYS::strParse(copyBuf,1,"\n").empty()) {
 	//Src and destination elements calc
 	if(copyBuf.size() <= 1 || /*copyBuf.substr(1) == selPath ||*/ TSYS::pathLev(copyBuf.substr(1),0) != TSYS::pathLev(selPath,0))
 	    return;
-	string s_elp, s_el, t_el;
-	for(int off = 0; !(t_el=TSYS::pathLev(copyBuf.substr(1),0,true,&off)).empty(); )
-	{ s_elp += ("/"+s_el); s_el = t_el; }
+	string sElp, sEl, tEl;
+	for(int off = 0; !(tEl=TSYS::pathLev(copyBuf.substr(1),0,true,&off)).empty(); )
+	{ sElp += ("/"+sEl); sEl = tEl; }
 
 	if(s2i(root->attr("acs"))&SEC_WR) actItPaste->setEnabled(true);
     }
 
     XMLNode *branch = root->childGet("id","br",true);
     if(branch)
-	for(unsigned i_b = 0; i_b < branch->childSize(); i_b++)
-	    if(s2i(branch->childGet(i_b)->attr("acs"))&SEC_WR)
+	for(unsigned iB = 0; iB < branch->childSize(); iB++)
+	    if(s2i(branch->childGet(iB)->attr("acs"))&SEC_WR)
 	    { actItPaste->setEnabled(true); break; }
 }
 
@@ -930,7 +930,7 @@ void ConfApp::enterWhatsThis( )	{ QWhatsThis::enterWhatsThisMode(); }
 
 void ConfApp::enterManual( )
 {
-    string findDoc = TUIS::docGet(sender()->property("doc").toString().toStdString(), NULL, TUIS::GetExecCommand);
+    string findDoc = TUIS::docGet(sender()->property("doc").toString().toStdString());
     if(findDoc.size())	system(findDoc.c_str());
     else QMessageBox::information(this, _("Manual"),
 	QString(_("No the manual '%1' found offline or online!")).arg(sender()->property("doc").toString()));
@@ -965,9 +965,11 @@ void ConfApp::selectItem( )
     if(sel_ls.size() == 1 && selPath != sel_ls.at(0)->text(2).toStdString()) {
 	selectPage(sel_ls.at(0)->text(2).toStdString());
 
-	int saveVl = CtrTree->horizontalScrollBar() ? CtrTree->horizontalScrollBar()->value() : 0;
-	CtrTree->scrollToItem(sel_ls.at(0), QAbstractItemView::EnsureVisible);
-	if(CtrTree->horizontalScrollBar()) CtrTree->horizontalScrollBar()->setValue(saveVl);
+	if((sel_ls=CtrTree->selectedItems()).size()) {	//Updating but it can be changed after "selectPage"
+	    int saveVl = CtrTree->horizontalScrollBar() ? CtrTree->horizontalScrollBar()->value() : 0;
+	    CtrTree->scrollToItem(sel_ls.at(0), QAbstractItemView::EnsureVisible);
+	    if(CtrTree->horizontalScrollBar()) CtrTree->horizontalScrollBar()->setValue(saveVl);
+	}
     }
 }
 
@@ -1932,7 +1934,7 @@ void ConfApp::pageDisplay( const string &path )
 	QList<TextEdit*> texts = tabs->findChildren<TextEdit*>();
 	for(int iIt = 0; iIt < texts.size(); ++iIt)
 	    if(texts[iIt]->isChanged()) prcW.push_back(texts[iIt]);
-	if(prcW.size() && QMessageBox::information(this,_("Changes apply"),_("Some changes you don't apply!\nApply now or lost the?"),
+	if(prcW.size() && QMessageBox::information(this,_("The changes apply"),_("You don't apply some changes!\nDo you want its apply now or lost?"),
 		QMessageBox::Apply|QMessageBox::Cancel,QMessageBox::Apply) == QMessageBox::Apply)
 	    for(vector<QWidget*>::iterator iW = prcW.begin(); iW != prcW.end(); ++iW) applyButton(*iW);
 
@@ -1961,8 +1963,8 @@ void ConfApp::pageDisplay( const string &path )
     actItAdd->setEnabled(false);
     if(root->childGet("id","br",true)) {
 	XMLNode *branch = root->childGet("id","br");
-	for(unsigned i_b = 0; i_b < branch->childSize(); i_b++)
-	    if(s2i(branch->childGet(i_b)->attr("acs"))&SEC_WR)
+	for(unsigned iB = 0; iB < branch->childSize(); iB++)
+	    if(s2i(branch->childGet(iB)->attr("acs"))&SEC_WR)
 	    { actItAdd->setEnabled(true); break; }
     }
     actItDel->setEnabled(root&&s2i(root->attr("acs"))&SEC_WR);
@@ -3016,7 +3018,7 @@ void ConfApp::applyButton( QWidget *src )
 	    sval = ll2s(vl);
 	}
 
-	mess_info(mod->nodePath().c_str(),_("%s| Change '%s' to: '%s'!"),
+	mess_info(mod->nodePath().c_str(), _("%s| Change '%s' to: '%s'!"),
 		wUser->user().toStdString().c_str(), (selPath+"/"+path).c_str(), sval.c_str());
 
 	XMLNode n_el("set");
@@ -3024,8 +3026,8 @@ void ConfApp::applyButton( QWidget *src )
 	if(cntrIfCmd(n_el)) { mod->postMess(n_el.attr("mcat"),n_el.text(),TUIMod::Error,this); return; }
     } catch(TError &err) { mod->postMess(err.cat,err.mess,TUIMod::Error,this); }
 
-    //Redraw
-    pageRefresh(true);
+    //Redraw only for changing into same this widget
+    if(!src) pageRefresh(true);
 }
 
 void ConfApp::cancelButton( )

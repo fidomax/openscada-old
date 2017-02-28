@@ -1,7 +1,7 @@
 
 //OpenSCADA system module BD.SQLite file: bd_sqlite.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -33,7 +33,7 @@
 #define MOD_NAME	_("DB SQLite")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"2.3.0"
+#define MOD_VER		"2.3.2"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("BD module. Provides support of the BD SQLite.")
 #define LICENSE		"GPL2"
@@ -246,7 +246,7 @@ void MBD::cntrCmdProc( XMLNode *opt )
 		      "               Use empty path for a private, temporary on-disk database create.\n"
 		      "               Use \":memory:\" for a private, temporary in-memory database create."));
 	if(reqCnt)
-	    ctrMkNode("comm",opt,-1,"/prm/st/end_tr",_("Close opened transaction"),RWRWRW,"root",SDB_ID);
+	    ctrMkNode("comm",opt,-1,"/prm/st/end_tr",_("Close opened transaction"),RWRW__,"root",SDB_ID);
 	return;
     }
     //Process command to page
@@ -255,7 +255,7 @@ void MBD::cntrCmdProc( XMLNode *opt )
 	opt->childAdd("el")->setText(":memory:");
 	TSYS::ctrListFS(opt, addr(), "db;");
     }
-    else if(a_path == "/prm/st/end_tr" && ctrChkNode(opt,"set",RWRWRW,"root",SDB_ID,SEC_WR) && reqCnt) transCommit();
+    else if(a_path == "/prm/st/end_tr" && ctrChkNode(opt,"set",RWRW__,"root",SDB_ID,SEC_WR) && reqCnt) transCommit();
     else TBD::cntrCmdProc(opt);
 }
 
@@ -709,15 +709,20 @@ string MTable::getVal( TCfg &cfg, uint8_t RqFlg )
 void MTable::setVal( TCfg &cf, const string &ival, bool tr )
 {
     string val = (ival==DB_NULL) ? EVAL_STR : ival;
-    if(!cf.extVal()) {
-	if(!tr || (cf.fld().flg()&TCfg::TransltText && !cf.noTransl())) cf.setS(val);
-	if(!tr && cf.fld().flg()&TCfg::TransltText && !cf.noTransl()) Mess->translReg(val, "db:"+fullDBName()+"#"+cf.name());
-    }
-    else {
-	if(!tr) {
-	    cf.setS(val, TCfg::ExtValOne);
-	    cf.setS("", TCfg::ExtValTwo);	//!! Sets for clean up from previous Two value
-	    cf.setS("db:"+fullDBName()+"#"+cf.name(), TCfg::ExtValThree);
-	} else cf.setS(val, TCfg::ExtValTwo);
+    switch(cf.fld().type()) {
+	case TFld::String:
+	    if(!cf.extVal()) {
+		if(!tr || (cf.fld().flg()&TCfg::TransltText && !cf.noTransl())) cf.setS(val);
+		if(!tr && cf.fld().flg()&TCfg::TransltText && !cf.noTransl()) Mess->translReg(val, "db:"+fullDBName()+"#"+cf.name());
+	    }
+	    else {
+		if(!tr) {
+		    cf.setS(val, TCfg::ExtValOne);
+		    cf.setS("", TCfg::ExtValTwo);	//!! Sets for clean up from previous Two value
+		    cf.setS("db:"+fullDBName()+"#"+cf.name(), TCfg::ExtValThree);
+		} else cf.setS(val, TCfg::ExtValTwo);
+	    }
+	    break;
+	default: cf.setS(val); break;
     }
 }

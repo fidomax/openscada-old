@@ -1,7 +1,7 @@
 
 //OpenSCADA system module Special.FLibSYS file: sysfnc.h
 /***************************************************************************
- *   Copyright (C) 2005-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2005-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -451,7 +451,7 @@ class str2int : public TFunction
 	string name( )	{ return _("String: String to integer"); }
 	string descr( )	{ return _("Convert string to integer."); }
 
-	void calc( TValFunc *val )	{ val->setI(0,strtol(val->getS(1).c_str(),NULL,val->getI(2))); }
+	void calc( TValFunc *val )	{ val->setI(0, strtoll(val->getS(1).c_str(),NULL,val->getI(2))); }
 };
 
 //*************************************************
@@ -496,6 +496,28 @@ class floatMergeWord : public TFunction
 	    union { uint32_t i; float f; } wl;
 	    wl.i = ((val->getI(2)&0xffff)<<16) | (val->getI(1)&0xffff);
 	    val->setR(0,wl.f);
+	}
+};
+
+//*******************************************************
+//* Extract mantissa and exponent from the float value. *
+//*******************************************************
+class floatExtract : public TFunction
+{
+    public:
+	floatExtract( ) : TFunction("floatExtract", SSPC_ID) {
+	    ioAdd(new IO("magn",_("Magnitude"),IO::Real,IO::Return));
+	    ioAdd(new IO("val",_("Value"),IO::Real,IO::Default));
+	    ioAdd(new IO("exp",_("Exponent"),IO::Integer,IO::Output));
+	}
+
+	string name( )	{ return _("Float: Extract"); }
+	string descr( )	{ return _("Extract mantissa and exponent from the float value."); }
+
+	void calc( TValFunc *val ) {
+	    int exp = 0;
+	    val->setR(0, frexp(val->getR(1),&exp));
+	    val->setI(2, exp);
 	}
 };
 
@@ -551,7 +573,6 @@ class MD5 : public TFunction
 	    val->setS(0, string((char*)result, MD5_DIGEST_LENGTH));
 	}
 };
-
 
 }
 

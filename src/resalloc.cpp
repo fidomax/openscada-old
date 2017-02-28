@@ -176,7 +176,9 @@ CondVar::CondVar( )
 {
     pthread_condattr_t attr;
     pthread_condattr_init(&attr);
+#if __GLIBC_PREREQ(2,4)
     pthread_condattr_setclock(&attr, (SYS && SYS->clockRT()) ? CLOCK_REALTIME : CLOCK_MONOTONIC);
+#endif
     pthread_cond_init(&cnd, &attr);
 }
 
@@ -204,7 +206,7 @@ int CondVar::wakeAll( )	{ return pthread_cond_broadcast(&cnd); }
 //***********************************************************
 //* Automatic POSIX mutex allocator/deallocator		    *
 //***********************************************************
-MtxAlloc::MtxAlloc( ResMtx &iM, bool iLock ) : m(iM),  mLock(false){ if(iLock) lock(); }
+MtxAlloc::MtxAlloc( ResMtx &iM, bool iLock ) : m(iM), mLock(false) { if(iLock) lock(); }
 
 MtxAlloc::~MtxAlloc( )	{ unlock(); }
 
@@ -253,12 +255,14 @@ void MtxString::setVal( const string &vl )
     m.unlock();
 }
 
-string MtxString::getVal( )
+string MtxString::getVal( ) const
 {
     m.lock();
     string rez(str.data(), str.size());	//Bypass for COW algorithm prevent
     m.unlock();
     return rez;
 }
+
+MtxString &MtxString::operator=( const OSCADA::MtxString &val )	{ setVal(val.getVal()); return *this; }
 
 MtxString &MtxString::operator=( const string &val )	{ setVal(val); return *this; }
