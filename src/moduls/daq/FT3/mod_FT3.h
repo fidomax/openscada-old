@@ -43,8 +43,8 @@ using namespace OSCADA;
 #define MOD_NAME	_("DAQ FT3")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"0.4.2"
-#define AUTHORS		_("Maxim Kothetkov, Olga Avdeyeva, Olga Kuzmickaya")
+#define MOD_VER		"0.5.0"
+#define AUTHORS		_("Maxim Kothetkov, Olga Avdeyeva, Olga Kuzmickaya, Alexander Danilov")
 #define DESCRIPTION	_("Allow realization of FT3 master/slave service")
 #define LICENSE		"GPL2"
 //*************************************************

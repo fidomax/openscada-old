@@ -489,87 +489,87 @@ void TTpContr::postEnable(int flag)
     fldAdd(new TFld("MAXREQ", _("Max request length"), TFld::Integer, TFld::NoFlag, "3", "200", "1;253"));
     //> Parameter type bd structure
 
-    int t_prm = tpParmAdd("tp_BUC", "PRM_BD_BUC", _("BUC"));
+    int t_prm = tpParmAdd("tp_BUC", "PRM_BD_BUC", _("BUC"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("MOD", _("Modification"), TFld::Integer, TFld::HexDec | TCfg::NoVal, "4", "0"));
     // tpPrmAt(t_prm).fldAdd( new TFld("STOP_TIME",_("Last stop time"),TFld::String,TCfg::Hide,"2","0","0;15") );
 
-    t_prm = tpParmAdd("tp_BVTS", "PRM_BD_BVTS", _("BVTS"));
+    t_prm = tpParmAdd("tp_BVTS", "PRM_BD_BVTS", _("BVTS"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "1", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "32;512"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_BVT", "PRM_BD_BVT", _("BVT"));
+    t_prm = tpParmAdd("tp_BVT", "PRM_BD_BVT", _("BVT"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "3", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;48"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_KPARAMS", _("With correcting factor"), TFld::Boolean, TCfg::NoVal, "1", "1"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_RATEPARAMS", _("With rate calculations"), TFld::Boolean, TCfg::NoVal, "1", "1"));
 
-    t_prm = tpParmAdd("tp_BVI", "PRM_BD_BVI", _("BVI"));
+    t_prm = tpParmAdd("tp_BVI", "PRM_BD_BVI", _("BVI"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "6", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;64"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
     tpPrmAt(t_prm).fldAdd(new TFld("EXT_PERIOD", _("Ext period"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_BIP", "PRM_BD_BIP", _("BIP"));
+    t_prm = tpParmAdd("tp_BIP", "PRM_BD_BIP", _("BIP"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "7", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;64"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_PAUK", "PRM_BD_PAUK", _("PAUK"));
+    t_prm = tpParmAdd("tp_PAUK", "PRM_BD_PAUK", _("PAUK"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "12", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;64"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_BTU", "PRM_BD_BTU", _("BTU"));
+    t_prm = tpParmAdd("tp_BTU", "PRM_BD_BTU", _("BTU"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "2", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;64"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_ACCOUNT", "PRM_BD_ACCOUNT", _("ACCOUNT"));
+    t_prm = tpParmAdd("tp_ACCOUNT", "PRM_BD_ACCOUNT", _("ACCOUNT"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "4", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;64"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_BTR", "PRM_BD_BTR", _("BTR"));
+    t_prm = tpParmAdd("tp_BTR", "PRM_BD_BTR", _("BTR"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "11", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNTU", _("Channels count TU"), TFld::Integer, TCfg::NoVal, "3", "1", "0;63"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNTR", _("Channels count TR"), TFld::Integer, TCfg::NoVal, "3", "1", "0;63"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_BTE", "PRM_BD_BTE", _("BTE"));
+    t_prm = tpParmAdd("tp_BTE", "PRM_BD_BTE", _("BTE"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "11", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;63"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_ODOR", "PRM_BD_ODOR", _("ODOR"));
+    t_prm = tpParmAdd("tp_ODOR", "PRM_BD_ODOR", _("ODOR"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "10", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;2"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_GZD", "PRM_BD_GZD", _("GZD"));
+    t_prm = tpParmAdd("tp_GZD", "PRM_BD_GZD", _("GZD"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "6", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;48"));
     tpPrmAt(t_prm).fldAdd(new TFld("VALVE_TYPE", _("Valve type"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1", _("5 TU;6 TU")));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_GNS", "PRM_BD_GNS", _("GNS"));
+    t_prm = tpParmAdd("tp_GNS", "PRM_BD_GNS", _("GNS"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "7", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;16"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_GKR", "PRM_BD_GKR", _("GKR"));
+    t_prm = tpParmAdd("tp_GKR", "PRM_BD_GKR", _("GKR"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "15", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_TANK", "PRM_BD_TANK", _("TANK"));
+    t_prm = tpParmAdd("tp_TANK", "PRM_BD_TANK", _("TANK"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "7", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
-    t_prm = tpParmAdd("tp_UPZ", "PRM_BD_UPZ", _("UPZ"));
+    t_prm = tpParmAdd("tp_UPZ", "PRM_BD_UPZ", _("UPZ"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "11", "0;15"));
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
@@ -1183,6 +1183,7 @@ void TMdContr::prmEn(TMdPrm *prm, bool val)
 
     if(val && i_prm >= pHd.size()) pHd.push_back(prm);
     if(!val && i_prm < pHd.size()) pHd.erase(pHd.begin() + i_prm);
+
 }
 
 void TMdContr::SetCntrState(eCntrState nState)
@@ -1643,7 +1644,13 @@ void TMdPrm::enable()
 //> Connect device's code
     if(owner().cfg("PRTTYPE").getS() == "KA") {
 	if(type().name == "tp_BUC") mDA = new KA_BUC(*this, cfg("DEV_ID").getI());
-	if(type().name == "tp_BVTS") mDA = new KA_BVTC(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	if(type().name == "tp_BVTS"){
+	    mDA = new KA_BVTC(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	    for (int i=0;i<cfg("CHAN_COUNT").getI();i++){
+		    add(TSYS::strMess("%d", i), owner().owner().tpPrmToId("tp_BUC"));
+	    }
+
+	}
 	if(type().name == "tp_BVT") mDA = new KA_BVT(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	if(type().name == "tp_GZD")
 	    mDA = new KA_GZD(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("VALVE_TYPE").getI());
@@ -1840,6 +1847,12 @@ uint16_t TMdPrm::HandleEvent(time_t tm, uint8_t * D)
 
 void TMdPrm::tmHandler()
 {
+    vector<string> lst;
+    list(lst);
+    for(int i_l = 0; i_l < lst.size(); i_l++) {
+	AutoHD<TMdPrm> t = at(lst[i_l]);
+	t.at().tmHandler();
+    }
     if(mDA) {
 	mDA->tmHandler();
     } else {
