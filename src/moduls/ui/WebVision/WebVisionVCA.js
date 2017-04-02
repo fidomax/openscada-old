@@ -26,24 +26,6 @@ var isKonq = navigator.userAgent.indexOf('Konqueror') != -1;
 var mainTmId = 0;
 
 /***************************************************
- * strEncode - String encoding.                    *
- ***************************************************/
-/*function strEncode( vl, tp )
-{
-    var encRez = '';
-    if(!tp || tp == "html")
-	for(var i_enc = 0; i_enc < vl.length; i_enc++)
-	    switch(vl.charAt(i_enc)) {
-		case '&': encRez += '&amp;'; break;
-		case '>': encRez += '&gt;'; break;
-		case '<': encRez += '&lt;'; break;
-		case '"': encRez += '&quot;'; break;
-		default:  encRez += vl.charAt(i_enc);
-	    }
-    return encRez;
-}*/
-
-/***************************************************
  * pathLev - Path parsing function.                *
  ***************************************************/
 pathLev.off = 0;
@@ -76,37 +58,13 @@ function noSpace( str )
 }
 
 /***************************************************
- * nodeText - Get DOM node text                    *
+ * i2s - integer to string                         *
  ***************************************************/
-function nodeText( node )
+function i2s( vl, base, len )
 {
-    var rez = '';
-    for(var i = 0; i < node.childNodes.length; i++)
-	if(node.childNodes[i].nodeType == 3) rez += node.childNodes[i].data;
+    rez = vl.toString(base);
+    if(len) while(rez.length < len) rez = "0"+rez;
     return rez;
-}
-
-/***************************************************
- * setNodeText - Set DOM node text                 *
- ***************************************************/
-function setNodeText( node, val )
-{
-    if(!node) return;
-    for(var i = 0; i < node.childNodes.length; i++)
-	if(node.childNodes[i].nodeType == 3)
-	{ node.childNodes[i].data = val; return; }
-    node.appendChild(node.ownerDocument.createTextNode(val));
-}
-
-/*****************************************************
- * nodeTextByTagId - Get DOM node by tag name and id *
- *****************************************************/
-function nodeTextByTagId( node, tag, avl )
-{
-    for(var i = 0; i < node.childNodes.length; i++)
-	if(node.childNodes[i].nodeName == tag && node.childNodes[i].getAttribute('id') == avl)
-	    return nodeText(node.childNodes[i]);
-    return '';
 }
 
 /***************************************************
@@ -301,7 +259,7 @@ function getWAttr( wId, attr )
     var rNode = servGet(wId,'com=attr&attr='+attr);
     if(!rNode) return null;
 
-    return nodeText(rNode);
+    return rNode.textContent;
 }
 
 /***************************************************
@@ -335,6 +293,24 @@ function getFont( fStr, fSc, opt )
     }
 
     return rez;
+}
+
+/***************************************************
+ * getFontCond( fStr, fSc, opt ) - Parse font          *
+ *  opt - options: 1-punkts; 2-return size         *
+ ***************************************************/
+function getFontCond( fStr, fSc, opt )
+{
+    fontCfg = "";
+    if(fStr) {
+	allFnt = fStr.split(" ");
+	if(allFnt.length >= 3 && parseInt(allFnt[2])) fontCfg += "bold ";
+	if(allFnt.length >= 4 && parseInt(allFnt[3])) fontCfg += "italic ";
+	if(allFnt.length >= 2) fontCfg += (parseInt(allFnt[1])*(fSc?fSc:1)).toFixed(0) + (opt==1?"pt ":"px ");
+	if(allFnt.length >= 1) fontCfg += allFnt[0].replace(/_/g," ") + " ";
+    }
+
+    return fontCfg;
 }
 
 /***************************************************
@@ -465,9 +441,9 @@ function callPage( pgId, updWdg, pgGrp, pgOpenSrc )
 	var winHeight = 400;
 	for(var i_ch = 0; i_ch < attrBrVal.childNodes.length; i_ch++)
 	    if(attrBrVal.childNodes[i_ch].nodeName != 'el') continue;
-	    else if(attrBrVal.childNodes[i_ch].getAttribute('id') == 'name') winName = nodeText(attrBrVal.childNodes[i_ch]);
-	    else if(attrBrVal.childNodes[i_ch].getAttribute('id') == 'geomW') winWidth = parseInt(nodeText(attrBrVal.childNodes[i_ch]));
-	    else if(attrBrVal.childNodes[i_ch].getAttribute('id') == 'geomH') winHeight = parseInt(nodeText(attrBrVal.childNodes[i_ch]));
+	    else if(attrBrVal.childNodes[i_ch].getAttribute('id') == 'name') winName = attrBrVal.childNodes[i_ch].textContent;
+	    else if(attrBrVal.childNodes[i_ch].getAttribute('id') == 'geomW') winWidth = parseInt(attrBrVal.childNodes[i_ch].textContent);
+	    else if(attrBrVal.childNodes[i_ch].getAttribute('id') == 'geomH') winHeight = parseInt(attrBrVal.childNodes[i_ch].textContent);
 
 	//New external <div> window create
 	if(winWidth < parseInt(masterPage.attrs['geomW']) && winHeight < parseInt(masterPage.attrs['geomH'])) {
@@ -594,8 +570,8 @@ function makeEl( pgBr, inclPg, full, FullTree )
 	for(var j = 0; j < pgBr.childNodes.length; j++) {
 	    if(pgBr.childNodes[j].nodeName != 'el') continue;
 	    var i = pgBr.childNodes[j].getAttribute('id');
-	    if((i == 'bordWidth' || i == 'geomMargin') && (!this.attrs[i] || this.attrs[i] != nodeText(pgBr.childNodes[j]))) margBrdUpd = true;
-	    var curAttr = nodeText(pgBr.childNodes[j]);
+	    if((i == 'bordWidth' || i == 'geomMargin') && (!this.attrs[i] || this.attrs[i] != pgBr.childNodes[j].textContent)) margBrdUpd = true;
+	    var curAttr = pgBr.childNodes[j].textContent;
 	    this.attrsMdf[i] = !this.attrs[i] || this.attrs[i] != curAttr;
 	    this.attrs[i] = curAttr;
 	    newAttr = true;
@@ -674,9 +650,6 @@ function makeEl( pgBr, inclPg, full, FullTree )
 	    isPrim = false;
 	}
 	else if(this.attrs['root'] == 'ElFigure') {
-	    //if(this.attrs['backColor'] && getColor(this.attrs['backColor'],true))
-	    //	elStyle += 'background-color: '+getColor(this.attrs['backColor'])+'; ';
-	    //if(this.attrs['backImg']) elStyle += 'background-image: url(\'/'+MOD_ID+this.addr+'?com=res&val='+this.attrs['backImg']+'\'); ';
 	    var toInit = !this.place.childNodes.length;
 	    var figObj = toInit ? this.place.ownerDocument.createElement('img') : this.place.childNodes[0];
 	    figObj.width = geomW; figObj.height = geomH;
@@ -714,12 +687,6 @@ function makeEl( pgBr, inclPg, full, FullTree )
 	}
 	else if(this.attrs['root'] == 'Box') {
 	    if(this == masterPage && this.attrs['tipStatus'].length) setStatus(this.attrs['tipStatus'],10000);
-	    //backStyle = '';
-	    //if(this.attrs['backColor'] && getColor(this.attrs['backColor'],true))
-	    //	backStyle += 'background-color: '+getColor(this.attrs['backColor'])+'; ';
-	    //if(this.attrs['backImg'])   backStyle += 'background-image: url(\'/'+MOD_ID+this.addr+'?com=res&val='+this.attrs['backImg']+'\'); ';
-	    //if(this == masterPage) document.body.style.cssText = parseInt(this.attrs['bordWidth']) ? '' : backStyle;
-	    //elStyle += backStyle;
 	    elStyle += 'border-style: solid; border-width: '+this.attrs['bordWidth']+'px; ';
 	    if(this.attrs['bordColor']) elStyle += 'border-color: '+getColor(this.attrs['bordColor'])+'; ';
 	    switch(parseInt(this.attrs['bordStyle'])) {
@@ -767,9 +734,6 @@ function makeEl( pgBr, inclPg, full, FullTree )
 	    this.place.onclick = (!elWr) ? null : function() { setFocus(this.wdgLnk.addr); return false; };
 	}
 	else if(this.attrs['root'] == 'Text') {
-	    //if(this.attrs['backColor'] && getColor(this.attrs['backColor'],true))
-	    //	elStyle += 'background-color: '+getColor(this.attrs['backColor'])+'; ';
-	    //if(this.attrs['backImg'])	elStyle += 'background-image: url(\'/'+MOD_ID+this.addr+'?com=res&val='+this.attrs['backImg']+'\'); ';
 	    elStyle += 'border-style: solid; border-width: '+this.attrs['bordWidth']+'px; overflow: hidden; ';
 	    if(this.attrs['bordColor'])	elStyle += 'border-color: '+getColor(this.attrs['bordColor'])+'; ';
 	    if(elMargin) { elStyle += 'padding: '+elMargin+'px; '; elMargin = 0; }
@@ -814,12 +778,6 @@ function makeEl( pgBr, inclPg, full, FullTree )
 		    if(argSize > 0) argVal = argPad+argVal; else argVal += argPad;
 		    txtVal = txtVal.replace('%'+(i+1),argVal);
 		}
-		//var txtVal1 = '';
-		//for(var j = 0; j < txtVal.length; j++)
-		//    if(txtVal[j] == '\n') txtVal1 += '<br />'; else txtVal1 += txtVal[j];
-		// txtVal.replace(/\n/g,'<br />');
-		// while(this.place.childNodes.length) this.place.removeChild(this.place.childNodes[0]);
-		//this.place.innerHTML = "<span style='"+spanStyle+"'>"+txtVal1+"</span>";
 		this.place.innerHTML = "<span style='"+spanStyle+"'>"+txtVal+"</span>";
 	    //}
 	    //else this.place.innerHTML = "<img width='"+geomW+"px' height='"+geomH+"px' border='0' src='/"+MOD_ID+this.addr+
@@ -830,17 +788,16 @@ function makeEl( pgBr, inclPg, full, FullTree )
 	    else this.place.onclick = '';
 	}
 	else if(this.attrs['root'] == 'Media') {
-	    //if(this.attrs['backColor'] && getColor(this.attrs['backColor'],true))
-	    //	elStyle += 'background-color: '+getColor(this.attrs['backColor'])+'; ';
-	    //if(this.attrs['backImg']) elStyle += 'background-image: url(\'/'+MOD_ID+this.addr+'?com=res&val='+this.attrs['backImg']+'\'); ';
-	    elStyle += 'border-style: solid; border-width: '+this.attrs['bordWidth']+'px; overflow: hidden; ';
+	    this.place.className = "Media";
+	    elStyle += 'border-width: '+this.attrs['bordWidth']+'px; ';
 	    if(this.attrs['bordColor']) elStyle += 'border-color: '+getColor(this.attrs['bordColor'])+'; ';
-	    if(this.place.elWr != elWr || (parseInt(this.attrs['areas']) && this.place.childNodes.length <= 1) ||
-					  (!parseInt(this.attrs['areas']) && this.place.childNodes.length > 1))
-		while(this.place.childNodes.length) this.place.removeChild(this.place.childNodes[0]);
+	    if(this.place.elWr != elWr || (parseInt(this.attrs['areas']) && this.place.children.length <= 1) ||
+					  (!parseInt(this.attrs['areas']) && this.place.children.length > 1) ||
+					  ((this.attrsMdf["src"] || this.attrsMdf["fit"]) && this.attrs['fit'] != 1))
+		while(this.place.children.length) this.place.removeChild(this.place.children[0]);
 
-	    var toInit = !this.place.childNodes.length;
-	    var medObj = toInit ? this.place.ownerDocument.createElement('img') : this.place.childNodes[0];
+	    var toInit = !this.place.children.length;
+	    var medObj = toInit ? this.place.ownerDocument.createElement('img') : this.place.children[0];
 	    if(toInit || this.attrsMdf["src"] || this.attrsMdf["fit"] || !pgBr) {
 		medObj.src = this.attrs['src'].length ? "/"+MOD_ID+this.addr+"?com=res&val="+this.attrs['src'] : "";
 		medObj.hidden = !this.attrs['src'].length;
@@ -851,20 +808,18 @@ function makeEl( pgBr, inclPg, full, FullTree )
 		    if(this.attrs['src'].length) medObj.src += "&size="+geomH;
 		    medObj.onload = null;
 		}
-		else {
-		    src_ = medObj.src; medObj.src = '';	//For the image reload cause
-		    medObj.setAttribute('width',''); medObj.setAttribute('height','');
-		    medObj.onload = function() {
-			var cWdth = this.width; var cHeight = this.height;
-			this.width = cWdth * this.wdgLnk.xScale(true);
-			this.height = cHeight * this.wdgLnk.yScale(true);
-		    }
-		    medObj.src = src_;
+		else medObj.onload = function() {
+		    cWdth = this.width;
+		    cHeight = this.height;
+		    this.width = cWdth * this.wdgLnk.xScale(true);
+		    this.height = cHeight * this.wdgLnk.yScale(true);
+		    //this.style.cssText = "top: "+((this.parentNode.height-this.height)/2)+"px; "+
+		    //				"left: "+((this.parentNode.width-this.width)/2)+"px; ";
 		}
 	    }
 	    if(elWr && (toInit || this.attrsMdf["areas"])) {
-		var mapObj = toInit ? this.place.ownerDocument.createElement('map') : this.place.childNodes[1];
-		while(mapObj.childNodes.length) mapObj.removeChild(mapObj.childNodes[0]);
+		var mapObj = toInit ? this.place.ownerDocument.createElement('map') : this.place.children[1];
+		while(mapObj.children.length) mapObj.removeChild(mapObj.children[0]);
 		for(var i = 0; i < parseInt(this.attrs['areas']); i++) {
 		    var arObj = this.place.ownerDocument.createElement('area');
 		    switch(parseInt(this.attrs['area'+i+'shp'])) {
@@ -900,16 +855,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 	    if(this.attrsMdf['elType'] || this.place.elWr != elWr)
 		while(this.place.childNodes.length) this.place.removeChild(this.place.childNodes[0]);
 
-	    if(this.attrsMdf['font']) {
-		this.place.fontCfg = '';
-		if(this.attrs['font']) {
-		    var allFnt = this.attrs['font'].split(' ');
-		    if(allFnt.length >= 3 && parseInt(allFnt[2])) this.place.fontCfg += 'bold ';
-		    if(allFnt.length >= 4 && parseInt(allFnt[3])) this.place.fontCfg += 'italic ';
-		    if(allFnt.length >= 2) this.place.fontCfg += (parseInt(allFnt[1])*Math.min(xSc,ySc)).toFixed(0)+'px ';
-		    if(allFnt.length >= 1) this.place.fontCfg += allFnt[0].replace(/_/g,' ')+' ';
-		}
-	    }
+	    if(this.attrsMdf['font'])	this.place.fontCfg = getFontCond(this.attrs['font'], Math.min(xSc,ySc));
 	    var fntSz = Math.min(geomH,(getFont(this.attrs['font'],Math.min(xSc,ySc),2)*1.4).toFixed(0));
 	    switch(elTp) {
 		case 0:	//Line edit
@@ -933,27 +879,31 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			switch(this.place.view) {
 			    case 1:		//Combo
 				var combImg = this.place.ownerDocument.createElement('img');
-				combImg.src = '/'+MOD_ID+'/img_combar';
-				combImg.style.cssText = 'position: absolute; left: '+(geomW-16)+'px; top: '+((geomH-fntSz)/2)+'px; width: 16px; height: '+fntSz+'px; cursor: pointer; ';
+				combImg.className = "cntr"; combImg.src = '/'+MOD_ID+'/img_combar';
+				combImg.style.cssText = 'left: '+(geomW-16)+'px; top: '+((geomH-fntSz)/2)+'px; height: '+fntSz+'px; ';
 				this.place.appendChild(combImg);
 				formObj.style.width = (geomWint-16)+'px';
 				combImg.onclick = function( ) {
-				    var formObj = this.parentNode.childNodes[0];
-				    var combList = this.ownerDocument.getElementById('#combo');
+				    var formObj = this.parentNode.children[0];
+				    var combList = this.ownerDocument.getElementById('combomenu');
 				    if(!combList) {
 					combList = this.ownerDocument.createElement('div');
-					combList.id = '#combo';
+					combList.id = 'combomenu';
 					combList.appendChild(this.ownerDocument.createElement('select'));
 					combList.childNodes[0].size = '100';
-					combList.childNodes[0].onchange = function( ) {
-					    this.formObj.value = this.options[this.selectedIndex].value;
-					    this.formObj.setModify(true);
+					combList.childNodes[0].onclick = function( ) {
+					    //this.formObj.value = this.options[this.selectedIndex].value;
+					    //this.formObj.setModify(true);
+					    this.formObj.valSet(this.options[this.selectedIndex].value);
+					    this.formObj.chApply();
 					    this.parentNode.style.visibility = 'hidden';
+					    this.parentNode.style.top = "-100px";
 					}
 					combList.childNodes[0].onblur = function( ) {
 					    this.parentNode.style.visibility = 'hidden';
 					    this.parentNode.style.top = "-100px";
 					}
+					combList.onmouseleave = function( ) { this.style.visibility = 'hidden'; this.style.top = "-100px"; }
 					this.ownerDocument.body.appendChild(combList);
 				    }
 				    while(combList.childNodes[0].childNodes.length)
@@ -966,11 +916,10 @@ function makeEl( pgBr, inclPg, full, FullTree )
 					combList.childNodes[0].appendChild(optEl);
 				    }
 				    if(combList.childNodes[0].childNodes.length) {
-					combList.style.cssText = 'position: absolute; visibility : visible; left: '+posGetX(formObj,true)+'px; '+
-							         'top: '+(posGetY(formObj,true)+formObj.offsetHeight)+'px; width: '+formObj.offsetWidth+'px; '+
-							         'height: '+Math.min(elLst.length*15,70)+'px; border: 0; ';
+					combList.style.cssText = 'left: '+posGetX(formObj,true)+'px; top: '+(posGetY(formObj,true)+formObj.offsetHeight)+'px; '+
+								 'width: '+formObj.offsetWidth+'px; height: '+Math.min(elLst.length*15,70)+'px; ';
 					combList.childNodes[0].style.cssText = 'width: '+formObj.offsetWidth+'px; height: '+Math.min(elLst.length*15,70)+'px; '+
-									       'border-width: 2px; font: '+formObj.parentNode.fontCfg+'; padding: 1px;';
+									       'font: '+formObj.parentNode.fontCfg+'; ';
 					combList.childNodes[0].formObj = formObj;
 					combList.childNodes[0].focus();
 				    }
@@ -980,8 +929,8 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			    case 2: case 3:	//Integer, Real
 				if(this.place.childNodes.length >= 2) break;
 				var spinImg = this.place.ownerDocument.createElement('img');
-				spinImg.src = '/'+MOD_ID+'/img_spinar';
-				spinImg.style.cssText = 'position: absolute; left: '+(geomW-16)+'px; top: '+((geomH-fntSz)/2)+'px; width: 16px; height: '+fntSz+'px; cursor: pointer; ';
+				spinImg.className = "cntr"; spinImg.src = '/'+MOD_ID+'/img_spinar';
+				spinImg.style.cssText = 'left: '+(geomW-16)+'px; top: '+((geomH-fntSz)/2)+'px; height: '+fntSz+'px; ';
 				spinImg.border = '0';
 				formObj.style.width = (geomWint-16)+'px';
 				spinImg.onclick = function(e) {
@@ -996,12 +945,112 @@ function makeEl( pgBr, inclPg, full, FullTree )
 				}
 				this.place.appendChild(spinImg);
 				break;
-			    case 4:	//Time
-				break;
+			    case 4:	break;	//Time
 			    case 5:	//Date
-				break;
 			    case 6:	//Date and time
-				//formObj.type = 'datetime-local'; formObj.step = 1;
+				formObj.onclick = function( ) {
+				    if((cldrDlg=this.ownerDocument.getElementById('clndrdlg'))) cldrDlg.style.visibility = 'hidden';
+				}
+				var cldrImg = this.place.ownerDocument.createElement('img');
+				cldrImg.className = "cntr"; cldrImg.src = '/'+MOD_ID+'/img_combar';
+				cldrImg.style.cssText = 'left: '+(geomW-16)+'px; top: '+((geomH-fntSz)/2)+'px; height: '+fntSz+'px; ';
+				this.place.appendChild(cldrImg);
+				formObj.style.width = (geomWint-16)+'px';
+				cldrImg.onclick = function( ) {
+				    var formObj = this.parentNode.children[0];
+				    var cldrDlg = this.ownerDocument.getElementById('clndrdlg');
+				    if(!cldrDlg) {
+					cldrDlg = this.ownerDocument.createElement('div');
+					cldrDlg.id = 'clndrdlg';
+					cldrDlg.innerHTML = "<input type='button' value='###Today###'/><select></select><select></select>"+
+					    "<table><tr><th>###Mon###</th><th>###Tue###</th><th>###Wed###</th><th>###Thr###</th><th>###Fri###</th><th class='end'>###Sat###</th><th class='end'>###Sun###</th></tr>"+
+					    "<tr><td/><td/><td/><td/><td/><td/><td/></tr>"+
+					    "<tr><td/><td/><td/><td/><td/><td/><td/></tr>"+
+					    "<tr><td/><td/><td/><td/><td/><td/><td/></tr>"+
+					    "<tr><td/><td/><td/><td/><td/><td/><td/></tr>"+
+					    "<tr><td/><td/><td/><td/><td/><td/><td/></tr>"+
+					    "<tr><td/><td/><td/><td/><td/><td/><td/></tr>"+
+					    "</table>";
+					cldrDlg.children[0].onclick = function( ) {
+					    this.parentElement.formObj.valSet((new Date()).getTime()/1000);
+					    this.parentElement.formObj.chApply();
+					    this.parentElement.style.visibility = 'hidden';
+					    this.parentElement.style.top = "-100px";
+					}
+					cldrDlg.children[1].onchange = cldrDlg.children[2].onchange = function( ) {
+					    this.parentElement.tmSet((new Date(parseInt(this.parentElement.children[1].options[this.parentElement.children[1].selectedIndex].value),
+									this.parentElement.children[2].selectedIndex,1)).getTime()/1000);
+					}
+					cldrDlg.daySet = function() {
+					    dlgN = this.offsetParent.parentElement;
+					    dtSrc = new Date(dlgN.formObj.valGet()*1000);
+					    dtSrc.setFullYear(parseInt(dlgN.children[1].options[dlgN.children[1].selectedIndex].value));
+					    dtSrc.setMonth(dlgN.children[2].selectedIndex);
+					    dtSrc.setDate(parseInt(this.textContent));
+					    dlgN.formObj.valSet(dtSrc.getTime()/1000);
+					    dlgN.formObj.chApply();
+					    dlgN.style.visibility = 'hidden';
+					    dlgN.style.top = "-100px";
+					}
+					//Fill and activate the table
+					cldrDlg.tmSet = function(tm) {
+					    var dtCur = new Date();
+					    var dtSet = new Date(parseInt(tm)*1000);
+					    // Years fill
+					    var optLs = ""; hasCur = false;
+					    for(iY = 0; iY < 10; iY++) {
+						iY_ = (dtCur.getFullYear()-iY);
+						if(iY_ != dtSet.getFullYear()) optLs += "<option>"+iY_+"</option>";
+						else { optLs += "<option selected>"+iY_+"</option>"; hasCur = true; }
+					    }
+					    if(!hasCur) optLs += "<option selected>"+dtSet.getFullYear()+"</option>";
+					    this.children[1].innerHTML = optLs;
+					    // Months fill
+					    var optLs = "";
+					    for(iM = 0; iM < 12; iM++) {
+						var mNm = "";
+						if(iM == 0)		mNm = "###January###";
+						else if(iM == 1)	mNm = "###February###";
+						else if(iM == 2)	mNm = "###March###";
+						else if(iM == 3)	mNm = "###April###";
+						else if(iM == 4)	mNm = "###May###";
+						else if(iM == 5)	mNm = "###June###";
+						else if(iM == 6)	mNm = "###July###";
+						else if(iM == 7)	mNm = "###August###";
+						else if(iM == 8)	mNm = "###September###";
+						else if(iM == 9)	mNm = "###October###";
+						else if(iM == 10)	mNm = "###November###";
+						else if(iM == 11)	mNm = "###December###";
+						optLs += "<option"+((iM==dtSet.getMonth())?" selected":"")+">"+mNm+"</option>";
+					    }
+					    this.children[2].innerHTML = optLs;
+					    // Days fill
+					    dtSetMBeg = new Date(dtSet.getFullYear(), dtSet.getMonth(), 1);
+					    maxDayInMonth = 28;
+					    while((new Date(dtSet.getFullYear(),dtSet.getMonth(),maxDayInMonth+1)).getMonth() == dtSet.getMonth() && maxDayInMonth < 31)
+						maxDayInMonth++;
+					    for(iW = 0, iD = 1; iW < 6; iW++)
+						for(iWd = 0; iWd < 7; iWd++) {
+						    tdEl = this.children[3].rows[iW+1].cells[iWd];
+						    if((iW == 0 && iWd < (dtSetMBeg.getDay()-1)) || iD > maxDayInMonth)
+						    { tdEl.innerHTML = ""; tdEl.className = ""; tdEl.onclick = null; continue; }
+						    tdEl.innerHTML = iD;
+						    tdEl.className = "active";
+						    tdEl.onclick = this.daySet;
+						    if(iD == dtSet.getDate()) tdEl.className += " sel";
+						    if(iWd == 5 || iWd == 6) tdEl.className += " end";
+						    iD++;
+						}
+					}
+					this.ownerDocument.body.appendChild(cldrDlg);
+				    }
+				    cldrDlg.onmouseleave = formObj.onclick;
+				    cldrDlg.formObj = formObj;
+				    cldrDlg.tmSet(formObj.valGet());
+				    cldrDlg.style.cssText = 'left: '+posGetX(formObj,true)+'px; top: '+(posGetY(formObj,true)+formObj.offsetHeight)+'px; '+
+					'font: '+formObj.parentNode.fontCfg+'; ';
+				    return false;
+				}
 				break;
 			}
 			formObj.onkeyup = function(e) {
@@ -1011,23 +1060,23 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			    if(this.saveVal != this.value) this.setModify(true);
 			}
 			formObj.modify = function( )
-			{ return (this.parentNode.childNodes[(this.parentNode.view>=1&&this.parentNode.view<=3)?2:1].style.visibility == 'visible'); }
+			{ return (this.parentNode.children[this.parentNode.children.length-1].style.visibility == 'visible'); }
 			formObj.setModify = function(on) {
 			    if(on && this.clearTm) this.clearTm = 5;
 			    if(this.modify() == on) return;
-			    var posOkImg = (this.parentNode.view>=1&&this.parentNode.view<=3)?2:1;
-			    var okImg = this.parentNode.childNodes[posOkImg];
+			    var posOkImg = this.parentNode.children.length-1;
+			    var okImg = this.parentNode.children[posOkImg];
 			    if(on) {
 				this.style.width = (parseInt(this.style.width)-16)+'px';
 				if(posOkImg == 2)
-				    this.parentNode.childNodes[1].style.left = (parseInt(this.parentNode.childNodes[1].style.left)-16)+'px';
+				    this.parentNode.children[1].style.left = (parseInt(this.parentNode.children[1].style.left)-16)+'px';
 				okImg.style.visibility = 'visible';
 				this.wdgLnk.perUpdtEn(true); this.clearTm = 5;
 			    }
 			    else {
 				this.style.width = (parseInt(this.style.width)+16)+'px';
 				if(posOkImg == 2)
-				    this.parentNode.childNodes[1].style.left = (parseInt(this.parentNode.childNodes[1].style.left)+16)+'px';
+				    this.parentNode.children[1].style.left = (parseInt(this.parentNode.children[1].style.left)+16)+'px';
 				okImg.style.visibility = 'hidden';
 				this.wdgLnk.perUpdtEn(false); this.clearTm = 0;
 			    }
@@ -1048,9 +1097,9 @@ function makeEl( pgBr, inclPg, full, FullTree )
 				break;
 			    case 4:	//Time
 				var rez = (this.parentNode.cfg.length) ? this.parentNode.cfg : 'hh:mm';
-				var v = (Math.floor(val/3600)%(ap?12:24)).toString(10); rez = rez.replace('hh',(v.length==1)?'0'+v:v); rez = rez.replace('h',v);
-				v = (Math.floor(val/60)%60).toString(10); rez = rez.replace('mm',(v.length==1)?'0'+v:v); rez = rez.replace('m',v);
-				v = (val%60).toString(10); rez = rez.replace('ss',(v.length==1)?'0'+v:v); rez = rez.replace('s',v);
+				var v = (Math.floor(val/3600)%(ap?12:24)).toString(10); rez = rez.replace('hh',i2s(v,10,2)); rez = rez.replace('h',v);
+				v = (Math.floor(val/60)%60).toString(10); rez = rez.replace('mm',i2s(v,10,2)); rez = rez.replace('m',v);
+				v = (val%60).toString(10); rez = rez.replace('ss',i2s(v,10,2)); rez = rez.replace('s',v);
 				if(rez.indexOf('ap') >= 0) { rez = rez.replace('ap',(val>=43200)?'pm':'am'); var ap = true; }
 				if(rez.indexOf('AP') >= 0) { rez = rez.replace('AP',(val>=43200)?'PM':'AM'); var ap = true; }
 				this.value = rez;
@@ -1058,19 +1107,19 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			    case 5:	//Date
 				var rez = (this.parentNode.cfg.length) ? this.parentNode.cfg : 'dd.MM.yy';
 				var dt = new Date(parseInt(val)*1000);
-				var v = dt.getDate().toString(10); rez = rez.replace('dddd',(v.length==1)?'0'+v:v); rez = rez.replace('ddd',(v.length==1)?'0'+v:v); rez = rez.replace('dd',(v.length==1)?'0'+v:v); rez = rez.replace('d',v);
-				v = (dt.getMonth()+1).toString(10); rez = rez.replace('MMMM',(v.length==1)?'0'+v:v); rez = rez.replace('MMM',(v.length==1)?'0'+v:v); rez = rez.replace('MM',(v.length==1)?'0'+v:v); rez = rez.replace('M',v);
-				v = dt.getFullYear().toString(10); rez = rez.replace('yyyy',v); rez = rez.replace('yy',v.substr(2,2));
+				var v = dt.getDate().toString(10); rez = rez.replace('dddd',i2s(v,10,2)); rez = rez.replace('ddd',i2s(v,10,2)); rez = rez.replace('dd',i2s(v,10,2)); rez = rez.replace('d',v);
+				v = (dt.getMonth()+1).toString(10); rez = rez.replace('MMMM',i2s(v,10,2)); rez = rez.replace('MMM',i2s(v,10,2)); rez = rez.replace('MM',i2s(v,10,2)); rez = rez.replace('M',v);
+				v = dt.getFullYear().toString(10); rez = rez.replace('yyyy',i2s(v,10,4)); rez = rez.replace('yy',i2s(v.substr(2,2),10,2));
 				this.value = rez;
 				break;
 			    case 6:	//Date and time
 				var rez = (this.parentNode.cfg.length) ? this.parentNode.cfg : 'dd.MM.yy hh:mm';
 				var dt = new Date(parseInt(val)*1000);
-				var v = dt.getDate().toString(10); rez = rez.replace('dddd',(v.length==1)?'0'+v:v); rez = rez.replace('ddd',(v.length==1)?'0'+v:v); rez = rez.replace('dd',(v.length==1)?'0'+v:v); rez = rez.replace('d',v);
-				v = (dt.getMonth()+1).toString(10); rez = rez.replace('MMMM',(v.length==1)?'0'+v:v); rez = rez.replace('MMM',(v.length==1)?'0'+v:v); rez = rez.replace('MM',(v.length==1)?'0'+v:v); rez = rez.replace('M',v);
-				v = dt.getFullYear().toString(10); rez = rez.replace('yyyy',v); rez = rez.replace('yy',v.substr(2,2));
-				v = dt.getHours().toString(10); rez = rez.replace('hh',(v.length==1)?'0'+v:v); rez = rez.replace('h',v);
-				v = dt.getMinutes().toString(10); rez = rez.replace('mm',(v.length==1)?'0'+v:v); rez = rez.replace('m',v);
+				var v = dt.getDate().toString(10); rez = rez.replace('dddd',i2s(v,10,2)); rez = rez.replace('ddd',i2s(v,10,2)); rez = rez.replace('dd',i2s(v,10,2)); rez = rez.replace('d',v);
+				v = (dt.getMonth()+1).toString(10); rez = rez.replace('MMMM',i2s(v,10,2)); rez = rez.replace('MMM',i2s(v,10,2)); rez = rez.replace('MM',i2s(v,10,2)); rez = rez.replace('M',v);
+				v = dt.getFullYear().toString(10); rez = rez.replace('yyyy',i2s(v,10,4)); rez = rez.replace('yy',i2s(v.substr(2,2),10,2));
+				v = dt.getHours().toString(10); rez = rez.replace('hh',i2s(v,10,2)); rez = rez.replace('h',v);
+				v = dt.getMinutes().toString(10); rez = rez.replace('mm',i2s(v,10,2)); rez = rez.replace('m',v);
 				v = dt.getSeconds().toString(10); rez = rez.replace('ss',(v.length==1)?'0'+v:v); rez = rez.replace('s',v);
 				if(rez.indexOf('ap') >= 0)	{ rez = rez.replace('ap',(val>=43200)?'pm':'am'); var ap = true; }
 				if(rez.indexOf('AP') >= 0)	{ rez = rez.replace('AP',(val>=43200)?'PM':'AM'); var ap = true; }
@@ -1217,19 +1266,18 @@ function makeEl( pgBr, inclPg, full, FullTree )
 		    formObj.chApply = function( ) {
 			var val = this.valGet();
 			this.valSet(val);
-			var okImg = this.parentNode.childNodes[(this.parentNode.view>=1&&this.parentNode.view<=3)?2:1];
 			this.setModify(false);
 			var attrs = new Object(); attrs.value = val; attrs.event = 'ws_LnAccept';
 			setWAttrs(this.wdgLnk.addr,attrs);
 		    }
 		    formObj.chEscape = function( ) {
 			this.value = this.saveVal;
-			var okImg = this.parentNode.childNodes[(this.parentNode.view>=1&&this.parentNode.view<=3)?2:1];
 			this.setModify(false);
 		    }
 		    var okImg = this.place.ownerDocument.createElement('img');
+		    okImg.className = "ok";
 		    okImg.src = '/'+MOD_ID+'/img_button_ok';
-		    okImg.style.cssText = 'visibility: hidden; position: absolute; left: '+(geomW-16)+'px; top: '+((geomH-16)/2)+'px; width: 16px; height: 16px; cursor: pointer;';
+		    okImg.style.cssText = 'left: '+(geomW-16)+'px; top: '+((geomH-16)/2)+'px;';
 		    okImg.onclick = function() { this.parentNode.childNodes[0].chApply(); return false; };
 		    this.place.appendChild(okImg);
 		    formObj.valSet(this.attrs['value']);
@@ -1239,7 +1287,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 		    var formObj = toInit ? this.place.ownerDocument.createElement('textarea') : this.place.childNodes[0];
 		    if(toInit || this.attrsMdf['geomZ']) formObj.tabIndex = parseInt(this.attrs['geomZ'])+1;
 		    if(toInit || this.attrsMdf['geomW'] || this.attrsMdf['geomH'] || this.attrsMdf['font'])
-			formObj.style.cssText = 'width: '+(geomW-5)+'px; height: '+(geomH-5)+'px; border: 1px solid black; font: '+this.place.fontCfg+'; padding: 1px;';
+			formObj.style.cssText = 'width: '+(geomW-5)+'px; height: '+(geomH-5)+'px; font: '+this.place.fontCfg+'; ';
 		    if(this.attrsMdf['value']) formObj.saveVal = formObj.value = this.attrs['value'];
 		    if(!toInit) break;
 		    formObj.disabled = !elWr;
@@ -1331,13 +1379,6 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			if(toInit || this.attrsMdf['name']) {
 			    spanObj.disabled = !this.attrs['name'].length;
 			    spanObj.innerHTML = this.attrs['name'];
-			    //while(spanObj.childNodes.length) spanObj.removeChild(spanObj.childNodes[0]);
-			    /*txtVal1 = '';
-			    for(var j = 0; j < this.attrs['name'].length; j++) {
-				if(this.attrs['name'].substr(j,2) == '\\n') { txtVal1 += "<br />"; j++; continue; }
-				txtVal1 += strEncode(this.attrs['name'][j]);
-			    }
-			    spanObj.innerHTML = txtVal1;*/
 			}
 			if(toInit || this.attrsMdf['img'] || this.attrsMdf['name']) {
 			    imgObj.hidden = !this.attrs['img'].length;
@@ -1394,7 +1435,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			this.place.appendChild(formObj);
 		    }
 		    else {
-			formObj = toInit ? this.place.ownerDocument.createElement('input') : this.place.childNodes[0];
+			formObj = toInit ? this.place.ownerDocument.createElement('button') : this.place.childNodes[0];
 			if(toInit || this.attrsMdf['geomZ'])	formObj.tabIndex = parseInt(this.attrs['geomZ'])+1;
 			if(toInit || this.attrsMdf['font'])	formObj.style.font = this.place.fontCfg;
 			if(toInit || this.attrsMdf['name'])	formObj.value = this.attrs['name'].replace('\\n','\n');
@@ -1405,12 +1446,12 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			if(!toInit) break;
 			formObj.style.cursor = elWr ? 'pointer' : '';
 			formObj.disabled = !elWr;
-			formObj.type = 'button';
+			//formObj.type = 'button';
 			formObj.wdgLnk = this;
 			formObj.style.width = geomW+'px'; formObj.style.height = geomH+'px';
 			formObj.style.padding = "0";
 			this.place.appendChild(formObj);
-			formObj.value = this.attrs['name'].replace('\\n','\n');	//Need for Opera after place to DOM
+			formObj.innerText = this.attrs['name'].replace('\\n','\n');	//Need for Opera after place to DOM
 		    }
 		    break;
 		case 4: case 5:	//Combo box, List
@@ -1418,9 +1459,9 @@ function makeEl( pgBr, inclPg, full, FullTree )
 		    var formObj = toInit ? this.place.ownerDocument.createElement('select') : this.place.childNodes[0];
 		    if(toInit || this.attrsMdf['geomZ']) formObj.tabIndex = parseInt(this.attrs['geomZ'])+1;
 		    if(toInit || this.attrsMdf['geomW'] || this.attrsMdf['geomH'] || this.attrsMdf['font'])
-			formObj.style.cssText = 'position: absolute; left: 0px; top: '+((elTp==4)?(geomH-fntSz)/2:0)+'px; '+
+			formObj.style.cssText = 'top: '+((elTp==4)?(geomH-fntSz)/2:0)+'px; '+
 					    'height: '+((elTp==4)?fntSz:(geomH-4))+'px; width: '+geomW+'px; '+
-					    'border: 1px solid black; font: '+this.place.fontCfg+'; padding: 0; ';
+					    'font: '+this.place.fontCfg+'; ';
 		    if(this.attrsMdf['items'] || this.attrsMdf['value']) {
 			while(formObj.childNodes.length) formObj.removeChild(formObj.childNodes[0]);
 			var selVal = this.attrs['value'];
@@ -1451,7 +1492,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			}
 		    else {
 			formObj.size = 100;
-			formObj.onchange = function( ) {
+			formObj.onclick = function( ) {
 			    var attrs = new Object();
 			    attrs.value = this.options[this.selectedIndex].value; attrs.event = 'ws_ListChange';
 			    setWAttrs(this.wdgLnk.addr,attrs);
@@ -1459,12 +1500,106 @@ function makeEl( pgBr, inclPg, full, FullTree )
 		    }
 		    this.place.appendChild(formObj);
 		    break;
+		case 6: case 7:	//Slider and Scroll bar
+		    isProgr = false;	//(elTp == 7);
+		    var toInit = !this.place.children.length;
+		    var formObj = toInit ? this.place.ownerDocument.createElement('input') : this.place.children[0];
+		    if(toInit || this.attrsMdf['geomZ']) formObj.tabIndex = parseInt(this.attrs['geomZ'])+1;
+		    if(toInit || this.attrsMdf['value']) formObj.value = parseInt(this.attrs['value']);
+		    formObj.vOr = false;
+		    if(toInit || this.attrsMdf['cfg']) {
+			cfgLst = this.attrs['cfg'].split(':');
+			formObj.vOr = (cfgLst.length && parseInt(cfgLst[0]));
+			formObj.setAttribute("orient", formObj.vOr?"vertical":"");
+			formObj.setAttribute("min", (cfgLst.length > 1)?parseInt(cfgLst[1]):0);
+			formObj.setAttribute("max", (cfgLst.length > 2)?parseInt(cfgLst[2]):100);
+			formObj.setAttribute("step", (cfgLst.length > 3)?parseInt(cfgLst[3]):1);
+		    }
+		    if(!toInit) break;
+		    formObj.type = 'range';
+		    formObj.disabled = !elWr;
+		    formObj.wdgLnk = this;
+		    formObj.style.cssText = "width: "+(formObj.vOr?16:(isProgr?geomW-2*16:geomW))+"px; "+
+			"height: "+(formObj.vOr?(isProgr?geomH-2*16:geomH):16)+"px; ";
+		    formObj.onclick = formObj.onkeyup = function( ) {
+			if(this.value == parseInt(this.wdgLnk.attrs['value']))	return;
+			var attrs = new Object();
+			attrs.value = this.value; attrs.event = 'ws_SliderChange';
+			setWAttrs(this.wdgLnk.addr, attrs);
+			this.defaultValue = this.value;
+			//return true;
+		    }
+		    this.place.appendChild(formObj);
+		    break;
+		case 9:	//Table
+		    this.place.className += " Table";
+		    var toInit = !this.place.children.length;
+		    var formObj = toInit ? this.place.ownerDocument.createElement('table') : this.place.children[0];
+		    if(toInit || this.attrsMdf['geomZ']) formObj.tabIndex = parseInt(this.attrs['geomZ'])+1;
+		    if(toInit || this.attrsMdf['font'])  formObj.style.cssText = 'font: '+this.place.fontCfg+'; ';
+		    // Processing for fill and changes
+		    if(toInit || this.attrsMdf['items']) {
+			if(toInit) formObj.innerHTML = "<THEAD><TR/></THEAD><TBODY/>";
+			items = (new DOMParser()).parseFromString(this.attrs['items'], "text/xml");
+			rClr = null, rClrTxt = null, rFnt = null;
+			for(iR = 0, iRR = 0, iCh = 0; (items.children.length && iCh < items.children[0].children.length) || iR < formObj.tBodies[0].rows.length; iCh++)
+			{
+			    tR = (iCh < items.children[0].children.length) ? items.children[0].children[iCh] : null;
+			    isH = false, hit = null, tit = null;
+			    if(tR && !((isH=(tR.nodeName=="h")) || tR.nodeName == "r")) continue;
+			    if(!isH && iR >= formObj.tBodies[0].rows.length)
+				formObj.tBodies[0].appendChild(this.place.ownerDocument.createElement('tr'));
+			    if(!isH && tR) { rClr = tR.getAttribute("color"); rClrTxt = tR.getAttribute("colorText"); rFnt = tR.getAttribute("font"); }
+			    for(iC = 0, iCR = 0, iCh1 = 0; (tR && iCh1 < tR.children.length) || iC < formObj.tHead.children.length; iCh1++)
+			    {
+				tC = (tR && iCh1 < tR.children.length) ? tR.children[iCh1] : null;
+				if(iC >= formObj.tHead.rows[0].cells.length)
+				    formObj.tHead.rows[0].appendChild(this.place.ownerDocument.createElement('th'));
+				hit = formObj.tHead.rows[0].cells[iC];
+				if(isH) {	//Header process
+				    hit.innerText = tC ? tC.textContent : "";
+				    if(tC) {
+					if((hit.outWidth=tC.getAttribute("width"))) {
+					    //if(wVl.find("%") == wVl.size()-1) wdthCel = w->size().width()*wdthCel/100;
+					}
+					hit.outEdit = parseInt(tC.getAttribute("edit"));
+					hit.outColor = tC.getAttribute("color");
+					hit.outColorText = tC.getAttribute("colorText");
+					hit.outFont = tC.getAttribute("font");
+					//if((wVl=tC.getAttribute("sort")))	{ sortCol = i_c+1; if(!parseInt(wVl)) sortCol *= -1; }
+				    }
+				}
+				else {	//Rows content process
+				    if(iC >= formObj.tBodies[0].rows[iR].cells.length)
+					formObj.tBodies[0].rows[iR].appendChild(this.place.ownerDocument.createElement('td'));
+				    tit = formObj.tBodies[0].rows[iR].cells[iC];
+				    // Value
+				    if(tC) tit.innerText = tC.textContent;
+				    // Back color
+				    if((tC && (wVl=tC.getAttribute("color"))) || (wVl=hit.outColor) || (wVl=rClr))
+					tit.style.backgroundColor = getColor(wVl);
+				    else tit.style.backgroundColor = null;
+				    // Text font and color
+				    if((tC && (wVl=tC.getAttribute("colorText"))) || (wVl=hit.outColorText) || (wVl=rClrTxt))
+					tit.style.color = getColor(wVl);
+				    else tit.style.color = null;
+				    if((tC && (wVl=tC.getAttribute("font"))) || (wVl=hit.outFont) || (wVl=rFnt))
+					tit.style.font = getFontCond(wVl, Math.min(xSc,ySc));
+				    else tit.style.font = null;
+				}
+				iC++;
+			    }
+			    if(!isH) iR++;
+			}
+			//console.log("items="+items.children[0].nodeName);
+		    }
+		    if(!toInit) break;
+		    //???? Events and processings init
+		    this.place.appendChild(formObj);
+		    break;
 	    }
 	}
 	else if(this.attrs['root'] == 'Diagram') {
-	    //if(this.attrs['backColor'] && getColor(this.attrs['backColor'],true))
-	    //	elStyle += 'background-color: '+getColor(this.attrs['backColor'])+'; ';
-	    //if(this.attrs['backImg']) elStyle += 'background-image: url(\'/'+MOD_ID+this.addr+'?com=res&val='+this.attrs['backImg']+'\'); ';
 	    elStyle += 'border-style: solid; border-width: '+this.attrs['bordWidth']+'px; ';
 	    if(this.attrs['bordColor']) elStyle += 'border-color: '+getColor(this.attrs['bordColor'])+'; ';
 	    var anchObj = this.place.childNodes[0];
@@ -1499,10 +1634,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 	    this.perUpdtEn(this.isEnabled() && parseInt(this.attrs['trcPer']));
 	}
 	else if(this.attrs['root'] == 'Protocol') {
-	    if(this.attrs['backColor'] && getColor(this.attrs['backColor'],true)) ;
-	    //	elStyle += 'background-color: '+getColor(this.attrs['backColor'])+'; ';
-	    else elStyle += 'background-color: white; ';
-	    //if(this.attrs['backImg'])	elStyle += 'background-image: url(\'/'+MOD_ID+this.addr+'?com=res&val='+this.attrs['backImg']+'\'); ';
+	    if(!this.attrs['backColor'] || !getColor(this.attrs['backColor'],true)) elStyle += 'background-color: white; ';
 	    elStyle += 'border: 1px solid black; overflow: auto; padding: 2px; text-align: left; ';
 	    geomW -= 6; geomH -= 6;
 
@@ -1613,7 +1745,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			for(var i_req = 0; i_req < rez.childNodes.length; i_req++) {
 			    var rcd = rez.childNodes[i_req];
 			    var mess = new Array(parseInt(rcd.getAttribute('time')), parseInt(rcd.getAttribute('utime')),
-						    Math.abs(parseInt(rcd.getAttribute('lev'))), rcd.getAttribute('cat'), nodeText(rcd));
+						    Math.abs(parseInt(rcd.getAttribute('lev'))), rcd.getAttribute('cat'), rcd.textContent);
 
 			    // Check for dublicates
 			    var isDbl = false;
@@ -1632,7 +1764,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			for(var i_req = rez.childNodes.length-1; i_req >= 0; i_req--) {
 			    var rcd = rez.childNodes[i_req];
 			    var mess = new Array(parseInt(rcd.getAttribute('time')), parseInt(rcd.getAttribute('utime')),
-						    Math.abs(parseInt(rcd.getAttribute('lev'))), rcd.getAttribute('cat'), nodeText(rcd));
+						    Math.abs(parseInt(rcd.getAttribute('lev'))), rcd.getAttribute('cat'), rcd.textContent);
 
 			    // Check for dublicates
 			    var isDbl = false;
@@ -1700,16 +1832,16 @@ function makeEl( pgBr, inclPg, full, FullTree )
 
 			for(var i_cel = 0; i_cel < tblB.childNodes[0].childNodes.length; i_cel++) {
 			    var celEl = (i_cel>=rowEl.childNodes.length) ? document.createElement('td') : rowEl.childNodes[i_cel];
-			    if(this.col_pos == i_cel) { setNodeText(celEl,i_m); celEl.style.cssText += ' text-align: center; '; }
+			    if(this.col_pos == i_cel) { celEl.textContent = i_m; celEl.style.cssText += ' text-align: center; '; }
 			    else if(this.col_tm == i_cel) {
 				var dt = new Date(this.messList[elPos][0]*1000);
-				setNodeText(celEl,dt.getDate()+'.'+(dt.getMonth()+1)+'.'+dt.getFullYear()+' '+dt.getHours()+':'+
-				    ((dt.getMinutes()<10)?('0'+dt.getMinutes()):dt.getMinutes())+':'+((dt.getSeconds()<10)?('0'+dt.getSeconds()):dt.getSeconds()));
+				celEl.textContent = dt.getDate()+'.'+(dt.getMonth()+1)+'.'+dt.getFullYear()+' '+dt.getHours()+':'+
+				    ((dt.getMinutes()<10)?('0'+dt.getMinutes()):dt.getMinutes())+':'+((dt.getSeconds()<10)?('0'+dt.getSeconds()):dt.getSeconds());
 			    }
-			    else if(this.col_utm == i_cel)	setNodeText(celEl,this.messList[elPos][1]);
-			    else if(this.col_lev == i_cel)	setNodeText(celEl,this.messList[elPos][2]);
-			    else if(this.col_cat == i_cel)	setNodeText(celEl,this.messList[elPos][3]);
-			    else if(this.col_mess == i_cel)	setNodeText(celEl,this.messList[elPos][4]);
+			    else if(this.col_utm == i_cel)	celEl.textContent = this.messList[elPos][1];
+			    else if(this.col_lev == i_cel)	celEl.textContent = this.messList[elPos][2];
+			    else if(this.col_cat == i_cel)	celEl.textContent = this.messList[elPos][3];
+			    else if(this.col_mess == i_cel)	celEl.textContent = this.messList[elPos][4];
 			    if(i_cel >= rowEl.childNodes.length) rowEl.appendChild(celEl);
 			}
 			if(i_m >= (tblB.childNodes.length-1)) tblB.appendChild(rowEl);
@@ -2019,7 +2151,7 @@ function makeUI( callBackRez )
 	for(var i_p = 0; i_p < pgList.length; i_p++) {
 	    var opPg; var i_ch;
 	    for(i_ch = 0; i_ch < pgNode.childNodes.length; i_ch++)
-		if(pgNode.childNodes[i_ch].nodeName == 'pg' && nodeText(pgNode.childNodes[i_ch]) == pgList[i_p])
+		if(pgNode.childNodes[i_ch].nodeName == 'pg' && pgNode.childNodes[i_ch].textContent == pgList[i_p])
 		    break;
 	    if(i_ch < pgNode.childNodes.length || !(opPg=masterPage.findOpenPage(pgList[i_p]))) continue;
 	    if(opPg.window) {
@@ -2038,7 +2170,7 @@ function makeUI( callBackRez )
 	pgList = new Array();
 	for(var i = 0; i < pgNode.childNodes.length; i++)
 	    if(pgNode.childNodes[i].nodeName == 'pg') {
-	        var prPath = nodeText(pgNode.childNodes[i]);
+	        var prPath = pgNode.childNodes[i].textContent;
 		//  Check for closed window
 		var opPg = masterPage.findOpenPage(prPath);
 		if(opPg && opPg.window && opPg.windowExt && opPg.window.closed) {
@@ -2123,7 +2255,7 @@ document.body.onmouseup = function(e)
     if(evMouseGet(e) != 'Left') return true;
     var popUpMenu = document.getElementById('popupmenu');
     if(popUpMenu) popUpMenu.style.visibility = 'hidden';
-    return false;
+    //return false;	//!!!! It's buggy on <input type=range> for Chrome
 }
 
 var modelPer = 0;			//Model proc period
