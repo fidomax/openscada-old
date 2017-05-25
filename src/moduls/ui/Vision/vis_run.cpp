@@ -49,7 +49,7 @@
 #include <QDateTime>
 #include <QTextStream>
 
-#include <config.h>
+// #include <config.h>
 #include <tsys.h>
 #include "tvision.h"
 #include "vis_run_widgs.h"
@@ -1212,7 +1212,7 @@ void VisRun::initSess( const string &iprjSes_it, bool icrSessForce )
 	// Icon
 	pN = req.childGet(1);
 	QImage img;
-	string simg = TSYS::strDecode(pN->text(),TSYS::base64);
+	string simg = TSYS::strDecode(pN->text(), TSYS::base64);
 	if(img.loadFromData((const uchar*)simg.data(),simg.size()))
 	    setWindowIcon(QPixmap::fromImage(img));
 

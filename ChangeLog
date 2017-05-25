@@ -1,5 +1,141 @@
+2017-05-19 Roman (stable)
+- DB.LibsDB.vcaBase: Main.objProps adapted to the first column hide.
+- Archive.{DBArch,FSArch},DAQ.LogicLev: Some original messages fixed.
+- !!!:Archive.FSArch: Expanded for INFO files store into a standalone DB file of SQLite into folder of the archivator.
+- FIX:UI.WebVision: Borders and transparent backgrounds processing fixed. Spaces processing for primitive "Text" set to "white-space: pre-wrap".
+
+
+2017-05-12 Roman (stable)
+- !!:FIX:DB.LibsDB.vcaBase: Main.RootPgSo some fixed for the combobox with the allowed for directly select pages.
+    FIX: Main page of the project "archBrowser" expanded for the combobox with the allowed for directly select pages.
+    !!:Projects "tmplSO" and "archBrowser" were switched to the extended pasport of the standard parameters.
+    The external pasport (Main.cntrPaspExt) adapted some to display by UI.WebVision.
+- !!:DB.ModelsDB.{AGLKS.vca.db,Boiler.St.db}: The Project was switched to the extended pasport of the standard parameters.
+- FIX:DAQ.DAQGate: Requests are fixed after moving to different station.
+- FIX:DAQ.System: Some warnings from Valgrind are fixed.
+- !!!!:FIX:Transport.SSL: Fixed into client's part for correct free wich caused for crashes and blockings.
+    !!!!: Wide tested on browsers Chrome, FireFox; for file handlers free and into Valgrind.
+- FIX:UI.VCAEngine: Some original messages fixed.
+- UI.Vision: The view "Table" of the primitive "FormEl" expanded for field "width" equal to 0 processing to hide the column.
+- UI.WebCfgD: The navigation tree and dialogs forming some improved.
+- !!!!:FIX:UI.WebVision: View "Tree" of the primitive "FormEl" implemented.
+    FIX: Dialogs, small built-in windows, forming some fixed and improved.
+    FIX: System context menu oppressed for active widgets.
+    FIX: View "Table" expanded for columns hide by field "width" equal to 0 and selection lost was prevented.
+
+
+2017-05-05 Roman (stable)
+- DB.LibsDB.vcaBase: Main.RootPgSo expanded by yet one pages navigation element that is combobox with the allowed for directly select pages.
+- SYS: The generic node was expanded by a user API function "messSys".
+- !!:FIX:Transport.SSL: Fix for SSL_free() missing and variables "ctx", "ssl", "conn" clean at second start, into the output part.
+- !!:FIX:UI.WebCfgD: The "Table" element processing for big content some improved and fixed for key items eddition.
+
+
+2017-04-21 Roman (stable)
+- UI.WebVision: Items edition implemented for the view "Table" of the primitive "FormEl".
+
+
+2017-04-14 Roman (stable)
+- DAQ.ModBus: Set for using ID at empty Name part of DAQ.
+- UI.WebVision: Active mode for selection for the view "Table" of the primitive "FormEl" implemented,
+    Next task are edition of content of the cells of the table...
+
+
+2017-04-07 Roman (stable)
+- SYS:configure.ac: Checking for "libintl" changed for function "libintl_bindtextdomain" and checking for libiconv moved before.
+- FIX:DB.LibsDB.vcaBase: Main.objProps fixed for checking to the write mode.
+- UI.Vision: X scaling used into result column width of the view "Table" of the primitive "FormEl".
+- UI.WebVision: Context display for view "Table" of the primitive "FormEl" mostly implemented.
+    Next tasks are selection processing of items (cell, column, row)...
+
+
+2017-04-02 Roman (stable)
+- SYS:configure.ac: Checking for LibGD set combined with and next without PKG_CHECK_MODULES(pkg-config).
+- SYS:configure.ac: Fix for Fedora 12
+- SYS:configure.ac: Checking for LibGD moved to PKG_CHECK_MODULES(pkg-config) for proper static linking.
+- SYS: The environment variable HAVE_GD_CORE renamed to HAVE_GD_FORCE. Checking for HAVE_CONFIG_H is added for "config.h".
+- DAQ.ICP_DAS,UI.{QTStarter,QTCfg,Vision,WebCfgD,WebVision}: *_LIBADD replaced *_LDFLAGS.
+- FIX:UI.WebCfgD: Checking for "gd.h" fixed.
+- FIX:UI.Vision: The primitive "FormEl" in view "Table" fixed for properties of collumns.
+
+
+2017-04-01 Roman (stable)
+- DB.LibsDB.vcaTest.db: Tests collection cadre of primitive "FormEl" expanded for view "List" and "Table".
+- SYS:configure.ac: Checking for "linux/can.h" moved to same the module Transport.Sockets.
+    Checking for "inux/serial.h" was added to the module Transport.Serial.
+    Checking for GD2 was removed from the module UI.WebCfgD.
+    The order of modules of subsystem "Special" set to the priority one.
+- SYS:acinclude.m4: LibGD checking macro expanded for dependencies "-lpng -ljpeg -lfontconfig -lexpat -lfreetype"
+    to allow the libraries linking statically.
+- FIX:SYS,DAQ.System: Some original messages fixed.
+- Transport.SSL: Adpated to tmpnam() wrong placing into "/tmp/??" on Android.
+- FIX:Transport.Serial: There is checking for "linux/serial.h" added and for "linux/i2c-dev.h" fixed.
+- FIX:UI.Vision: The primitive "FormEl" in view "Table" fixed for properties of collumns.
+- !!!:FIX:UI.WebVision: Expanded for view "Table" of primitive "FormEl" initial implementation.
+    Internal functions nodeText() and setNodeText() replaced to "textContent".
+    FIX: The view "Button" of the primitive "FormEl" fixed for words wrap on Chrome browser.
+    View "Combo box" and "List" of the primitive "FormEl" made simplified.
+
+
+2017-03-25 Roman (stable)
+- SYS:configure.ac: Test AX_LIB_OpenSSL() call fix for DAQ.OPC_UA.
+- SYS:configure.ac: String [0.9] of the replacing version of the OpenSCADA building fix.
+
+
+2017-03-24 Roman (stable)
+- FIX:DB.LibsDB.vcaBase: wlb_Main.graphSelPrm fixed for linking "/DAQGate/..." and for current item's address correct display into the "prm_" prefix.
+- SYS:configure.ac,acinclude.m4: The source text mostly cleaned for the formation style and messages.
+- SYS:acinclude.m4,Special.FLibSYS: OpenSSL checking macro expanded by the optional test "AX_LIB_OpenSSL_opt" and
+    the tests were appended by the libcrypto checking.
+- SYS:configure.ac: Checking for spare header files removed. Checking macro of OpenSCADA modules placed into the importance order.
+- SYS: Some spare headers removed from the source code.
+- SYS:TModSchedul: Adapted for optional pointing the core library name and path by the configure environment "CoreLibNmToDlOpen",
+    on LibC variant Bionic of Android.
+- SYS:TSecurity: Support of the hashed passwords expanded to use the locked function crypt() at crypt_r() miss.
+- FIX:DAQ.DCON: Include/builtin to the OpenSCADA core fixed.
+- FIX:DAQ.{LogicLev,Siemens,System}: Some originale messages fixed.
+- DAQ.OPC_UA: Adapted to include/builtin into the OpenSCADA core.
+    libOPC_UA: Needed parts from ieee754.h moved to the file.
+- Special.FLibSYS: The function dbReqSQL() description expanded.
+- Transport.SSL: The function getservbyname_r() switched to getservbyname(), for Android.
+    SSLv3_server_method() and SSLv3_client_method() functions set to disabled by OPENSSL_NO_SSL3 definition.
+- !!!:FIX:UI.WebVision: Width of the popupmenu fixed for context menus.
+    FIX: Primitive "Media" behavior for not "Fit" mode fixed to prevent the scale problems by full removing the tag <img>.
+	Vertical alignment added to images of the primitive.
+    !!!: The views "Spin bar" and "Scroll bar" implemented. The view "Scroll bar" is equal to "Spin bar" now.
+
+
+2017-03-19 Roman (stable)
+- SYS:build: Into configure.ac the AC_CHECK_LIB replaced by AC_SEARCH_LIBS mostly and the library librt checking added.
+
+
+2017-03-18 Roman (stable)
+- SYS:data/{debian,debian_mod}/rules: dh_compress is prevented from files of documentation in ODT compression also.
+- SYS: Some pre-adapting to Android by:
+    build: The macro AX_PTHREAD appending and using. AM_INIT_AUTOMAKE call set shorter.
+	Libraries moved from direct pointing into src/Makefile.am to its checking, for: -lpthread, -lm, -ldl, -lcrypt, -lz, -lpcre
+	Some messages into configure.ac fix.
+    ResAlloc: Check and define "__GLIBC_PREREQ" to 1. pthread_condattr_setclock() disabled for Android as it missed.
+    SYS: Needed parts from ieee754.h moved to the file. Multi CPU management and pthread_attr_setinheritsched() disabled for Android.
+    Mess: Messages encoding disabled for charset "US-ASCII", default one on Android.
+    Security: libcrypt checking expanded for crypt.h.
+    Transport.Sockets: The function getservbyname_r() switched to getservbyname() for Android.
+- DAQ.Siemens: "INCLUDES" was replaced by "daq_Siemens_la_CFLAGS" and "daq_Siemens_la_CXXFLAGS".
+- Special.FLibSYS: The user API function dbReqSQL() moved to the features of the function SYS.BD["TypeDB"]["DB"].SQLReq().
+- !!!:UI.WebVision: View "Line" of the primitive "FormEl": expanded by the callendar dialog for data variants.
+    Generic CSS properties moved to *.html file.
+    Processing event of the wide combobox (list) changed from "onchange" to "onclick" to the processing guaranty.
+    Generic improvement.
+
+
+2017-03-13 Roman (stable)
+- SYS:data/{debian,debian_mod}/rules: dh_compress is prevented from files of documentation in PDF compression,
+    to allow its using from UI.QTCfg mostly.
+- FIX:UI: docGet() is fixed at online documentation processing after the local one unsuccessful processing.
+
+
 2017-03-12 Roman (stable)
-- UI.QTCfg: InputDlg wrong initialization on the previous commit fixed.
+- FIX:UI.QTCfg: InputDlg wrong initialization on the previous commit fixed.
 
 
 2017-03-11 Roman (stable)

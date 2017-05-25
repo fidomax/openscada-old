@@ -288,7 +288,7 @@ void TCntrNode::nodeDis( long tm, int flag )
 
 	//Wait of free node
 	time_t t_cur = time(NULL);
-	MtxAlloc res1(dataRes(), true);		//!! Added for prevent possible attach and next disable and free the node, by mUse control
+	MtxAlloc res1(dataRes(), true);		//!! Added to prevent a possible attach and it next disable and free the node, by mUse control
 	while(mUse > 1) {
 	    mess_sys(TMess::Debug, _("Waiting for freeing by %d users!"), mUse-1);
 	    // Check timeout
@@ -817,10 +817,15 @@ TVariant TCntrNode::objFuncCall( const string &iid, vector<TVariant> &prms, cons
 	return false;
     }
     // string nodePath(string sep = "", bool from_root = true) - get the node path into OpenSCADA objects tree
-    //  sep - Separator symbol for separated path
+    //  sep - Separator symbol for separated path;
     //  from_root - path forming from root tree and do not include station ID.
     if(iid == "nodePath")
 	return nodePath(((prms.size() && prms[0].getS().size()) ? prms[0].getS()[0] : 0), ((prms.size() >= 2) ? prms[1].getB() : true));
+    // int messSys(int level, string mess) - formation of the system message <mess> with the <level>
+    //		with the node path as a category and with the human readable path before the message.
+    //  level - message level;
+    //  mess - message text.
+    if(iid == "messSys" && prms.size() >= 2) { mess_sys(prms[0].getI(), "%s", prms[1].getS().c_str()); return 0; }
 
     throw err_sys(_("Function '%s' error or not enough parameters."), iid.c_str());
 }

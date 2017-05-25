@@ -41,7 +41,7 @@
 #define MOD_NAME	_("SSL")
 #define MOD_TYPE	STR_ID
 #define VER_TYPE	STR_VER
-#define MOD_VER		"1.4.2"
+#define MOD_VER		"1.5.0"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides transport based on the secure sockets' layer.\
  OpenSSL is used and SSLv2, SSLv3, TLSv1, TLSv1.1, TLSv1.2, DTLSv1 are supported.")
@@ -290,8 +290,11 @@ void *TSocketIn::Task( void *sock_in )
     if(ssl_method == "SSLv2")		meth = SSLv2_server_method();
     else
 #endif
-	 if(ssl_method == "SSLv3")	meth = SSLv3_server_method();
-    else if(ssl_method == "TLSv1")	meth = TLSv1_server_method();
+#ifndef OPENSSL_NO_SSL3
+	if(ssl_method == "SSLv3")	meth = SSLv3_server_method();
+    else
+#endif
+	if(ssl_method == "TLSv1")	meth = TLSv1_server_method();
     else
 #if OPENSSL_VERSION_NUMBER >= 0x1000114fL
 	 if(ssl_method == "TLSv1_1")	meth = TLSv1_1_server_method();
@@ -305,11 +308,15 @@ void *TSocketIn::Task( void *sock_in )
 	s.ctx = SSL_CTX_new(meth);
 	if(s.ctx == NULL) {
 	    ERR_error_string_n(ERR_peek_last_error(),err,sizeof(err));
-	    throw TError(s.nodePath().c_str(),"SSL_CTX_new: %s",err);
+	    throw TError(s.nodePath().c_str(), "SSL_CTX_new: %s", err);
 	}
 
 	//Write certificate and private key to temorary file
+#if defined(__ANDROID__)
+	cfile = MOD_TYPE "_" MOD_ID "_" + s.id() + "_" + i2s(rand()) + ".tmp";
+#else
 	cfile = tmpnam(err);
+#endif
 	int icfile = open(cfile.c_str(), O_EXCL|O_CREAT|O_WRONLY, 0600);
 	if(icfile < 0) throw TError(s.nodePath().c_str(), _("Open temporary file '%s' error: '%s'"), cfile.c_str(), strerror(errno));
 	bool fOK = (write(icfile,s.certKey().data(),s.certKey().size()) == (int)s.certKey().size());
@@ -347,13 +354,13 @@ void *TSocketIn::Task( void *sock_in )
 	BIO_set_accept_bios(abio, bio);
 	BIO_set_bind_mode(abio, BIO_BIND_REUSEADDR);
 
-	//Sets up accept BIO
+	//Set up to accept BIO
 	if(BIO_do_accept(abio) <= 0) {
 	    ERR_error_string_n(ERR_peek_last_error(), err, sizeof(err));
 	    throw TError(s.nodePath().c_str(), "BIO_do_accept: %s", err);
 	}
 
-	s.runSt	= true;
+	s.runSt		= true;
 	s.endrun	= false;
 	s.endrunCl	= false;
 
@@ -386,9 +393,9 @@ void *TSocketIn::Task( void *sock_in )
 
 	    if(s.clId.size() >= s.maxFork() || (s.maxForkPerHost() && s.forksPerHost(sender) >= s.maxForkPerHost())) {
 		s.clsConnByLim++;
-		/*BIO_reset(cbio);*/
-		close(BIO_get_fd(cbio,NULL));
-		BIO_free(cbio);
+		//BIO_reset(cbio);
+		//close(BIO_get_fd(cbio,NULL)); BIO_free(cbio);
+		BIO_free_all(cbio);
 	    }
 	    //Make client's socket thread
 	    else {
@@ -398,6 +405,8 @@ void *TSocketIn::Task( void *sock_in )
 		    s.connNumb++;
 		} catch(TError &err) {
 		    delete sin;
+		    //close(BIO_get_fd(cbio,NULL)); BIO_free(cbio);
+		    BIO_free_all(cbio);
 		    mess_err(err.cat.c_str(), err.mess.c_str());
 		    mess_err(s.nodePath().c_str(), _("Error creation of the thread!"));
 		}
@@ -449,7 +458,10 @@ void *TSocketIn::ClTask( void *s_inf )
 		mess_err(s.s->nodePath().c_str(), "BIO_should_retry: %s", err);
 	    }
 	    BIO_flush(s.bio);
-	    delete (SSockIn*)s_inf;
+	    //BIO_reset(s.bio);
+	    //close(s.sock); BIO_free(s.bio);
+	    BIO_free_all(s.bio);
+	    s.s->clientUnreg(&s);
 	    return NULL;
 	}
     }
@@ -503,8 +515,7 @@ void *TSocketIn::ClTask( void *s_inf )
 	    }
 	    cnt++;
 	    s.tmReq = tm = time(NULL);
-	}
-	while(!s.s->endrunCl &&
+	} while(!s.s->endrunCl &&
 		(!s.s->keepAliveReqs() || cnt < s.s->keepAliveReqs()) &&
 		(!s.s->keepAliveTm() || (time(NULL)-tm) < s.s->keepAliveTm()));
 
@@ -516,9 +527,9 @@ void *TSocketIn::ClTask( void *s_inf )
     }
 
     BIO_flush(s.bio);
-    close(s.sock);
     //BIO_reset(s.bio);
-    BIO_free(s.bio);
+    //close(s.sock); BIO_free(s.bio);
+    BIO_free_all(s.bio);
 
     //Close protocol on broken connection
     if(!prot_in.freeStat()) {
@@ -735,14 +746,16 @@ void TSocketOut::save_( )
 void TSocketOut::start( int tmCon )
 {
     int sock_fd = -1;
-    conn = NULL;
-    ctx = NULL;
 
     string	cfile;
     char	err[255];
-    ResAlloc res(wres, true);
 
+    ResAlloc res(wres, true);
     if(runSt) return;
+
+    ctx = NULL;
+    ssl = NULL;
+    conn = NULL;
 
     //Status clear
     trIn = trOut = 0;
@@ -764,8 +777,11 @@ void TSocketOut::start( int tmCon )
     if(ssl_method == "SSLv2")		meth = SSLv2_client_method();
     else
 #endif
-	 if(ssl_method == "SSLv3")	meth = SSLv3_client_method();
-    else if(ssl_method == "TLSv1")	meth = TLSv1_client_method();
+#ifndef OPENSSL_NO_SSL3
+	if(ssl_method == "SSLv3")	meth = SSLv3_client_method();
+    else
+#endif
+	if(ssl_method == "TLSv1")	meth = TLSv1_client_method();
     else
 #if OPENSSL_VERSION_NUMBER >= 0x1000114fL
 	 if(ssl_method == "TLSv1_1")	meth = TLSv1_1_client_method();
@@ -803,12 +819,17 @@ void TSocketOut::start( int tmCon )
 	}
 	else nameIn.sin_addr.s_addr = INADDR_ANY;
 	// Get system port for "oscada" /etc/services
+#if defined(__ANDROID__)
+	struct servent *sptr = getservbyname(ssl_port.c_str(), "tcp");
+	if(sptr)				nameIn.sin_port = sptr->s_port;
+#else
 	if(getservbyname_r(ssl_port.c_str(),"tcp",&servbuf,sBuf,sizeof(sBuf),&sp) == 0 && sp)
 	    nameIn.sin_port = sp->s_port;
+#endif
 	else if(htons(s2i(ssl_port)) > 0)	nameIn.sin_port = htons(s2i(ssl_port));
 	else nameIn.sin_port = 10041;
 
-	if((sock_fd = socket(PF_INET,SOCK_STREAM,0))== -1)
+	if((sock_fd=socket(PF_INET,SOCK_STREAM,0)) == -1)
 	    throw TError(nodePath().c_str(), _("Error creation TCP socket: %s!"), strerror(errno));
 	int vl = 1;
 	setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &vl, sizeof(int));
@@ -837,7 +858,11 @@ void TSocketOut::start( int tmCon )
 	//Certificates, private key and it password loading
 	if(!sTrm(certKey()).empty()) {
 	    // Write certificate and private key to temorary file
+#if defined(__ANDROID__)
+	    cfile = MOD_TYPE "_" MOD_ID "_" + id() + "_" + i2s(rand()) + ".tmp";
+#else
 	    cfile = tmpnam(err);
+#endif
 	    int icfile = open(cfile.c_str(), O_EXCL|O_CREAT|O_WRONLY, 0600);
 	    if(icfile < 0) throw TError(nodePath().c_str(), _("Open temporary file '%s' error: '%s'"), cfile.c_str(), strerror(errno));
 	    bool fOK = (write(icfile,certKey().data(),certKey().size()) == (int)certKey().size());
@@ -887,8 +912,10 @@ void TSocketOut::start( int tmCon )
 
 	fcntl(sock_fd, F_SETFL, flags|O_NONBLOCK);
     } catch(TError &err) {
+	if(conn) BIO_reset(conn);
 	if(sock_fd >= 0) close(sock_fd);
-	if(conn) { BIO_reset(conn); BIO_free(conn); }
+	if(conn)BIO_free_all(conn);	//BIO_free(conn);
+	if(ssl)	SSL_free(ssl);
 	if(ctx)	SSL_CTX_free(ctx);
 	if(!cfile.empty()) remove(cfile.c_str());
 	throw;
@@ -902,7 +929,6 @@ void TSocketOut::start( int tmCon )
 void TSocketOut::stop( )
 {
     ResAlloc res(wres, true);
-
     if(!runSt) return;
 
     //Status clear
@@ -912,8 +938,14 @@ void TSocketOut::stop( )
     BIO_flush(conn);
     BIO_reset(conn);
     close(BIO_get_fd(conn,NULL));
-    BIO_free(conn);
+    //BIO_free(conn);
+    BIO_free_all(conn);
+    SSL_free(ssl);
     SSL_CTX_free(ctx);
+
+    ctx = NULL;
+    ssl = NULL;
+    conn = NULL;
 
     runSt = false;
 
