@@ -232,6 +232,7 @@ namespace FT3
 	TElem p_el;			//Work atribute elements
 //	string typeName();
 	string typeDBName();
+	DA *mDA;
 
     protected:
 	//Methods
@@ -248,7 +249,6 @@ namespace FT3
 	void vlArchMake(TVal &val);
 	//Attributes
 	//!!! Parameter's structure element
-	DA *mDA;
 	bool needApply;
 
     };

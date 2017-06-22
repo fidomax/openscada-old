@@ -22,37 +22,33 @@
 
 #include "mod_FT3.h"
 #include "BVTC.h"
+//#include "da.h"
 
 using namespace FT3;
 //******************************************************
-//* B_BVTC                                             *
+//* KA_BVTC                                             *
 //******************************************************
 KA_BVTC::KA_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), count_n(n), ID(id), with_params(has_params), config(3 | (n << 4) | (3 << 10))
+	DA(prm, id), count_n(n), with_params(has_params), config(3 | (n << 4) | (3 << 10))
 {
     mTypeFT3 = KA;
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
-    for(int i = 0; i < count_n; i++) {
-	AddChannel(i);
-    }
     loadIO(true);
+    mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", ID);
 }
+
+DA::SLnk &KA_BVTC::lnk(int num)
+{
+    throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+}
+
+
 
 KA_BVTC::~KA_BVTC()
 {
-    data.clear();
-}
-
-void KA_BVTC::AddChannel(uint8_t iid)
-{
-    data.push_back(SKATCchannel(iid, this));
-    AddAttr(data.back().Value.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
-    if(with_params) {
-	AddAttr(data.back().Period.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	AddAttr(data.back().Count.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-    }
+//    data.clear();
 }
 
 string KA_BVTC::getStatus(void)
@@ -86,185 +82,18 @@ uint16_t KA_BVTC::GetState()
     return rc;
 }
 
-uint16_t KA_BVTC::PreInit(void)
-{
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = SetData;
-    uint16_t rc;
-    for(int i = 0; i < count_n; i++) {
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
-	Msg.L += SerializeB(Msg.D + Msg.L, TC_DISABLED);
-	if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	    Msg.L = 0;
-	    Msg.C = SetData;
-	    if(rc == ERROR) break;
-	}
-    }
-    if(Msg.L) {
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-    }
-    return rc;
-}
-
-uint16_t KA_BVTC::SetParams(void)
-{
-    uint16_t rc;
-    tagMsg Msg;
-    loadParam();
-    for(int i = 0; i < count_n; i++) {
-	if(data[i].Value.lnk.vlattr.at().getI(0, true) != TC_DISABLED) {
-	    Msg.L = 0;
-	    Msg.C = SetData;
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
-	    Msg.L += data[i].Period.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Count.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	    if((rc == BAD2) || (rc == BAD3)) {
-		mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
-	    } else {
-		if(rc == ERROR) {
-		    mPrm.mess_sys(TMess::Error, "No answer to set channel %d", i + 1);
-		    break;
-		}
-	    }
-	}
-    }
-    return rc;
-
-}
-
-uint16_t KA_BVTC::RefreshParams(void)
-{
-    uint16_t rc;
-    tagMsg Msg;
-    for(int i = 1; i <= count_n; i++) {
-	Msg.L = 0;
-	Msg.C = AddrReq;
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 1));
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-	if((rc == BAD2) || (rc == BAD3)) {
-	    mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", i);
-	} else {
-	    if(rc == ERROR) {
-		mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", i);
-		break;
-	    }
-	}
-
-    }
-    return rc;
-
-}
-
-uint16_t KA_BVTC::PostInit(void)
-{
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = SetData;
-    uint16_t rc;
-    for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].Value.lnk);
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
-	Msg.L += data[i].Value.SerializeAttr(Msg.D + Msg.L);
-	if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	    Msg.L = 0;
-	    Msg.C = SetData;
-	    if(rc == ERROR) break;
-	}
-    }
-    if(Msg.L) {
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-    }
-    return rc;
-}
-
 uint16_t KA_BVTC::RefreshData(void)
 {
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = AddrReq;
-    uint16_t rc;
-    for(int i = 1; i <= count_n; i++) {
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
-	if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	    Msg.L = 0;
-	    Msg.C = AddrReq;
-	    if(rc == ERROR) break;
-	}
-    }
-    if(Msg.L) {
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-    }
-    return rc;
-}
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, 0, 0));
+    return mPrm.owner().DoCmd(&Msg);
 
-void KA_BVTC::loadIO(bool force)
-{
-    //Load links
-    if(mPrm.owner().startStat() && !force) {
-	mPrm.modif(true);
-	return;
-    }	//Load/reload IO context only allow for stopped controllers for prevent throws
-    for(int i = 0; i < count_n; i++) {
-	loadLnk(data[i].Value.lnk);
-	loadLnk(data[i].Count.lnk);
-	loadLnk(data[i].Period.lnk);
-    }
-}
-
-void KA_BVTC::saveIO(void)
-{
-    //Save links
-    for(int i = 0; i < count_n; i++) {
-	saveLnk(data[i].Value.lnk);
-	saveLnk(data[i].Count.lnk);
-	saveLnk(data[i].Period.lnk);
-    }
-}
-
-void KA_BVTC::saveParam(void)
-{
-    for(int i = 0; i < count_n; i++) {
-	saveVal(data[i].Value.lnk);
-	if(with_params) {
-	    saveVal(data[i].Count.lnk);
-	    saveVal(data[i].Period.lnk);
-	}
-    }
-}
-
-void KA_BVTC::loadParam(void)
-{
-    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
-    for(int i = 0; i < count_n; i++) {
-	if(with_params) {
-	    loadVal(data[i].Period.lnk);
-	    loadVal(data[i].Count.lnk);
-	}
-    }
 }
 
 void KA_BVTC::tmHandler(void)
 {
-    for(int i = 0; i < count_n; i++) {
-	UpdateParam8(data[i].Value, PackID(ID, (i + 1), 0), 1);
-	if(with_params) {
-	    UpdateParam28(data[i].Period, data[i].Count, PackID(ID, (i + 1), 1), 1);
-	}
-
-    }
     NeedInit = false;
 }
 
@@ -286,24 +115,7 @@ uint16_t KA_BVTC::HandleEvent(int64_t tm, uint8_t * D)
 	case 2:
 	    l = 2 + count_n * 2;
 	    for(int j = 1; j <= count_n; j++) {
-		data[j - 1].Value.Update(D[j * 2 + 1], tm);
-	    }
-	    break;
-	}
-	break;
-    default:
-	switch(ft3ID.n) {
-	case 0:
-	    l = 4;
-	    if(ft3ID.k > count_n) break;
-	    data[ft3ID.k - 1].Value.Update(D[3], tm);
-	    break;
-	case 1:
-	    l = 5;
-	    if(with_params) {
-		if(ft3ID.k > count_n) break;
-		data[ft3ID.k - 1].Period.Update(D[3], tm);
-		data[ft3ID.k - 1].Count.Update(D[4], tm);
+		//Value.Update(D[j * 2 + 1], tm);
 	    }
 	    break;
 	}
@@ -330,27 +142,11 @@ uint8_t KA_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 	    break;
 	case 2:
 	    for(uint8_t i = 0; i < count_n; i++) {
-		out[i * 2] = data[i].Value.s;
-		out[i * 2 + 1] = data[i].Value.vl;
+	//	out[i * 2] = data[i].Value.s;
+	//	out[i * 2 + 1] = data[i].Value.vl;
 	    }
 	    l = count_n * 2;
 	    break;
-	}
-    } else {
-	if(ft3ID.k <= count_n) {
-	    switch(ft3ID.n) {
-	    case 0:
-		out[0] = data[ft3ID.k - 1].Value.s;
-		out[1] = data[ft3ID.k - 1].Value.vl;
-		l = 2;
-		break;
-	    case 1:
-		out[0] = data[ft3ID.k - 1].Period.s;
-		out[1] = data[ft3ID.k - 1].Period.vl;
-		out[2] = data[ft3ID.k - 1].Count.vl;
-		l = 3;
-		break;
-	    }
 	}
     }
     return l;
@@ -358,49 +154,274 @@ uint8_t KA_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 
 uint8_t KA_BVTC::cmdSet(uint8_t * req, uint8_t addr)
 {
-    uint16_t prmID = TSYS::getUnalign16(req);
-    FT3ID ft3ID = UnpackID(prmID);
-    if(ft3ID.g != ID) return 0;
-    uint l = 0;
-    if((ft3ID.k > 0) && (ft3ID.k <= count_n)) {
-	switch(ft3ID.n) {
-	case 0:
-	    l = SetNew8Val(data[ft3ID.k - 1].Value, addr, prmID, req[2]);
-	    break;
-	case 1:
-	    l = SetNew28Val(data[ft3ID.k - 1].Period, data[ft3ID.k - 1].Count, addr, prmID, req[2], req[3]);
-	    break;
-	}
-    }
-    return l;
+    return 0;
 }
 
 uint16_t KA_BVTC::setVal(TVal &val)
 {
     uint16_t rc = 0;
+    return rc;
+}
+
+//---------------------------------------------------------------------------
+//******************************************************
+//* KA_TC                                             *
+//******************************************************
+KA_TC::KA_TC(TMdPrm& prm, DA &parent, uint16_t id, bool has_params) :
+	DA(prm, id), parentDA(parent), with_params(has_params), config(0),
+	Value(TSYS::strMess("TC_%d", id + 1), TSYS::strMess(_("TC %d"), id + 1)),
+	Period(TSYS::strMess("Period_%d", id + 1), TSYS::strMess(_("Period TC %d"), id + 1)),
+	Count(TSYS::strMess("Count_%d", id + 1), TSYS::strMess(_("Count TC %d"), id + 1))
+{
+    mTypeFT3 = KA;
+    AddAttr(Value.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("0", ID + 1));
+    if(with_params) {
+	AddAttr(Period.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("1", ID + 1));
+	AddAttr(Count.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("1", ID + 1));
+    }
+
+    loadIO(true);
+}
+
+KA_TC::~KA_TC()
+{
+    //data.clear();
+}
+
+string KA_TC::getStatus(void)
+{
+    string rez;
+    if(NeedInit) {
+	rez = "20: Опрос";
+    } else {
+	rez = "0: Норма";
+    }
+    return rez;
+}
+
+uint16_t KA_TC::GetState()
+{
+    //   tagMsg Msg;
+    uint16_t rc = BlckStateUnknown;
+    /*    Msg.L = 5;
+     Msg.C = AddrReq;
+     *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
+     if(mPrm.owner().DoCmd(&Msg) == GOOD3) {
+     switch(mPrm.vlAt("state").at().getI(0, true)) {
+     case KA_BVTC_Error:
+     rc = BlckStateError;
+     break;
+     case KA_BVTC_Normal:
+     rc = BlckStateNormal;
+     break;
+     }
+     }*/
+    return rc;
+}
+
+uint16_t KA_TC::PreInit(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
+    Msg.L += SerializeB(Msg.D + Msg.L, TC_DISABLED);
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+uint16_t KA_TC::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    loadParam();
+    if(Value.lnk.vlattr.at().getI(0, true) != TC_DISABLED) {
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+	Msg.L += Period.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Count.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if((rc == BAD2) || (rc == BAD3)) {
+	    mPrm.mess_sys(TMess::Error, "Can't set channel %d", ID);
+	} else {
+	    if(rc == ERROR) {
+		mPrm.mess_sys(TMess::Error, "No answer to set channel %d", ID);
+	    }
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_TC::RefreshParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+    Msg.L += 3;
+    rc = mPrm.owner().DoCmd(&Msg);
+    if((rc == BAD2) || (rc == BAD3)) {
+	throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+    } else {
+	if(rc == ERROR) {
+	    mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", ID);
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_TC::PostInit(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    loadVal(Value.lnk);
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
+    Msg.L += Value.SerializeAttr(Msg.D + Msg.L);
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+uint16_t KA_TC::RefreshData(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+void KA_TC::loadIO(bool force)
+{
+//Load links
+    if(mPrm.owner().startStat() && !force) {
+	mPrm.modif(true);
+	return;
+    }	//Load/reload IO context only allow for stopped controllers for prevent throws
+    loadLnk(Value.lnk);
+    loadLnk(Count.lnk);
+    loadLnk(Period.lnk);
+
+}
+
+void KA_TC::saveIO(void)
+{
+//Save links
+    saveLnk(Value.lnk);
+    saveLnk(Count.lnk);
+    saveLnk(Period.lnk);
+
+}
+
+void KA_TC::saveParam(void)
+{
+    saveVal(Value.lnk);
+    if(with_params) {
+	saveVal(Count.lnk);
+	saveVal(Period.lnk);
+    }
+}
+
+void KA_TC::loadParam(void)
+{
+    if(with_params) {
+	loadVal(Period.lnk);
+	loadVal(Count.lnk);
+    }
+}
+
+void KA_TC::tmHandler(void)
+{
+    UpdateParam8(Value, PackID(parentDA.ID, ID, 0), 1);
+    if(with_params) {
+	UpdateParam28(Period, Count, PackID(parentDA.ID, ID, 1), 1);
+    }
+    NeedInit = false;
+}
+
+uint16_t KA_TC::HandleEvent(int64_t tm, uint8_t * D)
+{
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+    if(ft3ID.k != ID) return 0;
+    uint16_t l = 0;
+    switch(ft3ID.n) {
+    case 0:
+	l = 4;
+	Value.Update(D[3], tm);
+	break;
+    case 1:
+	l = 5;
+	if(with_params) {
+	    Period.Update(D[3], tm);
+	    Count.Update(D[4], tm);
+	}
+	break;
+    }
+    return l;
+}
+
+uint8_t KA_TC::cmdGet(uint16_t prmID, uint8_t * out)
+{
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.k != ID) return 0;
+    uint8_t l = 0;
+    switch(ft3ID.n) {
+    case 0:
+	out[0] = Value.s;
+	out[1] = Value.vl;
+	l = 2;
+	break;
+    case 1:
+	out[0] = Period.s;
+	out[1] = Period.vl;
+	out[2] = Count.vl;
+	l = 3;
+	break;
+    }
+    return l;
+}
+
+uint8_t KA_TC::cmdSet(uint8_t * req, uint8_t addr)
+{
+    uint16_t prmID = TSYS::getUnalign16(req);
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(req));
+    if(ft3ID.g != ID) return 0;
+    uint8_t l = 0;
+    switch(ft3ID.n) {
+    case 0:
+	l = SetNew8Val(Value, addr, prmID, req[2]);
+	break;
+    case 1:
+	l = SetNew28Val(Period, Count, addr, prmID, req[2], req[3]);
+	break;
+    }
+    return l;
+}
+
+uint16_t KA_TC::setVal(TVal &val)
+{
+    uint16_t rc = 0;
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
-    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
-    ft3ID.g = ID;
+    ft3ID.k = ID;
+    ft3ID.n = s2i(val.fld().reserve());
+    ft3ID.g = parentDA.ID;
 
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = SetData;
     Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
-    if((ft3ID.k >= 1) && (ft3ID.k <= count_n)) {
-	switch(ft3ID.n) {
-	case 0:
-	    Msg.L += data[ft3ID.k - 1].Value.SerializeAttr(Msg.D + Msg.L);
-	    rc = 1;
-//	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
-	    break;
-	case 1:
-	    Msg.L += data[ft3ID.k - 1].Period.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[ft3ID.k - 1].Count.SerializeAttr(Msg.D + Msg.L);
-	    rc = 1;
-	    break;
-	}
+    switch(ft3ID.n) {
+    case 0:
+	Msg.L += Value.SerializeAttr(Msg.D + Msg.L);
+	rc = 1;
+	break;
+    case 1:
+	Msg.L += Period.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Count.SerializeAttr(Msg.D + Msg.L);
+	rc = 1;
+	break;
     }
     if(Msg.L > 2) {
 	Msg.L += 3;
@@ -454,7 +475,7 @@ string B_BVTC::getStatus(void)
 
 void B_BVTC::loadIO(bool force)
 {
-    //Load links
+//Load links
     if(mPrm.owner().startStat() && !force) {
 	mPrm.modif(true);
 	return;
@@ -467,7 +488,7 @@ void B_BVTC::loadIO(bool force)
 
 void B_BVTC::saveIO()
 {
-    //Save links
+//Save links
     for(int i = 0; i < count_n; i++) {
 	saveLnk(data[i].Value.lnk);
 	saveLnk(data[i].Mask.lnk);

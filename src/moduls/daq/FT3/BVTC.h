@@ -25,15 +25,11 @@ namespace FT3
 {
     enum eKA_BVTC_TC
     {
-	TC_FAILURE = 0,
-	TC_OFF = 1,
-	TC_ON = 2,
-	TC_DISABLED = 3,
+	TC_FAILURE = 0, TC_OFF = 1, TC_ON = 2, TC_DISABLED = 3,
     };
     enum eKA_BVTC_State
     {
-	KA_BVTC_Error = 0x0,
-	KA_BVTC_Normal = 0x1
+	KA_BVTC_Error = 0x0, KA_BVTC_Normal = 0x1
     };
     class KA_BVTC: public DA
     {
@@ -41,10 +37,48 @@ namespace FT3
 	//Methods
 	KA_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
 	~KA_BVTC();
-	uint16_t ID;
 	uint16_t count_n;
 	bool with_params;
-	void AddChannel(uint8_t iid);
+	uint16_t GetState(void);
+	uint16_t RefreshData(void);
+	uint16_t HandleEvent(int64_t, uint8_t *);
+	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
+	uint8_t cmdSet(uint8_t * req, uint8_t addr);
+	uint16_t setVal(TVal &val);
+	string getStatus(void);
+	void tmHandler(void);
+	uint16_t config;
+	int lnkSize()
+	{
+		return 0;
+	}
+	int lnkId(const string &id)
+	{
+	    //throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+	    return -1;
+	}
+
+	DA::SLnk &lnk(int num);
+/*	{
+	    throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+	}
+
+/*	SLnk &lnk(int num);
+	{
+	    throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+	}*/
+
+    };
+
+    class KA_TC: public DA
+    {
+    public:
+	//Methods
+	KA_TC(TMdPrm& prm, DA &parent, uint16_t id, bool has_params);
+	~KA_TC();
+	bool with_params;
+	DA &parentDA;
+//	void AddChannel(uint8_t iid);
 	uint16_t GetState(void);
 	uint16_t PreInit(void);
 	uint16_t SetParams(void);
@@ -62,60 +96,34 @@ namespace FT3
 	void loadParam(void);
 	void tmHandler(void);
 	uint16_t config;
-	class SKATCchannel
-	{
-	public:
-	    SKATCchannel(uint8_t iid, DA* owner) :
-		    da(owner), id(iid), Value(TSYS::strMess("TC_%d", id + 1), TSYS::strMess(_("TC %d"), id + 1)),
-		    Period(TSYS::strMess("Period_%d", id + 1), TSYS::strMess(_("Period TC %d"), id + 1)),
-		    Count(TSYS::strMess("Count_%d", id + 1), TSYS::strMess(_("Count TC %d"), id + 1))
-	    {
-	    }
-	    DA* da;
-	    uint8_t id;
-	    ui8Data Value, Period, Count;
-	};
-	vector<SKATCchannel> data;
+	uint8_t id;
+	ui8Data Value, Period, Count;
 	int lnkSize()
 	{
-	    if(with_params) {
-		return data.size() * 3;
-	    } else {
-		return data.size();
-	    }
+	    return with_params ? 3 : 1;
 	}
 	int lnkId(const string &id)
 	{
 	    if(with_params) {
-		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].Value.lnk.prmName == id) return i_l * 3;
-		    if(data[i_l].Period.lnk.prmName == id) return i_l * 3 + 1;
-		    if(data[i_l].Count.lnk.prmName == id) return i_l * 3 + 2;
-		}
+		if(Value.lnk.prmName == id) return 0;
+		if(Period.lnk.prmName == id) return 1;
+		if(Count.lnk.prmName == id) return 2;
 	    } else {
-		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].Value.lnk.prmName == id) {
-			return i_l;
-		    }
+		if(Value.lnk.prmName == id) {
+		    return 0;
 		}
 	    }
 	    return -1;
 	}
 	SLnk &lnk(int num)
 	{
-	    int k;
-	    if(with_params) {
-		k = 3;
-	    } else {
-		k = 1;
-	    }
-	    switch(num % k) {
+	    switch(num) {
 	    case 0:
-		return data[num / k].Value.lnk;
+		return Value.lnk;
 	    case 1:
-		return data[num / k].Period.lnk;
+		return Period.lnk;
 	    case 2:
-		return data[num / k].Count.lnk;
+		return Count.lnk;
 	    }
 	}
     };
