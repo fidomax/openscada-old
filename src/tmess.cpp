@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tmess.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,6 +28,9 @@
 #include <locale.h>
 #include <string.h>
 #include <errno.h>
+#if defined(__ANDROID__)
+#include <android/log.h>
+#endif
 
 #include <algorithm>
 
@@ -53,7 +56,7 @@ TMess::TMess( ) : IOCharSet("UTF-8"), mMessLevel(Info), mLogDir(DIR_STDOUT|DIR_A
     openlog(PACKAGE, 0, LOG_USER);
 
     setenv("LC_NUMERIC", "C", 1);
-    setlocale(LC_ALL,"");
+    setlocale(LC_ALL, "");
     IOCharSet = nl_langinfo(CODESET);
 
 #ifdef HAVE_LIBINTL_H
@@ -137,7 +140,24 @@ void TMess::putArg( const char *categ, int8_t level, const char *fmt, va_list ap
     //string sMess = i2s(level) + "|" + categ + " | " + mess;
     string sMess = i2s(level) + "[" + categ + "] " + mess;
 
-    if(mLogDir & DIR_SYSLOG) {
+#if defined(__ANDROID__)
+    if(mLogDir&(DIR_SYSLOG|DIR_STDOUT|DIR_STDERR)) {
+	int level_sys;
+	switch((int8_t)abs(level)) {
+	    case Debug:		level_sys = ANDROID_LOG_DEBUG;	break;
+	    case Info:		level_sys = ANDROID_LOG_INFO;	break;
+	    case Notice:	level_sys = ANDROID_LOG_DEFAULT;break;
+	    case Warning:	level_sys = ANDROID_LOG_WARN;	break;
+	    case Error:		level_sys = ANDROID_LOG_ERROR;	break;
+	    case Crit:
+	    case Alert:
+	    case Emerg:		level_sys = ANDROID_LOG_FATAL;	break;
+	    default: 		level_sys = ANDROID_LOG_DEFAULT;
+	}
+	__android_log_vprint(level_sys, PACKAGE_NAME, sMess.c_str(), ap);
+    }
+#else
+    if(mLogDir&DIR_SYSLOG) {
 	int level_sys;
 	switch((int8_t)abs(level)) {
 	    case Debug:		level_sys = LOG_DEBUG;	break;
@@ -154,6 +174,8 @@ void TMess::putArg( const char *categ, int8_t level, const char *fmt, va_list ap
     }
     if(mLogDir&DIR_STDOUT)	fprintf(stdout, "%s %s\n", atm2s(SYS->sysTm(),"%Y-%m-%dT%H:%M:%S").c_str(), sMess.c_str());
     if(mLogDir&DIR_STDERR)	fprintf(stderr, "%s %s\n", atm2s(SYS->sysTm(),"%Y-%m-%dT%H:%M:%S").c_str(), sMess.c_str());
+#endif
+
     if((mLogDir&DIR_ARCHIVE) && SYS->present("Archive"))
 	SYS->archive().at().messPut(ctm/1000000, ctm%1000000, categ, level, mess);
 }
@@ -554,4 +576,24 @@ const char *TMess::labTaskPrior( )
 	     "  0         - standard userspace priority;\n"
 	     "  1...99    - realtime priority level (round-robin), often allowed only for \"root\";\n"
 	     "  100...199 - realtime priority level (FIFO), often allowed only for \"root\".");
+}
+
+int TMess::getUTF8( const string &str, int off, int32_t *symb )
+{
+    if(off < 0 || off >= str.size())	return 0;
+    if(!isUTF8() || !(str[off]&0x80)) {
+	if(symb) *symb = (uint8_t)str[off];
+	return 1;
+    }
+    int len = 0;
+    int32_t rez = 0;
+    if((str[off]&0xE0) == 0xC0)		{ len = 2; rez = str[off]&0x1F; }
+    else if((str[off]&0xF0) == 0xE0)	{ len = 3; rez = str[off]&0x0F; }
+    else if((str[off]&0xF8) == 0xF0)	{ len = 4; rez = str[off]&0x07; }
+    if((off+len) > str.size())	return 0;
+    for(int iSmb = 1; iSmb < len; iSmb++)
+	if((str[off+iSmb]&0xC0) != 0x80) return 0;
+	else rez = (rez<<6) | (str[off+iSmb]&0x3F);
+    if(symb) *symb = rez;
+    return len;
 }

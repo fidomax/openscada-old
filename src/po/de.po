@@ -3,13 +3,13 @@
 #
 # Irina Popkova <IrischkaPopkova@yandex.ru>, 2008-2011.
 # Klaus Fetscher <k.fetscher@fetron.de>, 2009.
-# Roman Savochenko <rom_as@oscada.org>, 2010-2016.
+# Roman Savochenko <rom_as@oscada.org>, 2010-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-04-01 20:12+0300\n"
+"POT-Creation-Date: 2017-06-09 16:07+0300\n"
 "PO-Revision-Date: 2011-07-24 22:47+0400\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -561,6 +561,7 @@ msgstr "Angeforderte Zeile nicht vorhanden."
 msgid "Write row to DB or config file error."
 msgstr "Schreiben Reihe zum DB-oder Konfigurationsfehler."
 
+#, c-format
 msgid ""
 "========================= Subsystem \"DB\" options ========================\n"
 "----------- The config-file station '%s' parameters -----------\n"
@@ -895,8 +896,8 @@ msgstr "Datenerfassung"
 msgid "Maximum calculate time (sec)"
 msgstr "Maximale Zeit der Berechnung (sek)"
 
-msgid "Program translation allow"
-msgstr "Programm Übersetzung ermöglichen"
+msgid "Allow program translation"
+msgstr "Programmübersetzung zulassen"
 
 msgid "Program"
 msgstr "Programm"
@@ -1201,6 +1202,7 @@ msgstr ""
 msgid "Modules Scheduler"
 msgstr "Modulsteuerung"
 
+#, c-format
 msgid ""
 "=================== Subsystem \"Module scheduler\" options "
 "=================\n"
@@ -1384,7 +1386,7 @@ msgstr "Eingang;Ausgang"
 msgid "Attribute"
 msgstr "Attribut"
 
-msgid "No attribute;Read only;Full access"
+msgid "Not attribute;Read only;Full access"
 msgstr "Nicht Attribut;Nur Lesen;Voller Zugang"
 
 msgid "Configure"
@@ -1661,10 +1663,11 @@ msgid ""
 "StName     <nm>\tStation name.\n"
 "WorkDB     <Type.Name> Work DB (type and name).\n"
 "WorkDir    <path>\tWork directory.\n"
-"ModDir     <path>\tModules directory.\n"
+"ModDir     <path>\tDirectories with modules, separated by ';', they can "
+"include a files' template into the end.\n"
 "IcoDir     <path>\tIcons directory.\n"
 "DocDir     <path>\tDocuments directory.\n"
-"MessLev    <level>     Messages <level> (0-7).\n"
+"MessLev    <level>\tMessages <level> (0-7).\n"
 "SelDebCats <list>\tDebug categories list (separated by ';').\n"
 "LogTarget  <direction> Direct messages to, by bitfield:\n"
 "\t\t\t  0x1 - syslogd;\n"
@@ -1713,7 +1716,8 @@ msgstr ""
 "StName     <nm>\tStationsname.\n"
 "WorkDB     <Type.Name>\tArbeitsdatenbank (Typ und Name).\n"
 "WorkDir    <path>\tArbeitsverzeichnis.\n"
-"ModDir     <path>\tModulverzeichnis.\n"
+"ModDir     <path>\tVerzeichnisse mit Modulen, getrennt durch ';', können sie "
+"eine Datei 'Vorlage in das Ende enthalten.\n"
 "IcoDir     <path>\tSymbolverzeichnis.\n"
 "DocDir     <path>\tDocumenteverzeichnis.\n"
 "MessLev    <level>\tNachrichtenstufe <level> von Nachrichten (0-7).\n"
@@ -1782,21 +1786,21 @@ msgstr "Fehler beim Laden des Subsysems '%s'."
 msgid "Save!"
 msgstr "Speicherung!"
 
-msgid "Start!"
-msgstr "Starten!"
+msgid "Starting ..."
+msgstr "Beginnend ..."
 
 #, c-format
 msgid "Error start subsystem '%s'."
 msgstr "Fehler beim Starten des Subsystems '%s'."
 
-msgid "Final starting!"
+msgid "Final of the starting!"
 msgstr "Starten ist beendet"
 
-msgid "Stop!"
-msgstr "Anhalten!"
+msgid "Stopping ..."
+msgstr "Stoppen ..."
 
 #, c-format
-msgid "Error stop subsystem '%s'."
+msgid "Error for subsystem '%s' stopping."
 msgstr "Fehler beim Anhalten des Subsystems '%s'."
 
 msgid "Termination signal is received. Stop the station!"
@@ -2527,6 +2531,3 @@ msgstr "Stellen Sie den Namen des Projekts an:"
 
 msgid "already started."
 msgstr "begonnen."
-
-#~ msgid "Doc check"
-#~ msgstr "Doc-Check"
