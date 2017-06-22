@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.QTStarter file: tuimod.h
 /***************************************************************************
- *   Copyright (C) 2005-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2005-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -21,7 +21,6 @@
 #ifndef TUIMOD_H
 #define TUIMOD_H
 
-#include <QObject>
 #include <QTranslator>
 #include <QMainWindow>
 #include <QApplication>
@@ -34,6 +33,7 @@
 #define _(mess) mod->I18N(mess)
 
 class QTimer;
+class QSplashScreen;
 
 using namespace OSCADA;
 
@@ -124,9 +124,16 @@ class StApp : public QApplication
 class TUIMod: public TUI
 {
 public:
+    //Data
+    enum SplashFlag { SPLSH_NULL = 0, SPLSH_START, SPLSH_STOP };
+
     //Methods
     TUIMod( string name );
     ~TUIMod( );
+
+    // Module's info attributes
+    string modInfo( const string &name );
+    void   modInfo( vector<string> &list );
 
     bool endRun( )	{ return mEndRun; }
     bool startCom( )	{ return mStartCom; }
@@ -146,19 +153,27 @@ protected:
     void postDisable( int flag );
 
 private:
+#ifndef EN_QtMainThrd
     //Methods
     static void *Task( void * );
+#endif
+
+    //Methods
     string	optDescr( );
     void	toQtArg( const char *nm, const char *arg = NULL );
+    void	splashSet( SplashFlag flg = SPLSH_NULL );
 
     //Attributes
-    bool	demonMode, mEndRun, mStartCom;
+    bool	hideMode, mEndRun, mStartCom;
     string	mStartMod;
 
     // Command line options binding to Qt
     int		qtArgC, qtArgEnd;		//Arguments counter and end position
     char	*qtArgV[10];			//Argument's values
     char	qtArgBuf[1000];			//Arguments' strings buffer
+
+    StApp	*QtApp;
+    QSplashScreen *splash;
 };
 
 extern TUIMod *mod;

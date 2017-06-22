@@ -1,3 +1,73 @@
+2017-06-16 Roman (test)
+- DB.LibsDB.vcaBase: Main_io.cntrPaspExt was expanded for: full-frame mode of "View" at other modes hide, hidden attributes list support into "hideAttrs", removing "frame".
+- FIX:SYS: Qt checking macro was fixed for Qt4 checking before.
+- SYS: TMess::getUTF8() function was added and used for UTF-8 symbols detect into XMLNode::encode().
+- FIX:Transport.out: User API function messIO() was expanded for return string everywhere.
+- !!!: XMLNode: User API finction text() was expanded by argument "full" for all child's texts combine.
+    Functions save() and saveNode() set to constant ones.
+    !!!: The serialiser was expanded to true check for UTF-8 symbols and "&nbsp;" processing in function encode().
+    !!: The parser was expanded for entity "&nbsp;" processing on UTF-8.
+- DAQ.DAQGate: Size of the configuration field STATIONS was decreased to two rows.
+- !!!:UI.QTCfg: Scalable vertically items were finished to implement their true fitting for: texts, tables and lists.
+
+
+2017-06-16 Roman (stable)
+- DB.LibsDB.vcaBase: Icons of views of the main page were restored to opaque but not in full size, for buttons' background seeing.
+- DB.LibsDB.vcaElectroEls: Was appended by some new items.
+- FIX:SYS,DAQ.JavaLikeCalc,Protocol.{ModBus,UserProtocol}: Some original masseges were fixed.
+- Protocol.{ModBus,UserProtocol},UI.WebUser: Were expanded for tracing and notification for program's changing.
+- UI.QTCfg: Text items size was fixed.
+- UI.QTStarter: Splash ensuring was disabled for Qt starting not into main thread.
+- FIX:UI.Vision: Separator "\n" was set for encoding by TSYS::base64 to storages.
+    FIX:Opening to developing windows fitting was set conditional for an active and maximized window miss but there has a problem in Qt.
+- UI.WebCfgD: Acknowledgement buttons of text items moved to left, for big screens.
+- UI.WebVision: Switch to use filters for display inactive images into buttons.
+
+
+2017-06-09 Roman (stable)
+- !!!:FIX:SYS: A new configure option --with-qt5 was added for Qt5 forcely checking and using.
+    A new configuration option --enable-QtMainThrd was added to switch the module UI.QTStarter for working in main thread of the program.
+    A new configuration option --disable-CoreLibVersion was added to disable version of the core library.
+    Android messages support was added.
+    Modules separator of option "ModDir" of OpenSCADA was changed to ';'.
+    FIX: The function TSYS::sysTm() was set adaptive one for the task "SYS_HighPriority" execution.
+- DAQ.JavaLikeCalc: Entry to procedures of the module set more optimal by direct locking the critical section.
+- FIX:DAQ.JavaLikeCalc: The parameter's debug mode was disabled for passive modes (f_err is EVAL) of the parameters but the debug message accumulates into the attribute "err".
+- !!!:Protocol.HTTP,UI.{WebUser,WebVision}: ACL support was added to control access and visibility of items of indexes of Web resources.
+- FIX:UI.QTCfg: sizeHint() and minimumSizeHint() procesing was fixed.
+- !!!!:FIX:UI.QTStarter: Two modes of execution Qt were added, first is old one into different thread (by default) and second is new one into main thread (by the configure option -enable-QtMainThrd).
+    FIX: Splash set to passive one for second mode.
+- UI.WebVision: Font of the child's windows was set to 12pt.
+
+
+2017-06-02 Roman (stable)
+- !!!!:DB.LibsDB.OscadaLibs: DevLib is appended by implementing of electricity counters Mercury 200 and 230 from Arsen Zakojan <godzilla919@gmail.com>.
+- DB.Model.AGLKS.vca: Fixed for a spare horizontal line.
+- !!!:FIX:SYS.ModSchedule: Modules closing at exit set to all the modules closing firstly and next all the module's libraries unlinking. For fix like to WebKit crashes at exit.
+    !!!: Modules scanning procedure expanded by the module's name template into the end of the path, mostly for Android where all libraries place into one folder.
+    Function ScanDir() and CheckFile() renamed to dirScan() and fileCheck() respectively.
+- !!!!:FIX:SYS: Some original messages fixed.
+    !!!!: The system core in generic expanded for support main thread monopoly modules, like Qt GUI main thread into QtStarter.
+	Generic service calls moved to a different thread "SYS_Service".
+    The main function main() appended to OpenSCADA core library for builds for Android.
+- FIX:DAQ.ModBus: Managing of duplicate attributes of the standard parameter was fixed.
+- FIX:Special.FLibComplex1: The translation was some fixed.
+- !!!!: UI.QTStarter: Moved to Qt execution into the main thread by main thread monopoly modules mechanism of OpenSCADA core.
+- UI.VCAEngine: Links checking for activity is added to the dynamic linking mechanism.
+- FIX:UI.Vision: Icons setting of internal windows moved before the window show, for the development mode.
+- FIX:UI.WebVision: The property "wordWrap" of primitive "Text" support was added.
+
+
+2017-05-26 Roman (stable)
+- DB.LibsDB.vcaBase: A new cadre "Main.alarmsAct" of table of active alarms is added and used into main page of the project AGLKS.
+    A new cadre "doc.docMessRep" of unified protocol of messages is added and used into the project "archBrowser".
+    The generic page implementing expanded by buttons of views hide at pages miss here.
+    The project "archBrowser" moved to an unmodified main page, graphics group "grpGraph10" using and a new cadre "doc.docMessRep" appending to generic messages observe.
+    Translation some updated.
+- FIX:Archive.FSArch: Fix for translation.
+- FIX:UI.Vision: Fix for opened to edition widgets size on big screens.
+
+
 2017-05-19 Roman (stable)
 - DB.LibsDB.vcaBase: Main.objProps adapted to the first column hide.
 - Archive.{DBArch,FSArch},DAQ.LogicLev: Some original messages fixed.

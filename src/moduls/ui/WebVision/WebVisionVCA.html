@@ -26,7 +26,7 @@
     table.prot td { border: 1px solid black; white-space: nowrap; }
     table.prot td.hd { background-color: #E6E6E6; font-weight: bold; text-align: center; }
     #gen-pnl-dlg { position: absolute; font-size: 12px; z-index: 9999; background-color: #8FA9FF; border: 1px solid darkblue; box-shadow: 10px 10px 5px rgba(68,68,68,0.6); }
-    #gen-pnl-dlg tr.hd { cursor: move; background: linear-gradient(#8FA9FF, #6F89DF, #8FA9FF); }
+    #gen-pnl-dlg tr.hd { font-size: 12pt; cursor: move; background: linear-gradient(#8FA9FF, #6F89DF, #8FA9FF); }
     #popupmenu { position: absolute; border: 0; width: 150px; height: 150px; overflow : auto; z-index: 1000; }
     #popupmenu select { background-color: #E6E6E6; border: 1px solid black; padding: 1px; width: auto; }
     #combomenu { position: absolute; visibility: visible; border: 0; }
@@ -46,6 +46,7 @@
     .FormEl textarea { border: 1px solid gray; padding: 1px; }
     .FormEl input[type=range] { position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto; }
     .FormEl input[type=range][orient=vertical] { writing-mode: bt-lr; -webkit-appearance: slider-vertical; }
+    .FormEl img.inactive { filter: grayscale(100%) opacity(30%); }
     div.FormEl.Table, div.FormEl.Tree { background-color: white; border: 1px solid gray; padding: 1px; overflow: auto; text-align: left; }
     div.FormEl.Table table { border-collapse: collapse; }
     div.FormEl.Table table th { text-align: center; background-color: #e6e6e6; border: 1px solid black; white-space: pre-line; word-break: break-all; }
