@@ -1695,9 +1695,14 @@ void TMdPrm::enable()
 		    add(TSYS::strMess("TS%d", i), owner().owner().tpPrmToId("tp_TS"));
 		    at(TSYS::strMess("TS%d", i)).at().cfg("DEV_ID").setI(i);
 		    at(TSYS::strMess("TS%d", i)).at().setName(TSYS::strMess(_("TS%d"), i));
+		    //at(TSYS::strMess("TS%d", i)).at().mDA = new KA_TC(*this, nodePrev()->mDA, cfg("DEV_ID").getI(), cfg("WITH_PARAMS").getB());
 		}
 	    }
 
+	}
+	if (type().name == "tp_TS") {
+		TMdPrm *t = dynamic_cast<TMdPrm*>(nodePrev());
+		mDA = new KA_TC(*this, *t->mDA, cfg("DEV_ID").getI(), t->cfg("WITH_PARAMS").getB());
 	}
 	if (type().name == "tp_BVT") mDA = new KA_BVT(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	if (type().name == "tp_GZD")
