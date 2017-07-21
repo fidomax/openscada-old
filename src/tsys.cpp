@@ -40,6 +40,7 @@
 
 #include <algorithm>
 
+#include "ieee754.h"
 #include "terror.h"
 #include "tmess.h"
 #include "tsys.h"
@@ -394,6 +395,7 @@ string TSYS::optDescr( )
 	"==================== Generic options ======================================\n"
 	"===========================================================================\n"
 	"-h, --help		Info message about the system options.\n"
+	"    --lang=<LANG>	The station language, in view \"uk_UA.UTF-8\".\n"
 	"    --config=<file>	The station configuration file.\n"
 	"    --station=<id>	The station identifier.\n"
 	"    --statName=<name>	The station name.\n"
@@ -1329,15 +1331,7 @@ uint64_t TSYS::i64_BE( uint64_t in )
 float TSYS::floatLE( float in )
 {
 #if __BYTE_ORDER == __BIG_ENDIAN
-    union ieee754_be {
-	float f;
-	struct {
-	    unsigned int negative:1;
-	    unsigned int exponent:8;
-	    unsigned int mantissa:23;
-	} ieee;
-    } ieee754_be;
-
+    ieee754_float ieee754_be;
     union ieee754_le {
 	float f;
 	struct {
@@ -1437,15 +1431,7 @@ double TSYS::doubleLErev( double in )
 float TSYS::floatBE( float in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    union ieee754_le {
-	float f;
-	struct {
-	    unsigned int mantissa:23;
-	    unsigned int exponent:8;
-	    unsigned int negative:1;
-	} ieee;
-    } ieee754_le;
-
+    ieee754_float ieee754_le;
     union ieee754_be {
 	float f;
 	struct {
@@ -1469,15 +1455,7 @@ float TSYS::floatBE( float in )
 float TSYS::floatBErev( float in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    union ieee754_le {
-	float f;
-	struct {
-	    unsigned int mantissa:23;
-	    unsigned int exponent:8;
-	    unsigned int negative:1;
-	} ieee;
-    } ieee754_le;
-
+    ieee754_float ieee754_le;
     union ieee754_be {
 	float f;
 	struct {
@@ -1501,23 +1479,7 @@ float TSYS::floatBErev( float in )
 double TSYS::doubleBE( double in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    union ieee754_le {
-	double d;
-	struct {
-# if __FLOAT_WORD_ORDER == __BIG_ENDIAN
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-	    unsigned int mantissa1:32;
-# else
-	    unsigned int mantissa1:32;
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-# endif
-	} ieee;
-    } ieee754_le;
-
+    ieee754_double ieee754_le;
     union ieee754_be {
 	double d;
 	struct {
@@ -1543,23 +1505,7 @@ double TSYS::doubleBE( double in )
 double TSYS::doubleBErev( double in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    union ieee754_le {
-	double d;
-	struct {
-# if __FLOAT_WORD_ORDER == __BIG_ENDIAN
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-	    unsigned int mantissa1:32;
-# else
-	    unsigned int mantissa1:32;
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-# endif
-	} ieee;
-    } ieee754_le;
-
+    ieee754_double ieee754_le;
     union ieee754_be {
 	double d;
 	struct {
@@ -3068,20 +3014,13 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 }
 
 #if defined(__ANDROID__)
-int main( int argc, char *argv[], char *envp[] )
+int main( int argc, char *argv[] )
 {
     int rez = 0;
 
-    //Get current locale from Java and set its to the environment LANG
-    setenv("LANG", "uk_UA.UTF-8", 1);
-
     //Same load and start the core object TSYS
-    SYS = new TSYS(argc, argv, envp);
+    SYS = new TSYS(argc, argv, NULL);
     try {
-	//Print arguments and environments
-	mess_info("TEST_ARG", "Arguments %d, %p, %p", argc, argv, envp);
-
-
 	SYS->load();
 	if((rez=SYS->stopSignal()) > 0) throw TError(SYS->nodePath().c_str(), "Stop by signal %d on load.", rez);
 	rez = SYS->start();
