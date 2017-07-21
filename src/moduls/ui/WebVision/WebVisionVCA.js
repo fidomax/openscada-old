@@ -404,7 +404,7 @@ function callPage( pgId, updWdg, pgGrp, pgOpenSrc )
 	//Get and activate for specific attributes to the master-page
 	servSet("/UI/VCAEngine"+this.addr, 'com=com', "<CntrReqs>"+
 	    "<activate path='/%2fserv%2fattr%2fkeepAspectRatio' aNm='Keep aspect ratio on scale' aTp='0'/>"+
-	    "<activate path='/%2fserv%2fattr%2fstBarNoShow' aNm='No show status bar' aTp='0'/>"+
+	    "<activate path='/%2fserv%2fattr%2fstBarNoShow' aNm='Not show status bar' aTp='0'/>"+
 	    "</CntrReqs>", true);
 
 	this.makeEl(servGet(pgId,'com=attrsBr'), false, true);
@@ -735,7 +735,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 		this.place.innerHTML = "<span style='"+spanStyle+"'>"+txtVal+"</span>";
 	    //}
 	    //else this.place.innerHTML = "<img width='"+geomW+"px' height='"+geomH+"px' border='0' src='/"+MOD_ID+this.addr+
-	    //				"?com=obj&tm="+tmCnt+"&xSc="+xSc.toFixed(2)+"&ySc="+ySc.toFixed(2)+"'/>";
+	    //				"?com=obj&tm="+tmCnt+"&xSc="+xSc.toFixed(3)+"&ySc="+ySc.toFixed(3)+"'/>";
 
 	    this.place.wdgLnk = this;
 	    if(elWr) this.place.onclick = function() { setFocus(this.wdgLnk.addr); return false; };
@@ -1328,10 +1328,10 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			if(toInit || this.attrsMdf['font']) formObj.style.font = this.place.fontCfg;
 			var imgObj = formObj.childNodes.length ? formObj.childNodes[0] : this.place.ownerDocument.createElement('img');
 			var spanObj = formObj.childNodes.length ? formObj.childNodes[1] : this.place.ownerDocument.createElement('span');
-			spanObj.style.cssText = "display: table-cell; height: "+geomH+"px; line-height: 1; text-align: center; white-space: pre-line; width: "+geomW+"px; ";
+			spanObj.style.cssText = "display: table-cell; height: "+geomH+"px; line-height: 1; text-align: center; white-space: pre-line; word-break: break-word; width: "+geomW+"px; ";
 			if(toInit || this.attrsMdf['name']) {
 			    spanObj.disabled = !this.attrs['name'].length;
-			    spanObj.innerHTML = this.attrs['name'];
+			    spanObj.innerText = this.attrs['name'].replace('\\n','\n');
 			}
 			if(toInit || this.attrsMdf['img'] || this.attrsMdf['name']) {
 			    imgObj.hidden = !this.attrs['img'].length;
@@ -1416,20 +1416,23 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			formObj.style.cssText = 'top: '+((elTp==4)?(geomH-fntSz)/2:0)+'px; '+
 					    'height: '+((elTp==4)?fntSz:(geomH-4))+'px; width: '+geomW+'px; '+
 					    'font: '+this.place.fontCfg+'; ';
+		    formObj.multiple = parseInt(this.attrs['mult']) ? true : null;
 		    if(this.attrsMdf['items'] || this.attrsMdf['value']) {
 			while(formObj.childNodes.length) formObj.removeChild(formObj.childNodes[0]);
-			var selVal = this.attrs['value'];
+			var selVal = this.attrs['value'].split('\n');
 			var elLst = this.attrs['items'].split('\n');
-			var selOk = false;
 			for(var i = 0; i < elLst.length; i++) {
 			    var optEl = this.place.ownerDocument.createElement('option');
 			    optEl.appendChild(this.place.ownerDocument.createTextNode(elLst[i]));
-			    if(selVal == elLst[i]) selOk = optEl.defaultSelected=optEl.selected = true;
+			    if((selId=selVal.indexOf(elLst[i])) >= 0) {
+				optEl.defaultSelected = optEl.selected = true;
+				selVal.splice(selId,1);
+			    }
 			    formObj.appendChild(optEl);
 			}
-			if(!selOk && elTp == 4) {
+			for(i = 0; i < selVal.length; i++) {
 			    var optEl = this.place.ownerDocument.createElement('option');
-			    optEl.textContent = selVal;
+			    optEl.textContent = selVal[i];
 			    optEl.selected = optEl.defaultSelected = true;
 			    formObj.appendChild(optEl);
 			}
@@ -1437,7 +1440,6 @@ function makeEl( pgBr, inclPg, full, FullTree )
 		    if(!toInit) break;
 		    formObj.disabled = !elWr;
 		    formObj.wdgLnk = this;
-		    //f(elTp == 5) formObj.setAttribute('size',100);
 		    if(elTp == 4)
 			formObj.onchange = function( ) {
 			    var attrs = new Object();
@@ -1448,8 +1450,14 @@ function makeEl( pgBr, inclPg, full, FullTree )
 			formObj.size = 100;
 			formObj.onclick = function( ) {
 			    var attrs = new Object();
-			    attrs.value = this.options[this.selectedIndex].value; attrs.event = 'ws_ListChange';
-			    setWAttrs(this.wdgLnk.addr,attrs);
+			    if(this.selectedIndex) attrs.value = this.options[this.selectedIndex].value;
+			    else {
+				attrs.value = "";
+				for(iO = 0; iO < this.options.length; iO++)
+				    if(this.options[iO].selected) attrs.value += (attrs.value.length?"\n":"") + this.options[iO].value;
+			    }
+			    attrs.event = 'ws_ListChange';
+			    setWAttrs(this.wdgLnk.addr, attrs);
 			}
 		    }
 		    this.place.appendChild(formObj);
@@ -1847,7 +1855,7 @@ function makeEl( pgBr, inclPg, full, FullTree )
 	    var dgrObj = anchObj.childNodes[0];
 	    dgrObj.isLoad = false;
 	    dgrObj.onload = function( )	{ this.isLoad = true; }
-	    dgrObj.src = '/'+MOD_ID+this.addr+'?com=obj&tm='+tmCnt+'&xSc='+xSc.toFixed(2)+'&ySc='+ySc.toFixed(2);
+	    dgrObj.src = '/'+MOD_ID+this.addr+'?com=obj&tm='+tmCnt+'&xSc='+xSc.toFixed(3)+'&ySc='+ySc.toFixed(3);
 	    //Disable drag mostly for FireFox
 	    dgrObj.onmousedown = function(e) { e = e?e:window.event; if(e.preventDefault) e.preventDefault(); }
 	    this.perUpdtEn(this.isEnabled() && parseInt(this.attrs['trcPer']));
@@ -2273,7 +2281,7 @@ function perUpdt( )
 	if(!dgrObj.stLoadTm) dgrObj.stLoadTm = (new Date()).getTime();
 	if(dgrObj && (dgrObj.isLoad || ((new Date()).getTime()-dgrObj.stLoadTm) > this.updCntr*3000)) {
 	    dgrObj.isLoad = false;
-	    dgrObj.src = '/'+MOD_ID+this.addr+'?com=obj&tm='+tmCnt+'&xSc='+this.xScale(true).toFixed(2)+'&ySc='+this.yScale(true).toFixed(2);
+	    dgrObj.src = '/'+MOD_ID+this.addr+'?com=obj&tm='+tmCnt+'&xSc='+this.xScale(true).toFixed(3)+'&ySc='+this.yScale(true).toFixed(3);
 	    dgrObj.stLoadTm = (new Date()).getTime();
 	}
     }
