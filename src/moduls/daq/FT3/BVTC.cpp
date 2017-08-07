@@ -244,6 +244,7 @@ uint16_t KA_TC::PreInit(void)
 	Msg.C = SetData;
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
 	Msg.L += SerializeB(Msg.D + Msg.L, TC_DISABLED);
+	Msg.L += 3;
 	return mPrm.owner().DoCmd(&Msg);
 }
 
@@ -297,6 +298,7 @@ uint16_t KA_TC::PostInit(void)
 	loadVal(Value.lnk);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
 	Msg.L += Value.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += 3;
 	return mPrm.owner().DoCmd(&Msg);
 }
 
@@ -384,6 +386,7 @@ uint8_t KA_TC::cmdGet(uint16_t prmID, uint8_t * out)
 {
 	FT3ID ft3ID = UnpackID(prmID);
 
+    if (ft3ID.g != parentDA.ID) return 0;
 	if (ft3ID.k != ID) return 0;
 	uint8_t l = 0;
 	switch (ft3ID.n) {
@@ -407,7 +410,8 @@ uint8_t KA_TC::cmdSet(uint8_t * req, uint8_t addr)
 	uint16_t prmID = TSYS::getUnalign16(req);
 	FT3ID ft3ID = UnpackID(TSYS::getUnalign16(req));
 
-	if (ft3ID.g != ID) return 0;
+    if (ft3ID.g != parentDA.ID) return 0;
+	if (ft3ID.k != ID) return 0;
 	uint8_t l = 0;
 	switch (ft3ID.n) {
 	case 0:
