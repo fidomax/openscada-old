@@ -1,9 +1,54 @@
+2017-08-18 Roman (stable)
+- FIX:DB.Model.AGLKS.vca: Signal objects KM101 name translation was also fixed.
+- !!!!:SYS,DB.*,DAQ.{BFN,BlockCalc,JavaLikeCalc,LogicLev,ModBus},Protocol.{ModBus,OPC_UA,UserProtocol},UI.VCAEngine:
+    The flag TCfg::TransltText was moved to TFld::TransltText and used instead TFld::NoStrTransl also.
+- !!!!:FIX:SYS,*: The dynamic messages translation mostly finished and expanded after gettext adaption to the dynamic messages translation:
+    !!: Gettext translation was expanded by language selection different from system one into functions
+	TMess::I18N(), TMess::I18Ns() and their moving to not static ones, TModule::I18N().
+    !!:*,UI.VCAEngine: Functions set of the dynamic translation was expanded for complex translation by pointed language and user next; by functions:
+	trLU(), TMess::translGetLU(), trSetLU(), TMess::translSetLU().
+    !!: The OpenSCADA control interface was expanded by generic attribute "lang" additional to "user" one for
+	the dynamic messages language checking firstly.
+    FIX: The config file accessing functions were fixed and closely adaptred to the dynamic messages translation.
+    !!:TModule,DAQ.JavaLikeCalc,Special.SystemTests,UI.{QTCfg,QTStarter,VCAEngine,Vision,WebCfg,WebCfgD,WebUser,WebVision}:
+	modInfo(): expanded for name syntax "{NAME}[:{lng}]" and request for information translation in pointed language.
+    TModule: Twice translation try was disabled for modules - first is self and second is from core.
+    FIX:DB.{SQLite,MySQL,PostgreSQL,FireBird}: Dynamic messages translation saving was fixed for not base languages.
+    !!!!:Protocol.HTTP,UI.{WebUser,WebVision}: Expanded for multi-languages interface by: URL parameter "lang", auth user's language, Web browser's language.
+	Templates also set to support multilanguage.
+    !!!!:UI.Vision: Mostly adapted to system menus and dialogs dynamic messages translation of the run-time interface.
+	Left untranslated only Qt-internal messages which unalowed to dynamic translation and without all system locale changing!
+
+
+2017-08-05 Roman (stable)
+- DB.LibsDB.vcaBase: Main.TextLab adapted for only color dynamic control.
+    doc.{docGasNodeDayA,docGasNodeMonthA} significant expanded for new methods, to control archivator and the report hour.
+- DB.LibsDB.vcaElectroEls: Expanded by new widgets: Transformer (tr), Transformer (tr1), Switch (sw).
+- FIX:DB.Model.AGLKS.vca: Signal objects KM102, KM201, KM202, KM301, KM302 name translation was fixed.
+- FIX:UI.VCAEngine: Improper pages closing was fixed for multiple container pages.
+
+
+2017-07-28 Roman (stable)
+- !!:DB.LibsDB.OscadaLibs: flb_doc.{getVal,sumVal,averVal} were significant cleaned, rewrote and expanded but with back compatibility saving.
+- !!:FIX:DB.LibsDB.vcaElectroEls: Significant clearing and full translation were finished. Procedure of the item "Key" was fixed.
+- Archives: Tabs "Messages archive" and "Value archives" of the control page were renamed to "Messages" and "Values" respectively.
+- !!!!:FIX:DAQ.JavaLikeCalc: The resource fRes() dead locking was prevented after the wrong optimization.
+- FIX:UI.QTCfg: Function ConfApp::pageDisplay() double call sometime was prevented.
+- UI.WebVision: The source code was some cleared.
+
+
+2017-07-21 Roman (stable)
+- SYS: "langinfo.h" and "syscall.h" were set for conditional one, initially for Android original NDK.
+    __ANDROID_API__ getting was added to deep control for conditions of Android, initially it is for pthread_condattr_setclock().
+- !:UI.Vision: Working without printers by QT_NO_PRINTER was added, initially it is for Qt 5.8 on CrystaxNDKr10.
+
+
 2017-07-14 Roman (stable)
-- !!!!:DB.LibsDB.vcaElectroEls: Significant cleared and expanded. Will be continued to finish the cleaning and translation.
+- !!:DB.LibsDB.vcaElectroEls: Significant cleared and expanded. Will be continued to finish the cleaning and translation.
 - UI.VCAEngine: Limit of the generic attributes "geomXsc" and "geomYsc" was expanded from [0.1:100] to [0.01:100].
 - FIX:UI.Vision: ID of copying and moving widgets was set to encode for TSYS::oscdID to prevent errors here for wrong symbols.
     FIX:Included widgets resizing and moving in the developing mode by keyboard were fixed for mouse cursor position changing even to the widget's changes.
-    !!!!:FIX: Main window maximizing and opening to full-screen were fixed to prevent the operations by the visualizer specific attribute "runWin"
+    !!!:FIX: Main window maximizing and opening to full-screen were fixed to prevent the operations by the visualizer specific attribute "runWin"
 	working only from the master page. The main window size was set to fit the master page size after return from maximizing and opening to full-screen and
 	starting in original size.
 - FIX:UI.WebVision: Text of buttons into the custom mode was fixed for next line symbol "\n" and words breaking at overflow by CSS property "word-break".
