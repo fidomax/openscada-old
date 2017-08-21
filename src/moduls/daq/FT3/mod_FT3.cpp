@@ -470,6 +470,7 @@ void TTpContr::postEnable(int flag)
 	fldAdd(new TFld("PRM_BD_UPZ", _("UPZ Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
 
 	fldAdd(new TFld("PRM_BD_TS", _("TS Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_ZD", _("UPZ Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
 
 	fldAdd(new TFld("SCHEDULE", _("Acquisition schedule"), TFld::String, TFld::NoFlag, "100", "1"));
 //    fldAdd(new TFld("PERIOD", _("Gather data period (s)"), TFld::Integer, TFld::NoFlag, "3", "1", "0;100"));
@@ -572,10 +573,15 @@ void TTpContr::postEnable(int flag)
 	t_prm = tpParmAdd("tp_TS", "PRM_BD_TS", _("TS"), true);
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
 
+	t_prm = tpParmAdd("tp_ZD", "PRM_BD_ZD", _("ZD"), true);
+	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
+
 	elPrmIO.fldAdd(new TFld("PRM_ID", _("Parameter ID"), TFld::String, TCfg::Key, i2s(atoi(OBJ_ID_SZ) * 6).c_str()));
 	elPrmIO.fldAdd(new TFld("ID", _("ID"), TFld::String, TCfg::Key, OBJ_ID_SZ));
 	elPrmIO.fldAdd(new TFld("VALUE", _("Value"), TFld::String, TFld::NoFlag, "200"));
 	elPrmIO.fldAdd(new TFld("ATTR_VALUE", _("Attribute value"), TFld::String, TFld::NoFlag, "200"));
+
+
 }
 
 TController *TTpContr::ContrAttach(const string &name, const string &daq_db)
@@ -591,39 +597,23 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
 	eventRes(true), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR").getId())
 {
 	cfg("PRM_BD_BUC").setS("FT3Prm_BUC_" + name_c);
-	//cfg("PRM_BD_BUC").setView(false);
 	cfg("PRM_BD_BVTS").setS("FT3Prm_BVTS_" + name_c);
-	//cfg("PRM_BD_BVTS").setView(false);
 	cfg("PRM_BD_BVT").setS("FT3Prm_BVT_" + name_c);
-	//cfg("PRM_BD_BVT").setView(false);
 	cfg("PRM_BD_BVI").setS("FT3Prm_BVI_" + name_c);
-	//cfg("PRM_BD_BVI").setView(false);
 	cfg("PRM_BD_BIP").setS("FT3Prm_BIP_" + name_c);
-	//cfg("PRM_BD_BIP").setView(false);
 	cfg("PRM_BD_PAUK").setS("FT3Prm_PAUK_" + name_c);
-	//cfg("PRM_BD_PAUK").setView(false);
 	cfg("PRM_BD_BTU").setS("FT3Prm_BTU_" + name_c);
-	//cfg("PRM_BD_BTU").setView(false);
 	cfg("PRM_BD_ACCOUNT").setS("FT3Prm_ACCOUNT_" + name_c);
-	//cfg("PRM_BD_ACCOUNT").setView(false);
 	cfg("PRM_BD_BTR").setS("FT3Prm_BTR_" + name_c);
-	//cfg("PRM_BD_BTR").setView(false);
 	cfg("PRM_BD_BTE").setS("FT3Prm_BTE_" + name_c);
-	//cfg("PRM_BD_BTE").setView(false);
 	cfg("PRM_BD_ODOR").setS("FT3Prm_ODOR_" + name_c);
-	//cfg("PRM_BD_ODOR").setView(false);
 	cfg("PRM_BD_GZD").setS("FT3Prm_GZD_" + name_c);
-	//cfg("PRM_BD_GZD").setView(false);
 	cfg("PRM_BD_GNS").setS("FT3Prm_GNS_" + name_c);
-	//cfg("PRM_BD_GNS").setView(false);
 	cfg("PRM_BD_GKR").setS("FT3Prm_GKR_" + name_c);
-	//cfg("PRM_BD_GKR").setView(false);
 	cfg("PRM_BD_TANK").setS("FT3Prm_TANK_" + name_c);
-	//cfg("PRM_BD_TANK").setView(false);
 	cfg("PRM_BD_UPZ").setS("FT3Prm_UPZ_" + name_c);
-	//cfg("PRM_BD_UPZ").setView(false);
 	cfg("PRM_BD_TS").setS("FT3Prm_TS_" + name_c);
-	//cfg("PRM_BD_TS").setView(false);
+	cfg("PRM_BD_ZD").setS("FT3Prm_ZD_" + name_c);
 
 	MtxAlloc res(eventRes, true);
 
@@ -1587,6 +1577,7 @@ void TMdContr::cntrCmdProc(XMLNode *opt)
 		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TANK");
 		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_UPZ");
 		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TS");
+		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_ZD");
 
 		return;
 	}
@@ -1654,7 +1645,7 @@ void TMdPrm::enable()
 					mess_sys(TMess::Info, "add tc");
 					add(TSYS::strMess("TS%d", i), owner().owner().tpPrmToId("tp_TS"));
 					at(TSYS::strMess("TS%d", i)).at().cfg("DEV_ID").setI(i);
-					at(TSYS::strMess("TS%d", i)).at().setName(TSYS::strMess(_("TS%d"), i));
+					at(TSYS::strMess("TS%d", i)).at().setName(TSYS::strMess(("TS%d"), i));
 					//at(TSYS::strMess("TS%d", i)).at().mDA = new KA_TC(*this, nodePrev()->mDA, cfg("DEV_ID").getI(), cfg("WITH_PARAMS").getB());
 				}
 			}
@@ -1665,8 +1656,24 @@ void TMdPrm::enable()
 			mDA = new KA_TC(*this, *t->mDA, cfg("DEV_ID").getI(), t->cfg("WITH_PARAMS").getB());
 		}
 		if (type().name == "tp_BVT") mDA = new KA_BVT(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-		if (type().name == "tp_GZD")
+		if (type().name == "tp_GZD") {
 			mDA = new KA_GZD(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("VALVE_TYPE").getI());
+			for (int i = 1; i <= cfg("CHAN_COUNT").getI(); i++) {
+				if (!present(TSYS::strMess("ZD%d", i))) {
+					mess_sys(TMess::Info, "add tc");
+					add(TSYS::strMess("ZD%d", i), owner().owner().tpPrmToId("tp_ZD"));
+					at(TSYS::strMess("ZD%d", i)).at().cfg("DEV_ID").setI(i);
+					at(TSYS::strMess("ZD%d", i)).at().setName(TSYS::strMess(("ZD%d"), i));
+					//at(TSYS::strMess("TS%d", i)).at().mDA = new KA_TC(*this, nodePrev()->mDA, cfg("DEV_ID").getI(), cfg("WITH_PARAMS").getB());
+				}
+			}
+
+		}
+		if (type().name == "tp_ZD") {
+			TMdPrm *t = dynamic_cast<TMdPrm*>(nodePrev());
+			mDA = new KA_ZD(*this, *t->mDA, cfg("DEV_ID").getI(), t->cfg("WITH_PARAMS").getB(), t->cfg("VALVE_TYPE").getI());
+		}
+
 		if (type().name == "tp_GNS") mDA = new KA_GNS(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 		if (type().name == "tp_TANK") mDA = new KA_TANK(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 		if (type().name == "tp_UPZ") mDA = new KA_UPZ(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
@@ -1807,7 +1814,7 @@ uint16_t TMdPrm::BlckStart(void)
 	if (mDA) rc = mDA->Start();
 	if ((rc == BAD2) || (rc == BAD3)) mess_sys(TMess::Error, _("Can't Start"));
 	else if (rc == ERROR) mess_sys(TMess::Error, _("No answer to Start"));
-    if (rc == GOOD2) {
+	if (rc == GOOD2) {
 		vector<string> lst;
 		list(lst);
 		for (int i_l = 0; i_l < lst.size(); i_l++) {
@@ -1827,7 +1834,7 @@ uint16_t TMdPrm::BlckRefreshData(void)
 	if (mDA) rc = mDA->RefreshData();
 	if ((rc == BAD2) || (rc == BAD3)) mess_sys(TMess::Error, _("Can't RefreshData"));
 	else if (rc == ERROR) mess_sys(TMess::Error, _("No answer to RefreshData"));
-    if (rc == GOOD2) {
+	if (rc == GOOD2) {
 		vector<string> lst;
 		list(lst);
 		for (int i_l = 0; i_l < lst.size(); i_l++) {
@@ -1847,7 +1854,7 @@ uint16_t TMdPrm::BlckRefreshParams(void)
 	if (mDA) rc = mDA->RefreshParams();
 	if ((rc == BAD2) || (rc == BAD3)) mess_sys(TMess::Error, _("Can't RefreshParams"));
 	else if (rc == ERROR) mess_sys(TMess::Error, _("No answer to RefreshParams"));
-    if (rc == GOOD2) {
+	if (rc == GOOD2) {
 		vector<string> lst;
 		list(lst);
 		for (int i_l = 0; i_l < lst.size(); i_l++) {
@@ -1865,16 +1872,16 @@ uint16_t TMdPrm::BlckLoadParams(void)
 	uint16_t rc = GOOD2;
 
 	if (mDA) mDA->loadParam();
-    if (rc == GOOD2) {
-        vector<string> lst;
-        list(lst);
-        for (int i_l = 0; i_l < lst.size(); i_l++) {
-            AutoHD<TMdPrm> t = at(lst[i_l]);
-            rc = t.at().BlckLoadParams();
-            if (rc != GOOD2)
-                break;
-        }
-    }
+	if (rc == GOOD2) {
+		vector<string> lst;
+		list(lst);
+		for (int i_l = 0; i_l < lst.size(); i_l++) {
+			AutoHD<TMdPrm> t = at(lst[i_l]);
+			rc = t.at().BlckLoadParams();
+			if (rc != GOOD2)
+				break;
+		}
+	}
 	return rc;
 }
 

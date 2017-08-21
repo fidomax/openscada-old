@@ -1,22 +1,22 @@
 //OpenSCADA system module DAQ.FT3 file: GZD.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
- *   fido_max@inbox.ru                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; version 2 of the License.               *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+*   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
+*   fido_max@inbox.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; version 2 of the License.               *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
 
 #include <sys/times.h>
 
@@ -27,201 +27,20 @@
 
 using namespace FT3;
 
-bool KA_GZD::SKAZDchannel::IsTUParamChanged()
-{
-    bool vl_change = false;
-    vl_change |= TUOpen.CheckUpdate();
-    vl_change |= TimeOpen.CheckUpdate();
-    vl_change |= TUClose.CheckUpdate();
-    vl_change |= TimeClose.CheckUpdate();
-    vl_change |= TUStop.CheckUpdate();
-    vl_change |= TimeStop.CheckUpdate();
-    vl_change |= TURemote.CheckUpdate();
-    vl_change |= TimeRemote.CheckUpdate();
-    vl_change |= TUManual.CheckUpdate();
-    vl_change |= TimeManual.CheckUpdate();
-    vl_change |= TUStopEx.CheckUpdate();
-    vl_change |= TimeStopEx.CheckUpdate();
-    return vl_change;
-}
-
-bool KA_GZD::SKAZDchannel::IsTCParamChanged()
-{
-    bool vl_change = false;
-    vl_change |= TCOpen.CheckUpdate();
-    vl_change |= TCClose.CheckUpdate();
-    vl_change |= TCMode.CheckUpdate();
-    vl_change |= TCOpenErr.CheckUpdate();
-    vl_change |= TCCloseErr.CheckUpdate();
-    return vl_change;
-}
-
-void KA_GZD::SKAZDchannel::UpdateTUParam(uint16_t ID, uint8_t cl)
-{
-    if(IsTUParamChanged()) {
-	TUOpen.s = 0;
-	uint8_t E[25];
-	uint8_t l = 0;
-	l += SerializeB(E + l, TUOpen.s);
-	l += TUOpen.Serialize(E + l);
-	l += TimeOpen.Serialize(E + l);
-	l += TUClose.Serialize(E + l);
-	l += TimeClose.Serialize(E + l);
-	l += TUStop.Serialize(E + l);
-	l += TimeStop.Serialize(E + l);
-	l += TURemote.Serialize(E + l);
-	l += TimeRemote.Serialize(E + l);
-	l += TUManual.Serialize(E + l);
-	l += TimeManual.Serialize(E + l);
-	l += TUStopEx.Serialize(E + l);
-	l += TimeStopEx.Serialize(E + l);
-	if(valve_type == vt_5TU) {
-	    da->PushInBE(cl, sizeof(E) - 4, ID, E);
-	}
-	if(valve_type == vt_6TU) {
-	    da->PushInBE(cl, sizeof(E), ID, E);
-	}
-    }
-}
-
-void KA_GZD::SKAZDchannel::UpdateTCParam(uint16_t ID, uint8_t cl)
-{
-    if(IsTCParamChanged()) {
-	TCOpen.s = 0;
-	uint8_t E[11];
-	uint8_t l = 0;
-	l += SerializeB(E + l, TCOpen.s);
-	l += TCOpen.Serialize(E + l);
-	l += TCClose.Serialize(E + l);
-	l += TCMode.Serialize(E + l);
-	l += TCOpenErr.Serialize(E + l);
-	l += TCCloseErr.Serialize(E + l);
-	da->PushInBE(cl, sizeof(E), ID, E);
-    }
-}
-
-uint8_t KA_GZD::SKAZDchannel::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val)
-{
-    if(TUOpen.lnk.Connected() || TimeOpen.lnk.Connected() || TUClose.lnk.Connected() || TimeClose.lnk.Connected() || TUStop.lnk.Connected()
-	    || TimeOpen.lnk.Connected() || TURemote.lnk.Connected() || TimeRemote.lnk.Connected() || TUManual.lnk.Connected() || TimeManual.lnk.Connected()) {
-	if(valve_type == vt_6TU) {
-	    if(TUStopEx.lnk.Connected() || TimeStopEx.lnk.Connected()) {
-	    } else {
-		return 0;
-	    }
-	}
-	TUOpen.s = addr;
-	TUOpen.Set(TSYS::getUnalign16(val));
-	TimeOpen.Set(TSYS::getUnalign16(val + 2));
-	TUClose.Set(TSYS::getUnalign16(val + 4));
-	TimeClose.Set(TSYS::getUnalign16(val + 6));
-	TUStop.Set(TSYS::getUnalign16(val + 8));
-	TimeStop.Set(TSYS::getUnalign16(val + 10));
-	TURemote.Set(TSYS::getUnalign16(val + 12));
-	TimeRemote.Set(TSYS::getUnalign16(val + 14));
-	TUManual.Set(TSYS::getUnalign16(val + 16));
-	TimeManual.Set(TSYS::getUnalign16(val + 18));
-	if(valve_type == vt_5TU) {
-	    uint8_t E[21];
-	    E[0] = addr;
-	    memcpy(E + 1, val, 20);
-	    da->PushInBE(1, sizeof(E), prmID, E);
-	    return 2 + 20;
-	}
-	if(valve_type == vt_6TU) {
-	    TUStop.Set(TSYS::getUnalign16(val + 20));
-	    TimeStop.Set(TSYS::getUnalign16(val + 22));
-	    uint8_t E[25];
-	    E[0] = addr;
-	    memcpy(E + 1, val, 24);
-	    da->PushInBE(1, sizeof(E), prmID, E);
-	    return 2 + 24;
-	}
-
-    } else {
-	return 0;
-    }
-}
-
-uint8_t KA_GZD::SKAZDchannel::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val)
-{
-    if(TCOpen.lnk.Connected() || TCClose.lnk.Connected() || TCMode.lnk.Connected() || TCOpenErr.lnk.Connected() || TCCloseErr.lnk.Connected()) {
-	TCOpen.s = addr;
-	TCOpen.Set(TSYS::getUnalign16(val));
-	TCClose.Set(TSYS::getUnalign16(val + 2));
-	TCMode.Set(TSYS::getUnalign16(val + 4));
-	TCOpenErr.Set(TSYS::getUnalign16(val + 6));
-	TCCloseErr.Set(TSYS::getUnalign16(val + 8));
-
-	uint8_t E[11];
-	E[0] = addr;
-	memcpy(E + 1, val, 10);
-	da->PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 10;
-    } else {
-	return 0;
-    }
-}
-
-uint8_t KA_GZD::SKAZDchannel::SetNewState(uint8_t addr, uint16_t prmID, uint8_t *val)
-{
-    uint8_t rc = 0;
-    if(State.lnk.Connected()) {
-	if(Function.vl == 0) {
-	    State.s = addr;
-	    State.Set((uint8_t) ((State.vl & 0x80) | *val));
-	    uint8_t E[2] = { addr, State.vl };
-	    da->PushInBE(1, sizeof(E), prmID, E);
-	    rc = 2 + 1;
-	}
-    }
-    return rc;
-}
-
-uint8_t KA_GZD::SKAZDchannel::SetNewFunction(uint8_t addr, uint16_t prmID, uint8_t *val)
-{
-    uint8_t rc = 0;
-    uint32_t newF = *val;
-    if(Function.lnk.Connected() && State.lnk.Connected()) {
-	if(((State.vl & 0x0F) == vs_06) || Function.vl) {
-	    if(Function.vl == newF) {
-		rc = 3;
-	    } else {
-		if(newF > 2) {
-		    Function.s = addr;
-		    Function.Set(newF << 16 | newF);
-		    State.Set((uint8_t) (State.vl & 0x8F));
-		    uint8_t E[2] = { addr, Function.vl };
-		    da->PushInBE(1, sizeof(E), prmID, E);
-		    rc = 3;
-		}
-	    }
-	} else {
-	    Function.s = addr;
-	    Function.Set(newF << 16 | newF);
-	    State.Set((uint8_t) (State.vl & 0x8F));
-	    uint8_t E[2] = { addr, Function.vl };
-	    da->PushInBE(1, sizeof(E), prmID, E);
-	    rc = 3;
-	}
-    }
-    return rc;
-}
-
 KA_GZD::KA_GZD(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, uint32_t v_type) :
-	DA(prm), ID(id), count_n(n), with_params(has_params), valve_type(v_type), config(0xF | (n << 4) | (2 << 10)), max_count_data(40)
+	DA(prm, id), count_n(n), with_params(has_params), valve_type(v_type), config(0xF | (n << 4) | (2 << 10)), max_count_data(40)
 {
-    mTypeFT3 = KA;
-    chan_err.clear();
-    TFld * fld;
-    mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
-    fld->setReserve("0:0");
+	mTypeFT3 = KA;
+	//chan_err.clear();
+	TFld * fld;
+	mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
+	fld->setReserve("0:0");
 
-    for(int i = 0; i < count_n; i++) {
-	chan_err.insert(chan_err.end(), SDataRec());
-	AddZDChannel(i);
-    }
-    loadIO(true);
+/*	for (int i = 0; i < count_n; i++) {
+        chan_err.insert(chan_err.end(), SDataRec());
+        AddZDChannel(i);
+    }*/
+	loadIO(true);
 }
 
 KA_GZD::~KA_GZD()
@@ -229,543 +48,808 @@ KA_GZD::~KA_GZD()
 
 }
 
-void KA_GZD::AddZDChannel(uint8_t iid)
-{
+/*void KA_GZD::AddZDChannel(uint8_t iid)
+   {
     data.push_back(SKAZDchannel(iid, with_params, valve_type, this));
     AddAttr(data.back().State.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
     AddAttr(data.back().Function.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:3", iid + 1));
-    if(with_params) {
-	AddAttr(data.back().TUOpen.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	AddAttr(data.back().TUClose.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	AddAttr(data.back().TUStop.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	if(valve_type == vt_6TU) {
-	    AddAttr(data.back().TUStopEx.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	}
-	AddAttr(data.back().TURemote.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	AddAttr(data.back().TUManual.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	AddAttr(data.back().TimeOpen.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	AddAttr(data.back().TimeClose.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	AddAttr(data.back().TimeStop.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	if(valve_type == vt_6TU) {
-	    AddAttr(data.back().TimeStopEx.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	}
-	AddAttr(data.back().TimeRemote.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	AddAttr(data.back().TimeManual.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-	AddAttr(data.back().TCOpen.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().TCClose.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().TCMode.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().TCOpenErr.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().TCCloseErr.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+    if (with_params) {
+        AddAttr(data.back().TUOpen.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TUClose.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TUStop.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        if (valve_type == vt_6TU)
+            AddAttr(data.back().TUStopEx.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TURemote.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TUManual.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TimeOpen.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TimeClose.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TimeStop.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        if (valve_type == vt_6TU)
+            AddAttr(data.back().TimeStopEx.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TimeRemote.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TimeManual.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
+        AddAttr(data.back().TCOpen.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+        AddAttr(data.back().TCClose.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+        AddAttr(data.back().TCMode.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+        AddAttr(data.back().TCOpenErr.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
+        AddAttr(data.back().TCCloseErr.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
     }
-}
+   }*/
 
 string KA_GZD::getStatus(void)
 {
-    string rez;
-    if(NeedInit) {
-	rez = "20: Опрос каналов:";
-	for(int i = 1; i <= count_n; i++) {
-	    switch(chan_err[i].state) {
-	    case 0:
-		rez += TSYS::strMess(" %d.", i);
-		break;
-	    case 2:
-		rez += TSYS::strMess(" %d!!!", i);
-		break;
-	    }
-	}
-    } else {
-	rez = "0: Норма";
-    }
-    return rez;
+	string rez;
+
+	if (NeedInit)
+		rez = "20: Опрос каналов:";
+/*		for (int i = 1; i <= count_n; i++) {
+            switch (chan_err[i].state) {
+            case 0:
+                rez += TSYS::strMess(" %d.", i);
+                break;
+            case 2:
+                rez += TSYS::strMess(" %d!!!", i);
+                break;
+            }
+        }*/
+	else
+		rez = "0: Норма";
+	return rez;
 }
 
 uint16_t KA_GZD::GetState()
 {
-    tagMsg Msg;
-    uint16_t rc = BlckStateUnknown;
-    Msg.L = 5;
-    Msg.C = AddrReq;
-    *((uint16_t *) Msg.D) = PackID(ID, 0, 0); //state
-    if(mPrm.owner().DoCmd(&Msg) == GOOD3) {
-	switch(mPrm.vlAt("state").at().getI(0, true)) {
-	case KA_GZD_Error:
-	    rc = BlckStateError;
-	    break;
-	case KA_GZD_Normal:
-	    rc = BlckStateNormal;
-	    break;
-	}
-    }
-    return rc;
-}
+	tagMsg Msg;
+	uint16_t rc = BlckStateUnknown;
 
-uint16_t KA_GZD::SetParams(void)
-{
-    uint16_t rc;
-    bool err = false;
-    tagMsg Msg;
-    loadParam();
-    for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].State.lnk);
-	Msg.L = 0;
-	Msg.C = SetData;
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 0));
-	Msg.L += SerializeB(Msg.D + Msg.L, data[i].State.lnk.vlattr.at().getI(0, true) & 0x0F);
-	if((data[i].State.lnk.vlattr.at().getI(0, true) & 0x0F) != vs_06) {
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUOpen.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeOpen.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUClose.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeClose.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUStop.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeStop.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TURemote.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeRemote.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUManual.lnk.vlattr.at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeManual.lnk.vlattr.at().getI(0, true));
-	    if(valve_type == vt_6TU) {
-		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TUStopEx.lnk.vlattr.at().getI(0, true));
-		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TimeStopEx.lnk.vlattr.at().getI(0, true));
-	    }
-	    if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-		Msg.L += 3;
-		rc = mPrm.owner().DoCmd(&Msg);
-		Msg.L = 0;
-		Msg.C = SetData;
-		if((rc == BAD2) || (rc == BAD3) || (rc == ERROR)) err = true;
-	    }
-	    if(!err) {
-		Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
-		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOpen.lnk.vlattr.at().getI(0, true));
-		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCClose.lnk.vlattr.at().getI(0, true));
-		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCMode.lnk.vlattr.at().getI(0, true));
-		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCOpenErr.lnk.vlattr.at().getI(0, true));
-		Msg.L += SerializeUi16(Msg.D + Msg.L, data[i].TCCloseErr.lnk.vlattr.at().getI(0, true));
-	    }
-	}
-	if(Msg.L) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	}
-	if((rc == BAD2) || (rc == BAD3)) {
-	    mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
-	} else {
-	    if(rc == ERROR) {
-		mPrm.mess_sys(TMess::Error, "No answer to set channel %d", i + 1);
-		break;
-	    }
-	}
-    }
-    return rc;
-}
-
-uint16_t KA_GZD::RefreshParams(void)
-{
-    uint16_t rc;
-    tagMsg Msg;
-    for(int i = 1; i <= count_n; i++) {
-	Msg.L = 0;
+	Msg.L = 5;
 	Msg.C = AddrReq;
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 1));
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 2));
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-	if((rc == BAD2) || (rc == BAD3)) {
-	    mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", i);
-	} else {
-	    if(rc == ERROR) {
-		mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", i);
-		break;
-	    }
+	*((uint16_t*)Msg.D) = PackID(ID, 0, 0);   //state
+	if (mPrm.owner().DoCmd(&Msg) == GOOD3) {
+		switch (mPrm.vlAt("state").at().getI(0, true)) {
+		case KA_GZD_Error:
+			rc = BlckStateError;
+			break;
+		case KA_GZD_Normal:
+			rc = BlckStateNormal;
+			break;
+		}
 	}
-    }
-    return rc;
-}
-
-uint16_t KA_GZD::RefreshData(void)
-{
-    uint16_t rc;
-    tagMsg Msg;
-    for(int j = 0; j <= count_n / max_count_data; j++) {
-	Msg.L = 0;
-	Msg.C = AddrReq;
-	for(int i = j * max_count_data + 1; i <= (count_n < ((j + 1) * max_count_data) ? count_n : (j + 1) * 40); i++) {
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
-	    if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-		Msg.L += 3;
-		rc = mPrm.owner().DoCmd(&Msg);
-		Msg.L = 0;
-		Msg.C = AddrReq;
-		if(rc == ERROR) break;
-	    }
-	}
-	if(Msg.L) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	}
-	if(rc == ERROR) break;
-    }
-    return rc;
-}
-
-void KA_GZD::loadIO(bool force)
-{
-    if(mPrm.owner().startStat() && !force) {
-	mPrm.modif(true);
-	return;
-    }
-    for(int i = 0; i < count_n; i++) {
-	loadLnk(data[i].State.lnk);
-	loadLnk(data[i].Function.lnk);
-	loadLnk(data[i].TUOpen.lnk);
-	loadLnk(data[i].TUClose.lnk);
-	loadLnk(data[i].TUStop.lnk);
-	loadLnk(data[i].TUStopEx.lnk);
-	loadLnk(data[i].TURemote.lnk);
-	loadLnk(data[i].TUManual.lnk);
-	loadLnk(data[i].TimeOpen.lnk);
-	loadLnk(data[i].TimeClose.lnk);
-	loadLnk(data[i].TimeStop.lnk);
-	loadLnk(data[i].TimeStopEx.lnk);
-	loadLnk(data[i].TimeRemote.lnk);
-	loadLnk(data[i].TimeManual.lnk);
-	loadLnk(data[i].TCOpen.lnk);
-	loadLnk(data[i].TCClose.lnk);
-	loadLnk(data[i].TCMode.lnk);
-	loadLnk(data[i].TCOpenErr.lnk);
-	loadLnk(data[i].TCCloseErr.lnk);
-    }
-}
-
-void KA_GZD::saveIO(void)
-{
-    for(int i = 0; i < count_n; i++) {
-	saveLnk(data[i].State.lnk);
-	saveLnk(data[i].Function.lnk);
-	saveLnk(data[i].TUOpen.lnk);
-	saveLnk(data[i].TUClose.lnk);
-	saveLnk(data[i].TUStop.lnk);
-	saveLnk(data[i].TUStopEx.lnk);
-	saveLnk(data[i].TURemote.lnk);
-	saveLnk(data[i].TUManual.lnk);
-	saveLnk(data[i].TimeOpen.lnk);
-	saveLnk(data[i].TimeClose.lnk);
-	saveLnk(data[i].TimeStop.lnk);
-	saveLnk(data[i].TimeStopEx.lnk);
-	saveLnk(data[i].TimeRemote.lnk);
-	saveLnk(data[i].TimeManual.lnk);
-	saveLnk(data[i].TCOpen.lnk);
-	saveLnk(data[i].TCClose.lnk);
-	saveLnk(data[i].TCMode.lnk);
-	saveLnk(data[i].TCOpenErr.lnk);
-	saveLnk(data[i].TCCloseErr.lnk);
-    }
-}
-
-void KA_GZD::saveParam(void)
-{
-    for(int i = 0; i < count_n; i++) {
-	saveVal(data[i].State.lnk);
-	saveVal(data[i].TUOpen.lnk);
-	saveVal(data[i].TUClose.lnk);
-	saveVal(data[i].TUStop.lnk);
-	saveVal(data[i].TURemote.lnk);
-	saveVal(data[i].TUManual.lnk);
-	saveVal(data[i].TimeOpen.lnk);
-	saveVal(data[i].TimeClose.lnk);
-	saveVal(data[i].TimeStop.lnk);
-	saveVal(data[i].TimeRemote.lnk);
-	saveVal(data[i].TimeManual.lnk);
-	saveVal(data[i].TCOpen.lnk);
-	saveVal(data[i].TCClose.lnk);
-	saveVal(data[i].TCMode.lnk);
-	saveVal(data[i].TCOpenErr.lnk);
-	saveVal(data[i].TCCloseErr.lnk);
-	if(valve_type == vt_6TU) {
-	    saveVal(data[i].TUStopEx.lnk);
-	    saveVal(data[i].TimeStopEx.lnk);
-	}
-    }
-}
-
-void KA_GZD::loadParam(void)
-{
-    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
-    for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].TUOpen.lnk);
-	loadVal(data[i].TUClose.lnk);
-	loadVal(data[i].TUStop.lnk);
-	loadVal(data[i].TURemote.lnk);
-	loadVal(data[i].TUManual.lnk);
-	loadVal(data[i].TimeOpen.lnk);
-	loadVal(data[i].TimeClose.lnk);
-	loadVal(data[i].TimeStop.lnk);
-	loadVal(data[i].TimeRemote.lnk);
-	loadVal(data[i].TimeManual.lnk);
-	loadVal(data[i].TCOpen.lnk);
-	loadVal(data[i].TCClose.lnk);
-	loadVal(data[i].TCMode.lnk);
-	loadVal(data[i].TCOpenErr.lnk);
-	loadVal(data[i].TCCloseErr.lnk);
-	if(valve_type == vt_6TU) {
-	    loadVal(data[i].TUStopEx.lnk);
-	    loadVal(data[i].TimeStopEx.lnk);
-	}
-    }
-}
-
-void KA_GZD::tmHandler(void)
-{
-    for(int i = 0; i < count_n; i++) {
-	if(with_params) {
-	    data[i].UpdateTUParam(PackID(ID, (i + 1), 1), 1);
-	    data[i].UpdateTCParam(PackID(ID, (i + 1), 2), 1);
-	}
-	UpdateParam8(data[i].State, PackID(ID, (i + 1), 0), 1);
-	UpdateParam8(data[i].Function, PackID(ID, (i + 1), 3), 1);
-    }
-    NeedInit = false;
+	return rc;
 }
 
 uint16_t KA_GZD::HandleEvent(int64_t tm, uint8_t * D)
 {
-    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
-    if(ft3ID.g != ID) return 0;
-    uint16_t l = 0;
-    switch(ft3ID.k) {
-    case 0:
-	switch(ft3ID.n) {
+	FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+
+	if (ft3ID.g != ID) return 0;
+	uint16_t l = 0;
+	switch (ft3ID.k) {
 	case 0:
-	    mPrm.vlAt("state").at().setI(D[2], tm, true);
-	    l = 3;
-	    break;
-	case 1:
-	    l = 4;
-	    break;
-	case 2:
-	    l = 2 + count_n * 2;
-	    for(int j = 0; j < count_n; j++) {
-		mPrm.vlAt(TSYS::strMess("state_%d", j)).at().setI(D[j * 2 + 3], tm, true);
-	    }
-	    break;
-	}
-	break;
-    default:
-	if(ft3ID.k && (ft3ID.k <= count_n)) {
-	    switch(ft3ID.n) {
-	    case 0:
-		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k)).at().setI(D[3], tm, true);
-		l = 4;
-		break;
-	    case 1:
-		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("TUopen_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeOpen_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
-		    mPrm.vlAt(TSYS::strMess("TUclose_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeClose_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 9), tm, true);
-		    mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 11), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 13), tm, true);
-		    mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 15), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 17), tm, true);
-		    mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 19), tm, true);
-		    mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 21), tm, true);
-		    l = 3 + 20;
-		    if(valve_type == vt_6TU) {
-			mPrm.vlAt(TSYS::strMess("TUstopEx_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 23), tm, true);
-			mPrm.vlAt(TSYS::strMess("timeStopEx_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 25), tm, true);
-			l += 4;
-		    }
-
+		switch (ft3ID.n) {
+		case 0:
+			mPrm.vlAt("state").at().setI(D[2], tm, true);
+			l = 3;
+			break;
+		case 1:
+			l = 4;
+			break;
+		case 2:
+			l = 2 + count_n * 2;
+			for (int j = 0; j < count_n; j++)
+				mPrm.vlAt(TSYS::strMess("state_%d", j)).at().setI(D[j * 2 + 3], tm, true);
+			break;
 		}
 		break;
-	    case 2:
-		if(with_params) {
-		    mPrm.vlAt(TSYS::strMess("tcOpen_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 3), tm, true);
-		    mPrm.vlAt(TSYS::strMess("tcClose_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 5), tm, true);
-		    mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 7), tm, true);
-		    mPrm.vlAt(TSYS::strMess("tcOpenErr_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 9), tm, true);
-		    mPrm.vlAt(TSYS::strMess("tcCloseErr_%d", ft3ID.k)).at().setI(TSYS::getUnalign16(D + 11), tm, true);
-		}
-		l = 3 + 10;
-		break;
-	    case 3:
-		mPrm.vlAt(TSYS::strMess("function_%d", ft3ID.k)).at().setI(D[3], tm, true);
-		l = 4;
-		break;
-
-	    }
 	}
-    }
 
-    return l;
+	return l;
 }
 
 uint8_t KA_GZD::cmdGet(uint16_t prmID, uint8_t * out)
 {
-    FT3ID ft3ID = UnpackID(prmID);
+	FT3ID ft3ID = UnpackID(prmID);
+	FT3ID ft3ID_ZD = UnpackID(prmID);
+
 //    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "ID %d ft3ID g%d k%d n%d ", ID, ft3ID.g, ft3ID.k, ft3ID.n);
-    if(ft3ID.g != ID) return 0;
-    uint l = 0;
-    if(ft3ID.k == 0) {
-	switch(ft3ID.n) {
-	case 0:
-	    //state
-	    out[0] = 1;
-	    l = 1;
-	    break;
-	case 1:
-	    out[0] = config >> 8;
-	    out[1] = config;
-	    l = 2;
-	    break;
-	case 2:
-	    for(uint8_t i = 0; i < count_n; i++) {
-		out[i * 2] = i;
-		out[i * 2 + 1] = data[i].State.vl;
-	    }
-	    l = count_n * 2;
-	    break;
-	}
-    } else {
-	if(ft3ID.k <= count_n) {
-	    switch(ft3ID.n) {
-	    case 0:
-		out[0] = data[ft3ID.k - 1].State.s;
-		out[1] = data[ft3ID.k - 1].State.vl;
-		l = 2;
-		break;
-	    case 1:
-		out[l++] = data[ft3ID.k - 1].TUOpen.s;
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TUOpen.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TimeOpen.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TUClose.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TimeClose.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TUStop.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TimeStop.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TURemote.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TimeRemote.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TUManual.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TimeManual.b_vl[j];
-		if(valve_type == vt_6TU) {
-		    for(uint8_t j = 0; j < 2; j++)
-			out[l++] = data[ft3ID.k - 1].TUStopEx.b_vl[j];
-		    for(uint8_t j = 0; j < 2; j++)
-			out[l++] = data[ft3ID.k - 1].TimeStopEx.b_vl[j];
+	if (ft3ID.g != ID) return 0;
+	uint l = 0;
+	uint8_t ll = 0;
+	if (ft3ID.k == 0) {
+		switch (ft3ID.n) {
+		case 0:
+			//state
+			out[0] = 1;
+			l = 1;
+			break;
+		case 1:
+			out[0] = config >> 8;
+			out[1] = config;
+			l = 2;
+			break;
+		case 2:
+			/*for (uint8_t i = 0; i < count_n; i++) {
+			    out[i * 2] = i;
+			    out[i * 2 + 1] = data[i].State.vl;
+			   }*/
+			for (uint8_t i = 1; i <= count_n; i++) {
+				ll = 0;
+				ft3ID_ZD.k = i;
+				ft3ID_ZD.n = 0;
+				vector<string> lst;
+				mPrm.list(lst);
+				for (int i_l = 0; i_l < lst.size(); i_l++) {
+					AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
+					ll = t.at().cmdGet(PackID(ft3ID_ZD), out + (i - 1) * 2);
+					if (ll) break;
+				}
+				if (ll) {
+					out[(i - 1) * 2] = i;
+					l += ll;
+				} else
+					break;
+			}
+			if (l != count_n * 2) l = 0;
+
+			l = count_n * 2;
+			break;
 		}
-		break;
-	    case 2:
-		out[l++] = data[ft3ID.k - 1].TCOpen.s;
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TCOpen.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TCClose.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TCMode.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TCOpenErr.b_vl[j];
-		for(uint8_t j = 0; j < 2; j++)
-		    out[l++] = data[ft3ID.k - 1].TCCloseErr.b_vl[j];
-		break;
-	    case 3:
-		out[0] = data[ft3ID.k - 1].Function.s;
-		out[1] = data[ft3ID.k - 1].Function.vl;
-		l = 2;
-		break;
-	    }
 	}
-    }
-    return l;
+	return l;
 }
 
 uint8_t KA_GZD::cmdSet(uint8_t * req, uint8_t addr)
 {
-    uint16_t prmID = TSYS::getUnalign16(req);
-    FT3ID ft3ID = UnpackID(prmID);
-    if(ft3ID.g != ID) return 0;
-    uint l = 0;
-//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
-    if(ft3ID.k <= count_n) {
-	switch(ft3ID.n) {
-	case 0:
-	    l = data[ft3ID.k - 1].SetNewState(addr, prmID, req + 2);
-	    break;
-	case 1:
-	    l = data[ft3ID.k - 1].SetNewTUParam(addr, prmID, req + 2);
-	    break;
-	case 2:
-	    l = data[ft3ID.k - 1].SetNewTCParam(addr, prmID, req + 2);
-	    break;
-	case 3:
-	    l = data[ft3ID.k - 1].SetNewFunction(addr, prmID, req + 2);
-	}
+	uint16_t prmID = TSYS::getUnalign16(req);
+	FT3ID ft3ID = UnpackID(prmID);
 
-    }
-    return l;
+	if (ft3ID.g != ID) return 0;
+	uint l = 0;
+//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
+	return l;
 }
 
 uint16_t KA_GZD::setVal(TVal &val)
 {
-    uint16_t rc = 0;
-    int off = 0;
-    FT3ID ft3ID;
-    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
-    ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
-    ft3ID.g = ID;
+}
 
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = SetData;
-    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
-    if(count_n && (ft3ID.k <= count_n)) {
-	switch(ft3ID.n) {
-	case 0:
-	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
-	    break;
-	case 1:
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUopen_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeOpen_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUclose_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeClose_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUstop_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeStop_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUremote_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeRemote_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUmanual_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeManual_%d", ft3ID.k)).at().getI(0, true));
-	    if(valve_type == vt_6TU) {
-		Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("TUstopEx_%d", ft3ID.k)).at().getI(0, true));
-		Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("timeStopEx_%d", ft3ID.k)).at().getI(0, true));
-	    }
-	    rc = 1;
-	    break;
-	case 2:
+KA_ZD::KA_ZD(TMdPrm& prm, DA &parent, uint16_t id, bool has_params, uint32_t v_type) :
+	DA(prm, id), parentDA(parent), with_params(has_params), valve_type(v_type),// da(owner), id(iid),
+	State(TSYS::strMess("state_%d", id), TSYS::strMess(_("State %d"), id)),
+	Function(TSYS::strMess("function_%d", id), TSYS::strMess(_("Function %d"), id)),
+	TUOpen(TSYS::strMess("TUopen_%d", id), TSYS::strMess(_("TU open %d"), id)),
+	TUClose(TSYS::strMess("TUclose_%d", id), TSYS::strMess(_("TU close %d"), id)),
+	TUStop(TSYS::strMess("TUstop_%d", id), TSYS::strMess(_("TU stop %d"), id)),
+	TURemote(TSYS::strMess("TUremote_%d", id), TSYS::strMess(_("TU remote %d"), id)),
+	TUManual(TSYS::strMess("TUmanual_%d", id), TSYS::strMess(_("TU manual %d"), id)),
+	TUStopEx(TSYS::strMess("TUstopEx_%d", id), TSYS::strMess(_("TU stop Ex %d"), id)),
+	TimeOpen(TSYS::strMess("timeOpen_%d", id), TSYS::strMess(_("Open time %d"), id)),
+	TimeClose(TSYS::strMess("timeClose_%d", id), TSYS::strMess(_("Close time %d"), id)),
+	TimeStop(TSYS::strMess("timeStop_%d", id), TSYS::strMess(_("Stop time %d"), id)),
+	TimeStopEx(TSYS::strMess("timeStopEx_%d", id), TSYS::strMess(_("Stop time Ex %d"), id)),
+	TimeRemote(TSYS::strMess("timeRemote_%d", id), TSYS::strMess(_("Remote time %d"), id)),
+	TimeManual(TSYS::strMess("timeManual_%d", id), TSYS::strMess(_("Manual time %d"), id)),
+	TCOpen(TSYS::strMess("tcOpen_%d", id), TSYS::strMess(_("Open TC %d"), id)),
+	TCClose(TSYS::strMess("tcClose_%d", id), TSYS::strMess(_("Close TC %d"), id)),
+	TCMode(TSYS::strMess("tcMode_%d", id), TSYS::strMess(_("Mode TC %d"), id)),
+	TCOpenErr(TSYS::strMess("tcOpenErr_%d", id), TSYS::strMess(_("Open error TC %d"), id)),
+	TCCloseErr(TSYS::strMess("tcCloseErr_%d", id), TSYS::strMess(_("Close error TC %d"), id))
+{
+	mTypeFT3 = KA;
 
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcOpen_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcClose_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcMode_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcOpenErr_%d", ft3ID.k)).at().getI(0, true));
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, mPrm.vlAt(TSYS::strMess("tcCloseErr_%d", ft3ID.k)).at().getI(0, true));
-	    rc = 1;
-	    break;
-	case 3:
-	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
-	    break;
+	AddAttr(State.lnk, TFld::Integer, TVal::DirWrite, "0");
+	AddAttr(Function.lnk, TFld::Integer, TVal::DirWrite, "3");
+	if (with_params) {
+		AddAttr(TUOpen.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TUClose.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TUStop.lnk, TFld::Integer, TVal::DirWrite, "1");
+		if (valve_type == vt_6TU)
+			AddAttr(TUStopEx.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TURemote.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TUManual.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TimeOpen.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TimeClose.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TimeStop.lnk, TFld::Integer, TVal::DirWrite, "1");
+		if (valve_type == vt_6TU)
+			AddAttr(TimeStopEx.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TimeRemote.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TimeManual.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(TCOpen.lnk, TFld::Integer, TVal::DirWrite, "2");
+		AddAttr(TCClose.lnk, TFld::Integer, TVal::DirWrite, "2");
+		AddAttr(TCMode.lnk, TFld::Integer, TVal::DirWrite, "2");
+		AddAttr(TCOpenErr.lnk, TFld::Integer, TVal::DirWrite, "2");
+		AddAttr(TCCloseErr.lnk, TFld::Integer, TVal::DirWrite, "2");
 	}
-    }
-    if(Msg.L > 2) {
+
+	loadIO(true);
+}
+
+KA_ZD::~KA_ZD()
+{
+	//data.clear();
+}
+
+bool KA_ZD::IsTUParamChanged()
+{
+	bool vl_change = false;
+
+	vl_change |= TUOpen.CheckUpdate();
+	vl_change |= TimeOpen.CheckUpdate();
+	vl_change |= TUClose.CheckUpdate();
+	vl_change |= TimeClose.CheckUpdate();
+	vl_change |= TUStop.CheckUpdate();
+	vl_change |= TimeStop.CheckUpdate();
+	vl_change |= TURemote.CheckUpdate();
+	vl_change |= TimeRemote.CheckUpdate();
+	vl_change |= TUManual.CheckUpdate();
+	vl_change |= TimeManual.CheckUpdate();
+	vl_change |= TUStopEx.CheckUpdate();
+	vl_change |= TimeStopEx.CheckUpdate();
+	return vl_change;
+}
+
+bool KA_ZD::IsTCParamChanged()
+{
+	bool vl_change = false;
+
+	vl_change |= TCOpen.CheckUpdate();
+	vl_change |= TCClose.CheckUpdate();
+	vl_change |= TCMode.CheckUpdate();
+	vl_change |= TCOpenErr.CheckUpdate();
+	vl_change |= TCCloseErr.CheckUpdate();
+	return vl_change;
+}
+
+void KA_ZD::UpdateTUParam(uint16_t ID, uint8_t cl)
+{
+	if (IsTUParamChanged()) {
+		TUOpen.s = 0;
+		uint8_t E[25];
+		uint8_t l = 0;
+		l += SerializeB(E + l, TUOpen.s);
+		l += TUOpen.Serialize(E + l);
+		l += TimeOpen.Serialize(E + l);
+		l += TUClose.Serialize(E + l);
+		l += TimeClose.Serialize(E + l);
+		l += TUStop.Serialize(E + l);
+		l += TimeStop.Serialize(E + l);
+		l += TURemote.Serialize(E + l);
+		l += TimeRemote.Serialize(E + l);
+		l += TUManual.Serialize(E + l);
+		l += TimeManual.Serialize(E + l);
+		l += TUStopEx.Serialize(E + l);
+		l += TimeStopEx.Serialize(E + l);
+		if (valve_type == vt_5TU)
+			PushInBE(cl, sizeof(E) - 4, ID, E);
+		if (valve_type == vt_6TU)
+			PushInBE(cl, sizeof(E), ID, E);
+	}
+}
+
+void KA_ZD::UpdateTCParam(uint16_t ID, uint8_t cl)
+{
+	if (IsTCParamChanged()) {
+		TCOpen.s = 0;
+		uint8_t E[11];
+		uint8_t l = 0;
+		l += SerializeB(E + l, TCOpen.s);
+		l += TCOpen.Serialize(E + l);
+		l += TCClose.Serialize(E + l);
+		l += TCMode.Serialize(E + l);
+		l += TCOpenErr.Serialize(E + l);
+		l += TCCloseErr.Serialize(E + l);
+		PushInBE(cl, sizeof(E), ID, E);
+	}
+}
+
+uint8_t KA_ZD::SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val)
+{
+	if (TUOpen.lnk.Connected() || TimeOpen.lnk.Connected() || TUClose.lnk.Connected() || TimeClose.lnk.Connected() || TUStop.lnk.Connected()
+		|| TimeOpen.lnk.Connected() || TURemote.lnk.Connected() || TimeRemote.lnk.Connected() || TUManual.lnk.Connected() || TimeManual.lnk.Connected()) {
+		if (valve_type == vt_6TU) {
+			if (TUStopEx.lnk.Connected() || TimeStopEx.lnk.Connected()) {
+			} else
+				return 0;
+		}
+		TUOpen.s = addr;
+		TUOpen.Set(TSYS::getUnalign16(val));
+		TimeOpen.Set(TSYS::getUnalign16(val + 2));
+		TUClose.Set(TSYS::getUnalign16(val + 4));
+		TimeClose.Set(TSYS::getUnalign16(val + 6));
+		TUStop.Set(TSYS::getUnalign16(val + 8));
+		TimeStop.Set(TSYS::getUnalign16(val + 10));
+		TURemote.Set(TSYS::getUnalign16(val + 12));
+		TimeRemote.Set(TSYS::getUnalign16(val + 14));
+		TUManual.Set(TSYS::getUnalign16(val + 16));
+		TimeManual.Set(TSYS::getUnalign16(val + 18));
+		if (valve_type == vt_5TU) {
+			uint8_t E[21];
+			E[0] = addr;
+			memcpy(E + 1, val, 20);
+			PushInBE(1, sizeof(E), prmID, E);
+			return 2 + 20;
+		}
+		if (valve_type == vt_6TU) {
+			TUStop.Set(TSYS::getUnalign16(val + 20));
+			TimeStop.Set(TSYS::getUnalign16(val + 22));
+			uint8_t E[25];
+			E[0] = addr;
+			memcpy(E + 1, val, 24);
+			PushInBE(1, sizeof(E), prmID, E);
+			return 2 + 24;
+		}
+
+	} else
+		return 0;
+}
+
+uint8_t KA_ZD::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val)
+{
+	if (TCOpen.lnk.Connected() || TCClose.lnk.Connected() || TCMode.lnk.Connected() || TCOpenErr.lnk.Connected() || TCCloseErr.lnk.Connected()) {
+		TCOpen.s = addr;
+		TCOpen.Set(TSYS::getUnalign16(val));
+		TCClose.Set(TSYS::getUnalign16(val + 2));
+		TCMode.Set(TSYS::getUnalign16(val + 4));
+		TCOpenErr.Set(TSYS::getUnalign16(val + 6));
+		TCCloseErr.Set(TSYS::getUnalign16(val + 8));
+
+		uint8_t E[11];
+		E[0] = addr;
+		memcpy(E + 1, val, 10);
+		PushInBE(1, sizeof(E), prmID, E);
+		return 2 + 10;
+	} else
+		return 0;
+}
+
+uint8_t KA_ZD::SetNewState(uint8_t addr, uint16_t prmID, uint8_t *val)
+{
+	uint8_t rc = 0;
+
+	if (State.lnk.Connected()) {
+		if (Function.vl == 0) {
+			State.s = addr;
+			State.Set((uint8_t)((State.vl & 0x80) | *val));
+			uint8_t E[2] = { addr, State.vl };
+			PushInBE(1, sizeof(E), prmID, E);
+			rc = 2 + 1;
+		}
+	}
+	return rc;
+}
+
+uint8_t KA_ZD::SetNewFunction(uint8_t addr, uint16_t prmID, uint8_t *val)
+{
+	uint8_t rc = 0;
+	uint32_t newF = *val;
+
+	if (Function.lnk.Connected() && State.lnk.Connected()) {
+		if (((State.vl & 0x0F) == vs_06) || Function.vl) {
+			if (Function.vl == newF)
+				rc = 3;
+			else {
+				if (newF > 2) {
+					Function.s = addr;
+					Function.Set(newF << 16 | newF);
+					State.Set((uint8_t)(State.vl & 0x8F));
+					uint8_t E[2] = { addr, Function.vl };
+					PushInBE(1, sizeof(E), prmID, E);
+					rc = 3;
+				}
+			}
+		} else {
+			Function.s = addr;
+			Function.Set(newF << 16 | newF);
+			State.Set((uint8_t)(State.vl & 0x8F));
+			uint8_t E[2] = { addr, Function.vl };
+			PushInBE(1, sizeof(E), prmID, E);
+			rc = 3;
+		}
+	}
+	return rc;
+}
+
+
+uint16_t KA_ZD::SetParams(void)
+{
+	uint16_t rc;
+	bool err = false;
+	tagMsg Msg;
+
+	loadParam();
+	loadVal(State.lnk);
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
+	Msg.L += SerializeB(Msg.D + Msg.L, State.lnk.vlattr.at().getI(0, true) & 0x0F);
+	if ((State.lnk.vlattr.at().getI(0, true) & 0x0F) != vs_06) {
+		Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+		Msg.L += TUOpen.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeOpen.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TUClose.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeClose.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TUStop.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeStop.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TURemote.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeRemote.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TUManual.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeManual.SerializeAttr(Msg.D + Msg.L);
+		if (valve_type == vt_6TU) {
+			Msg.L += TUStopEx.SerializeAttr(Msg.D + Msg.L);
+			Msg.L += TimeStopEx.SerializeAttr(Msg.D + Msg.L);
+		}
+		if (Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
+			Msg.L += 3;
+			rc = mPrm.owner().DoCmd(&Msg);
+			Msg.L = 0;
+			Msg.C = SetData;
+			if ((rc == BAD2) || (rc == BAD3) || (rc == ERROR)) err = true;
+		}
+		if (!err) {
+			Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 2));
+			Msg.L += TCOpen.SerializeAttr(Msg.D + Msg.L);
+			Msg.L += TCClose.SerializeAttr(Msg.D + Msg.L);
+			Msg.L += TCMode.SerializeAttr(Msg.D + Msg.L);
+			Msg.L += TCOpenErr.SerializeAttr(Msg.D + Msg.L);
+			Msg.L += TCCloseErr.SerializeAttr(Msg.D + Msg.L);
+		}
+	}
+	if (Msg.L) {
+		Msg.L += 3;
+		rc = mPrm.owner().DoCmd(&Msg);
+	}
+	if ((rc == BAD2) || (rc == BAD3))
+		mPrm.mess_sys(TMess::Error, "Can't set channel %d", ID);
+	else if (rc == ERROR)
+		mPrm.mess_sys(TMess::Error, "No answer to set channel %d", ID);
+
+	return rc;
+}
+
+uint16_t KA_ZD::RefreshParams(void)
+{
+	uint16_t rc;
+	tagMsg Msg;
+
+	Msg.L = 0;
+	Msg.C = AddrReq;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 2));
 	Msg.L += 3;
-	mPrm.owner().DoCmd(&Msg);
-    }
-    return rc;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if ((rc == BAD2) || (rc == BAD3))
+		mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", ID);
+	else if (rc == ERROR)
+		mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", ID);
+
+	return rc;
+}
+
+uint16_t KA_ZD::RefreshData(void)
+{
+	tagMsg Msg;
+
+	Msg.L = 0;
+	Msg.C = AddrReq;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
+	Msg.L += 3;
+	return mPrm.owner().DoCmd(&Msg);
+}
+
+void KA_ZD::loadIO(bool force)
+{
+	if (mPrm.owner().startStat() && !force) {
+		mPrm.modif(true);
+		return;
+	}
+	loadLnk(State.lnk);
+	loadLnk(Function.lnk);
+	loadLnk(TUOpen.lnk);
+	loadLnk(TUClose.lnk);
+	loadLnk(TUStop.lnk);
+	loadLnk(TUStopEx.lnk);
+	loadLnk(TURemote.lnk);
+	loadLnk(TUManual.lnk);
+	loadLnk(TimeOpen.lnk);
+	loadLnk(TimeClose.lnk);
+	loadLnk(TimeStop.lnk);
+	loadLnk(TimeStopEx.lnk);
+	loadLnk(TimeRemote.lnk);
+	loadLnk(TimeManual.lnk);
+	loadLnk(TCOpen.lnk);
+	loadLnk(TCClose.lnk);
+	loadLnk(TCMode.lnk);
+	loadLnk(TCOpenErr.lnk);
+	loadLnk(TCCloseErr.lnk);
+}
+
+void KA_ZD::saveIO(void)
+{
+	saveLnk(State.lnk);
+	saveLnk(Function.lnk);
+	saveLnk(TUOpen.lnk);
+	saveLnk(TUClose.lnk);
+	saveLnk(TUStop.lnk);
+	saveLnk(TUStopEx.lnk);
+	saveLnk(TURemote.lnk);
+	saveLnk(TUManual.lnk);
+	saveLnk(TimeOpen.lnk);
+	saveLnk(TimeClose.lnk);
+	saveLnk(TimeStop.lnk);
+	saveLnk(TimeStopEx.lnk);
+	saveLnk(TimeRemote.lnk);
+	saveLnk(TimeManual.lnk);
+	saveLnk(TCOpen.lnk);
+	saveLnk(TCClose.lnk);
+	saveLnk(TCMode.lnk);
+	saveLnk(TCOpenErr.lnk);
+	saveLnk(TCCloseErr.lnk);
+}
+
+void KA_ZD::saveParam(void)
+{
+	saveVal(State.lnk);
+	saveVal(TUOpen.lnk);
+	saveVal(TUClose.lnk);
+	saveVal(TUStop.lnk);
+	saveVal(TURemote.lnk);
+	saveVal(TUManual.lnk);
+	saveVal(TimeOpen.lnk);
+	saveVal(TimeClose.lnk);
+	saveVal(TimeStop.lnk);
+	saveVal(TimeRemote.lnk);
+	saveVal(TimeManual.lnk);
+	saveVal(TCOpen.lnk);
+	saveVal(TCClose.lnk);
+	saveVal(TCMode.lnk);
+	saveVal(TCOpenErr.lnk);
+	saveVal(TCCloseErr.lnk);
+	if (valve_type == vt_6TU) {
+		saveVal(TUStopEx.lnk);
+		saveVal(TimeStopEx.lnk);
+	}
+}
+
+void KA_ZD::loadParam(void)
+{
+	//if (mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
+	loadVal(TUOpen.lnk);
+	loadVal(TUClose.lnk);
+	loadVal(TUStop.lnk);
+	loadVal(TURemote.lnk);
+	loadVal(TUManual.lnk);
+	loadVal(TimeOpen.lnk);
+	loadVal(TimeClose.lnk);
+	loadVal(TimeStop.lnk);
+	loadVal(TimeRemote.lnk);
+	loadVal(TimeManual.lnk);
+	loadVal(TCOpen.lnk);
+	loadVal(TCClose.lnk);
+	loadVal(TCMode.lnk);
+	loadVal(TCOpenErr.lnk);
+	loadVal(TCCloseErr.lnk);
+	if (valve_type == vt_6TU) {
+		loadVal(TUStopEx.lnk);
+		loadVal(TimeStopEx.lnk);
+	}
+}
+
+void KA_ZD::tmHandler(void)
+{
+	UpdateParam8(State, PackID(parentDA.ID, ID, 0), 1);
+	UpdateParam8(Function, PackID(parentDA.ID, ID, 3), 1);
+
+	if (with_params) {
+		UpdateTUParam(PackID(parentDA.ID, ID, 1), 1);
+		UpdateTCParam(PackID(parentDA.ID, ID, 2), 1);
+	}
+
+	NeedInit = false;
+}
+
+uint16_t KA_ZD::HandleEvent(int64_t tm, uint8_t * D)
+{
+	FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+
+	if (ft3ID.g != parentDA.ID) return 0;
+	if (ft3ID.k != ID) return 0;
+	uint16_t l = 0;
+
+	switch (ft3ID.n) {
+	case 0:
+		l = 4;
+		State.Update(D[3], tm);
+		break;
+	case 1:
+		l = 3 + 20;
+		if (with_params) {
+			TUOpen.Update(TSYS::getUnalign16(D + 3), tm);
+			TimeOpen.Update(TSYS::getUnalign16(D + 5), tm);
+			TUClose.Update(TSYS::getUnalign16(D + 7), tm);
+			TimeClose.Update(TSYS::getUnalign16(D + 9), tm);
+			TUStop.Update(TSYS::getUnalign16(D + 11), tm);
+			TimeStop.Update(TSYS::getUnalign16(D + 13), tm);
+			TURemote.Update(TSYS::getUnalign16(D + 15), tm);
+			TimeRemote.Update(TSYS::getUnalign16(D + 17), tm);
+			TUManual.Update(TSYS::getUnalign16(D + 19), tm);
+			TimeManual.Update(TSYS::getUnalign16(D + 21), tm);
+			if (valve_type == vt_6TU) {
+				l += 4;
+				TUStopEx.Update(TSYS::getUnalign16(D + 23), tm);
+				TimeStopEx.Update(TSYS::getUnalign16(D + 25), tm);
+			}
+
+		}
+		break;
+	case 2:
+		l = 3 + 10;
+		if (with_params) {
+			TCOpen.Update(TSYS::getUnalign16(D + 3), tm);
+			TCClose.Update(TSYS::getUnalign16(D + 5), tm);
+			TCMode.Update(TSYS::getUnalign16(D + 7), tm);
+			TCOpenErr.Update(TSYS::getUnalign16(D + 9), tm);
+			TCCloseErr.Update(TSYS::getUnalign16(D + 11), tm);
+		}
+		break;
+	case 3:
+		l = 4;
+		Function.Update(D[3], tm);
+		break;
+
+	}
+	return l;
+}
+
+uint8_t KA_ZD::cmdGet(uint16_t prmID, uint8_t * out)
+{
+	FT3ID ft3ID = UnpackID(prmID);
+
+	if (ft3ID.g != parentDA.ID) return 0;
+	if (ft3ID.k != ID) return 0;
+	uint8_t l = 0;
+
+	switch (ft3ID.n) {
+	case 0:
+		l += SerializeB(out + l, State.s);
+		l += State.Serialize(out + l);
+		break;
+	case 1:
+		l += SerializeB(out + l, TUOpen.s);
+		l += TUOpen.Serialize(out + l);
+		l += TimeOpen.Serialize(out + l);
+		l += TUClose.Serialize(out + l);
+		l += TimeClose.Serialize(out + l);
+		l += TUStop.Serialize(out + l);
+		l += TimeStop.Serialize(out + l);
+		l += TURemote.Serialize(out + l);
+		l += TimeRemote.Serialize(out + l);
+		l += TUManual.Serialize(out + l);
+		l += TimeManual.Serialize(out + l);
+		if (valve_type == vt_6TU) {
+			l += TUStopEx.Serialize(out + l);
+			l += TimeStopEx.Serialize(out + l);
+		}
+		break;
+	case 2:
+		l += SerializeB(out + l, TCOpen.s);
+		l += TCOpen.Serialize(out + l);
+		l += TCClose.Serialize(out + l);
+		l += TCMode.Serialize(out + l);
+		l += TCOpenErr.Serialize(out + l);
+		l += TCCloseErr.Serialize(out + l);
+		break;
+	case 3:
+		l += SerializeB(out + l, Function.s);
+		l += Function.Serialize(out + l);
+		break;
+	}
+	return l;
+}
+
+uint8_t KA_ZD::cmdSet(uint8_t * req, uint8_t addr)
+{
+	uint16_t prmID = TSYS::getUnalign16(req);
+	FT3ID ft3ID = UnpackID(TSYS::getUnalign16(req));
+
+	if (ft3ID.g != parentDA.ID) return 0;
+	if (ft3ID.k != ID) return 0;
+	uint8_t l = 0;
+
+	switch (ft3ID.n) {
+	case 0:
+		l = SetNewState(addr, prmID, req + 2);
+		break;
+	case 1:
+		l = SetNewTUParam(addr, prmID, req + 2);
+		break;
+	case 2:
+		l = SetNewTCParam(addr, prmID, req + 2);
+		break;
+	case 3:
+		l = SetNewFunction(addr, prmID, req + 2);
+		break;
+	}
+
+	return l;
+}
+
+uint16_t KA_ZD::setVal(TVal &val)
+{
+	uint16_t rc = 0;
+	int off = 0;
+	FT3ID ft3ID;
+
+/*	ft3ID.k = ID;
+	ft3ID.n = s2i(val.fld().reserve());
+	ft3ID.g = parentDA.ID;
+
+	tagMsg Msg;
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
+	switch (ft3ID.n) {
+	case 0:
+		Msg.L += Value.SerializeAttr(Msg.D + Msg.L);
+		rc = 1;
+		break;
+	case 1:
+		Msg.L += Period.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += Count.SerializeAttr(Msg.D + Msg.L);
+		rc = 1;
+		break;
+	}
+	if (Msg.L > 2) {
+		Msg.L += 3;
+		mPrm.owner().DoCmd(&Msg);
+	}
+
+	return rc;*/
+
+	ft3ID.k = ID;
+	ft3ID.n = s2i(val.fld().reserve());
+	ft3ID.g = parentDA.ID;
+
+	tagMsg Msg;
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
+	switch (ft3ID.n) {
+	case 0:
+		Msg.L += State.SerializeAttr(Msg.D + Msg.L);
+		rc = 1;
+		break;
+	case 1:
+		Msg.L += TUOpen.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeOpen.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TUClose.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeClose.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TUStop.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeStop.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TURemote.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeRemote.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TUManual.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TimeManual.SerializeAttr(Msg.D + Msg.L);
+		if (valve_type == vt_6TU) {
+			Msg.L += TUStopEx.SerializeAttr(Msg.D + Msg.L);
+			Msg.L += TimeStopEx.SerializeAttr(Msg.D + Msg.L);
+		}
+		rc = 1;
+		break;
+	case 2:
+		Msg.L += TCOpen.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TCClose.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TCMode.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TCOpenErr.SerializeAttr(Msg.D + Msg.L);
+		Msg.L += TCCloseErr.SerializeAttr(Msg.D + Msg.L);
+		rc = 1;
+		break;
+	case 3:
+		Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
+		break;
+	}
+	if (Msg.L > 2) {
+		Msg.L += 3;
+		mPrm.owner().DoCmd(&Msg);
+	}
+	return rc;
 }

@@ -38,10 +38,10 @@ KA_BVTC::KA_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
 	loadIO(true);
 }
 
-DA::SLnk &KA_BVTC::lnk(int num)
+/*DA::SLnk &KA_BVTC::lnk(int num)
 {
 	throw TError(mPrm.nodePath().c_str(), _("Link list is empty."));
-}
+}*/
 
 
 
@@ -165,15 +165,14 @@ uint8_t KA_BVTC::cmdGet(uint16_t prmID, uint8_t * out)
 				mPrm.list(lst);
 				for (int i_l = 0; i_l < lst.size(); i_l++) {
 					AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
-					ll = t.at().cmdGet(PackID(ft3ID_TC),out + (i-1) * 2);
+					ll = t.at().cmdGet(PackID(ft3ID_TC), out + (i - 1) * 2);
 					if (ll) break;
 				}
 				if (ll) {
-					out[(i-1) * 2] = i;
-					l+=ll;
-				} else {
+					out[(i - 1) * 2] = i;
+					l += ll;
+				} else
 					break;
-				}
 			}
 			if (l != count_n * 2) l = 0;
 			break;
@@ -205,10 +204,10 @@ KA_TC::KA_TC(TMdPrm& prm, DA &parent, uint16_t id, bool has_params) :
 	Count(TSYS::strMess("Count_%d", id), TSYS::strMess(_("Count TC %d"), id))
 {
 	mTypeFT3 = KA;
-	AddAttr(Value.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("0", ID));
+	AddAttr(Value.lnk, TFld::Integer, TVal::DirWrite, "0");
 	if (with_params) {
-		AddAttr(Period.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("1", ID));
-		AddAttr(Count.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("1", ID));
+		AddAttr(Period.lnk, TFld::Integer, TVal::DirWrite, "1");
+		AddAttr(Count.lnk, TFld::Integer, TVal::DirWrite, "1");
 	}
 
 	loadIO(true);
@@ -233,6 +232,7 @@ string KA_TC::getStatus(void)
 uint16_t KA_TC::GetState()
 {
 	uint16_t rc = BlckStateUnknown;
+
 	return rc;
 }
 
@@ -364,6 +364,7 @@ uint16_t KA_TC::HandleEvent(int64_t tm, uint8_t * D)
 {
 	FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
 
+	if (ft3ID.g != parentDA.ID) return 0;
 	if (ft3ID.k != ID) return 0;
 	uint16_t l = 0;
 	switch (ft3ID.n) {
@@ -386,7 +387,7 @@ uint8_t KA_TC::cmdGet(uint16_t prmID, uint8_t * out)
 {
 	FT3ID ft3ID = UnpackID(prmID);
 
-    if (ft3ID.g != parentDA.ID) return 0;
+	if (ft3ID.g != parentDA.ID) return 0;
 	if (ft3ID.k != ID) return 0;
 	uint8_t l = 0;
 	switch (ft3ID.n) {
@@ -410,7 +411,7 @@ uint8_t KA_TC::cmdSet(uint8_t * req, uint8_t addr)
 	uint16_t prmID = TSYS::getUnalign16(req);
 	FT3ID ft3ID = UnpackID(TSYS::getUnalign16(req));
 
-    if (ft3ID.g != parentDA.ID) return 0;
+	if (ft3ID.g != parentDA.ID) return 0;
 	if (ft3ID.k != ID) return 0;
 	uint8_t l = 0;
 	switch (ft3ID.n) {
