@@ -333,7 +333,7 @@ bool ShapeFormEl::attrSet( WdgView *w, int uiPrmPos, const string &val, const st
 	    }
 	    case F_TEXT_ED: {
 		TextEdit *wdg = (TextEdit*)shD->addrWdg;
-		if(!wdg || !qobject_cast<TextEdit*>(wdg)) {
+		if(!wdg || !qobject_cast<TextEdit*>(wdg) || (runW && wdg->lang != ((VisRun*)runW->window())->lang())) {
 		    if(wdg) wdg->deleteLater();
 		    shD->addrWdg = wdg = new TextEdit(w, !shD->mode);
 		    if(runW) connect(wdg, SIGNAL(apply()), this, SLOT(textAccept()));
@@ -4562,14 +4562,16 @@ void ShapeDocument::ShpDt::nodeProcess( XMLNode *xcur )
     }
 }
 
+#ifndef QT_NO_PRINTER
 void ShapeDocument::ShpDt::print( QPrinter * printer )
 {
-#ifdef HAVE_WEBKIT
+# ifdef HAVE_WEBKIT
     web->print(printer);
-#else
+# else
     web->document()->print(printer);
-#endif
+# endif
 }
+#endif
 
 //************************************************
 //* User function shape widget                   *
