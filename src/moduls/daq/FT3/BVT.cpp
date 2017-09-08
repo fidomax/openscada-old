@@ -1,6 +1,6 @@
 //OpenSCADA system module DAQ.FT3 file: BVT.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
+ *   Copyright (C) 2011-2017 by Maxim Kochetkov                            *
  *   fido_max@inbox.ru                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -27,129 +27,26 @@
 
 using namespace FT3;
 
-bool KA_BVT::SKATTchannel::IsParamChanged()
-{
-    bool vl_change = false;
-    vl_change |= Period.CheckUpdate();
-    vl_change |= Sens.CheckUpdate();
-    vl_change |= MinS.CheckUpdate();
-    vl_change |= MaxS.CheckUpdate();
-    vl_change |= MinPV.CheckUpdate();
-    vl_change |= MaxPV.CheckUpdate();
-    vl_change |= MinA.CheckUpdate();
-    vl_change |= MaxA.CheckUpdate();
-    vl_change |= MinW.CheckUpdate();
-    vl_change |= MaxW.CheckUpdate();
-    vl_change |= Factor.CheckUpdate();
-    vl_change |= Adjust.CheckUpdate();
-    return vl_change;
-}
-
-void KA_BVT::SKATTchannel::UpdateTTParam(uint16_t ID, uint8_t cl)
-{
-    if(IsParamChanged()) {
-	Period.s = 0;
-	uint8_t E[46];
-	uint8_t l = 0;
-	l += SerializeB(E + l, Period.s);
-	l += Period.Serialize(E + l);
-	l += Sens.Serialize(E + l);
-	l += MinS.Serialize(E + l);
-	l += MaxS.Serialize(E + l);
-	l += MinPV.Serialize(E + l);
-	l += MaxPV.Serialize(E + l);
-	l += MinA.Serialize(E + l);
-	l += MaxA.Serialize(E + l);
-	l += MinW.Serialize(E + l);
-	l += MaxW.Serialize(E + l);
-	l += Factor.Serialize(E + l);
-	l += Adjust.Serialize(E + l);
-	da->PushInBE(cl, sizeof(E), ID, E);
-    }
-}
-
-bool KA_BVT::SKATTchannel::IsNewParamOK(const struct KATTParams *params)
-{
-    if((State.vl == 4) && (params->MaxS > params->MinS) && (params->MaxPV > params->MinPV) && (params->MaxA > params->MinA) && (params->MaxW > params->MinW)
-	    && (params->Factor >= 0) && (0.02 > params->Adjust)) {
-	return true;
-    } else {
-	return false;
-    }
-}
-
-uint8_t KA_BVT::SKATTchannel::SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_t *val)
-{
-    const struct KATTParams *params = (const struct KATTParams *) val;
-    if(IsNewParamOK(params)) {
-	if(Period.lnk.Connected() && Sens.lnk.Connected() && MinS.lnk.Connected() && MaxS.lnk.Connected() && MinPV.lnk.Connected() && MaxPV.lnk.Connected()
-		&& MinA.lnk.Connected() && MaxA.lnk.Connected() && MinW.lnk.Connected() && MaxW.lnk.Connected() && Factor.lnk.Connected()
-		&& Adjust.lnk.Connected()) {
-	    Period.s = addr;
-	    Period.Set(params->Period);
-	    Sens.Set(params->Sens);
-	    MinS.Set(params->MinS);
-	    MaxS.Set(params->MaxS);
-	    MinPV.Set(params->MinPV);
-	    MaxPV.Set(params->MaxPV);
-	    MinA.Set(params->MinA);
-	    MaxA.Set(params->MaxA);
-	    MinW.Set(params->MinW);
-	    MaxW.Set(params->MaxW);
-	    Factor.Set(params->Factor);
-	    Adjust.Set(params->Adjust);
-	    uint8_t E[46];
-	    E[0] = addr;
-	    memcpy(E + 1, val, 45);
-	    da->PushInBE(1, sizeof(E), prmID, E);
-	    return 2 + 45;
-	} else {
-	    return 0;
-	}
-    } else {
-	return 0;
-    }
-}
-
 KA_BVT::KA_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), ID(id), count_n(n), with_params(has_params), config(5 | (n << 4) | (4 << 10))
+	DA(prm, id), count_n(n), with_params(has_params), config(5 | (n << 4) | (4 << 10))
 {
     mTypeFT3 = KA;
-    chan_err.clear();
+    //chan_err.clear();
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
-    for(int i = 0; i < count_n; i++) {
-	AddChannel(i);
-    }
     loadIO(true);
+    mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", ID);
 }
+
+/*DA::SLnk &KA_BVT::lnk(int num)
+{
+    throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+}*/
 
 KA_BVT::~KA_BVT()
 {
-
-}
-
-void KA_BVT::AddChannel(uint8_t iid)
-{
-    chan_err.insert(chan_err.end(), SDataRec());
-    data.push_back(SKATTchannel(iid, this));
-    AddAttr(data.back().State.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-    AddAttr(data.back().Value.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
-    if(with_params) {
-	AddAttr(data.back().Period.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().Sens.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().MinS.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().MaxS.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().MinPV.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().MaxPV.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().MinW.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().MaxW.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().MinA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().MaxA.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().Factor.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-	AddAttr(data.back().Adjust.lnk, TFld::Real, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-    }
+//    data.clear();
 }
 
 string KA_BVT::getStatus(void)
@@ -157,16 +54,6 @@ string KA_BVT::getStatus(void)
     string rez;
     if(NeedInit) {
 	rez = "20: Опрос каналов:";
-	for(int i = 1; i <= count_n; i++) {
-	    switch(chan_err[i].state) {
-	    case 0:
-		rez += TSYS::strMess(" %d.", i);
-		break;
-	    case 2:
-		rez += TSYS::strMess(" %d!!!", i);
-		break;
-	    }
-	}
     } else {
 	rez = "0: Норма";
     }
@@ -193,236 +80,25 @@ uint16_t KA_BVT::GetState()
     return rc;
 }
 
-uint16_t KA_BVT::PreInit(void)
-{
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = SetData;
-    uint16_t rc;
-    for(int i = 0; i < count_n; i++) {
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
-	Msg.L += SerializeB(Msg.D + Msg.L, TT_OFF);
-	if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	    Msg.L = 0;
-	    Msg.C = SetData;
-	    if(rc == ERROR) break;
-	}
-    }
-    if(Msg.L) {
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-    }
-    return rc;
-}
-
-uint16_t KA_BVT::SetParams(void)
-{
-    uint16_t rc;
-    tagMsg Msg;
-    loadParam();
-    for(int i = 0; i < count_n; i++) {
-	if(data[i].State.lnk.vlattr.at().getI(0, true) != TT_OFF) {
-	    Msg.L = 0;
-	    Msg.C = SetData;
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 2));
-	    Msg.L += data[i].Period.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Sens.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].MinS.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].MaxS.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].MinPV.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].MaxPV.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].MinW.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].MaxW.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].MinA.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].MaxA.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Factor.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += data[i].Adjust.SerializeAttr(Msg.D + Msg.L);
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	    if((rc == BAD2) || (rc == BAD3)) {
-		mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
-	    } else {
-		if(rc == ERROR) {
-		    mPrm.mess_sys(TMess::Error, "No answer to set channel %d", i + 1);
-		    break;
-		}
-	    }
-
-	}
-    }
-    return rc;
-
-}
-
-uint16_t KA_BVT::RefreshParams(void)
-{
-    uint16_t rc;
-    tagMsg Msg;
-    for(int i = 1; i <= count_n; i++) {
-	Msg.L = 0;
-	Msg.C = AddrReq;
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 2));
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-	if((rc == BAD2) || (rc == BAD3)) {
-	    mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", i);
-	} else {
-	    if(rc == ERROR) {
-		mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", i);
-		break;
-	    }
-	}
-
-    }
-    return rc;
-}
-
-uint16_t KA_BVT::PostInit(void)
-{
-    tagMsg Msg;
-    Msg.L = 0;
-    Msg.C = SetData;
-    uint16_t rc;
-    for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].State.lnk);
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, 1));
-	Msg.L += data[i].State.SerializeAttr(Msg.D + Msg.L);
-	if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	    Msg.L = 0;
-	    Msg.C = SetData;
-	    if(rc == ERROR) break;
-	}
-    }
-    if(Msg.L) {
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-    }
-    return rc;
-}
-
 uint16_t KA_BVT::RefreshData(void)
 {
     tagMsg Msg;
     Msg.L = 0;
     Msg.C = AddrReq;
-    uint16_t rc;
-    for(int i = 1; i <= count_n; i++) {
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
-	if(Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	    Msg.L = 0;
-	    Msg.C = AddrReq;
-	    if(rc == ERROR) break;
-	}
-    }
-    if(Msg.L) {
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-    }
-    return rc;
-}
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, 0, 0));
+    return mPrm.owner().DoCmd(&Msg);
 
-void KA_BVT::loadIO(bool force)
-{
-    if(mPrm.owner().startStat() && !force) {
-	mPrm.modif(true);
-	return;
-    }	//Load/reload IO context only allow for stopped controllers for prevent throws
-    for(int i = 0; i < count_n; i++) {
-	loadLnk(data[i].State.lnk);
-	loadLnk(data[i].Value.lnk);
-	loadLnk(data[i].Period.lnk);
-	loadLnk(data[i].Sens.lnk);
-	loadLnk(data[i].MinS.lnk);
-	loadLnk(data[i].MaxS.lnk);
-	loadLnk(data[i].MinPV.lnk);
-	loadLnk(data[i].MaxPV.lnk);
-	loadLnk(data[i].MinW.lnk);
-	loadLnk(data[i].MaxW.lnk);
-	loadLnk(data[i].MinA.lnk);
-	loadLnk(data[i].MaxA.lnk);
-	loadLnk(data[i].Factor.lnk);
-	loadLnk(data[i].Adjust.lnk);
-    }
-}
-
-void KA_BVT::saveIO(void)
-{
-    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "save io");
-    for(int i = 0; i < count_n; i++) {
-	saveLnk(data[i].State.lnk);
-	saveLnk(data[i].Value.lnk);
-	saveLnk(data[i].Period.lnk);
-	saveLnk(data[i].Sens.lnk);
-	saveLnk(data[i].MinS.lnk);
-	saveLnk(data[i].MaxS.lnk);
-	saveLnk(data[i].MinPV.lnk);
-	saveLnk(data[i].MaxPV.lnk);
-	saveLnk(data[i].MinW.lnk);
-	saveLnk(data[i].MaxW.lnk);
-	saveLnk(data[i].MinA.lnk);
-	saveLnk(data[i].MaxA.lnk);
-	saveLnk(data[i].Factor.lnk);
-	saveLnk(data[i].Adjust.lnk);
-    }
-}
-
-void KA_BVT::saveParam(void)
-{
-    for(int i = 0; i < count_n; i++) {
-	saveVal(data[i].State.lnk);
-	saveVal(data[i].Period.lnk);
-	saveVal(data[i].Sens.lnk);
-	saveVal(data[i].MinS.lnk);
-	saveVal(data[i].MaxS.lnk);
-	saveVal(data[i].MinPV.lnk);
-	saveVal(data[i].MaxPV.lnk);
-	saveVal(data[i].MinW.lnk);
-	saveVal(data[i].MaxW.lnk);
-	saveVal(data[i].MinA.lnk);
-	saveVal(data[i].MaxA.lnk);
-	saveVal(data[i].Factor.lnk);
-	saveVal(data[i].Adjust.lnk);
-    }
-}
-
-void KA_BVT::loadParam(void)
-{
-    for(int i = 0; i < count_n; i++) {
-	loadVal(data[i].Period.lnk);
-	loadVal(data[i].Sens.lnk);
-	loadVal(data[i].MinS.lnk);
-	loadVal(data[i].MaxS.lnk);
-	loadVal(data[i].MinPV.lnk);
-	loadVal(data[i].MaxPV.lnk);
-	loadVal(data[i].MinW.lnk);
-	loadVal(data[i].MaxW.lnk);
-	loadVal(data[i].MinA.lnk);
-	loadVal(data[i].MaxA.lnk);
-	loadVal(data[i].Factor.lnk);
-	loadVal(data[i].Adjust.lnk);
-    }
 }
 
 void KA_BVT::tmHandler(void)
 {
-    for(int i = 0; i < count_n; i++) {
-	if(with_params) {
-	    data[i].UpdateTTParam(PackID(ID, (i + 1), 2), 1);
-	}
-	UpdateParamFlState(data[i].Value, data[i].State, data[i].Sens, PackID(ID, (i + 1), 0), 2);
-    }
     NeedInit = false;
 }
 
 uint16_t KA_BVT::HandleEvent(int64_t tm, uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+    uint8_t tD[4];
     if(ft3ID.g != ID) return 0;
     uint16_t l = 0;
     switch(ft3ID.k) {
@@ -437,45 +113,20 @@ uint16_t KA_BVT::HandleEvent(int64_t tm, uint8_t * D)
 	    break;
 	case 2:
 	    l = 2 + count_n * 5;
-	    for(int j = 0; j < count_n; j++) {
-		data[j].State.Update(D[j * 5 + 2], tm);
-		data[j].Value.Update(TSYS::getUnalignFloat(D + j * 5 + 3), tm);
+	    for (int j = 1; j <= count_n; j++) {
+		SerializeUi16(tD, PackID(ft3ID.g, j, 0));
+		tD[2] = 0;
+		tD[3] = D[j * 2 + 1];
+		vector<string> lst;
+		mPrm.list(lst);
+		for (int i_l = 0; i_l < lst.size(); i_l++) {
+			AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
+			if (t.at().HandleEvent(tm, tD)) break;
+		}
 	    }
 	    break;
 	}
 	break;
-    default:
-	if(ft3ID.k && (ft3ID.k <= count_n)) {
-	    switch(ft3ID.n) {
-	    case 0:
-		data[ft3ID.k - 1].State.Update(D[2], tm);
-		data[ft3ID.k - 1].Value.Update(TSYS::getUnalignFloat(D + 3), tm);
-		l = 7;
-		break;
-	    case 1:
-		data[ft3ID.k - 1].State.Update(D[3], tm);
-		l = 4;
-		break;
-	    case 2:
-		if(with_params) {
-		    data[ft3ID.k - 1].Period.Update(D[3], tm);
-		    data[ft3ID.k - 1].Sens.Update(TSYS::getUnalignFloat(D + 4), tm);
-		    data[ft3ID.k - 1].MinS.Update(TSYS::getUnalignFloat(D + 8), tm);
-		    data[ft3ID.k - 1].MaxS.Update(TSYS::getUnalignFloat(D + 12), tm);
-		    data[ft3ID.k - 1].MinPV.Update(TSYS::getUnalignFloat(D + 16), tm);
-		    data[ft3ID.k - 1].MaxPV.Update(TSYS::getUnalignFloat(D + 20), tm);
-		    data[ft3ID.k - 1].MinA.Update(TSYS::getUnalignFloat(D + 24), tm);
-		    data[ft3ID.k - 1].MaxA.Update(TSYS::getUnalignFloat(D + 28), tm);
-		    data[ft3ID.k - 1].MinW.Update(TSYS::getUnalignFloat(D + 32), tm);
-		    data[ft3ID.k - 1].MaxW.Update(TSYS::getUnalignFloat(D + 36), tm);
-		    data[ft3ID.k - 1].Factor.Update(TSYS::getUnalignFloat(D + 40), tm);
-		    data[ft3ID.k - 1].Adjust.Update(TSYS::getUnalignFloat(D + 44), tm);
-		}
-		l = 48;
-		break;
-
-	    }
-	}
     }
 
     return l;
@@ -484,9 +135,11 @@ uint16_t KA_BVT::HandleEvent(int64_t tm, uint8_t * D)
 uint8_t KA_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 {
     FT3ID ft3ID = UnpackID(prmID);
-//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "ID %d ft3ID g%d k%d n%d ", ID, ft3ID.g, ft3ID.k, ft3ID.n);
+    FT3ID ft3ID_TT = UnpackID(prmID);
+
     if(ft3ID.g != ID) return 0;
-    uint l = 0;
+    uint8_t l = 0;
+    uint8_t ll = 0;
     if(ft3ID.k == 0) {
 	switch(ft3ID.n) {
 	case 0:
@@ -500,40 +153,26 @@ uint8_t KA_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 	    l = 2;
 	    break;
 	case 2:
-
-	    for(uint8_t i = 0; i < count_n; i++) {
-		l += data[i].State.Serialize(out + l);
-		l += data[i].Value.Serialize(out + l);
+	    for (uint8_t i = 1; i <= count_n; i++) {
+	    	ll = 0;
+	    	ft3ID_TT.k = i;
+	    	ft3ID_TT.n = 0;
+	    	vector<string> lst;
+	    	mPrm.list(lst);
+	    	for (int i_l = 0; i_l < lst.size(); i_l++) {
+	    		AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
+	    		ll = t.at().cmdGet(PackID(ft3ID_TT),out + (i-1) * 2);
+	    		if (ll) break;
+	    	}
+	    	if (ll) {
+	    		out[(i-1) * 2] = i;
+	    		l+=ll;
+	    	} else {
+	    		break;
+	    	}
 	    }
+	    if (l != count_n * 2) l = 0;
 	    break;
-	}
-    } else {
-	if(ft3ID.k <= count_n) {
-	    switch(ft3ID.n) {
-	    case 0:
-		l += data[ft3ID.k - 1].State.Serialize(out + l);
-		l += data[ft3ID.k - 1].Value.Serialize(out + l);
-		break;
-	    case 1:
-		l += SerializeB(out + l, data[ft3ID.k - 1].State.s);
-		l += data[ft3ID.k - 1].State.Serialize(out + l);
-		break;
-	    case 2:
-		l += SerializeB(out + l, data[ft3ID.k - 1].Period.s);
-		l += data[ft3ID.k - 1].Period.Serialize(out + l);
-		l += data[ft3ID.k - 1].Sens.Serialize(out + l);
-		l += data[ft3ID.k - 1].MinS.Serialize(out + l);
-		l += data[ft3ID.k - 1].MaxS.Serialize(out + l);
-		l += data[ft3ID.k - 1].MinPV.Serialize(out + l);
-		l += data[ft3ID.k - 1].MaxPV.Serialize(out + l);
-		l += data[ft3ID.k - 1].MinA.Serialize(out + l);
-		l += data[ft3ID.k - 1].MaxA.Serialize(out + l);
-		l += data[ft3ID.k - 1].MinW.Serialize(out + l);
-		l += data[ft3ID.k - 1].MaxW.Serialize(out + l);
-		l += data[ft3ID.k - 1].Factor.Serialize(out + l);
-		l += data[ft3ID.k - 1].Adjust.Serialize(out + l);
-	    }
-
 	}
     }
     return l;
@@ -541,42 +180,448 @@ uint8_t KA_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 
 uint8_t KA_BVT::cmdSet(uint8_t * req, uint8_t addr)
 {
-    uint16_t prmID = TSYS::getUnalign16(req);
-    FT3ID ft3ID = UnpackID(prmID);
-    if(ft3ID.g != ID) return 0;
-    uint l = 0;
-    if(ft3ID.k <= count_n) {
-	switch(ft3ID.n) {
-	case 0:
-	    if((data[ft3ID.k - 1].State.vl == 4)) {
-		l = SetNewflVal(data[ft3ID.k - 1].Value, data[ft3ID.k - 1].State.vl, prmID, TSYS::getUnalignFloat(req + 2));
-	    }
-	    break;
-	case 1:
-	    l = SetNew8Val(data[ft3ID.k - 1].State, addr, prmID, req[2]);
-	    break;
-	case 2:
-	    l = data[ft3ID.k - 1].SetNewTTParam(addr, prmID, req + 2);
-	    break;
-	}
-    }
-    return l;
+    return 0;
 }
 
 uint16_t KA_BVT::setVal(TVal &val)
 {
     uint16_t rc = 0;
+    return rc;
+}
+
+//---------------------------------------------------------------------------
+//******************************************************
+//* KA_TT                                              *
+//******************************************************
+
+KA_TT::KA_TT(TMdPrm& prm, DA &parent, uint16_t id, bool has_params) :
+	DA(prm, id), parentDA(parent), with_params(has_params), config(0),
+	State("state", _("State")),
+	Value("value", _("Value")),
+	Period("period", _("Measure period")),
+	Sens("sens", _("Sensitivity")),
+	MinS("minS", _("Sensor minimum")),
+	MaxS("maxS", _("Sensor maximum")),
+	MinPV("minPV", _("PV minimum")),
+	MaxPV("maxPV", _("PV maximum")),
+	MinW("minW", _("Warning minimum")),
+	MaxW("maxW", _("Warning maximum")),
+	MinA("minA", _("Alarm minimum")),
+	MaxA("maxA", _("Alarm maximum")),
+	Factor("factor", _("Range factor")),
+	Adjust("adjust", _("Adjustment"))
+{
+    mTypeFT3 = KA;
+    AddAttr(State.lnk, TFld::Integer, TVal::DirWrite, "0");
+    AddAttr(Value.lnk, TFld::Real, TVal::DirWrite, "1");
+    if(with_params) {
+	AddAttr(Period.lnk, TFld::Integer, TVal::DirWrite, "2");
+	AddAttr(Sens.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(MinS.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(MaxS.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(MinPV.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(MaxPV.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(MinW.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(MaxW.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(MinA.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(MaxA.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(Factor.lnk, TFld::Real, TVal::DirWrite, "2");
+	AddAttr(Adjust.lnk, TFld::Real, TVal::DirWrite, "2");
+    }
+
+    loadIO(true);
+}
+
+KA_TT::~KA_TT()
+{
+    //data.clear();
+}
+
+bool KA_TT::IsParamChanged()
+{
+    bool vl_change = false;
+    vl_change |= Period.CheckUpdate();
+    vl_change |= Sens.CheckUpdate();
+    vl_change |= MinS.CheckUpdate();
+    vl_change |= MaxS.CheckUpdate();
+    vl_change |= MinPV.CheckUpdate();
+    vl_change |= MaxPV.CheckUpdate();
+    vl_change |= MinA.CheckUpdate();
+    vl_change |= MaxA.CheckUpdate();
+    vl_change |= MinW.CheckUpdate();
+    vl_change |= MaxW.CheckUpdate();
+    vl_change |= Factor.CheckUpdate();
+    vl_change |= Adjust.CheckUpdate();
+    return vl_change;
+}
+
+void KA_TT::UpdateTTParam(uint16_t ID, uint8_t cl)
+{
+    if(IsParamChanged()) {
+	Period.s = 0;
+	uint8_t E[46];
+	uint8_t l = 0;
+	l += SerializeB(E + l, Period.s);
+	l += Period.Serialize(E + l);
+	l += Sens.Serialize(E + l);
+	l += MinS.Serialize(E + l);
+	l += MaxS.Serialize(E + l);
+	l += MinPV.Serialize(E + l);
+	l += MaxPV.Serialize(E + l);
+	l += MinA.Serialize(E + l);
+	l += MaxA.Serialize(E + l);
+	l += MinW.Serialize(E + l);
+	l += MaxW.Serialize(E + l);
+	l += Factor.Serialize(E + l);
+	l += Adjust.Serialize(E + l);
+	PushInBE(cl, sizeof(E), ID, E);
+    }
+}
+
+bool KA_TT::IsNewParamOK(const struct KATTParams *params)
+{
+    if((State.vl == 4) && (params->MaxS > params->MinS) && (params->MaxPV > params->MinPV) && (params->MaxA > params->MinA) && (params->MaxW > params->MinW)
+	    && (params->Factor >= 0) && (0.02 > params->Adjust)) {
+	return true;
+    } else {
+	return false;
+    }
+}
+
+uint8_t KA_TT::SetNewTTParam(uint8_t addr, uint16_t prmID, uint8_t *val)
+{
+    const struct KATTParams *params = (const struct KATTParams *) val;
+    if(IsNewParamOK(params)) {
+	if(Period.lnk.Connected() && Sens.lnk.Connected() && MinS.lnk.Connected() && MaxS.lnk.Connected() && MinPV.lnk.Connected() && MaxPV.lnk.Connected()
+		&& MinA.lnk.Connected() && MaxA.lnk.Connected() && MinW.lnk.Connected() && MaxW.lnk.Connected() && Factor.lnk.Connected()
+		&& Adjust.lnk.Connected()) {
+	    Period.s = addr;
+	    Period.Set(params->Period);
+	    Sens.Set(params->Sens);
+	    MinS.Set(params->MinS);
+	    MaxS.Set(params->MaxS);
+	    MinPV.Set(params->MinPV);
+	    MaxPV.Set(params->MaxPV);
+	    MinA.Set(params->MinA);
+	    MaxA.Set(params->MaxA);
+	    MinW.Set(params->MinW);
+	    MaxW.Set(params->MaxW);
+	    Factor.Set(params->Factor);
+	    Adjust.Set(params->Adjust);
+	    uint8_t E[46];
+	    E[0] = addr;
+	    memcpy(E + 1, val, 45);
+	    PushInBE(1, sizeof(E), prmID, E);
+	    return 2 + 45;
+	} else {
+	    return 0;
+	}
+    } else {
+	return 0;
+    }
+}
+
+
+
+string KA_TT::getStatus(void)
+{
+    string rez;
+    if(NeedInit) {
+	rez = "20: Опрос";
+    } else {
+	rez = "0: Норма";
+    }
+    return rez;
+}
+
+uint16_t KA_TT::GetState()
+{
+    uint16_t rc = BlckStateUnknown;
+    return rc;
+}
+
+
+
+uint16_t KA_TT::PreInit(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+    Msg.L += SerializeB(Msg.D + Msg.L, TT_OFF);
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+uint16_t KA_TT::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    loadParam();
+    if(State.lnk.vlattr.at().getI(0, true) != TT_OFF) {
+	Msg.L = 0;
+	Msg.C = SetData;
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 2));
+	Msg.L += Period.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Sens.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MinS.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MaxS.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MinPV.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MaxPV.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MinW.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MaxW.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MinA.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MaxA.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Factor.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Adjust.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+	if((rc == BAD2) || (rc == BAD3)) {
+		mPrm.mess_sys(TMess::Error, "Can't set channel %d", ID);
+	} else {
+		if(rc == ERROR) {
+		    mPrm.mess_sys(TMess::Error, "No answer to set channel %d", ID);
+		}
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_TT::RefreshParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 2));
+    Msg.L += 3;
+    rc = mPrm.owner().DoCmd(&Msg);
+    if((rc == BAD2) || (rc == BAD3)) {
+	throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+    } else {
+	if(rc == ERROR) {
+	    mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", ID);
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_TT::PostInit(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    loadVal(State.lnk);
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+    Msg.L += State.SerializeAttr(Msg.D + Msg.L);
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+uint16_t KA_TT::RefreshData(void)
+{
+    tagMsg Msg;
+    Msg.L = 0;
+    Msg.C = SetData;
+    loadVal(State.lnk);
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+void KA_TT::loadIO(bool force)
+{
+    if(mPrm.owner().startStat() && !force) {
+	mPrm.modif(true);
+	return;
+    }	//Load/reload IO context only allow for stopped controllers for prevent throws
+    loadLnk(State.lnk);
+    loadLnk(Value.lnk);
+    loadLnk(Period.lnk);
+    loadLnk(Sens.lnk);
+    loadLnk(MinS.lnk);
+    loadLnk(MaxS.lnk);
+    loadLnk(MinPV.lnk);
+    loadLnk(MaxPV.lnk);
+    loadLnk(MinW.lnk);
+    loadLnk(MaxW.lnk);
+    loadLnk(MinA.lnk);
+    loadLnk(MaxA.lnk);
+    loadLnk(Factor.lnk);
+    loadLnk(Adjust.lnk);
+}
+
+void KA_TT::saveIO(void)
+{
+    saveLnk(State.lnk);
+    saveLnk(Value.lnk);
+    saveLnk(Period.lnk);
+    saveLnk(Sens.lnk);
+    saveLnk(MinS.lnk);
+    saveLnk(MaxS.lnk);
+    saveLnk(MinPV.lnk);
+    saveLnk(MaxPV.lnk);
+    saveLnk(MinW.lnk);
+    saveLnk(MaxW.lnk);
+    saveLnk(MinA.lnk);
+    saveLnk(MaxA.lnk);
+    saveLnk(Factor.lnk);
+    saveLnk(Adjust.lnk);
+}
+
+void KA_TT::saveParam(void)
+{
+    saveVal(State.lnk);
+    if(with_params){
+	saveVal(Period.lnk);
+	saveVal(Sens.lnk);
+	saveVal(MinS.lnk);
+	saveVal(MaxS.lnk);
+	saveVal(MinPV.lnk);
+	saveVal(MaxPV.lnk);
+	saveVal(MinW.lnk);
+	saveVal(MaxW.lnk);
+	saveVal(MinA.lnk);
+	saveVal(MaxA.lnk);
+	saveVal(Factor.lnk);
+	saveVal(Adjust.lnk);
+    }
+}
+
+void KA_TT::loadParam(void)
+{
+    if(with_params){
+	loadVal(Period.lnk);
+	loadVal(Sens.lnk);
+	loadVal(MinS.lnk);
+	loadVal(MaxS.lnk);
+	loadVal(MinPV.lnk);
+	loadVal(MaxPV.lnk);
+	loadVal(MinW.lnk);
+	loadVal(MaxW.lnk);
+	loadVal(MinA.lnk);
+	loadVal(MaxA.lnk);
+	loadVal(Factor.lnk);
+	loadVal(Adjust.lnk);
+    }
+}
+
+void KA_TT::tmHandler(void)
+{
+    if(with_params) {
+	    UpdateTTParam(PackID(parentDA.ID, ID, 2), 1);
+    }
+    UpdateParamFlState(Value, State, Sens, PackID(parentDA.ID, ID, 0), 2);
+    NeedInit = false;
+}
+
+uint16_t KA_TT::HandleEvent(int64_t tm, uint8_t * D)
+{
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+    if(ft3ID.g != parentDA.ID) return 0;
+    if(ft3ID.k != ID) return 0;
+    uint16_t l = 0;
+    switch(ft3ID.n) {
+    case 0:
+	State.Update(D[2], tm);
+	Value.Update(TSYS::getUnalignFloat(D + 3), tm);
+	l = 7;
+	break;
+    case 1:
+	State.Update(D[3], tm);
+	l = 4;
+	break;
+    case 2:
+	if(with_params) {
+	    Period.Update(D[3], tm);
+	    Sens.Update(TSYS::getUnalignFloat(D + 4), tm);
+	    MinS.Update(TSYS::getUnalignFloat(D + 8), tm);
+	    MaxS.Update(TSYS::getUnalignFloat(D + 12), tm);
+	    MinPV.Update(TSYS::getUnalignFloat(D + 16), tm);
+	    MaxPV.Update(TSYS::getUnalignFloat(D + 20), tm);
+	    MinA.Update(TSYS::getUnalignFloat(D + 24), tm);
+	    MaxA.Update(TSYS::getUnalignFloat(D + 28), tm);
+	    MinW.Update(TSYS::getUnalignFloat(D + 32), tm);
+	    MaxW.Update(TSYS::getUnalignFloat(D + 36), tm);
+	    Factor.Update(TSYS::getUnalignFloat(D + 40), tm);
+	    Adjust.Update(TSYS::getUnalignFloat(D + 44), tm);
+	}
+	l = 48;
+	break;
+    }
+    return l;
+}
+
+uint8_t KA_TT::cmdGet(uint16_t prmID, uint8_t * out)
+{
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != parentDA.ID) return 0;
+    if(ft3ID.k != ID) return 0;
+    uint8_t l = 0;
+    switch(ft3ID.n) {
+    case 0:
+	l += State.Serialize(out + l);
+	l += Value.Serialize(out + l);
+	break;
+    case 1:
+	l += SerializeB(out + l, State.s);
+	l += State.Serialize(out + l);
+	break;
+    case 2:
+	l += SerializeB(out + l, Period.s);
+	l += Period.Serialize(out + l);
+	l += Sens.Serialize(out + l);
+	l += MinS.Serialize(out + l);
+	l += MaxS.Serialize(out + l);
+	l += MinPV.Serialize(out + l);
+	l += MaxPV.Serialize(out + l);
+	l += MinA.Serialize(out + l);
+	l += MaxA.Serialize(out + l);
+	l += MinW.Serialize(out + l);
+	l += MaxW.Serialize(out + l);
+	l += Factor.Serialize(out + l);
+	l += Adjust.Serialize(out + l);
+    }
+    return l;
+}
+
+uint8_t KA_TT::cmdSet(uint8_t * req, uint8_t addr)
+{
+    uint16_t prmID = TSYS::getUnalign16(req);
+    FT3ID ft3ID = UnpackID(prmID);
+    if(ft3ID.g != parentDA.ID) return 0;
+    if(ft3ID.k != ID) return 0;
+    uint8_t l = 0;
+    switch(ft3ID.n) {
+    case 0:
+        if(State.vl == 4) {
+    	    l = SetNewflVal(Value, State.vl, prmID, TSYS::getUnalignFloat(req + 2));
+        }
+        break;
+    case 1:
+        l = SetNew8Val(State, addr, prmID, req[2]);
+        break;
+    case 2:
+        l = SetNewTTParam(addr, prmID, req + 2);
+        break;
+    }
+    return l;
+}
+
+uint16_t KA_TT::setVal(TVal &val)
+{
+    uint16_t rc = 0;
     int off = 0;
     FT3ID ft3ID;
-    ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
+    ft3ID.k = ID;
     ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
-    ft3ID.g = ID;
+    ft3ID.g = parentDA.ID;
 
     off = 0;
     FT3ID stateft3ID;
-    stateft3ID.k = s2i(TSYS::strParse(mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k)).at().fld().reserve(), 0, ":", &off));
-    stateft3ID.n = s2i(TSYS::strParse(mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k)).at().fld().reserve(), 0, ":", &off));
-    stateft3ID.g = ID;
+    stateft3ID.k = s2i(TSYS::strParse(mPrm.vlAt("state").at().fld().reserve(), 0, ":", &off));
+    stateft3ID.n = s2i(TSYS::strParse(mPrm.vlAt("state").at().fld().reserve(), 0, ":", &off));
+    stateft3ID.g = parentDA.ID;
 
     tagMsg Msg;
     Msg.L = 0;
@@ -586,28 +631,28 @@ uint16_t KA_BVT::setVal(TVal &val)
     case 0:
 	Msg.L = 0;
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(stateft3ID));
-	Msg.L += SerializeB(Msg.D + Msg.L, 4);
+	Msg.L += SerializeB(Msg.D + Msg.L, TT_OFF);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
-	Msg.L += data[ft3ID.k - 1].Value.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Value.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(stateft3ID));
-	Msg.L += data[ft3ID.k - 1].State.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += State.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 1:
-	Msg.L += data[ft3ID.k - 1].State.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += State.SerializeAttr(Msg.D + Msg.L);
 	break;
     case 2:
-	Msg.L += data[ft3ID.k - 1].Period.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].Sens.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MinS.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxS.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MinPV.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxPV.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MinA.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxA.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MinW.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].MaxW.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].Factor.SerializeAttr(Msg.D + Msg.L);
-	Msg.L += data[ft3ID.k - 1].Adjust.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Period.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Sens.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MinS.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MaxS.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MinPV.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MaxPV.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MinA.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MaxA.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MinW.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += MaxW.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Factor.SerializeAttr(Msg.D + Msg.L);
+	Msg.L += Adjust.SerializeAttr(Msg.D + Msg.L);
 	rc = 1;
 	break;
     }

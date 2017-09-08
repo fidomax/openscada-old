@@ -29,33 +29,27 @@ msgstr "Состояние %d"
 msgid "Value %d"
 msgstr "Значение %d"
 
-#, c-format
-msgid "Measure period %d"
-msgstr "Период измерений %d"
+msgid "Measure period"
+msgstr "Период измерений"
 
-#, c-format
-msgid "Sensitivity %d"
-msgstr "Чувствительность %d"
+msgid "Sensitivity"
+msgstr "Чувствительность"
 
 #, c-format
 msgid "Alarms %d"
 msgstr "Тревоги %d"
 
-#, c-format
-msgid "Warning minimum %d"
-msgstr "Мин. предупред. %d"
+msgid "Warning minimum"
+msgstr "Мин. предупред."
 
-#, c-format
-msgid "Warning maximum %d"
-msgstr "Макс. предупред. %d"
+msgid "Warning maximum"
+msgstr "Макс. предупред."
 
-#, c-format
-msgid "Alarm minimum %d"
-msgstr "Мин. аварии ФВ %d"
+msgid "Alarm minimum"
+msgstr "Мин. аварии ФВ"
 
-#, c-format
-msgid "Alarm maximum %d"
-msgstr "Макс. аварии ФВ %d"
+msgid "Alarm maximum"
+msgstr "Макс. аварии ФВ"
 
 #, c-format
 msgid "Ki %d"
@@ -710,13 +704,11 @@ msgstr "E %d"
 msgid "Dimension %d"
 msgstr "Размерность %d"
 
-#, c-format
-msgid "Sensor minimum %d"
-msgstr "Мин. датчика %d"
+msgid "Sensor minimum"
+msgstr "Мин. датчика"
 
-#, c-format
-msgid "Sensor maximum %d"
-msgstr "Макс. датчика %d"
+msgid "Sensor maximum"
+msgstr "Макс. датчика"
 
 #, c-format
 msgid "Frequency minimum %d"
@@ -726,9 +718,8 @@ msgstr "Мин. частоты %d"
 msgid "Frequency maximum %d"
 msgstr "Макс. частоты %d"
 
-#, c-format
 msgid "Range factor %d"
-msgstr "Коэффициент расширения диапазона %d"
+msgstr "Коэффициент расширения диапазона"
 
 #, c-format
 msgid "Line %d"
@@ -758,9 +749,8 @@ msgstr "Сброс %d"
 msgid "Time %d"
 msgstr "Время %d"
 
-#, c-format
-msgid "TC %d"
-msgstr "ТС %d"
+msgid "TC"
+msgstr "ТС"
 
 #, c-format
 msgid "ExTime %d"
@@ -770,29 +760,24 @@ msgstr "Доп. время %d"
 msgid "Count %d"
 msgstr "Счетчик %d"
 
-#, c-format
-msgid "Period TC %d"
-msgstr "Период TC %d"
+msgid "Period TC"
+msgstr "Период TC"
 
-#, c-format
-msgid "Count TC %d"
-msgstr "Количество срабатываний %d"
+msgid "Count TC"
+msgstr "Количество срабатываний"
 
 #, c-format
 msgid "Mask %d"
 msgstr "Маска %d"
 
-#, c-format
-msgid "PV minimum %d"
+msgid "PV minimum"
 msgstr "Мин. ФВ %d"
 
-#, c-format
-msgid "PV maximum %d"
-msgstr "Макс. ФВ %d"
+msgid "PV maximum"
+msgstr "Макс. ФВ"
 
-#, c-format
-msgid "Adjustment %d"
-msgstr "Смещение %d"
+msgid "Adjustment"
+msgstr "Смещение"
 
 #, c-format
 msgid "Correcting factor %d"
@@ -839,9 +824,8 @@ msgstr "Время смазки %d"
 msgid "Timeout_PO %d"
 msgstr "Таймаут предв. операции %d"
 
-#, c-format
-msgid "Function %d"
-msgstr "Функция %d"
+msgid "Function"
+msgstr "Функция"
 
 #, c-format
 msgid "TU on %d"
@@ -851,17 +835,14 @@ msgstr "ТУ вкл %d"
 msgid "TU off %d"
 msgstr "ТУ выкл %d"
 
-#, c-format
-msgid "TU stop %d"
-msgstr "ТУ стоп %d"
+msgid "TU stop"
+msgstr "ТУ стоп"
 
-#, c-format
-msgid "TU remote %d"
-msgstr "ТУ дистанционный %d"
+msgid "TU remote"
+msgstr "ТУ дистанционный"
 
-#, c-format
-msgid "TU manual %d"
-msgstr "ТУ ручной %d"
+msgid "TU manual"
+msgstr "ТУ ручной"
 
 #, c-format
 msgid "On time %d"
@@ -871,17 +852,14 @@ msgstr "Время вкл. %d"
 msgid "Off time %d"
 msgstr "Время выкл %d"
 
-#, c-format
-msgid "Stop time %d"
-msgstr "Время стоп %d"
+msgid "Stop time"
+msgstr "Время стоп"
 
-#, c-format
-msgid "Remote time %d"
-msgstr "Время дист.  %d"
+msgid "Remote time"
+msgstr "Время дист."
 
-#, c-format
-msgid "Manual time %d"
-msgstr "Время ручн. %d"
+msgid "Manual time"
+msgstr "Время ручн."
 
 #, c-format
 msgid "On TC %d"
@@ -891,53 +869,42 @@ msgstr "ТС вкл %d"
 msgid "Off TC %d"
 msgstr "ТС выкл %d"
 
-#, c-format
-msgid "Mode TC %d"
-msgstr "ТС режим %d"
+msgid "Mode TC"
+msgstr "ТС режим"
 
 #, c-format
 msgid "Work time %d"
 msgstr "Время работы %d"
 
-#, c-format
-msgid "TU open %d"
-msgstr "ТУ открыть %d"
+msgid "TU open"
+msgstr "ТУ открыть"
 
-#, c-format
-msgid "TU close %d"
-msgstr "ТУ закрыть %d"
+msgid "TU close"
+msgstr "ТУ закрыть"
 
-#, c-format
-msgid "TU stop Ex %d"
-msgstr "ТУ стоп доп. %d"
+msgid "TU stop Ex"
+msgstr "ТУ стоп доп."
 
-#, c-format
-msgid "Open time %d"
-msgstr "Время открыть %d"
+msgid "Open time"
+msgstr "Время открыт"
 
-#, c-format
-msgid "Close time %d"
-msgstr "Время закрыть %d"
+msgid "Close time"
+msgstr "Время закрыть"
 
-#, c-format
-msgid "Stop time Ex %d"
-msgstr "Время стоп доп. %d"
+msgid "Stop time Ex"
+msgstr "Время стоп доп."
 
-#, c-format
-msgid "Open TC %d"
-msgstr "ТС открыть %d"
+msgid "Open TC"
+msgstr "ТС открыть"
 
-#, c-format
-msgid "Close TC %d"
-msgstr "ТС закрытия %d"
+msgid "Close TC"
+msgstr "ТС закрытия"
 
-#, c-format
-msgid "Open error TC %d"
-msgstr "ТС ошибка открытия %d"
+msgid "Open error TC"
+msgstr "ТС ошибка открытия"
 
-#, c-format
-msgid "Close error TC %d"
-msgstr "ТС ошибка закрытия %d"
+msgid "Close error TC"
+msgstr "ТС ошибка закрытия"
 
 msgid "DAQ FT3"
 msgstr "АПСТМ (FT3)"
