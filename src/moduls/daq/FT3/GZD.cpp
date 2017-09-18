@@ -207,26 +207,26 @@ uint16_t KA_GZD::setVal(TVal &val)
 }
 
 KA_ZD::KA_ZD(TMdPrm& prm, DA &parent, uint16_t id, bool has_params, uint32_t v_type) :
-	DA(prm, id), parentDA(parent), with_params(has_params), valve_type(v_type),
-	State(TSYS::strMess("state", id), TSYS::strMess(_("State"), id)),
-	Function(TSYS::strMess("function", id), TSYS::strMess(_("Function"), id)),
-	TUOpen(TSYS::strMess("TUopen", id), TSYS::strMess(_("TU open"), id)),
-	TUClose(TSYS::strMess("TUclose", id), TSYS::strMess(_("TU close"), id)),
-	TUStop(TSYS::strMess("TUstop", id), TSYS::strMess(_("TU stop"), id)),
-	TURemote(TSYS::strMess("TUremote", id), TSYS::strMess(_("TU remote"), id)),
-	TUManual(TSYS::strMess("TUmanual", id), TSYS::strMess(_("TU manual"), id)),
-	TUStopEx(TSYS::strMess("TUstopEx", id), TSYS::strMess(_("TU stop Ex"), id)),
-	TimeOpen(TSYS::strMess("timeOpen", id), TSYS::strMess(_("Open time"), id)),
-	TimeClose(TSYS::strMess("timeClose", id), TSYS::strMess(_("Close time"), id)),
-	TimeStop(TSYS::strMess("timeStop", id), TSYS::strMess(_("Stop time"), id)),
-	TimeStopEx(TSYS::strMess("timeStopEx", id), TSYS::strMess(_("Stop time Ex"), id)),
-	TimeRemote(TSYS::strMess("timeRemote", id), TSYS::strMess(_("Remote time"), id)),
-	TimeManual(TSYS::strMess("timeManual", id), TSYS::strMess(_("Manual time"), id)),
-	TCOpen(TSYS::strMess("tcOpen", id), TSYS::strMess(_("Open TC"), id)),
-	TCClose(TSYS::strMess("tcClose", id), TSYS::strMess(_("Close TC"), id)),
-	TCMode(TSYS::strMess("tcMode", id), TSYS::strMess(_("Mode TC"), id)),
-	TCOpenErr(TSYS::strMess("tcOpenErr", id), TSYS::strMess(_("Open error TC"), id)),
-	TCCloseErr(TSYS::strMess("tcCloseErr", id), TSYS::strMess(_("Close error TC"), id))
+	DA(prm, id), parentDA(parent), with_params(has_params), valve_type(v_type),// da(owner), id(iid),
+	State("state", _("State")),
+	Function("function", _("Function")),
+	TUOpen("TUopen", _("TU open")),
+	TUClose("TUclose", _("TU close")),
+	TUStop("TUstop", _("TU stop")),
+	TURemote("TUremote", _("TU remote")),
+	TUManual("TUmanual", _("TU manual")),
+	TUStopEx("TUstopEx", _("TU stop Ex")),
+	TimeOpen("timeOpen", _("Open time")),
+	TimeClose("timeClose", _("Close time")),
+	TimeStop("timeStop", _("Stop time")),
+	TimeStopEx("timeStopEx", _("Stop time Ex")),
+	TimeRemote("timeRemote", _("Remote time")),
+	TimeManual("timeManual", _("Manual time")),
+	TCOpen("tcOpen", _("Open TC")),
+	TCClose("tcClose", _("Close TC")),
+	TCMode("tcMode", _("Mode TC")),
+	TCOpenErr("tcOpenErr", _("Open error TC")),
+	TCCloseErr("tcCloseErr", _("Close error TC"))
 {
 	mTypeFT3 = KA;
 
@@ -747,6 +747,7 @@ uint8_t KA_ZD::cmdSet(uint8_t * req, uint8_t addr)
 	if (ft3ID.g != parentDA.ID) return 0;
 	if (ft3ID.k != ID) return 0;
 	uint8_t l = 0;
+
 	switch (ft3ID.n) {
 	case 0:
 		l = SetNewState(addr, prmID, req + 2);
@@ -761,7 +762,7 @@ uint8_t KA_ZD::cmdSet(uint8_t * req, uint8_t addr)
 		l = SetNewFunction(addr, prmID, req + 2);
 		break;
 	}
-    mPrm.mess_sys(TMess::Error, "cmdSet g %d k %d n %d %d", ft3ID.g, ft3ID.k, ft3ID.n, l);
+
 	return l;
 }
 

@@ -199,9 +199,9 @@ uint16_t KA_BVTC::setVal(TVal &val)
 //******************************************************
 KA_TC::KA_TC(TMdPrm& prm, DA &parent, uint16_t id, bool has_params) :
 	DA(prm, id), parentDA(parent), with_params(has_params), config(0),
-	Value(TSYS::strMess("TC_%d", id), TSYS::strMess(_("TC %d"), id)),
-	Period(TSYS::strMess("Period_%d", id), TSYS::strMess(_("Period TC %d"), id)),
-	Count(TSYS::strMess("Count_%d", id), TSYS::strMess(_("Count TC %d"), id))
+	Value("TC", _("TC")),
+	Period("Period", _("Period TC")),
+	Count("Count", _("Count TC"))
 {
 	mTypeFT3 = KA;
 	AddAttr(Value.lnk, TFld::Integer, TVal::DirWrite, "0");

@@ -470,6 +470,7 @@ void TTpContr::postEnable(int flag)
 	fldAdd(new TFld("PRM_BD_UPZ", _("UPZ Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
 
 	fldAdd(new TFld("PRM_BD_TS", _("TS Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+	fldAdd(new TFld("PRM_BD_TT", _("TT Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
 	fldAdd(new TFld("PRM_BD_ZD", _("ZD Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
 	fldAdd(new TFld("PRM_BD_NS", _("NS Parameters table"), TFld::String, TFld::NoFlag, "30", ""));	
 
@@ -574,6 +575,9 @@ void TTpContr::postEnable(int flag)
 	t_prm = tpParmAdd("tp_TS", "PRM_BD_TS", _("TS"), true);
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
 
+	t_prm = tpParmAdd("tp_TT", "PRM_BD_TT", _("TT"), true);
+	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;48"));
+
 	t_prm = tpParmAdd("tp_ZD", "PRM_BD_ZD", _("ZD"), true);
 	tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
 
@@ -617,6 +621,7 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
 	cfg("PRM_BD_TANK").setS("FT3Prm_TANK_" + name_c);
 	cfg("PRM_BD_UPZ").setS("FT3Prm_UPZ_" + name_c);
 	cfg("PRM_BD_TS").setS("FT3Prm_TS_" + name_c);
+	cfg("PRM_BD_TT").setS("FT3Prm_TT_" + name_c);
 	cfg("PRM_BD_ZD").setS("FT3Prm_ZD_" + name_c);
 	cfg("PRM_BD_NS").setS("FT3Prm_NS_" + name_c);
 
@@ -1582,6 +1587,7 @@ void TMdContr::cntrCmdProc(XMLNode *opt)
 		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TANK");
 		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_UPZ");
 		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TS");
+		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TT");
 		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_ZD");
 		ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_NS");
 
@@ -1661,7 +1667,18 @@ void TMdPrm::enable()
 			TMdPrm *t = dynamic_cast<TMdPrm*>(nodePrev());
 			mDA = new KA_TC(*this, *t->mDA, cfg("DEV_ID").getI(), t->cfg("WITH_PARAMS").getB());
 		}
-		if (type().name == "tp_BVT") mDA = new KA_BVT(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+		if (type().name == "tp_BVT") {
+			mDA = new KA_BVT(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+			for (int i = 1; i <= cfg("CHAN_COUNT").getI(); i++) {
+				if (!present(TSYS::strMess("TT%d", i))) {
+					mess_sys(TMess::Info, "add tt");
+					add(TSYS::strMess("TT%d", i), owner().owner().tpPrmToId("tp_TT"));
+					at(TSYS::strMess("TT%d", i)).at().cfg("DEV_ID").setI(i);
+					at(TSYS::strMess("TT%d", i)).at().setName(TSYS::strMess(_("TT%d"), i));
+				}
+			}
+
+		}
 		if (type().name == "tp_GZD") {
 			mDA = new KA_GZD(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("VALVE_TYPE").getI());
 			for (int i = 1; i <= cfg("CHAN_COUNT").getI(); i++) {
@@ -1674,6 +1691,10 @@ void TMdPrm::enable()
 				}
 			}
 
+		}
+		if (type().name == "tp_TT") {
+			TMdPrm *t = dynamic_cast<TMdPrm*>(nodePrev());
+			mDA = new KA_TT(*this, *t->mDA, cfg("DEV_ID").getI(), t->cfg("WITH_PARAMS").getB());
 		}
 		if (type().name == "tp_ZD") {
 			TMdPrm *t = dynamic_cast<TMdPrm*>(nodePrev());
