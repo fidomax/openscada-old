@@ -1,22 +1,22 @@
 //OpenSCADA system module DAQ.FT3 file: da.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
- *   fido_max@inbox.ru                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; version 2 of the License.               *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+*   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
+*   fido_max@inbox.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; version 2 of the License.               *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
 
 #include <sys/times.h>
 
@@ -70,6 +70,7 @@ uint16_t DA::RefreshParams(void)
 void DA::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
 {
     TFld * fld;
+
     mPrm.p_el.fldAdd(fld = new TFld(param.prmName.c_str(), param.prmDesc.c_str(), type, flg));
     param.vlattr = mPrm.vlAt(param.prmName);
     fld->setReserve(ex);
@@ -78,11 +79,12 @@ void DA::AddAttr(SLnk& param, TFld::Type type, unsigned flg, const string& ex)
 void DA::loadLnk(SLnk& lnk)
 {
     TConfig cfg(&mPrm.prmIOE());
+
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
     cfg.cfg("ID").setS(lnk.prmName);
-    if (SYS->db().at().dataGet(io_bd, io_table, cfg, false, true)) {   
+    if (SYS->db().at().dataGet(io_bd, io_table, cfg, false, true)) {
 	lnk.prmAttr = cfg.cfg("VALUE").getS();
 	lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
     }
@@ -91,20 +93,21 @@ void DA::loadLnk(SLnk& lnk)
 void DA::loadVal(SLnk& lnk)
 {
     TConfig cfg(&mPrm.prmIOE());
+
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
 
     cfg.cfg("ID").setS(lnk.prmName);
-    if (SYS->db().at().dataGet(io_bd, io_table, cfg, false, true)) {
+    if (SYS->db().at().dataGet(io_bd, io_table, cfg, false, true))
 	lnk.vlattr.at().setS(cfg.cfg("ATTR_VALUE").getS(), 0, true);
 	//lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
-    }
 }
 
 void DA::saveLnk(SLnk& lnk)
 {
     TConfig cfg(&mPrm.prmIOE());
+
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
@@ -117,6 +120,7 @@ void DA::saveLnk(SLnk& lnk)
 void DA::saveVal(SLnk& lnk)
 {
     TConfig cfg(&mPrm.prmIOE());
+
     cfg.cfg("PRM_ID").setS(mPrm.ownerPath(true));
     string io_bd = mPrm.owner().DB() + "." + mPrm.typeDBName() + "_io";
     string io_table = mPrm.owner().owner().nodePath() + mPrm.typeDBName() + "_io";
@@ -135,9 +139,8 @@ uint8_t DA::SetNew8Val(ui8Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 	uint8_t E[2] = { addr, d.vl };
 	PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 1;
-    } else {
+    } else
 	return 0;
-    }
 }
 
 uint8_t DA::SetNew8Val(ui16Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
@@ -148,9 +151,8 @@ uint8_t DA::SetNew8Val(ui16Data& d, uint8_t addr, uint16_t prmID, uint8_t val)
 	uint8_t E[2] = { addr, val };
 	PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 1;
-    } else {
+    } else
 	return 0;
-    }
 }
 
 uint8_t DA::SetNew28Val(ui8Data& d1, ui8Data& d2, uint8_t addr, uint16_t prmID, uint8_t val1, uint8_t val2)
@@ -163,9 +165,8 @@ uint8_t DA::SetNew28Val(ui8Data& d1, ui8Data& d2, uint8_t addr, uint16_t prmID, 
 	uint8_t E[3] = { addr, d1.vl, d2.vl };
 	PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 2;
-    } else {
+    } else
 	return 0;
-    }
 }
 
 uint8_t DA::SetNewWVal(ui16Data& d, uint8_t addr, uint16_t prmID, uint16_t val)
@@ -176,9 +177,8 @@ uint8_t DA::SetNewWVal(ui16Data& d, uint8_t addr, uint16_t prmID, uint16_t val)
 	uint8_t E[3] = { addr, d.b_vl[0], d.b_vl[1] };
 	PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 2;
-    } else {
+    } else
 	return 0;
-    }
 }
 
 uint8_t DA::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
@@ -189,9 +189,8 @@ uint8_t DA::SetNewflVal(flData& d, uint8_t addr, uint16_t prmID, float val)
 	uint8_t E[5] = { addr, d.b_vl[0], d.b_vl[1], d.b_vl[2], d.b_vl[3] };
 	PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 4;
-    } else {
+    } else
 	return 0;
-    }
 }
 
 uint8_t DA::SetNew32Val(ui32Data& d, uint8_t addr, uint16_t prmID, uint32_t val)
@@ -202,9 +201,8 @@ uint8_t DA::SetNew32Val(ui32Data& d, uint8_t addr, uint16_t prmID, uint32_t val)
 	uint8_t E[5] = { addr, d.b_vl[0], d.b_vl[1], d.b_vl[2], d.b_vl[3] };
 	PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 4;
-    } else {
+    } else
 	return 0;
-    }
 }
 
 uint8_t DA::SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, float val1, float val2)
@@ -217,14 +215,14 @@ uint8_t DA::SetNew2flVal(flData& d1, flData& d2, uint8_t addr, uint16_t prmID, f
 	uint8_t E[9] = { addr, d1.b_vl[0], d1.b_vl[1], d1.b_vl[2], d1.b_vl[3], d2.b_vl[0], d2.b_vl[1], d2.b_vl[2], d2.b_vl[3] };
 	PushInBE(1, sizeof(E), prmID, E);
 	return 2 + 4 + 4;
-    } else {
+    } else
 	return 0;
-    }
 }
 
 void DA::UpdateParam8(ui8Data& param, uint16_t ID, uint8_t cl)
 {
     uint8_t tmpui8;
+
     tmpui8 = param.Get();
     if (tmpui8 != param.vl) {
 	param.Update(tmpui8);
@@ -236,6 +234,7 @@ void DA::UpdateParam8(ui8Data& param, uint16_t ID, uint8_t cl)
 void DA::UpdateParam8(ui16Data& param, uint16_t ID, uint8_t cl)
 {
     uint8_t tmpui8;
+
     tmpui8 = param.Get();
     if (tmpui8 != param.vl) {
 	param.Update(tmpui8);
@@ -247,6 +246,7 @@ void DA::UpdateParam8(ui16Data& param, uint16_t ID, uint8_t cl)
 void DA::UpdateParamW(ui16Data& param, uint16_t ID, uint8_t cl)
 {
     ui8w tmpw;
+
     tmpw.w = param.Get();
     if (tmpw.w != param.vl) {
 	param.Update(tmpw.w);
@@ -258,6 +258,7 @@ void DA::UpdateParamW(ui16Data& param, uint16_t ID, uint8_t cl)
 void DA::UpdateParamFl(flData& param, uint16_t ID, uint8_t cl)
 {
     ui8fl tmpfl;
+
     tmpfl.f = param.Get();
     if (tmpfl.f != param.vl) {
 	param.Update(tmpfl.f);
@@ -269,6 +270,7 @@ void DA::UpdateParamFl(flData& param, uint16_t ID, uint8_t cl)
 void DA::UpdateParam32(ui32Data& param, uint16_t ID, uint8_t cl)
 {
     ui832 tmp;
+
     tmp.ui32 = param.Get();
     if (tmp.ui32 != param.vl) {
 	param.Update(tmp.ui32);
@@ -281,6 +283,7 @@ void DA::UpdateParamFlState(flData& param, ui8Data& state, flData& sens, uint16_
 {
     uint8_t tmpui8;
     ui8fl tmpfl;
+
     tmpui8 = state.Get();
     tmpfl.f = param.Get();
     param.Update(tmpfl.f);
@@ -296,6 +299,7 @@ void DA::UpdateParamFlState(flData& param, ui8Data& state, flData& sens, uint16_
 void DA::UpdateParam2Fl(flData& param1, flData& param2, uint16_t ID, uint8_t cl)
 {
     ui8fl tmpfl1, tmpfl2;
+
     tmpfl1.f = param1.Get();
     tmpfl2.f = param2.Get();
     if (tmpfl1.f != param1.vl || tmpfl2.f != param2.vl) {
@@ -309,6 +313,7 @@ void DA::UpdateParam2Fl(flData& param1, flData& param2, uint16_t ID, uint8_t cl)
 void DA::UpdateParam28(ui8Data& param1, ui8Data& param2, uint16_t ID, uint8_t cl)
 {
     uint8_t tmp1, tmp2;
+
     tmp1 = param1.Get();
     tmp2 = param2.Get();
     if (tmp1 != param1.vl || tmp2 != param2.vl) {
@@ -323,6 +328,7 @@ FT3ID DA::UnpackID(uint16_t ID)
 {
     //if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, _("UnpackID %d"), ID);
     FT3ID rc;
+
     switch (mTypeFT3) {
     case GRS:
 	rc.g = ID >> 12;
@@ -342,6 +348,7 @@ FT3ID DA::UnpackID(uint16_t ID)
 uint16_t DA::PackID(FT3ID ID)
 {
     uint16_t rc;
+
     switch (mTypeFT3) {
     case GRS:
 	rc = ID.g << 12 | (ID.k << 6) | (ID.n);
@@ -356,6 +363,7 @@ uint16_t DA::PackID(FT3ID ID)
 uint16_t DA::PackID(uint8_t g, uint8_t k, uint8_t n)
 {
     uint16_t rc;
+
     switch (mTypeFT3) {
     case GRS:
 	rc = g << 12 | (k << 6) | (n);
@@ -369,8 +377,7 @@ uint16_t DA::PackID(uint8_t g, uint8_t k, uint8_t n)
 
 uint8_t FT3::SerializeF(uint8_t * out, float vl)
 {
-    union
-    {
+    union {
 	float v;
 	uint8_t c[4];
     } dt;
@@ -382,8 +389,7 @@ uint8_t FT3::SerializeF(uint8_t * out, float vl)
 
 uint8_t FT3::SerializeUi16(uint8_t * out, uint16_t vl)
 {
-    union
-    {
+    union {
 	uint16_t v;
 	uint8_t c[2];
     } dt;
@@ -395,8 +401,7 @@ uint8_t FT3::SerializeUi16(uint8_t * out, uint16_t vl)
 
 uint8_t FT3::SerializeUi32(uint8_t * out, uint32_t vl)
 {
-    union
-    {
+    union {
 	uint32_t v;
 	uint8_t c[4];
     } dt;

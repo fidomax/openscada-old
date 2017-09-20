@@ -1,22 +1,22 @@
 //OpenSCADA system module DAQ.FT3 file: PAUK.cpp
 /***************************************************************************
- *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
- *   fido_max@inbox.ru                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; version 2 of the License.               *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+*   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
+*   fido_max@inbox.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; version 2 of the License.               *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
 
 #include <sys/times.h>
 
@@ -28,7 +28,7 @@
 using namespace FT3;
 
 B_PAUK::B_PAUK(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
-	DA(prm), ID(id), count_n(n), with_params(has_params)
+    DA(prm), ID(id), count_n(n), with_params(has_params)
 {
     mTypeFT3 = GRS;
     blkID = 0;
@@ -44,16 +44,16 @@ B_PAUK::B_PAUK(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
     mPrm.p_el.fldAdd(fld = new TFld("errors", _("Errors"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:5");
 
-    for(int i = 1; i <= count_n; i++) {
+    for (int i = 1; i <= count_n; i++) {
 	mPrm.p_el.fldAdd(fld = new TFld(TSYS::strMess("state_%d", i).c_str(), TSYS::strMess(_("Valve state %d"), i).c_str(), TFld::Integer, TFld::NoWrite));
 	fld->setReserve(TSYS::strMess("%d:0", i));
 
-	if(with_params) {
+	if (with_params) {
 	    mPrm.p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("time_%d", i).c_str(), TSYS::strMess(_("Persistence time %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
+		fld = new TFld(TSYS::strMess("time_%d", i).c_str(), TSYS::strMess(_("Persistence time %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:1", i));
 	    mPrm.p_el.fldAdd(
-		    fld = new TFld(TSYS::strMess("astime_%d", i).c_str(), TSYS::strMess(_("Persistence astime %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
+		fld = new TFld(TSYS::strMess("astime_%d", i).c_str(), TSYS::strMess(_("Persistence astime %d"), i).c_str(), TFld::Integer, TVal::DirWrite));
 	    fld->setReserve(TSYS::strMess("%d:2", i));
 	}
     }
@@ -67,11 +67,11 @@ B_PAUK::~B_PAUK()
 string B_PAUK::getStatus(void)
 {
     string rez;
-    if(NeedInit) {
+
+    if (NeedInit)
 	rez = "20: Опрос";
-    } else {
+    else
 	rez = "0: Норма";
-    }
     return rez;
 
 }
@@ -80,28 +80,29 @@ uint16_t B_PAUK::Task(uint16_t uc)
 {
     tagMsg Msg;
     uint16_t rc = 0;
-    switch(uc) {
+
+    switch (uc) {
     case TaskRefresh:
 	Msg.L = 13;
 	Msg.C = AddrReq;
-	*((uint16_t *) Msg.D) = PackID(ID, 0, 0);
-	*((uint16_t *) (Msg.D + 2)) = PackID(ID, 0, 1);
-	*((uint16_t *) (Msg.D + 4)) = PackID(ID, 0, 2);
-	*((uint16_t *) (Msg.D + 6)) = PackID(ID, 0, 4);
-	*((uint16_t *) (Msg.D + 8)) = PackID(ID, 0, 5);
-	if(mPrm.owner().DoCmd(&Msg)) {
-	    if(Msg.C == GOOD3) {
-		if(with_params) {
-		    for(int i = 1; i <= count_n; i++) {
+	*((uint16_t*)Msg.D) = PackID(ID, 0, 0);
+	*((uint16_t*)(Msg.D + 2)) = PackID(ID, 0, 1);
+	*((uint16_t*)(Msg.D + 4)) = PackID(ID, 0, 2);
+	*((uint16_t*)(Msg.D + 6)) = PackID(ID, 0, 4);
+	*((uint16_t*)(Msg.D + 8)) = PackID(ID, 0, 5);
+	if (mPrm.owner().DoCmd(&Msg)) {
+	    if (Msg.C == GOOD3) {
+		if (with_params) {
+		    for (int i = 1; i <= count_n; i++) {
 			Msg.L = 9;
 			Msg.C = AddrReq;
-			*((uint16_t *) Msg.D) = PackID(ID, i, 0); //состояние крана
-			*((uint16_t *) (Msg.D + 2)) = PackID(ID, i, 1); //время выдержки
-			*((uint16_t *) (Msg.D + 4)) = PackID(ID, i, 2); //доп время выдержки
-			if(mPrm.owner().DoCmd(&Msg)) {
-			    if(Msg.C == GOOD3) {
+			*((uint16_t*)Msg.D) = PackID(ID, i, 0);         //состояние крана
+			*((uint16_t*)(Msg.D + 2)) = PackID(ID, i, 1);   //время выдержки
+			*((uint16_t*)(Msg.D + 4)) = PackID(ID, i, 2);   //доп время выдержки
+			if (mPrm.owner().DoCmd(&Msg)) {
+			    if (Msg.C == GOOD3)
 				rc = 1;
-			    } else {
+			    else {
 				rc = 0;
 				break;
 			    }
@@ -110,12 +111,11 @@ uint16_t B_PAUK::Task(uint16_t uc)
 			    break;
 			}
 		    }
-		} else {
+		} else
 		    rc = 1;
-		}
 	    }
 	}
-	if(rc) NeedInit = false;
+	if (rc) NeedInit = false;
 	break;
     }
     return rc;
@@ -123,11 +123,12 @@ uint16_t B_PAUK::Task(uint16_t uc)
 uint16_t B_PAUK::HandleEvent(int64_t tm, uint8_t * D)
 {
     FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
-    if(ft3ID.g != ID) return 0;
+
+    if (ft3ID.g != ID) return 0;
     uint16_t l = 0;
-    switch(ft3ID.k) {
+    switch (ft3ID.k) {
     case 0:
-	switch(ft3ID.n) {
+	switch (ft3ID.n) {
 	case 0:
 	    mPrm.vlAt("state").at().setI(D[2], tm, true);
 	    l = 3;
@@ -143,9 +144,8 @@ uint16_t B_PAUK::HandleEvent(int64_t tm, uint8_t * D)
 	case 3:
 	    mPrm.vlAt("state").at().setI(D[2], tm, true);
 	    l = 3 + count_n / 2;
-	    for(int j = 1; j <= count_n; j++) {
+	    for (int j = 1; j <= count_n; j++)
 		mPrm.vlAt(TSYS::strMess("state_%d", j)).at().setI(((D[2 + (j + 1) / 2]) >> ((j % 2) * 4)) & 0x0F, tm, true);
-	    }
 	    l = 11;
 	    break;
 	case 4:
@@ -160,21 +160,20 @@ uint16_t B_PAUK::HandleEvent(int64_t tm, uint8_t * D)
 	}
 	break;
     default:
-	if(ft3ID.k && (ft3ID.k <= count_n)) {
-	    switch(ft3ID.n) {
+	if (ft3ID.k && (ft3ID.k <= count_n)) {
+	    switch (ft3ID.n) {
 	    case 0:
 		mPrm.vlAt(TSYS::strMess("state_%d", ft3ID.k)).at().setI(D[2], tm, true);
 		l = 3;
 		break;
 
 	    case 1:
-		if(with_params) {
+		if (with_params)
 		    mPrm.vlAt(TSYS::strMess("time_%d", ft3ID.k)).at().setI(D[3], tm, true);
-		}
 		l = 4;
 		break;
 	    case 2:
-		if(with_params) {
+		if (with_params) {
 		    mPrm.vlAt(TSYS::strMess("astime_%d", ft3ID.k)).at().setI(D[3], tm, true);
 		    ;
 		}
@@ -192,6 +191,7 @@ uint16_t B_PAUK::setVal(TVal &val)
 {
     int off = 0;
     FT3ID ft3ID;
+
     ft3ID.k = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
     ft3ID.n = s2i(TSYS::strParse(val.fld().reserve(), 0, ":", &off));
     ft3ID.g = ID;
@@ -201,26 +201,25 @@ uint16_t B_PAUK::setVal(TVal &val)
     Msg.C = SetData;
     Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
     uint8_t run;
-    switch(ft3ID.n) {
-	switch(ft3ID.n) {
+    switch (ft3ID.n) {
+	switch (ft3ID.n) {
 	case 1:
 	    Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
 	    break;
 	case 2:
 	    run = val.getI(0, true);
-	    if(run == 170) {
+	    if (run == 170)
 		Msg.L += SerializeB(Msg.D + Msg.L, 0);
-	    } else {
-		if(run == 85) {
+	    else {
+		if (run == 85)
 		    Msg.L += SerializeB(Msg.D + Msg.L, run);
-		} else {
+		else
 		    Msg.L = 0;
-		}
 	    }
 	    break;
 	}
     }
-    if(Msg.L > 2) {
+    if (Msg.L > 2) {
 	Msg.L += 3;
 	mPrm.owner().DoCmd(&Msg);
     }

@@ -1,21 +1,21 @@
 /***************************************************************************
- *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
- *   fido_max@inbox.ru                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; version 2 of the License.               *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+*   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
+*   fido_max@inbox.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; version 2 of the License.               *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
 #ifndef DA_ACCOUNT_H
 #define DA_ACCOUNT_H
 
@@ -23,8 +23,8 @@
 
 namespace FT3
 {
-    class B_ACCOUNT: public DA
-    {
+class B_ACCOUNT : public DA
+{
     public:
 	//Methods
 	B_ACCOUNT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
@@ -44,8 +44,8 @@ namespace FT3
 	string getStatus(void);
 	class SACchannel
 	{
-	public:
-	    SACchannel(uint8_t iid, DA* owner) :
+	    public:
+		SACchannel(uint8_t iid, DA* owner) :
 		    da(owner),
 		    id(iid),
 		    State(TSYS::strMess("state_%d", id + 1), TSYS::strMess(_("State %d"), id + 1)),
@@ -93,80 +93,79 @@ namespace FT3
 		    T(TSYS::strMess("T_%d", id + 1), TSYS::strMess(_("T %d"), id + 1)),
 		    P(TSYS::strMess("P_%d", id + 1), TSYS::strMess(_("P %d"), id + 1)),
 		    E(TSYS::strMess("E_%d", id + 1), TSYS::strMess(_("E %d"), id + 1))
-	    {
-	    }
-	    DA* da;
-	    uint8_t id;
+		{
+		}
+		DA* da;
+		uint8_t id;
 
-	    ui8Data State, Period, Hour, MethodM;
-	    ui32Data StartDate, EndDate, Sensors;
+		ui8Data State, Period, Hour, MethodM;
+		ui32Data StartDate, EndDate, Sensors;
 
-	    flData Value, Sens, MinW, MaxW, MinA, MaxA,  ServiceQ, HourlyQ, Counter, HourQ, HourdP, HourT, HourP, HourE, AvgQ, AvgdP, AvgT, AvgP, AvgE,
-		    PeriodQ, Density, Asperity, ConcentrN, ConcentrCO, DiameterM, FactorM, DiameterP, FactorP, TestdP, TestT, TestP, TestQ, RadiusM, PressureA,
-		    dP, T, P, E;
-	    uint8_t SetNewPeriod(uint8_t addr, uint16_t prmID, uint8_t *val);
+		flData Value, Sens, MinW, MaxW, MinA, MaxA,  ServiceQ, HourlyQ, Counter, HourQ, HourdP, HourT, HourP, HourE, AvgQ, AvgdP, AvgT, AvgP, AvgE,
+		       PeriodQ, Density, Asperity, ConcentrN, ConcentrCO, DiameterM, FactorM, DiameterP, FactorP, TestdP, TestT, TestP, TestQ, RadiusM, PressureA,
+		       dP, T, P, E;
+		uint8_t SetNewPeriod(uint8_t addr, uint16_t prmID, uint8_t *val);
 	};
 	vector<SACchannel> data;
 	int lnkSize()
 	{
-	    if(with_params) {
+	    if (with_params)
 		return data.size() * 43;
-	    } else {
+	    else
 		return data.size() * 2;
-	    }
 	}
 	int lnkId(const string &id)
 	{
-	    if(with_params) {
-		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].State.lnk.prmName == id) return i_l * 43;
-		    if(data[i_l].Value.lnk.prmName == id) return i_l * 43 + 1;
-		    if(data[i_l].Period.lnk.prmName == id) return i_l * 43 + 2;
-		    if(data[i_l].Sens.lnk.prmName == id) return i_l * 43 + 3;
-		    if(data[i_l].MinW.lnk.prmName == id) return i_l * 43 + 4;
-		    if(data[i_l].MaxW.lnk.prmName == id) return i_l * 43 + 5;
-		    if(data[i_l].MinA.lnk.prmName == id) return i_l * 43 + 6;
-		    if(data[i_l].MaxA.lnk.prmName == id) return i_l * 43 + 7;
-		    if(data[i_l].Sensors.lnk.prmName == id) return i_l * 43 + 8;
-		    if(data[i_l].ServiceQ.lnk.prmName == id) return i_l * 43 + 9;
-		    if(data[i_l].Hour.lnk.prmName == id) return i_l * 43 + 10;
-		    if(data[i_l].HourlyQ.lnk.prmName == id) return i_l * 43 + 11;
-		    if(data[i_l].Counter.lnk.prmName == id) return i_l * 43 + 12;
-		    if(data[i_l].HourQ.lnk.prmName == id) return i_l * 43 + 13;
-		    if(data[i_l].HourdP.lnk.prmName == id) return i_l * 43 + 14;
-		    if(data[i_l].HourT.lnk.prmName == id) return i_l * 43 + 15;
-		    if(data[i_l].HourP.lnk.prmName == id) return i_l * 43 + 16;
-		    if(data[i_l].HourE.lnk.prmName == id) return i_l * 43 + 17;
-		    if(data[i_l].AvgQ.lnk.prmName == id) return i_l * 43 + 18;
-		    if(data[i_l].AvgdP.lnk.prmName == id) return i_l * 43 + 19;
-		    if(data[i_l].AvgT.lnk.prmName == id) return i_l * 43 + 20;
-		    if(data[i_l].AvgP.lnk.prmName == id) return i_l * 43 + 21;
-		    if(data[i_l].AvgE.lnk.prmName == id) return i_l * 43 + 22;
-		    if(data[i_l].PeriodQ.lnk.prmName == id) return i_l * 43 + 23;
-		    if(data[i_l].Density.lnk.prmName == id) return i_l * 43 + 24;
-		    if(data[i_l].Asperity.lnk.prmName == id) return i_l * 43 + 25;
-		    if(data[i_l].ConcentrN.lnk.prmName == id) return i_l * 43 + 26;
-		    if(data[i_l].ConcentrCO.lnk.prmName == id) return i_l * 43 + 27;
-		    if(data[i_l].DiameterM.lnk.prmName == id) return i_l * 43 + 28;
-		    if(data[i_l].FactorM.lnk.prmName == id) return i_l * 43 + 29;
-		    if(data[i_l].DiameterP.lnk.prmName == id) return i_l * 43 + 30;
-		    if(data[i_l].FactorP.lnk.prmName == id) return i_l * 43 + 31;
-		    if(data[i_l].MethodM.lnk.prmName == id) return i_l * 43 + 32;
-		    if(data[i_l].TestdP.lnk.prmName == id) return i_l * 43 + 33;
-		    if(data[i_l].TestT.lnk.prmName == id) return i_l * 43 + 34;
-		    if(data[i_l].TestP.lnk.prmName == id) return i_l * 43 + 35;
-		    if(data[i_l].TestQ.lnk.prmName == id) return i_l * 43 + 36;
-		    if(data[i_l].RadiusM.lnk.prmName == id) return i_l * 43 + 37;
-		    if(data[i_l].PressureA.lnk.prmName == id) return i_l * 43 + 38;
-		    if(data[i_l].dP.lnk.prmName == id) return i_l * 43 + 39;
-		    if(data[i_l].T.lnk.prmName == id) return i_l * 43 + 40;
-		    if(data[i_l].P.lnk.prmName == id) return i_l * 43 + 41;
-		    if(data[i_l].E.lnk.prmName == id) return i_l * 43 + 42;
+	    if (with_params) {
+		for (int i_l = 0; i_l < data.size(); i_l++) {
+		    if (data[i_l].State.lnk.prmName == id) return i_l * 43;
+		    if (data[i_l].Value.lnk.prmName == id) return i_l * 43 + 1;
+		    if (data[i_l].Period.lnk.prmName == id) return i_l * 43 + 2;
+		    if (data[i_l].Sens.lnk.prmName == id) return i_l * 43 + 3;
+		    if (data[i_l].MinW.lnk.prmName == id) return i_l * 43 + 4;
+		    if (data[i_l].MaxW.lnk.prmName == id) return i_l * 43 + 5;
+		    if (data[i_l].MinA.lnk.prmName == id) return i_l * 43 + 6;
+		    if (data[i_l].MaxA.lnk.prmName == id) return i_l * 43 + 7;
+		    if (data[i_l].Sensors.lnk.prmName == id) return i_l * 43 + 8;
+		    if (data[i_l].ServiceQ.lnk.prmName == id) return i_l * 43 + 9;
+		    if (data[i_l].Hour.lnk.prmName == id) return i_l * 43 + 10;
+		    if (data[i_l].HourlyQ.lnk.prmName == id) return i_l * 43 + 11;
+		    if (data[i_l].Counter.lnk.prmName == id) return i_l * 43 + 12;
+		    if (data[i_l].HourQ.lnk.prmName == id) return i_l * 43 + 13;
+		    if (data[i_l].HourdP.lnk.prmName == id) return i_l * 43 + 14;
+		    if (data[i_l].HourT.lnk.prmName == id) return i_l * 43 + 15;
+		    if (data[i_l].HourP.lnk.prmName == id) return i_l * 43 + 16;
+		    if (data[i_l].HourE.lnk.prmName == id) return i_l * 43 + 17;
+		    if (data[i_l].AvgQ.lnk.prmName == id) return i_l * 43 + 18;
+		    if (data[i_l].AvgdP.lnk.prmName == id) return i_l * 43 + 19;
+		    if (data[i_l].AvgT.lnk.prmName == id) return i_l * 43 + 20;
+		    if (data[i_l].AvgP.lnk.prmName == id) return i_l * 43 + 21;
+		    if (data[i_l].AvgE.lnk.prmName == id) return i_l * 43 + 22;
+		    if (data[i_l].PeriodQ.lnk.prmName == id) return i_l * 43 + 23;
+		    if (data[i_l].Density.lnk.prmName == id) return i_l * 43 + 24;
+		    if (data[i_l].Asperity.lnk.prmName == id) return i_l * 43 + 25;
+		    if (data[i_l].ConcentrN.lnk.prmName == id) return i_l * 43 + 26;
+		    if (data[i_l].ConcentrCO.lnk.prmName == id) return i_l * 43 + 27;
+		    if (data[i_l].DiameterM.lnk.prmName == id) return i_l * 43 + 28;
+		    if (data[i_l].FactorM.lnk.prmName == id) return i_l * 43 + 29;
+		    if (data[i_l].DiameterP.lnk.prmName == id) return i_l * 43 + 30;
+		    if (data[i_l].FactorP.lnk.prmName == id) return i_l * 43 + 31;
+		    if (data[i_l].MethodM.lnk.prmName == id) return i_l * 43 + 32;
+		    if (data[i_l].TestdP.lnk.prmName == id) return i_l * 43 + 33;
+		    if (data[i_l].TestT.lnk.prmName == id) return i_l * 43 + 34;
+		    if (data[i_l].TestP.lnk.prmName == id) return i_l * 43 + 35;
+		    if (data[i_l].TestQ.lnk.prmName == id) return i_l * 43 + 36;
+		    if (data[i_l].RadiusM.lnk.prmName == id) return i_l * 43 + 37;
+		    if (data[i_l].PressureA.lnk.prmName == id) return i_l * 43 + 38;
+		    if (data[i_l].dP.lnk.prmName == id) return i_l * 43 + 39;
+		    if (data[i_l].T.lnk.prmName == id) return i_l * 43 + 40;
+		    if (data[i_l].P.lnk.prmName == id) return i_l * 43 + 41;
+		    if (data[i_l].E.lnk.prmName == id) return i_l * 43 + 42;
 		}
 	    } else {
-		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].State.lnk.prmName == id) return i_l * 2;
-		    if(data[i_l].Value.lnk.prmName == id) return i_l * 2 + 1;
+		for (int i_l = 0; i_l < data.size(); i_l++) {
+		    if (data[i_l].State.lnk.prmName == id) return i_l * 2;
+		    if (data[i_l].Value.lnk.prmName == id) return i_l * 2 + 1;
 		}
 	    }
 	    return -1;
@@ -174,12 +173,12 @@ namespace FT3
 	SLnk &lnk(int num)
 	{
 	    int k;
-	    if(with_params) {
+
+	    if (with_params)
 		k = 43;
-	    } else {
+	    else
 		k = 2;
-	    }
-	    switch(num % k) {
+	    switch (num % k) {
 	    case 0:
 		return data[num / k].State.lnk;
 	    case 1:
@@ -269,7 +268,7 @@ namespace FT3
 
 	    }
 	}
-    };
+};
 
 } //End namespace
 

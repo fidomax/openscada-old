@@ -1,21 +1,21 @@
 ﻿/***************************************************************************
- *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
- *   fido_max@inbox.ru                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; version 2 of the License.               *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+*   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
+*   fido_max@inbox.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; version 2 of the License.               *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
 #ifndef DA_GKR_H
 #define DA_GKR_H
 
@@ -24,8 +24,8 @@
 #define c_p 7   //chanell size without params
 namespace FT3
 {
-    class B_GKR: public DA
-    {
+class B_GKR : public DA
+{
     public:
 	//Methods
 	B_GKR(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
@@ -49,8 +49,8 @@ namespace FT3
 
 	class SKRchannel
 	{
-	public:
-	    SKRchannel(uint8_t iid, DA* owner) : da(owner),
+	    public:
+		SKRchannel(uint8_t iid, DA* owner) : da(owner),
 		    id(iid), State(TSYS::strMess("state_%d", id + 1), TSYS::strMess(_("State %d"), id + 1)),
 		    On(TSYS::strMess("on_%d", id + 1), TSYS::strMess(_("On %d"), id + 1)),
 		    Off(TSYS::strMess("off_%d", id + 1), TSYS::strMess(_("Off %d"), id + 1)),
@@ -63,52 +63,51 @@ namespace FT3
 		    ExTime(TSYS::strMess("extime_%d", id + 1), TSYS::strMess(_("ExTime %d"), id + 1)),
 		    Time_Lub(TSYS::strMess("timelub_%d", id + 1), TSYS::strMess(_("Time_Lub %d"), id + 1)),
 		    Timeout_PO(TSYS::strMess("timeout_po_%d", id + 1), TSYS::strMess(_("Timeout_PO %d"), id + 1))
-	    {
-	    }
-	    DA* da;
-	    uint8_t id;
+		{
+		}
+		DA* da;
+		uint8_t id;
 
-	    ui8Data State, On, Off, Run, Reset, Lock, Lubrication;
-	    ui16Data Time, Time_Lub, ExTime,  Timeout_PO;
+		ui8Data State, On, Off, Run, Reset, Lock, Lubrication;
+		ui16Data Time, Time_Lub, ExTime,  Timeout_PO;
 
-	    void UpdateState(uint16_t ID, uint8_t cl);
+		void UpdateState(uint16_t ID, uint8_t cl);
 	};
 	vector<SKRchannel> data;
 
 	int lnkSize()
 	{
-	    if(with_params) {
-		return data.size() * c_wp; //params SKRchannel
-	    } else {
-		return data.size() * c_p; //params SKRchannel
-	    }
+	    if (with_params)
+		return data.size() * c_wp;      //params SKRchannel
+	    else
+		return data.size() * c_p;       //params SKRchannel
 	}
 	int lnkId(const string &id)
 	{
-	    if(with_params) {
-		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].State.lnk.prmName == id) return i_l * c_wp;
-		    if(data[i_l].On.lnk.prmName == id) return i_l * c_wp + 1;
-		    if(data[i_l].Off.lnk.prmName == id) return i_l * c_wp + 2;
-		    if(data[i_l].Run.lnk.prmName == id) return i_l * c_wp + 3;
-		    if(data[i_l].Reset.lnk.prmName == id) return i_l * c_wp + 4;
-		    if(data[i_l].Lock.lnk.prmName == id) return i_l * c_wp + 5;
-		    if(data[i_l].Lubrication.lnk.prmName == id) return i_l * c_wp + 6;
+	    if (with_params) {
+		for (int i_l = 0; i_l < data.size(); i_l++) {
+		    if (data[i_l].State.lnk.prmName == id) return i_l * c_wp;
+		    if (data[i_l].On.lnk.prmName == id) return i_l * c_wp + 1;
+		    if (data[i_l].Off.lnk.prmName == id) return i_l * c_wp + 2;
+		    if (data[i_l].Run.lnk.prmName == id) return i_l * c_wp + 3;
+		    if (data[i_l].Reset.lnk.prmName == id) return i_l * c_wp + 4;
+		    if (data[i_l].Lock.lnk.prmName == id) return i_l * c_wp + 5;
+		    if (data[i_l].Lubrication.lnk.prmName == id) return i_l * c_wp + 6;
 
-		    if(data[i_l].Time.lnk.prmName == id) return i_l * c_wp + 7;
-		    if(data[i_l].ExTime.lnk.prmName == id) return i_l * c_wp + 8;
-		    if(data[i_l].Time_Lub.lnk.prmName == id) return i_l * c_wp + 9;
-		    if(data[i_l].Timeout_PO.lnk.prmName == id) return i_l * c_wp + 10;
+		    if (data[i_l].Time.lnk.prmName == id) return i_l * c_wp + 7;
+		    if (data[i_l].ExTime.lnk.prmName == id) return i_l * c_wp + 8;
+		    if (data[i_l].Time_Lub.lnk.prmName == id) return i_l * c_wp + 9;
+		    if (data[i_l].Timeout_PO.lnk.prmName == id) return i_l * c_wp + 10;
 		}
 	    } else {
-		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].State.lnk.prmName == id) return i_l * c_p;
-		    if(data[i_l].On.lnk.prmName == id) return i_l * c_p + 1;
-		    if(data[i_l].Off.lnk.prmName == id) return i_l * c_p + 2;
-		    if(data[i_l].Run.lnk.prmName == id) return i_l * c_p + 3;
-		    if(data[i_l].Reset.lnk.prmName == id) return i_l * c_p + 4;
-		    if(data[i_l].Lock.lnk.prmName == id) return i_l * c_p + 5;
-		    if(data[i_l].Lubrication.lnk.prmName == id) return i_l * c_p + 6;
+		for (int i_l = 0; i_l < data.size(); i_l++) {
+		    if (data[i_l].State.lnk.prmName == id) return i_l * c_p;
+		    if (data[i_l].On.lnk.prmName == id) return i_l * c_p + 1;
+		    if (data[i_l].Off.lnk.prmName == id) return i_l * c_p + 2;
+		    if (data[i_l].Run.lnk.prmName == id) return i_l * c_p + 3;
+		    if (data[i_l].Reset.lnk.prmName == id) return i_l * c_p + 4;
+		    if (data[i_l].Lock.lnk.prmName == id) return i_l * c_p + 5;
+		    if (data[i_l].Lubrication.lnk.prmName == id) return i_l * c_p + 6;
 		}
 	    }
 
@@ -116,9 +115,9 @@ namespace FT3
 	}
 	SLnk &lnk(int num)
 	{
-	    if(with_params) {
-		if((data.size() > 0) && ((data.size() * c_wp) > num)) {
-		    switch(num % c_wp) {
+	    if (with_params) {
+		if ((data.size() > 0) && ((data.size() * c_wp) > num)) {
+		    switch (num % c_wp) {
 		    case 0:
 			return data[num / c_wp].State.lnk;
 			break;
@@ -155,8 +154,8 @@ namespace FT3
 		    }
 		}
 	    } else {
-		if((data.size() > 0) && ((data.size() * c_p) > num)) {
-		    switch(num % c_p) {
+		if ((data.size() > 0) && ((data.size() * c_p) > num)) {
+		    switch (num % c_p) {
 		    case 0:
 			return data[num / c_p].State.lnk;
 			break;
@@ -182,7 +181,7 @@ namespace FT3
 		}
 	    }
 	}
-    };
+};
 
 } //End namespace
 

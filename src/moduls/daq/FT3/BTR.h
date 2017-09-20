@@ -1,21 +1,21 @@
 /***************************************************************************
- *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
- *   fido_max@inbox.ru                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; version 2 of the License.               *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+*   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
+*   fido_max@inbox.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; version 2 of the License.               *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
 #ifndef DA_BTR_H
 #define DA_BTR_H
 
@@ -23,13 +23,12 @@
 
 namespace FT3
 {
-    enum eKA_BTU_State
-    {
-	KA_BTU_Error = 0x0,
-	KA_BTU_Normal = 0x1
-    };
-    class KA_BTU: public DA
-    {
+enum eKA_BTU_State {
+    KA_BTU_Error = 0x0,
+    KA_BTU_Normal = 0x1
+};
+class KA_BTU : public DA
+{
     public:
 	//Methods
 	KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params);
@@ -57,54 +56,49 @@ namespace FT3
 	void tmHandler(void);
 	class SKATUchannel
 	{
-	public:
-	    SKATUchannel(uint8_t iid, DA* owner) :
+	    public:
+		SKATUchannel(uint8_t iid, DA* owner) :
 		    da(owner), id(iid), iTY(0), Line(TSYS::strMess("Line_%d", id + 1), TSYS::strMess(_("Line %d"), id + 1))
-	    {
-		for(int i = 0; i < 16; i++) {
-		    Time.push_back(ui16Data(TSYS::strMess("Time%d_%d", i + 1, id + 1), TSYS::strMess(_("Time #%d %d"), i + 1, id + 1)));
+		{
+		    for (int i = 0; i < 16; i++)
+			Time.push_back(ui16Data(TSYS::strMess("Time%d_%d", i + 1, id + 1), TSYS::strMess(_("Time #%d %d"), i + 1, id + 1)));
 		}
-	    }
-	    DA* da;
-	    uint8_t id;
-	    ui16Data Line;
-	    uint8_t iTY;
-	    vector<ui16Data> Time;
+		DA* da;
+		uint8_t id;
+		ui16Data Line;
+		uint8_t iTY;
+		vector<ui16Data> Time;
 	};
 	vector<SKATUchannel> TUdata;
 	int lnkSize()
 	{
-	    if(with_params) {
+	    if (with_params)
 		return TUdata.size() * 17;
-	    } else {
+	    else
 		return TUdata.size() * 1;
-	    }
 	}
 	int lnkId(const string &id)
 	{
-	    if(with_params) {
-		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
-		    if(TUdata[i_l].Line.lnk.prmName == id) return i_l * 17;
-		    for(int i = 0; i < 16; i++) {
-			if(TUdata[i_l].Time[i].lnk.prmName == id) return i_l * 17 + i + 1;
-		    }
+	    if (with_params) {
+		for (int i_l = 0; i_l < TUdata.size(); i_l++) {
+		    if (TUdata[i_l].Line.lnk.prmName == id) return i_l * 17;
+		    for (int i = 0; i < 16; i++)
+			if (TUdata[i_l].Time[i].lnk.prmName == id) return i_l * 17 + i + 1;
 		}
-	    } else {
-		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
-		    if(TUdata[i_l].Line.lnk.prmName == id) return i_l;
-		}
-	    }
+	    } else
+		for (int i_l = 0; i_l < TUdata.size(); i_l++)
+		    if (TUdata[i_l].Line.lnk.prmName == id) return i_l;
 	    return -1;
 	}
 	SLnk &lnk(int num)
 	{
 	    int k;
-	    if(with_params) {
+
+	    if (with_params)
 		k = 17;
-	    } else {
+	    else
 		k = 1;
-	    }
-	    switch(num % k) {
+	    switch (num % k) {
 	    case 0:
 		return TUdata[num / k].Line.lnk;
 	    case 1:
@@ -126,11 +120,11 @@ namespace FT3
 		return TUdata[num / k].Time[num % k - 1].lnk;
 	    }
 	}
-    }
-    ;
+}
+;
 
-    class B_BTR: public DA
-    {
+class B_BTR : public DA
+{
     public:
 	//Methods
 	B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params);
@@ -155,20 +149,20 @@ namespace FT3
 	void tmHandler(void);
 	class STRchannel
 	{
-	public:
-	    STRchannel(uint8_t iid, DA* owner) :
+	    public:
+		STRchannel(uint8_t iid, DA* owner) :
 		    da(owner), id(iid), Value(TSYS::strMess("value_%d", id + 1), TSYS::strMess(_("Value %d"), id + 1))
-	    {
-	    }
-	    DA* da;
-	    uint8_t id;
+		{
+		}
+		DA* da;
+		uint8_t id;
 
-	    flData Value;
+		flData Value;
 	};
 	class STUchannel
 	{
-	public:
-	    STUchannel(uint8_t iid, DA* owner) :
+	    public:
+		STUchannel(uint8_t iid, DA* owner) :
 		    da(owner), id(iid), On(TSYS::strMess("on_%d", id + 1), TSYS::strMess(_("On %d"), id + 1)),
 		    Off(TSYS::strMess("off_%d", id + 1), TSYS::strMess(_("Off %d"), id + 1)),
 		    Run(TSYS::strMess("run_%d", id + 1), TSYS::strMess(_("Run %d"), id + 1)),
@@ -177,60 +171,57 @@ namespace FT3
 		    TC(TSYS::strMess("tc_%d", id + 1), TSYS::strMess(_("TC %d"), id + 1)),
 		    ExTime(TSYS::strMess("extime_%d", id + 1), TSYS::strMess(_("ExTime %d"), id + 1))
 
-	    {
-	    }
-	    DA* da;
-	    uint8_t id;
+		{
+		}
+		DA* da;
+		uint8_t id;
 
-	    ui8Data On, Off, Run, Reset;
-	    ui16Data TC;
-	    ui16Data Time;
-	    ui8Data ExTime;
+		ui8Data On, Off, Run, Reset;
+		ui16Data TC;
+		ui16Data Time;
+		ui8Data ExTime;
 	};
 	vector<STRchannel> TRdata;
 	vector<STUchannel> TUdata;
 	int lnkSize()
 	{
-	    if(with_params) {
+	    if (with_params)
 		return TUdata.size() * 7 + TRdata.size();
-	    } else {
+	    else
 		return TUdata.size() * 4 + TRdata.size();
-	    }
 	}
 	int lnkId(const string &id)
 	{
-	    if(with_params) {
-		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
-		    if(TUdata[i_l].On.lnk.prmName == id) return i_l * 7;
-		    if(TUdata[i_l].Off.lnk.prmName == id) return i_l * 7 + 1;
-		    if(TUdata[i_l].Run.lnk.prmName == id) return i_l * 7 + 2;
-		    if(TUdata[i_l].Reset.lnk.prmName == id) return i_l * 7 + 3;
-		    if(TUdata[i_l].Time.lnk.prmName == id) return i_l * 7 + 4;
-		    if(TUdata[i_l].TC.lnk.prmName == id) return i_l * 7 + 5;
-		    if(TUdata[i_l].ExTime.lnk.prmName == id) return i_l * 7 + 6;
+	    if (with_params) {
+		for (int i_l = 0; i_l < TUdata.size(); i_l++) {
+		    if (TUdata[i_l].On.lnk.prmName == id) return i_l * 7;
+		    if (TUdata[i_l].Off.lnk.prmName == id) return i_l * 7 + 1;
+		    if (TUdata[i_l].Run.lnk.prmName == id) return i_l * 7 + 2;
+		    if (TUdata[i_l].Reset.lnk.prmName == id) return i_l * 7 + 3;
+		    if (TUdata[i_l].Time.lnk.prmName == id) return i_l * 7 + 4;
+		    if (TUdata[i_l].TC.lnk.prmName == id) return i_l * 7 + 5;
+		    if (TUdata[i_l].ExTime.lnk.prmName == id) return i_l * 7 + 6;
 		}
-		for(int i_l = 0; i_l < TRdata.size(); i_l++) {
-		    if(TRdata[i_l].Value.lnk.prmName == id) return i_l + TUdata.size() * 7;
-		}
+		for (int i_l = 0; i_l < TRdata.size(); i_l++)
+		    if (TRdata[i_l].Value.lnk.prmName == id) return i_l + TUdata.size() * 7;
 	    } else {
-		for(int i_l = 0; i_l < TUdata.size(); i_l++) {
-		    if(TUdata[i_l].On.lnk.prmName == id) return i_l * 4;
-		    if(TUdata[i_l].Off.lnk.prmName == id) return i_l * 4 + 1;
-		    if(TUdata[i_l].Run.lnk.prmName == id) return i_l * 4 + 2;
-		    if(TUdata[i_l].Reset.lnk.prmName == id) return i_l * 4 + 3;
+		for (int i_l = 0; i_l < TUdata.size(); i_l++) {
+		    if (TUdata[i_l].On.lnk.prmName == id) return i_l * 4;
+		    if (TUdata[i_l].Off.lnk.prmName == id) return i_l * 4 + 1;
+		    if (TUdata[i_l].Run.lnk.prmName == id) return i_l * 4 + 2;
+		    if (TUdata[i_l].Reset.lnk.prmName == id) return i_l * 4 + 3;
 		}
-		for(int i_l = 0; i_l < TRdata.size(); i_l++) {
-		    if(TRdata[i_l].Value.lnk.prmName == id) return i_l + TUdata.size() * 4;
-		}
+		for (int i_l = 0; i_l < TRdata.size(); i_l++)
+		    if (TRdata[i_l].Value.lnk.prmName == id) return i_l + TUdata.size() * 4;
 	    }
 
 	    return -1;
 	}
 	SLnk &lnk(int num)
 	{
-	    if(with_params) {
-		if((TUdata.size() > 0) && ((TUdata.size() * 7) > num)) {
-		    switch(num % 7) {
+	    if (with_params) {
+		if ((TUdata.size() > 0) && ((TUdata.size() * 7) > num)) {
+		    switch (num % 7) {
 		    case 0:
 			return TUdata[num / 7].On.lnk;
 		    case 1:
@@ -246,12 +237,11 @@ namespace FT3
 		    case 6:
 			return TUdata[num / 7].ExTime.lnk;
 		    }
-		} else {
+		} else
 		    return TRdata[num - TUdata.size() * 7].Value.lnk;
-		}
 	    } else {
-		if((TUdata.size() > 0) && ((TUdata.size() * 4) > num)) {
-		    switch(num % 4) {
+		if ((TUdata.size() > 0) && ((TUdata.size() * 4) > num)) {
+		    switch (num % 4) {
 		    case 0:
 			return TUdata[num / 4].On.lnk;
 		    case 1:
@@ -262,13 +252,12 @@ namespace FT3
 			return TUdata[num / 4].Reset.lnk;
 
 		    }
-		} else {
+		} else
 		    return TRdata[num - TUdata.size() * 4].Value.lnk;
-		}
 	    }
 
 	}
-    };
+};
 
 } //End namespace
 

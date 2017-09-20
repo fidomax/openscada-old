@@ -1,21 +1,21 @@
 /***************************************************************************
- *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
- *   fido_max@inbox.ru                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; version 2 of the License.               *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+*   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
+*   fido_max@inbox.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; version 2 of the License.               *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
 #ifndef DA_BVT_H
 #define DA_BVT_H
 
@@ -23,31 +23,29 @@
 
 namespace FT3
 {
-    enum eKA_BVT_TT
-    {
-	TT_FAILURE = 0, TT_NORMAL = 1, TT_WARNING = 2, TT_ERROR = 3, TT_OFF = 4
-    };
-    enum eKA_BVT_State
-    {
-	KA_BVT_Error = 0x0, KA_BVT_Normal = 0x1
-    };
-    struct KATTParams  // FT3 ID
-    {
-	uint8_t Period;
-	float Sens;
-	float MinS;
-	float MaxS;
-	float MinPV;
-	float MaxPV;
-	float MinA;
-	float MaxA;
-	float MinW;
-	float MaxW;
-	float Factor;
-	float Adjust;
-    }__attribute__((packed));
-    class KA_BVT: public DA
-    {
+enum eKA_BVT_TT {
+    TT_FAILURE = 0, TT_NORMAL = 1, TT_WARNING = 2, TT_ERROR = 3, TT_OFF = 4
+};
+enum eKA_BVT_State {
+    KA_BVT_Error = 0x0, KA_BVT_Normal = 0x1
+};
+struct KATTParams      // FT3 ID
+{
+    uint8_t Period;
+    float Sens;
+    float MinS;
+    float MaxS;
+    float MinPV;
+    float MaxPV;
+    float MinA;
+    float MaxA;
+    float MinW;
+    float MaxW;
+    float Factor;
+    float Adjust;
+} __attribute__((packed));
+class KA_BVT : public DA
+{
     public:
 	//Methods
 	KA_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
@@ -66,29 +64,29 @@ namespace FT3
 	void tmHandler(void);
 	uint16_t config;
 /*	int lnkSize()
-	{
-		return 0;
-	}
-	int lnkId(const string &id)
-	{
-	    //throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
-	    return -1;
-	}
+        {
+                return 0;
+        }
+        int lnkId(const string &id)
+        {
+            //throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+            return -1;
+        }
 
-	DA::SLnk &lnk(int num);
-	{
-	    throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
-	}
+        DA::SLnk &lnk(int num);
+        {
+            throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+        }
 
-	SLnk &lnk(int num);
-	{
-	    throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
-	}*/
+        SLnk &lnk(int num);
+        {
+            throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
+        }*/
 
-    };
+};
 
-    class KA_TT: public DA
-    {
+class KA_TT : public DA
+{
     public:
 	//Methods
 	KA_TT(TMdPrm& prm, DA &parent, uint16_t id, bool has_params);
@@ -130,30 +128,30 @@ namespace FT3
 	}
 	int lnkId(const string &id)
 	{
-	    if(with_params) {
-	        if(State.lnk.prmName == id) return 0;
-	        if(Value.lnk.prmName == id) return 1;
-	        if(Period.lnk.prmName == id) return 2;
-	        if(Sens.lnk.prmName == id) return 3;
-	        if(MinS.lnk.prmName == id) return 4;
-	        if(MaxS.lnk.prmName == id) return 5;
-	        if(MinPV.lnk.prmName == id) return 6;
-	        if(MaxPV.lnk.prmName == id) return 7;
-	        if(MinW.lnk.prmName == id) return 8;
-	        if(MaxW.lnk.prmName == id) return 9;
-	        if(MinA.lnk.prmName == id) return 10;
-	        if(MaxA.lnk.prmName == id) return 11;
-	        if(Factor.lnk.prmName == id) return 12;
-	        if(Adjust.lnk.prmName == id) return 13;
+	    if (with_params) {
+		if (State.lnk.prmName == id) return 0;
+		if (Value.lnk.prmName == id) return 1;
+		if (Period.lnk.prmName == id) return 2;
+		if (Sens.lnk.prmName == id) return 3;
+		if (MinS.lnk.prmName == id) return 4;
+		if (MaxS.lnk.prmName == id) return 5;
+		if (MinPV.lnk.prmName == id) return 6;
+		if (MaxPV.lnk.prmName == id) return 7;
+		if (MinW.lnk.prmName == id) return 8;
+		if (MaxW.lnk.prmName == id) return 9;
+		if (MinA.lnk.prmName == id) return 10;
+		if (MaxA.lnk.prmName == id) return 11;
+		if (Factor.lnk.prmName == id) return 12;
+		if (Adjust.lnk.prmName == id) return 13;
 	    } else {
-	        if(State.lnk.prmName == id) return 0;
-	        if(Value.lnk.prmName == id) return 1;
+		if (State.lnk.prmName == id) return 0;
+		if (Value.lnk.prmName == id) return 1;
 	    }
 	    return -1;
 	}
 	SLnk &lnk(int num)
 	{
-	    switch(num) {
+	    switch (num) {
 	    case 0:
 		return State.lnk;
 	    case 1:
@@ -184,10 +182,10 @@ namespace FT3
 		return Adjust.lnk;
 	    }
 	}
-    };
+};
 
-    class B_BVT: public DA
-    {
+class B_BVT : public DA
+{
     public:
 	//Methods
 	B_BVT(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_k, bool has_rate);
@@ -211,8 +209,8 @@ namespace FT3
 	void tmHandler(void);
 	class STTchannel
 	{
-	public:
-	    STTchannel(uint8_t iid, DA* owner) :
+	    public:
+		STTchannel(uint8_t iid, DA* owner) :
 		    da(owner), id(iid), State(TSYS::strMess("state_%d", id + 1), TSYS::strMess(_("State %d"), id + 1)),
 		    Value(TSYS::strMess("value_%d", id + 1), TSYS::strMess(_("Value %d"), id + 1)),
 		    Period(TSYS::strMess("period_%d", id + 1), TSYS::strMess(_("Measure period %d"), id + 1)),
@@ -232,102 +230,97 @@ namespace FT3
 		    Calcs(TSYS::strMess("calcs_%d", id + 1), TSYS::strMess(_("Calcs count %d"), id + 1)),
 		    RateSens(TSYS::strMess("ratesens_%d", id + 1), TSYS::strMess(_("Rate sensitivity %d"), id + 1)),
 		    RateLimit(TSYS::strMess("ratelimit_%d", id + 1), TSYS::strMess(_("Rate limit %d"), id + 1))
-	    {
-	    }
-	    DA* da;
-	    uint8_t id;
+		{
+		}
+		DA* da;
+		uint8_t id;
 
-	    ui8Data State, Period, Dimension, Calcs;
+		ui8Data State, Period, Dimension, Calcs;
 
-	    flData Value, Sens, MinS, MaxS, MinPV, MaxPV, MinW, MaxW, MinA, MaxA, Factor, CorFactor, Rate, RateSens, RateLimit;
+		flData Value, Sens, MinS, MaxS, MinPV, MaxPV, MinW, MaxW, MinA, MaxA, Factor, CorFactor, Rate, RateSens, RateLimit;
 	};
 	vector<STTchannel> data;
 	int lnkSize()
 	{
-	    if(with_params) {
-		if(with_k) {
-		    if(with_rate) {
+	    if (with_params) {
+		if (with_k) {
+		    if (with_rate)
 			return data.size() * 19;
-		    } else {
+		    else
 			return data.size() * 15;
-		    }
-		} else {
+		} else
 		    return data.size() * 14;
-		}
-	    } else {
+	    } else
 		return data.size() * 2;
-	    }
 	}
 	int lnkId(const string &id)
 	{
 
-	    if(with_rate) {
-		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].State.lnk.prmName == id) return i_l * 19;
-		    if(data[i_l].Value.lnk.prmName == id) return i_l * 19 + 1;
-		    if(data[i_l].Period.lnk.prmName == id) return i_l * 19 + 2;
-		    if(data[i_l].Sens.lnk.prmName == id) return i_l * 19 + 3;
-		    if(data[i_l].MinS.lnk.prmName == id) return i_l * 19 + 4;
-		    if(data[i_l].MaxS.lnk.prmName == id) return i_l * 19 + 5;
-		    if(data[i_l].MinPV.lnk.prmName == id) return i_l * 19 + 6;
-		    if(data[i_l].MaxPV.lnk.prmName == id) return i_l * 19 + 7;
-		    if(data[i_l].MinW.lnk.prmName == id) return i_l * 19 + 8;
-		    if(data[i_l].MaxW.lnk.prmName == id) return i_l * 19 + 9;
-		    if(data[i_l].MinA.lnk.prmName == id) return i_l * 19 + 10;
-		    if(data[i_l].MaxA.lnk.prmName == id) return i_l * 19 + 11;
-		    if(data[i_l].Factor.lnk.prmName == id) return i_l * 19 + 12;
-		    if(data[i_l].Dimension.lnk.prmName == id) return i_l * 19 + 13;
-		    if(data[i_l].CorFactor.lnk.prmName == id) return i_l * 19 + 14;
-		    if(data[i_l].Rate.lnk.prmName == id) return i_l * 19 + 15;
-		    if(data[i_l].Calcs.lnk.prmName == id) return i_l * 19 + 16;
-		    if(data[i_l].RateSens.lnk.prmName == id) return i_l * 19 + 17;
-		    if(data[i_l].RateLimit.lnk.prmName == id) return i_l * 19 + 18;
+	    if (with_rate) {
+		for (int i_l = 0; i_l < data.size(); i_l++) {
+		    if (data[i_l].State.lnk.prmName == id) return i_l * 19;
+		    if (data[i_l].Value.lnk.prmName == id) return i_l * 19 + 1;
+		    if (data[i_l].Period.lnk.prmName == id) return i_l * 19 + 2;
+		    if (data[i_l].Sens.lnk.prmName == id) return i_l * 19 + 3;
+		    if (data[i_l].MinS.lnk.prmName == id) return i_l * 19 + 4;
+		    if (data[i_l].MaxS.lnk.prmName == id) return i_l * 19 + 5;
+		    if (data[i_l].MinPV.lnk.prmName == id) return i_l * 19 + 6;
+		    if (data[i_l].MaxPV.lnk.prmName == id) return i_l * 19 + 7;
+		    if (data[i_l].MinW.lnk.prmName == id) return i_l * 19 + 8;
+		    if (data[i_l].MaxW.lnk.prmName == id) return i_l * 19 + 9;
+		    if (data[i_l].MinA.lnk.prmName == id) return i_l * 19 + 10;
+		    if (data[i_l].MaxA.lnk.prmName == id) return i_l * 19 + 11;
+		    if (data[i_l].Factor.lnk.prmName == id) return i_l * 19 + 12;
+		    if (data[i_l].Dimension.lnk.prmName == id) return i_l * 19 + 13;
+		    if (data[i_l].CorFactor.lnk.prmName == id) return i_l * 19 + 14;
+		    if (data[i_l].Rate.lnk.prmName == id) return i_l * 19 + 15;
+		    if (data[i_l].Calcs.lnk.prmName == id) return i_l * 19 + 16;
+		    if (data[i_l].RateSens.lnk.prmName == id) return i_l * 19 + 17;
+		    if (data[i_l].RateLimit.lnk.prmName == id) return i_l * 19 + 18;
 		}
 	    } else {
-		if(with_k) {
-		    for(int i_l = 0; i_l < data.size(); i_l++) {
-			if(data[i_l].State.lnk.prmName == id) return i_l * 15;
-			if(data[i_l].Value.lnk.prmName == id) return i_l * 15 + 1;
-			if(data[i_l].Period.lnk.prmName == id) return i_l * 15 + 2;
-			if(data[i_l].Sens.lnk.prmName == id) return i_l * 15 + 3;
-			if(data[i_l].MinS.lnk.prmName == id) return i_l * 15 + 4;
-			if(data[i_l].MaxS.lnk.prmName == id) return i_l * 15 + 5;
-			if(data[i_l].MinPV.lnk.prmName == id) return i_l * 15 + 6;
-			if(data[i_l].MaxPV.lnk.prmName == id) return i_l * 15 + 7;
-			if(data[i_l].MinW.lnk.prmName == id) return i_l * 15 + 8;
-			if(data[i_l].MaxW.lnk.prmName == id) return i_l * 15 + 9;
-			if(data[i_l].MinA.lnk.prmName == id) return i_l * 15 + 10;
-			if(data[i_l].MaxA.lnk.prmName == id) return i_l * 15 + 11;
-			if(data[i_l].Factor.lnk.prmName == id) return i_l * 15 + 12;
-			if(data[i_l].Dimension.lnk.prmName == id) return i_l * 15 + 13;
-			if(data[i_l].CorFactor.lnk.prmName == id) return i_l * 15 + 14;
+		if (with_k) {
+		    for (int i_l = 0; i_l < data.size(); i_l++) {
+			if (data[i_l].State.lnk.prmName == id) return i_l * 15;
+			if (data[i_l].Value.lnk.prmName == id) return i_l * 15 + 1;
+			if (data[i_l].Period.lnk.prmName == id) return i_l * 15 + 2;
+			if (data[i_l].Sens.lnk.prmName == id) return i_l * 15 + 3;
+			if (data[i_l].MinS.lnk.prmName == id) return i_l * 15 + 4;
+			if (data[i_l].MaxS.lnk.prmName == id) return i_l * 15 + 5;
+			if (data[i_l].MinPV.lnk.prmName == id) return i_l * 15 + 6;
+			if (data[i_l].MaxPV.lnk.prmName == id) return i_l * 15 + 7;
+			if (data[i_l].MinW.lnk.prmName == id) return i_l * 15 + 8;
+			if (data[i_l].MaxW.lnk.prmName == id) return i_l * 15 + 9;
+			if (data[i_l].MinA.lnk.prmName == id) return i_l * 15 + 10;
+			if (data[i_l].MaxA.lnk.prmName == id) return i_l * 15 + 11;
+			if (data[i_l].Factor.lnk.prmName == id) return i_l * 15 + 12;
+			if (data[i_l].Dimension.lnk.prmName == id) return i_l * 15 + 13;
+			if (data[i_l].CorFactor.lnk.prmName == id) return i_l * 15 + 14;
 		    }
 		} else {
-		    if(with_params) {
-			for(int i_l = 0; i_l < data.size(); i_l++) {
-			    if(data[i_l].State.lnk.prmName == id) return i_l * 14;
-			    if(data[i_l].Value.lnk.prmName == id) return i_l * 14 + 1;
-			    if(data[i_l].Period.lnk.prmName == id) return i_l * 14 + 2;
-			    if(data[i_l].Sens.lnk.prmName == id) return i_l * 14 + 3;
-			    if(data[i_l].MinS.lnk.prmName == id) return i_l * 14 + 4;
-			    if(data[i_l].MaxS.lnk.prmName == id) return i_l * 14 + 5;
-			    if(data[i_l].MinPV.lnk.prmName == id) return i_l * 14 + 6;
-			    if(data[i_l].MaxPV.lnk.prmName == id) return i_l * 14 + 7;
-			    if(data[i_l].MinW.lnk.prmName == id) return i_l * 14 + 8;
-			    if(data[i_l].MaxW.lnk.prmName == id) return i_l * 14 + 9;
-			    if(data[i_l].MinA.lnk.prmName == id) return i_l * 14 + 10;
-			    if(data[i_l].MaxA.lnk.prmName == id) return i_l * 14 + 11;
-			    if(data[i_l].Factor.lnk.prmName == id) return i_l * 14 + 12;
-			    if(data[i_l].Dimension.lnk.prmName == id) return i_l * 14 + 13;
+		    if (with_params) {
+			for (int i_l = 0; i_l < data.size(); i_l++) {
+			    if (data[i_l].State.lnk.prmName == id) return i_l * 14;
+			    if (data[i_l].Value.lnk.prmName == id) return i_l * 14 + 1;
+			    if (data[i_l].Period.lnk.prmName == id) return i_l * 14 + 2;
+			    if (data[i_l].Sens.lnk.prmName == id) return i_l * 14 + 3;
+			    if (data[i_l].MinS.lnk.prmName == id) return i_l * 14 + 4;
+			    if (data[i_l].MaxS.lnk.prmName == id) return i_l * 14 + 5;
+			    if (data[i_l].MinPV.lnk.prmName == id) return i_l * 14 + 6;
+			    if (data[i_l].MaxPV.lnk.prmName == id) return i_l * 14 + 7;
+			    if (data[i_l].MinW.lnk.prmName == id) return i_l * 14 + 8;
+			    if (data[i_l].MaxW.lnk.prmName == id) return i_l * 14 + 9;
+			    if (data[i_l].MinA.lnk.prmName == id) return i_l * 14 + 10;
+			    if (data[i_l].MaxA.lnk.prmName == id) return i_l * 14 + 11;
+			    if (data[i_l].Factor.lnk.prmName == id) return i_l * 14 + 12;
+			    if (data[i_l].Dimension.lnk.prmName == id) return i_l * 14 + 13;
 			}
 		    } else {
-			for(int i_l = 0; i_l < data.size(); i_l++) {
-			    if(data[i_l].State.lnk.prmName == id) {
+			for (int i_l = 0; i_l < data.size(); i_l++) {
+			    if (data[i_l].State.lnk.prmName == id)
 				return i_l * 2;
-			    }
-			    if(data[i_l].Value.lnk.prmName == id) {
+			    if (data[i_l].Value.lnk.prmName == id)
 				return i_l * 2 + 1;
-			    }
 			}
 		    }
 		}
@@ -337,21 +330,21 @@ namespace FT3
 	SLnk &lnk(int num)
 	{
 	    int k;
-	    if(with_rate) {
+
+	    if (with_rate)
 		k = 19;
-	    } else {
-		if(with_k) {
+	    else {
+		if (with_k)
 		    k = 15;
-		} else {
-		    if(with_params) {
+		else {
+		    if (with_params)
 			k = 14;
-		    } else {
+		    else
 			k = 2;
-		    }
 		}
 	    }
 
-	    switch(num % k) {
+	    switch (num % k) {
 	    case 0:
 		return data[num / k].State.lnk;
 	    case 1:
@@ -399,7 +392,7 @@ namespace FT3
 	bool with_rate;
 	vector<SDataRec> chan_err;
 
-    };
+};
 
 } //End namespace
 

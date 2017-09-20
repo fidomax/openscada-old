@@ -68,112 +68,112 @@ void Time_tToKADateTime(uint8_t *, time_t);
 #define mlD 252
 #define nBE 400
 
-struct tagMsg       // FT3 message
+struct tagMsg           // FT3 message
 {
-	uint8_t D[mlD]; // data
-	uint8_t L;      // length
-	uint8_t C;      // command
-	uint8_t A;      // destination address
-	uint8_t B;      // source address
+    uint8_t D[mlD];     // data
+    uint8_t L;          // length
+    uint8_t C;          // command
+    uint8_t A;          // destination address
+    uint8_t B;          // source address
 };
 
 enum eCodFT3 {
-	ResetChan = 0x0,
-	ResData2 = 0x1,
-	SetData = 0x3,
-	TimSync = 0x4,
-	Reset = 0x5,
-	Winter = 0x6,
-	Summer = 0x7,
-	ReqData1 = 0xA,
-	ReqData2 = 0xB,
-	ReqData = 0xC,
-	AddrReq = 0xD,
+    ResetChan = 0x0,
+    ResData2 = 0x1,
+    SetData = 0x3,
+    TimSync = 0x4,
+    Reset = 0x5,
+    Winter = 0x6,
+    Summer = 0x7,
+    ReqData1 = 0xA,
+    ReqData2 = 0xB,
+    ReqData = 0xC,
+    AddrReq = 0xD,
 
-	GOOD2 = 0,
-	BAD2 = 1,
-	GOOD3 = 8,
-	BAD3 = 9,
-	ERROR = 0xFF
+    GOOD2 = 0,
+    BAD2 = 1,
+    GOOD3 = 8,
+    BAD3 = 9,
+    ERROR = 0xFF
 };
 enum eModeTask {
-	TaskNone, TaskIdle, TaskGetState, TaskRefresh, TaskSetParams, TaskStart
+    TaskNone, TaskIdle, TaskGetState, TaskRefresh, TaskSetParams, TaskStart
 };
 
 enum eCntrState {
-	StateNoConnection, StateUnknown, StateIdle, StateSoftReset, StateHardReset, StateSetupClock, StatePreInint, StateSetParams, StatePostInit, StateStart, StateRefreshData,
-	StateLoadParams, StateRefreshParams
+    StateNoConnection, StateUnknown, StateIdle, StateSoftReset, StateHardReset, StateSetupClock, StatePreInint, StateSetParams, StatePostInit, StateStart, StateRefreshData,
+    StateLoadParams, StateRefreshParams
 };
 
 enum eBlockState {
-	BlckStateNormal = 0x0001,
-	BlckStateError = 0x0002,
-	BlckStateUnknown = 0x0004,
-	BlckStateSetup = 0x0008,
-	BlckStateSoftReset = 0x4000,
-	BlckStateHardReset = 0x8000,
-	BlckStateNone = 0x0010
+    BlckStateNormal = 0x0001,
+    BlckStateError = 0x0002,
+    BlckStateUnknown = 0x0004,
+    BlckStateSetup = 0x0008,
+    BlckStateSoftReset = 0x4000,
+    BlckStateHardReset = 0x8000,
+    BlckStateNone = 0x0010
 };
 struct blockEvents {
-	uint16_t d;             //date (15-9 - year, 8-0 day)
-	uint8_t h;              //hour
-	uint8_t l;              //length
-	uint8_t mD[mlD - 3];    //data
+    uint16_t d;                 //date (15-9 - year, 8-0 day)
+    uint8_t h;                  //hour
+    uint8_t l;                  //length
+    uint8_t mD[mlD - 3];        //data
 };
 
 // Event block chain element
 struct el_chBE {
-	blockEvents BE; //Event block
-	el_chBE *next;  //Next event block pointer
+    blockEvents BE;     //Event block
+    el_chBE *next;      //Next event block pointer
 };
 
 class chain_BE
 {
-public:
-el_chBE *head;      //First event block
-el_chBE *tail;      //Last event block
-el_chBE *temp;      //Temp pointer
+    public:
+	el_chBE *head;  //First event block
+	el_chBE *tail;  //Last event block
+	el_chBE *temp;  //Temp pointer
 //	pthread_mutex_t eventRes;
 
-chain_BE()
-{
-	head = NULL;
-	tail = NULL;
-	temp = NULL;
-	/*            pthread_mutexattr_t attrM;
-	   pthread_mutexattr_init(&attrM);
-	   pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
-	   pthread_mutex_init(&eventRes, &attrM);
-	   pthread_mutexattr_destroy(&attrM);*/
-}
-;
+	chain_BE()
+	{
+	    head = NULL;
+	    tail = NULL;
+	    temp = NULL;
+	    /*            pthread_mutexattr_t attrM;
+	       pthread_mutexattr_init(&attrM);
+	       pthread_mutexattr_settype(&attrM, PTHREAD_MUTEX_RECURSIVE);
+	       pthread_mutex_init(&eventRes, &attrM);
+	       pthread_mutexattr_destroy(&attrM);*/
+	}
+	;
 /*        ~chain_BE(){
    pthread_mutex_destroy(&eventRes);
    };*/
 
-el_chBE* getdel()
-{
-	//MtxAlloc res(eventRes, true);
-	temp = head;
-	if (head) head = head->next;
-	if (!head) tail = NULL;
-	return temp;
-}
-;
+	el_chBE* getdel()
+	{
+	    //MtxAlloc res(eventRes, true);
+	    temp = head;
+	    if (head) head = head->next;
+	    if (!head) tail = NULL;
+	    return temp;
+	}
+	;
 
-void insert(el_chBE *p)
-{
-	//MtxAlloc res(eventRes, true);
-	if (p) {
+	void insert(el_chBE *p)
+	{
+	    //MtxAlloc res(eventRes, true);
+	    if (p) {
 		if (head)
-			tail->next = p;
+		    tail->next = p;
 		else
-			head = p;
+		    head = p;
 		tail = p;
 		p->next = NULL;
+	    }
 	}
-}
-;
+	;
 };
 
 #define task_None 0
@@ -189,86 +189,86 @@ class TMdContr;
 class TMdPrm : public TParamContr, public TValFunc
 {
 //	friend class DA;
-public:
+    public:
 //Methods
 
-TMdPrm(string name, TTypeParam *tp_prm);
-~TMdPrm();
+	TMdPrm(string name, TTypeParam *tp_prm);
+	~TMdPrm();
 
 //	TCntrNode &operator=( const TCntrNode &node );
 
-void enable();
-void disable();
+	void enable();
+	void disable();
 
-TElem &elem()
-{
-	return p_el;
-}
-TElem &prmIOE();
-TMdContr &owner( ) const;
+	TElem &elem()
+	{
+	    return p_el;
+	}
+	TElem &prmIOE();
+	TMdContr &owner( ) const;
 
 //!!! Get data from Logic FT3 parameter
-uint8_t cmdSynchTime();
-uint8_t cmdGet(uint16_t, uint8_t *);
-uint8_t cmdSet(uint8_t *, uint8_t);
-uint16_t Task(uint16_t);
-uint16_t BlckGetState(void);
-uint16_t BlckSetupClock(void);
-uint16_t BlckPreInit(void);
-uint16_t BlckSetParams(void);
-uint16_t BlckPostInit(void);
-uint16_t BlckStart(void);
-uint16_t BlckRefreshData(void);
-uint16_t BlckRefreshParams(void);
-uint16_t BlckLoadParams(void);
-uint16_t HandleEvent(time_t, uint8_t *);
-void tmHandler(void);
-TElem p_el;             //Work atribute elements
+	uint8_t cmdSynchTime();
+	uint8_t cmdGet(uint16_t, uint8_t *);
+	uint8_t cmdSet(uint8_t *, uint8_t);
+	uint16_t Task(uint16_t);
+	uint16_t BlckGetState(void);
+	uint16_t BlckSetupClock(void);
+	uint16_t BlckPreInit(void);
+	uint16_t BlckSetParams(void);
+	uint16_t BlckPostInit(void);
+	uint16_t BlckStart(void);
+	uint16_t BlckRefreshData(void);
+	uint16_t BlckRefreshParams(void);
+	uint16_t BlckLoadParams(void);
+	uint16_t HandleEvent(time_t, uint8_t *);
+	void tmHandler(void);
+	TElem p_el;     //Work atribute elements
 //	string typeName();
-string typeDBName();
-DA *mDA;
+	string typeDBName();
+	DA *mDA;
 
-protected:
+    protected:
 //Methods
-void load_();
-void save_();
-void cntrCmdProc(XMLNode *opt);
+	void load_();
+	void save_();
+	void cntrCmdProc(XMLNode *opt);
 
-private:
+    private:
 //Methods
-void postEnable(int flag);
+	void postEnable(int flag);
 //	void postDisable( int flag );
-void vlGet(TVal &val);
-void vlSet(TVal &vo, const TVariant &vl, const TVariant &pvl);
-void vlArchMake(TVal &val);
+	void vlGet(TVal &val);
+	void vlSet(TVal &vo, const TVariant &vl, const TVariant &pvl);
+	void vlArchMake(TVal &val);
 //Attributes
 //!!! Parameter's structure element
-bool needApply;
+	bool needApply;
 
 };
 
 class TFT3Channel
 {
-public:
-TFT3Channel() :
-	FCB2(0xFF), FCB3(0xFF)
-{
-	BE = new el_chBE[nBE];
-	if (BE)
+    public:
+	TFT3Channel() :
+	    FCB2(0xFF), FCB3(0xFF)
+	{
+	    BE = new el_chBE[nBE];
+	    if (BE)
 		for (int i = 0; i < nBE; i++)
-			empt.insert(&BE[i]);
-	resp2.L = 0;
-	resp3.L = 0;
-}
-virtual ~TFT3Channel()
-{
-}
-uint8_t FCB2, FCB3;
+		    empt.insert(&BE[i]);
+	    resp2.L = 0;
+	    resp3.L = 0;
+	}
+	virtual ~TFT3Channel()
+	{
+	}
+	uint8_t FCB2, FCB3;
 
-el_chBE *BE;
-chain_BE empt, C1, C2;
-tagMsg resp2, resp3;
-void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E, uint8_t *DHM);
+	el_chBE *BE;
+	chain_BE empt, C1, C2;
+	tagMsg resp2, resp3;
+	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E, uint8_t *DHM);
 };
 
 //*************************************************
@@ -276,114 +276,114 @@ void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E, uint8_t *DH
 //*************************************************
 class TMdContr : public TController
 {
-friend class TMdPrm;
-public:
+    friend class TMdPrm;
+    public:
 //Methods
-TMdContr(string name_c, const string &daq_db, TElem *cfgelem);
-~TMdContr();
+	TMdContr(string name_c, const string &daq_db, TElem *cfgelem);
+	~TMdContr();
 
-string getStatus();
+	string getStatus();
 
-int64_t period()
-{
-	return mPer;
-}
-string cron()
-{
-	return mSched;
-}
+	int64_t period()
+	{
+	    return mPer;
+	}
+	string cron()
+	{
+	    return mSched;
+	}
 
-int prior()
-{
-	return mPrior;
-}
+	int prior()
+	{
+	    return mPrior;
+	}
 
-AutoHD<TMdPrm> at(const string &nm)
-{
-	return TController::at(nm);
-}
+	AutoHD<TMdPrm> at(const string &nm)
+	{
+	    return TController::at(nm);
+	}
 
-bool isLogic();
-uint16_t DoCmd(tagMsg * t);
-uint16_t ResetChannel();
-bool Transact(tagMsg * req, tagMsg * answ);
-bool ProcessMessage(tagMsg *, tagMsg *);
-void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
-void SetCntrState(eCntrState nState);
-time_t DateTimeToTime_t(uint8_t *d)
-{
-	if (cfg("PRTTYPE").getS() == "GRS")
+	bool isLogic();
+	uint16_t DoCmd(tagMsg * t);
+	uint16_t ResetChannel();
+	bool Transact(tagMsg * req, tagMsg * answ);
+	bool ProcessMessage(tagMsg *, tagMsg *);
+	void PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E);
+	void SetCntrState(eCntrState nState);
+	time_t DateTimeToTime_t(uint8_t *d)
+	{
+	    if (cfg("PRTTYPE").getS() == "GRS")
 		return GRSDateTimeToTime_t(d);
-	else
+	    else
 		return KADateTimeToTime_t(d);
-}
+	}
 
-void Time_tToDateTime(uint8_t *d, time_t t)
-{
-	if (cfg("PRTTYPE").getS() == "GRS")
+	void Time_tToDateTime(uint8_t *d, time_t t)
+	{
+	    if (cfg("PRTTYPE").getS() == "GRS")
 		Time_tToGRSDateTime(d, t);
-	else
+	    else
 		Time_tToKADateTime(d, t);
-}
-uint8_t devAddr;
-uint8_t nChannel;
+	}
+	uint8_t devAddr;
+	uint8_t nChannel;
 
-protected:
+    protected:
 
 //Methods
-void prmEn(TMdPrm *prm, bool val);
+	void prmEn(TMdPrm *prm, bool val);
 
 //!!! Processing virtual functions for start and stop DAQ-controller
-void start_();
-void stop_();
+	void start_();
+	void stop_();
 
 //!!! FT3 CRC
-uint16_t CRC(char *data, uint16_t length);
-uint16_t CRC(const string &data, uint16_t n, uint16_t length);
-void MakePacket(tagMsg *msg, string &io_buf);
-bool VerCRC(char *p, uint16_t l);
-uint16_t VerifyPacket(char *t, uint16_t *l);
-uint16_t ParsePacket(char *t, uint16_t l, tagMsg * msg);
-uint16_t Len(uint16_t l);
+	uint16_t CRC(char *data, uint16_t length);
+	uint16_t CRC(const string &data, uint16_t n, uint16_t length);
+	void MakePacket(tagMsg *msg, string &io_buf);
+	bool VerCRC(char *p, uint16_t l);
+	uint16_t VerifyPacket(char *t, uint16_t *l);
+	uint16_t ParsePacket(char *t, uint16_t l, tagMsg * msg);
+	uint16_t Len(uint16_t l);
 
 //!!! Get data from Logic FT3 controller
-uint8_t cmdSynchTime();
-uint8_t cmdGet(uint16_t, uint8_t *);
-uint8_t cmdSet(uint8_t *, uint8_t);
+	uint8_t cmdSynchTime();
+	uint8_t cmdGet(uint16_t, uint8_t *);
+	uint8_t cmdSet(uint8_t *, uint8_t);
 
-private:
+    private:
 //Methods
 //!!! Processing virtual functions for self object-parameter creation.
-TParamContr *ParamAttach(const string &name, int type);
+	TParamContr *ParamAttach(const string &name, int type);
 //!!! Background task's function for periodic data acquisition.
-static void *DAQTask(void *icntr);
-static void *LogicTask(void *icntr);
-void cntrCmdProc(XMLNode *opt);
+	static void *DAQTask(void *icntr);
+	static void *LogicTask(void *icntr);
+	void cntrCmdProc(XMLNode *opt);
 
 //Attributes
 //!!! The resource for Enable parameters.
-ResMtx enRes, eventRes;
+	ResMtx enRes, eventRes;
 //!!! The links to the controller's background task properties into config.
-int64_t mPer;
-int64_t &mPrior;                //Process task priority
-uint8_t mReqRepeat;             //Request repeats
+	int64_t mPer;
+	int64_t &mPrior;        //Process task priority
+	uint8_t mReqRepeat;     //Request repeats
 
 //!!! Background task's sync properties
-bool prc_st,        // Process task active
-	 endrun_req;    // Request to stop of the Process task
+	bool prc_st,            // Process task active
+	     endrun_req;        // Request to stop of the Process task
 
-bool NeedInit;
-eCntrState CntrState;
+	bool NeedInit;
+	eCntrState CntrState;
 
-int mNode;
+	int mNode;
 
-TCfg &mSched;
+	TCfg &mSched;
 
 //!!! Enabled and processing parameter's links list container.
-vector<AutoHD<TMdPrm> > pHd;
+	vector<AutoHD<TMdPrm> > pHd;
 
-double tm_gath;     // Gathering time
-vector<TFT3Channel> Channels;
+	double tm_gath; // Gathering time
+	vector<TFT3Channel> Channels;
 };
 
 //!!! Root module object define. Add methods and attributes for your need.
@@ -392,30 +392,30 @@ vector<TFT3Channel> Channels;
 //*************************************************
 class TTpContr : public TTypeDAQ
 {
-public:
+    public:
 //Methods
-TTpContr(string name);
-~TTpContr();
+	TTpContr(string name);
+	~TTpContr();
 
-TElem &prmIOE()
-{
-	return elPrmIO;
-}
-protected:
+	TElem &prmIOE()
+	{
+	    return elPrmIO;
+	}
+    protected:
 //Methods
-void postEnable(int flag);
-void load_();
-void save_();
-bool redntAllow()
-{
-	return true;
-}
+	void postEnable(int flag);
+	void load_();
+	void save_();
+	bool redntAllow()
+	{
+	    return true;
+	}
 
-private:
+    private:
 //Methods
-TController *ContrAttach(const string &name, const string &daq_db);
+	TController *ContrAttach(const string &name, const string &daq_db);
 //Attributes
-TElem elPrmIO;
+	TElem elPrmIO;
 };
 
 //!!! The module root link

@@ -1,21 +1,21 @@
 /***************************************************************************
- *   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
- *   fido_max@inbox.ru                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; version 2 of the License.               *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
- ***************************************************************************/
+*   Copyright (C) 2011-2016 by Maxim Kochetkov                            *
+*   fido_max@inbox.ru                                                     *
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; version 2 of the License.               *
+*                                                                         *
+*   This program is distributed in the hope that it will be useful,       *
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*   GNU General Public License for more details.                          *
+*                                                                         *
+*   You should have received a copy of the GNU General Public License     *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+***************************************************************************/
 #ifndef DA_BVI_H
 #define DA_BVI_H
 
@@ -23,8 +23,8 @@
 
 namespace FT3
 {
-    class B_BVI: public DA
-    {
+class B_BVI : public DA
+{
     public:
 	//Methods
 	B_BVI(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, bool has_ext_period);
@@ -43,8 +43,8 @@ namespace FT3
 	void tmHandler(void);
 	class STIchannel
 	{
-	public:
-	    STIchannel(uint8_t iid, DA* owner) : da(owner),
+	    public:
+		STIchannel(uint8_t iid, DA* owner) : da(owner),
 		    id(iid), State(TSYS::strMess("state_%d", id + 1), TSYS::strMess(_("State %d"), id + 1)),
 		    Value(TSYS::strMess("value_%d", id + 1), TSYS::strMess(_("Value %d"), id + 1)),
 		    Period(TSYS::strMess("period_%d", id + 1), TSYS::strMess(_("Measure period %d"), id + 1)),
@@ -53,46 +53,43 @@ namespace FT3
 		    Factor(TSYS::strMess("factor_%d", id + 1), TSYS::strMess(_("Range factor %d"), id + 1)),
 		    Dimension(TSYS::strMess("dimens_%d", id + 1), TSYS::strMess(_("Dimension %d"), id + 1))
 
-	    {
-	    }
-	    DA* da;
-	    uint8_t id;
+		{
+		}
+		DA* da;
+		uint8_t id;
 
-	    ui8Data State, Dimension;
+		ui8Data State, Dimension;
 
-	    ui16Data Period;
-	    flData Value, Sens, Factor;
-	    ui32Data Count;
+		ui16Data Period;
+		flData Value, Sens, Factor;
+		ui32Data Count;
 	};
 	vector<STIchannel> data;
 	int lnkSize()
 	{
-	    if(with_params) {
+	    if (with_params)
 		return data.size() * 7;
-	    } else {
+	    else
 		return data.size() * 2;
-	    }
 	}
 	int lnkId(const string &id)
 	{
-	    if(with_params) {
-		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].State.lnk.prmName == id) return i_l * 7;
-		    if(data[i_l].Value.lnk.prmName == id) return i_l * 7 + 1;
-		    if(data[i_l].Period.lnk.prmName == id) return i_l * 7 + 2;
-		    if(data[i_l].Sens.lnk.prmName == id) return i_l * 7 + 3;
-		    if(data[i_l].Count.lnk.prmName == id) return i_l * 7 + 4;
-		    if(data[i_l].Factor.lnk.prmName == id) return i_l * 7 + 5;
-		    if(data[i_l].Dimension.lnk.prmName == id) return i_l * 7 + 6;
+	    if (with_params) {
+		for (int i_l = 0; i_l < data.size(); i_l++) {
+		    if (data[i_l].State.lnk.prmName == id) return i_l * 7;
+		    if (data[i_l].Value.lnk.prmName == id) return i_l * 7 + 1;
+		    if (data[i_l].Period.lnk.prmName == id) return i_l * 7 + 2;
+		    if (data[i_l].Sens.lnk.prmName == id) return i_l * 7 + 3;
+		    if (data[i_l].Count.lnk.prmName == id) return i_l * 7 + 4;
+		    if (data[i_l].Factor.lnk.prmName == id) return i_l * 7 + 5;
+		    if (data[i_l].Dimension.lnk.prmName == id) return i_l * 7 + 6;
 		}
 	    } else {
-		for(int i_l = 0; i_l < data.size(); i_l++) {
-		    if(data[i_l].State.lnk.prmName == id) {
+		for (int i_l = 0; i_l < data.size(); i_l++) {
+		    if (data[i_l].State.lnk.prmName == id)
 			return i_l * 2;
-		    }
-		    if(data[i_l].Value.lnk.prmName == id) {
+		    if (data[i_l].Value.lnk.prmName == id)
 			return i_l * 2 + 1;
-		    }
 		}
 	    }
 	    return -1;
@@ -100,12 +97,12 @@ namespace FT3
 	SLnk &lnk(int num)
 	{
 	    int k;
-	    if(with_params) {
+
+	    if (with_params)
 		k = 7;
-	    } else {
+	    else
 		k = 2;
-	    }
-	    switch(num % k) {
+	    switch (num % k) {
 	    case 0:
 		return data[num / k].State.lnk;
 	    case 1:
@@ -127,7 +124,7 @@ namespace FT3
 	bool with_params, ext_period;
 	vector<SDataRec> chan_err;
 
-    };
+};
 
 } //End namespace
 

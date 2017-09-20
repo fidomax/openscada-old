@@ -25,90 +25,90 @@ namespace FT3
 {
 
 enum eKA_GNS_NAS {
-	NAS_VAG = 0,    // неопределено
-	NAS_OFF = 1,    // выкл.
-	NAS_ON = 2,     // вкл.
-	NAS_REP = 3,    // ремонт
-	NAS_AWR = 4     // авария
+    NAS_VAG = 0,        // неопределено
+    NAS_OFF = 1,        // выкл.
+    NAS_ON = 2,         // вкл.
+    NAS_REP = 3,        // ремонт
+    NAS_AWR = 4         // авария
 };
 enum eKA_GNS_State {
-	KA_GNS_Error = 0x0, KA_GNS_Normal = 0x1
+    KA_GNS_Error = 0x0, KA_GNS_Normal = 0x1
 };
 struct KANSTUParams      // FT3 ID
 {
-	uint16_t TUOn;
-	uint16_t TimeOn;
-	uint16_t TUOff;
-	uint16_t TimeOff;
-	uint16_t TUStop;
-	uint16_t TimeStop;
-	uint16_t TURemote;
-	uint16_t TimeRemote;
-	uint16_t TUManual;
-	uint16_t TimeManual;
+    uint16_t TUOn;
+    uint16_t TimeOn;
+    uint16_t TUOff;
+    uint16_t TimeOff;
+    uint16_t TUStop;
+    uint16_t TimeStop;
+    uint16_t TURemote;
+    uint16_t TimeRemote;
+    uint16_t TUManual;
+    uint16_t TimeManual;
 } __attribute__((packed));
 struct KANSTCParams      // FT3 ID
 {
-	uint16_t TCOn;
-	uint16_t TCOff;
-	uint16_t TCMode;
+    uint16_t TCOn;
+    uint16_t TCOff;
+    uint16_t TCMode;
 } __attribute__((packed));
 
 
 class KA_GNS : public DA
 {
-public:
+    public:
 //Methods
-KA_GNS(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
-~KA_GNS();
-uint16_t count_n;
-bool with_params;
-uint16_t max_count_data;
-uint16_t GetState(void);
-uint16_t HandleEvent(int64_t, uint8_t *);
-uint8_t cmdGet(uint16_t prmID, uint8_t * out);
-uint8_t cmdSet(uint8_t * req, uint8_t addr);
-uint16_t setVal(TVal &val);
-string getStatus(void);
-uint16_t config;
+	KA_GNS(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params);
+	~KA_GNS();
+	uint16_t count_n;
+	bool with_params;
+	uint16_t max_count_data;
+	uint16_t GetState(void);
+	uint16_t HandleEvent(int64_t, uint8_t *);
+	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
+	uint8_t cmdSet(uint8_t * req, uint8_t addr);
+	uint16_t setVal(TVal &val);
+	string getStatus(void);
+	uint16_t config;
 };
 class KA_NS : public DA
 {
-public:
-KA_NS(TMdPrm& prm, DA &parent, uint16_t id, bool has_params);
-~KA_NS();
-bool with_params;
-DA &parentDA;
-uint16_t SetParams(void);
-uint16_t RefreshParams(void);
-uint16_t RefreshData(void);
-uint16_t HandleEvent(int64_t, uint8_t *);
-uint8_t cmdGet(uint16_t prmID, uint8_t * out);
-uint8_t cmdSet(uint8_t * req, uint8_t addr);
-uint16_t setVal(TVal &val);
-void saveIO(void);
-void loadIO(bool force = false);
-void saveParam(void);
-void loadParam(void);
-void tmHandler(void);
+    public:
+	KA_NS(TMdPrm& prm, DA &parent, uint16_t id, bool has_params);
+	~KA_NS();
+	bool with_params;
+	DA &parentDA;
+	uint16_t SetParams(void);
+	uint16_t RefreshParams(void);
+	uint16_t RefreshData(void);
+	uint16_t HandleEvent(int64_t, uint8_t *);
+	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
+	uint8_t cmdSet(uint8_t * req, uint8_t addr);
+	uint16_t setVal(TVal &val);
+	void saveIO(void);
+	void loadIO(bool force = false);
+	void saveParam(void);
+	void loadParam(void);
+	void tmHandler(void);
 
-ui8Data State, Function;
-ui16Data TUOn, TUOff, TUStop, TURemote, TUManual;
-ui16Data TimeOn, TimeOff, TimeStop, TimeRemote, TimeManual;
-ui16Data TCOn, TCOff, TCMode;
-ui32Data Time;
-int lnkSize()
-{
-	if (with_params)
+	ui8Data State, Function;
+	ui16Data TUOn, TUOff, TUStop, TURemote, TUManual;
+	ui16Data TimeOn, TimeOff, TimeStop, TimeRemote, TimeManual;
+	ui16Data TCOn, TCOff, TCMode;
+	ui32Data Time;
+	int lnkSize()
+	{
+	    if (with_params)
 		return 16;
-	else
+	    else
 		return 2;
-}
-int lnkId(const string &id)
-{
-	if (State.lnk.prmName == id) return 0;
-	if (Function.lnk.prmName == id) return 1;
-	if (with_params) {
+	}
+	int lnkId(const string &id)
+	{
+	    if (State.lnk.prmName == id) return 0;
+	    if (Function.lnk.prmName == id) return 1;
+	    if (with_params) {
 		if (TUOn.lnk.prmName == id) return 2;
 		if (TUOff.lnk.prmName == id) return 3;
 		if (TUStop.lnk.prmName == id) return 4;
@@ -123,58 +123,58 @@ int lnkId(const string &id)
 		if (TCOff.lnk.prmName == id) return 13;
 		if (TCMode.lnk.prmName == id) return 14;
 		if (Time.lnk.prmName == id) return 15;
+	    }
+	    return -1;
 	}
-	return -1;
-}
-SLnk &lnk(int num)
-{
-	switch (num) {
-	case 0:
+	SLnk &lnk(int num)
+	{
+	    switch (num) {
+	    case 0:
 		return State.lnk;
-	case 1:
+	    case 1:
 		return Function.lnk;
-	case 2:
+	    case 2:
 		return TUOn.lnk;
-	case 3:
+	    case 3:
 		return TUOff.lnk;
-	case 4:
+	    case 4:
 		return TUStop.lnk;
-	case 5:
+	    case 5:
 		return TURemote.lnk;
-	case 6:
+	    case 6:
 		return TUManual.lnk;
-	case 7:
+	    case 7:
 		return TimeOn.lnk;
-	case 8:
+	    case 8:
 		return TimeOff.lnk;
-	case 9:
+	    case 9:
 		return TimeStop.lnk;
-	case 10:
+	    case 10:
 		return TimeRemote.lnk;
-	case 11:
+	    case 11:
 		return TimeManual.lnk;
-	case 12:
+	    case 12:
 		return TCOn.lnk;
-	case 13:
+	    case 13:
 		return TCOff.lnk;
-	case 14:
+	    case 14:
 		return TCMode.lnk;
-	case 15:
+	    case 15:
 		return Time.lnk;
+	    }
 	}
-}
 
-protected:
-void UpdateState(uint16_t ID, uint8_t cl);
-void UpdateTUParam(uint16_t ID, uint8_t cl);
-void UpdateTCParam(uint16_t ID, uint8_t cl);
-void UpdateTime(uint16_t ID, uint8_t cl);
-bool IsTUParamChanged();
-bool IsTCParamChanged();
-uint8_t SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val);
-uint8_t SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val);
-uint8_t SetNewState(uint8_t addr, uint16_t prmID, uint8_t *val);
-uint8_t SetNewFunction(uint8_t addr, uint16_t prmID, uint8_t *val);
+    protected:
+	void UpdateState(uint16_t ID, uint8_t cl);
+	void UpdateTUParam(uint16_t ID, uint8_t cl);
+	void UpdateTCParam(uint16_t ID, uint8_t cl);
+	void UpdateTime(uint16_t ID, uint8_t cl);
+	bool IsTUParamChanged();
+	bool IsTCParamChanged();
+	uint8_t SetNewTUParam(uint8_t addr, uint16_t prmID, uint8_t *val);
+	uint8_t SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val);
+	uint8_t SetNewState(uint8_t addr, uint16_t prmID, uint8_t *val);
+	uint8_t SetNewFunction(uint8_t addr, uint16_t prmID, uint8_t *val);
 };
 } //End namespace
 
