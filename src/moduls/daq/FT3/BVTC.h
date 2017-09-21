@@ -50,19 +50,6 @@ class KA_BVTC : public DA
 	string getStatus(void);
 	void tmHandler(void);
 	uint16_t config;
-	int lnkSize()
-	{
-	    return 0;
-	}
-	int lnkId(const string &id)
-	{
-	    return -1;
-	}
-
-	DA::SLnk &lnk(int num);
-/*	{
-        throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
-    }*/
 };
 
 class KA_TC : public DA

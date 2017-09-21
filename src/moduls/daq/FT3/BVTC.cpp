@@ -38,13 +38,6 @@ KA_BVTC::KA_BVTC(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params) :
     loadIO(true);
 }
 
-DA::SLnk &KA_BVTC::lnk(int num)
-{
-    throw TError(mPrm.nodePath().c_str(), _("Link list is empty."));
-}
-
-
-
 KA_BVTC::~KA_BVTC()
 {
 //    data.clear();

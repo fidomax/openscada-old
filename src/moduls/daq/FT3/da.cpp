@@ -101,7 +101,7 @@ void DA::loadVal(SLnk& lnk)
     cfg.cfg("ID").setS(lnk.prmName);
     if (SYS->db().at().dataGet(io_bd, io_table, cfg, false, true))
 	lnk.vlattr.at().setS(cfg.cfg("ATTR_VALUE").getS(), 0, true);
-	//lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
+    //lnk.aprm = SYS->daq().at().attrAt(lnk.prmAttr, '.', true);
 }
 
 void DA::saveLnk(SLnk& lnk)
@@ -426,4 +426,9 @@ void DA::PushInBE(uint8_t type, uint8_t length, uint16_t id, uint8_t *E)
 time_t DA::DateTimeToTime_t(uint8_t *d)
 {
     return mPrm.owner().DateTimeToTime_t(d);
+}
+
+DA::SLnk &DA::lnk(int num)
+{
+    throw TError(mPrm.nodePath().c_str(), _("Link list is empty."));
 }

@@ -475,15 +475,14 @@ class DA : public TElem
 
 	virtual int lnkSize()
 	{
+	    return 0;
 	}
 
 	virtual int lnkId(const string &id)
 	{
+	    return -1;
 	}
-	virtual SLnk &lnk(int num)
-	{
-	}
-
+	virtual DA::SLnk &lnk(int num);
 };
 
 } //End namespace
