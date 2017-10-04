@@ -28,8 +28,7 @@
 using namespace FT3;
 
 KA_BTU::KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params) :
-    DA(prm), ID(id), count_nu(nu), with_params(has_params), config(4 | (nu << 4) | (16 << 10))
-
+    DA(prm, id), count_nu(nu), with_params(has_params), config(4 | (nu << 4) | (16 << 10))
 {
     mTypeFT3 = KA;
     TFld * fld;
@@ -39,23 +38,11 @@ KA_BTU::KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params) :
 	mPrm.p_el.fldAdd(fld = new TFld("execution", _("Execution"), TFld::Integer, TVal::DirWrite));
 	fld->setReserve("0:2");
     }
-    for (int i = 0; i < count_nu; i++)
-	AddChannel(i);
     loadIO(true);
 }
 
 KA_BTU::~KA_BTU()
 {
-    TUdata.clear();
-}
-
-void KA_BTU::AddChannel(uint8_t iid)
-{
-    TUdata.push_back(SKATUchannel(iid, this));
-    AddAttr(TUdata.back().Line.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
-    if (with_params)
-	for (int i = 0; i < 16; i++)
-	    AddAttr(TUdata.back().Time[i].lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:%d", iid + 1, i + 1));
 }
 
 string KA_BTU::getStatus(void)
@@ -67,7 +54,6 @@ string KA_BTU::getStatus(void)
     else
 	rez = "0: Норма";
     return rez;
-
 }
 
 uint16_t KA_BTU::GetState()
@@ -91,136 +77,8 @@ uint16_t KA_BTU::GetState()
     return rc;
 }
 
-uint16_t KA_BTU::SetParams(void)
-{
-    uint16_t rc;
-    tagMsg Msg;
-
-    loadParam();
-    for (int i = 0; i < count_nu; i++) {
-	Msg.L = 0;
-	Msg.C = SetData;
-	for (int j = 0; j < 16; j++) {
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i + 1, j + 1));
-	    Msg.L += TUdata[i].Time[j].SerializeAttr(Msg.D + Msg.L);
-	    if (Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-		Msg.L += 3;
-		rc = mPrm.owner().DoCmd(&Msg);
-		Msg.L = 0;
-		Msg.C = SetData;
-		if ((rc == BAD2) || (rc == BAD3) || (rc == ERROR)) break;
-	    }
-
-	}
-	if (Msg.L) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	}
-	if ((rc == BAD2) || (rc == BAD3))
-	    mPrm.mess_sys(TMess::Error, "Can't set channel %d", i + 1);
-	else {
-	    if (rc == ERROR) {
-		mPrm.mess_sys(TMess::Error, "No answer to set channel %d", i + 1);
-		break;
-	    }
-	}
-    }
-    return rc;
-}
-
-uint16_t KA_BTU::RefreshData(void)
-{
-    tagMsg Msg;
-
-    Msg.L = 0;
-    Msg.C = AddrReq;
-    uint16_t rc;
-    for (int i = 1; i <= count_nu; i++) {
-	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, 0));
-	if (Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
-	    Msg.L += 3;
-	    rc = mPrm.owner().DoCmd(&Msg);
-	    Msg.L = 0;
-	    Msg.C = AddrReq;
-	    if (rc == ERROR) break;
-	}
-    }
-    if (Msg.L) {
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-    }
-    return rc;
-}
-
-uint16_t KA_BTU::RefreshParams(void)
-{
-    uint16_t rc;
-    tagMsg Msg;
-
-    for (int i = 1; i <= count_nu; i++) {
-	Msg.L = 0;
-	Msg.C = AddrReq;
-	for (int j = 1; j <= 16; j++)
-	    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, i, j));
-	Msg.L += 3;
-	rc = mPrm.owner().DoCmd(&Msg);
-	if ((rc == BAD2) || (rc == BAD3))
-	    mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", i);
-	else {
-	    if (rc == ERROR) {
-		mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", i);
-		break;
-	    }
-	}
-
-    }
-    return rc;
-}
-
-void KA_BTU::loadIO(bool force)
-{
-    if (mPrm.owner().startStat() && !force) {
-	mPrm.modif(true);
-	return;
-    }   //Load/reload IO context only allow for stopped controllers for prevent throws
-    for (int i = 0; i < count_nu; i++) {
-	loadLnk(TUdata[i].Line.lnk);
-	for (int j = 0; j < 16; j++)
-	    loadLnk(TUdata[i].Time[j].lnk);
-    }
-
-}
-
-void KA_BTU::saveIO()
-{
-    //Save links
-    for (int i = 0; i < count_nu; i++) {
-	saveLnk(TUdata[i].Line.lnk);
-	for (int j = 0; j < 16; j++)
-	    saveLnk(TUdata[i].Time[j].lnk);
-    }
-}
-
-void KA_BTU::saveParam(void)
-{
-    for (int i = 0; i < count_nu; i++)
-	for (int j = 0; j < 16; j++)
-	    saveVal(TUdata[i].Time[j].lnk);
-}
-
-void KA_BTU::loadParam(void)
-{
-    if (mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "load param");
-    for (int i = 0; i < count_nu; i++)
-	for (int j = 0; j < 16; j++)
-	    loadVal(TUdata[i].Time[j].lnk);
-}
-
 void KA_BTU::tmHandler(void)
 {
-    for (int i = 0; i < count_nu; i++)
-	for (int j = 0; j < 16; j++)
-	    UpdateParamW(TUdata[i].Time[j], PackID(ID, i + 1, j + 1), 1);
     NeedInit = false;
 }
 
@@ -243,40 +101,6 @@ uint16_t KA_BTU::HandleEvent(int64_t tm, uint8_t * D)
 	    mPrm.vlAt(TSYS::strMess("execution")).at().setI(D[3], tm, true);
 	    l = 4;
 	    break;
-	}
-    } else {
-	if (count_nu && (ft3ID.k <= count_nu)) {
-	    switch (ft3ID.n) {
-	    case 0:
-		TUdata[ft3ID.k - 1].Line.Update(D[3], tm);
-		l = 4;
-		break;
-	    case 1:
-	    case 2:
-	    case 3:
-	    case 4:
-	    case 5:
-	    case 6:
-	    case 7:
-	    case 8:
-	    case 9:
-	    case 10:
-	    case 11:
-	    case 12:
-	    case 13:
-	    case 14:
-	    case 15:
-	    case 16:
-		if (with_params)
-		    TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].Update(TSYS::getUnalign16(D + 3), tm);
-		l = 5;
-		break;
-	    case 32:
-		if (with_params)
-		    TUdata[ft3ID.k - 1].Line.Update(TSYS::getUnalign16(D + 3), tm);
-		l = 5;
-		break;
-	    }
 	}
     }
     return l;
@@ -305,38 +129,6 @@ uint8_t KA_BTU::cmdGet(uint16_t prmID, uint8_t * out)
 	    l = 2;
 	    break;
 	}
-    } else {
-	if (count_nu && (ft3ID.k <= count_nu)) {
-	    switch (ft3ID.n) {
-	    case 0:
-		l += SerializeB(out + l, TUdata[ft3ID.k - 1].Line.s);
-		l += SerializeB(out + l, TUdata[ft3ID.k - 1].iTY);
-		break;
-	    case 1:
-	    case 2:
-	    case 3:
-	    case 4:
-	    case 5:
-	    case 6:
-	    case 7:
-	    case 8:
-	    case 9:
-	    case 10:
-	    case 11:
-	    case 12:
-	    case 13:
-	    case 14:
-	    case 15:
-	    case 16:
-		l += SerializeB(out + l, TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].s);
-		l += TUdata[ft3ID.k - 1].Time[ft3ID.n - 1].Serialize(out + l);
-		break;
-	    case 32:
-		l += SerializeB(out + l, TUdata[ft3ID.k - 1].Line.s);
-		l += TUdata[ft3ID.k - 1].Line.Serialize(out + l);
-		break;
-	    }
-	}
     }
     return l;
 }
@@ -345,28 +137,38 @@ uint8_t KA_BTU::runTU(uint8_t tu)
 {
     uint8_t rc = 0;
 
-    if (tu == 0x55) {
-	for (int i = 0; i < count_nu; i++) {
-	    if (TUdata[i].iTY) {
-		if (TUdata[i].Line.lnk.Connected()) {
-		    TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
-		    TUdata[i].Line.vl = 0;
-		    TUdata[i].iTY = 0;
-		    rc = 3;
-		}
-	    }
-	}
+    vector<string> lst;
+    mPrm.list(lst);
+    for (int i_l = 0; i_l < lst.size(); i_l++) {
+	AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
+        DA *tDA = t.at().mDA;
+        if (tDA){
+          if (tDA->runTU(tu)) rc = 3;
+        }
+
+    }
+/*    if (tu == 0x55) {
+        for (int i = 0; i < count_nu; i++) {
+            if (TUdata[i].iTY) {
+                if (TUdata[i].Line.lnk.Connected()) {
+                    TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
+                    TUdata[i].Line.vl = 0;
+                    TUdata[i].iTY = 0;
+                    rc = 3;
+                }
+            }
+        }
     }
     if (tu == 0x0) {
-	for (int i = 0; i < count_nu; i++) {
-	    if (TUdata[i].Line.lnk.Connected()) {
-		TUdata[i].Line.vl = 0;
-		TUdata[i].iTY = 0;
-		TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
-		rc = 3;
-	    }
-	}
-    }
+        for (int i = 0; i < count_nu; i++) {
+            if (TUdata[i].Line.lnk.Connected()) {
+                TUdata[i].Line.vl = 0;
+                TUdata[i].iTY = 0;
+                TUdata[i].Line.lnk.aprm.at().setI(TUdata[i].Line.vl);
+                rc = 3;
+            }
+        }
+   }*/
     return rc;
 }
 
@@ -378,7 +180,6 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
     if (ft3ID.g != ID) return 0;
     uint l = 0;
     uint8_t E[2];
-//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     if (ft3ID.k == 0) {
 	switch (ft3ID.n) {
 	case 2:
@@ -388,47 +189,6 @@ uint8_t KA_BTU::cmdSet(uint8_t * req, uint8_t addr)
 		PushInBE(1, sizeof(E), prmID, E);
 	    }
 	    break;
-	}
-    } else {
-	if (count_nu && (ft3ID.k <= count_nu)) {
-	    switch (ft3ID.n) {
-	    case 0:
-		TUdata[ft3ID.k - 1].Line.s = addr;
-		TUdata[ft3ID.k - 1].iTY = req[2];
-		TUdata[ft3ID.k - 1].Line.vl = 1 << TUdata[ft3ID.k - 1].iTY - 1;
-		l = 3;
-		E[0] = addr;
-		E[1] = req[2];
-		PushInBE(1, sizeof(E), prmID, E);
-		break;
-	    case 1:
-	    case 2:
-	    case 3:
-	    case 4:
-	    case 5:
-	    case 6:
-	    case 7:
-	    case 8:
-	    case 9:
-	    case 10:
-	    case 11:
-	    case 12:
-	    case 13:
-	    case 14:
-	    case 15:
-	    case 16:
-		l = SetNewWVal(TUdata[ft3ID.k - 1].Time[ft3ID.n - 1], addr, prmID, TSYS::getUnalign16(req + 2));
-		break;
-	    case 32:
-		TUdata[ft3ID.k - 1].Line.s = addr;
-		TUdata[ft3ID.k - 1].iTY = 1;
-		TUdata[ft3ID.k - 1].Line.vl = TSYS::getUnalign16(req + 2);
-		l = 3;
-		E[0] = addr;
-		E[1] = req[2];
-		PushInBE(1, sizeof(E), prmID, E);
-		break;
-	    }
 	}
     }
     return l;
@@ -463,20 +223,6 @@ uint16_t KA_BTU::setVal(TVal &val)
 	    }
 	    break;
 	}
-    } else {
-	if (count_nu && (ft3ID.k <= count_nu)) {
-	    rc = 1;
-	    if (ft3ID.n == 0)
-		Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
-	    else {
-		if (ft3ID.n <= 16)
-		    Msg.L += SerializeUi16(Msg.D + Msg.L, val.getI(0, true));
-		else {
-		    Msg.L = 0;
-		    rc = 0;
-		}
-	    }
-	}
     }
     if (Msg.L > 2) {
 	Msg.L += 3;
@@ -484,6 +230,336 @@ uint16_t KA_BTU::setVal(TVal &val)
     }
     return rc;
 }
+
+KA_TU::KA_TU(TMdPrm& prm, DA &parent, uint16_t id, bool has_params) :
+    DA(prm, id), parentDA(parent), with_params(has_params), iTY(0),
+    Line("Line", _("Line"))
+{
+    mTypeFT3 = KA;
+    AddAttr(Line.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("0"));
+    if (with_params) {
+	for (int i = 0; i < 16; i++) {
+	    Time.push_back(ui16Data(TSYS::strMess("Time_%d", i + 1), TSYS::strMess(_("Time %d"), i + 1)));
+	    AddAttr(Time[i].lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d", i + 1));
+	}
+    }
+    loadIO(true);
+}
+
+KA_TU::~KA_TU()
+{
+    Time.clear();
+}
+
+string KA_TU::getStatus(void)
+{
+    string rez;
+
+    if (NeedInit)
+	rez = "20: Опрос";
+    else
+	rez = "0: Норма";
+    return rez;
+}
+
+uint16_t KA_TU::GetState()
+{
+    uint16_t rc = BlckStateUnknown;
+
+    return rc;
+}
+
+uint16_t KA_TU::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+
+    loadParam();
+    Msg.L = 0;
+    Msg.C = SetData;
+    for (int j = 0; j < 16; j++) {
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, j + 1));
+	Msg.L += Time[j].SerializeAttr(Msg.D + Msg.L);
+	if (Msg.L > mPrm.owner().cfg("MAXREQ").getI()) {
+	    Msg.L += 3;
+	    rc = mPrm.owner().DoCmd(&Msg);
+	    Msg.L = 0;
+	    Msg.C = SetData;
+	    if ((rc == BAD2) || (rc == BAD3) || (rc == ERROR)) break;
+	}
+    }
+    if (Msg.L) {
+	Msg.L += 3;
+	rc = mPrm.owner().DoCmd(&Msg);
+    }
+    if ((rc == BAD2) || (rc == BAD3))
+	mPrm.mess_sys(TMess::Error, "Can't set channel %d", ID);
+    else if (rc == ERROR)
+	mPrm.mess_sys(TMess::Error, "No answer to set channel %d", ID);
+
+    return rc;
+}
+
+uint16_t KA_TU::RefreshData(void)
+{
+    tagMsg Msg;
+
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+uint16_t KA_TU::RefreshParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    for (int j = 1; j <= 16; j++)
+	Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, j));
+    Msg.L += 3;
+    rc = mPrm.owner().DoCmd(&Msg);
+    if ((rc == BAD2) || (rc == BAD3))
+	mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", ID);
+    else if (rc == ERROR)
+	mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", ID);
+
+    return rc;
+}
+
+void KA_TU::loadIO(bool force)
+{
+    if (mPrm.owner().startStat() && !force) {
+	mPrm.modif(true);
+	return;
+    } //Load/reload IO context only allow for stopped controllers for prevent throws
+    loadLnk(Line.lnk);
+    for (int j = 0; j < 16; j++)
+	loadLnk(Time[j].lnk);
+}
+
+void KA_TU::saveIO()
+{
+//Save links
+    saveLnk(Line.lnk);
+    for (int j = 0; j < 16; j++)
+	saveLnk(Time[j].lnk);
+}
+
+void KA_TU::saveParam(void)
+{
+    for (int j = 0; j < 16; j++)
+	saveVal(Time[j].lnk);
+}
+
+void KA_TU::loadParam(void)
+{
+    for (int j = 0; j < 16; j++)
+	loadVal(Time[j].lnk);
+}
+
+void KA_TU::tmHandler(void)
+{
+    for (int j = 0; j < 16; j++)
+	UpdateParamW(Time[j], PackID(parentDA.ID, ID, j + 1), 1);
+}
+
+uint16_t KA_TU::HandleEvent(int64_t tm, uint8_t * D)
+{
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+
+    if (ft3ID.g != parentDA.ID) return 0;
+    if (ft3ID.k != ID) return 0;
+    uint16_t l = 0;
+    switch (ft3ID.n) {
+    case 0:
+	Line.Update(D[3], tm);
+	l = 4;
+	break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+	if (with_params)
+	    Time[ft3ID.n - 1].Update(TSYS::getUnalign16(D + 3), tm);
+	l = 5;
+	break;
+    case 32:
+	if (with_params)
+	    Line.Update(TSYS::getUnalign16(D + 3), tm);
+	l = 5;
+	break;
+    }
+    return l;
+}
+
+uint8_t KA_TU::cmdGet(uint16_t prmID, uint8_t * out)
+{
+    FT3ID ft3ID = UnpackID(prmID);
+
+    if (ft3ID.g != parentDA.ID) return 0;
+    if (ft3ID.k != ID) return 0;
+    uint8_t l = 0;
+    switch (ft3ID.n) {
+    case 0:
+	l += SerializeB(out + l, Line.s);
+	l += SerializeB(out + l, iTY);
+	break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+	l += SerializeB(out + l, Time[ft3ID.n - 1].s);
+	l += Time[ft3ID.n - 1].Serialize(out + l);
+	break;
+    case 32:
+	l += SerializeB(out + l, Line.s);
+	l += Line.Serialize(out + l);
+	break;
+    }
+    return l;
+}
+
+uint8_t KA_TU::cmdSet(uint8_t * req, uint8_t addr)
+{
+    uint16_t prmID = TSYS::getUnalign16(req);
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(req));
+    uint8_t E[2];
+
+    if (ft3ID.g != parentDA.ID) return 0;
+    if (ft3ID.k != ID) return 0;
+    uint8_t l = 0;
+    switch (ft3ID.n) {
+    case 0:
+	Line.s = addr;
+	iTY = req[2];
+	Line.vl = 1 << iTY - 1;
+	l = 3;
+	E[0] = addr;
+	E[1] = req[2];
+	PushInBE(1, sizeof(E), prmID, E);
+	break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+	l = SetNewWVal(Time[ft3ID.n - 1], addr, prmID, TSYS::getUnalign16(req + 2));
+	break;
+    case 32:
+	Line.s = addr;
+	iTY = 1;
+	Line.vl = TSYS::getUnalign16(req + 2);
+	l = 3;
+	E[0] = addr;
+	E[1] = req[2];
+	PushInBE(1, sizeof(E), prmID, E);
+	break;
+    }
+    return l;
+}
+
+uint8_t KA_TU::runTU(uint8_t tu)
+{
+    uint8_t rc = 0;
+
+    if (tu == 0x55) {
+	if (iTY) {
+	    if (Line.lnk.Connected()) {
+		Line.lnk.aprm.at().setI(Line.vl);
+		Line.vl = 0;
+		iTY = 0;
+		rc = 3;
+	    }
+	}
+    }
+    if (tu == 0x0) {
+	if (Line.lnk.Connected()) {
+	    Line.vl = 0;
+	    iTY = 0;
+	    Line.lnk.aprm.at().setI(Line.vl);
+	    rc = 3;
+	}
+
+    }
+    return rc;
+}
+
+
+uint16_t KA_TU::setVal(TVal &val)
+{
+    uint16_t rc = 0;
+    int off = 0;
+    FT3ID ft3ID;
+
+    ft3ID.k = ID;
+    ft3ID.n = s2i(val.fld().reserve());
+    ft3ID.g = parentDA.ID;
+
+    tagMsg Msg;
+    uint8_t run;
+    Msg.L = 0;
+    Msg.C = SetData;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
+
+    rc = 1;
+    if (ft3ID.n == 0)
+	Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
+    else {
+	if (ft3ID.n <= 16)
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, val.getI(0, true));
+	else {
+	    Msg.L = 0;
+	    rc = 0;
+	}
+    }
+
+    if (Msg.L > 2) {
+	Msg.L += 3;
+	mPrm.owner().DoCmd(&Msg);
+    }
+    return rc;
+}
+
+
 
 B_BTR::B_BTR(TMdPrm& prm, uint16_t id, uint16_t nu, uint16_t nr, bool has_params) :
     DA(prm), ID(id), count_nu(nu), count_nr(nr), with_params(has_params)
@@ -836,7 +912,7 @@ void B_BTR::setTU(uint8_t tu)
     }
 
 }
-void B_BTR::runTU(uint8_t tu)
+uint8_t B_BTR::runTU(uint8_t tu)
 {
     if (currTU) {
 	STUchannel &TU = TUdata[currTU - 1];
@@ -856,6 +932,7 @@ void B_BTR::runTU(uint8_t tu)
 	}
 	currTU = 0;
     }
+    return 0;
 }
 
 uint16_t B_BTR::setVal(TVal &val)

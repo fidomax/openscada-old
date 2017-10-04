@@ -144,6 +144,11 @@ class DA : public TElem
 	}
 	uint16_t ID;
 
+        virtual uint8_t runTU(uint8_t)
+        {
+                return 0;
+        }
+
     protected:
 	class SDataRec
 	{

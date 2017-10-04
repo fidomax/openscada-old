@@ -33,15 +33,10 @@ class KA_BTU : public DA
 	//Methods
 	KA_BTU(TMdPrm& prm, uint16_t id, uint16_t nu, bool has_params);
 	~KA_BTU();
-	uint16_t ID;
 	uint16_t count_nu;
 	bool with_params;
-	uint16_t config;
-	void AddChannel(uint8_t iid);
 	uint16_t GetState(void);
-	uint16_t SetParams(void);
 	uint16_t RefreshData(void);
-	uint16_t RefreshParams(void);
 	uint16_t HandleEvent(int64_t, uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
@@ -49,58 +44,60 @@ class KA_BTU : public DA
 	void setTU(uint8_t);
 	uint8_t runTU(uint8_t);
 	string getStatus(void);
+	void tmHandler(void);
+	uint16_t config;
+};
+class KA_TU : public DA
+{
+    public:
+    	KA_TU(TMdPrm& prm, DA &parent, uint16_t id, bool has_params);
+	~KA_TU();
+	bool with_params;
+	DA &parentDA;
+
+        uint16_t GetState(void);
+	uint16_t PreInit(void);
+	uint16_t SetParams(void);
+	uint16_t RefreshParams(void);
+	uint16_t PostInit(void);
+	uint16_t RefreshData(void);
+	uint16_t HandleEvent(int64_t, uint8_t *);
+	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
+	uint8_t cmdSet(uint8_t * req, uint8_t addr);
+	uint16_t setVal(TVal &val);
+        uint8_t runTU(uint8_t);
+	string getStatus(void);
 	void saveIO(void);
 	void loadIO(bool force = false);
 	void saveParam(void);
 	void loadParam(void);
 	void tmHandler(void);
-	class SKATUchannel
-	{
-	    public:
-		SKATUchannel(uint8_t iid, DA* owner) :
-		    da(owner), id(iid), iTY(0), Line(TSYS::strMess("Line_%d", id + 1), TSYS::strMess(_("Line %d"), id + 1))
-		{
-		    for (int i = 0; i < 16; i++)
-			Time.push_back(ui16Data(TSYS::strMess("Time%d_%d", i + 1, id + 1), TSYS::strMess(_("Time #%d %d"), i + 1, id + 1)));
-		}
-		DA* da;
-		uint8_t id;
-		ui16Data Line;
-		uint8_t iTY;
-		vector<ui16Data> Time;
-	};
-	vector<SKATUchannel> TUdata;
+
+	ui16Data Line;
+	uint8_t iTY;
+	vector<ui16Data> Time;
+
 	int lnkSize()
 	{
-	    if (with_params)
-		return TUdata.size() * 17;
-	    else
-		return TUdata.size() * 1;
+	    return with_params ? 17 : 1;
 	}
+
 	int lnkId(const string &id)
 	{
-	    if (with_params) {
-		for (int i_l = 0; i_l < TUdata.size(); i_l++) {
-		    if (TUdata[i_l].Line.lnk.prmName == id) return i_l * 17;
-		    for (int i = 0; i < 16; i++)
-			if (TUdata[i_l].Time[i].lnk.prmName == id) return i_l * 17 + i + 1;
-		}
-	    } else
-		for (int i_l = 0; i_l < TUdata.size(); i_l++)
-		    if (TUdata[i_l].Line.lnk.prmName == id) return i_l;
+
+	    if (Line.lnk.prmName == id) return 0;
+	    if (with_params)
+		for (int i = 0; i < 16; i++)
+		    if (Time[i].lnk.prmName == id) return i + 1;
 	    return -1;
 	}
 	SLnk &lnk(int num)
 	{
 	    int k;
 
-	    if (with_params)
-		k = 17;
-	    else
-		k = 1;
-	    switch (num % k) {
+	    switch (num) {
 	    case 0:
-		return TUdata[num / k].Line.lnk;
+		return Line.lnk;
 	    case 1:
 	    case 2:
 	    case 3:
@@ -117,11 +114,12 @@ class KA_BTU : public DA
 	    case 14:
 	    case 15:
 	    case 16:
-		return TUdata[num / k].Time[num % k - 1].lnk;
+		return Time[num - 1].lnk;
 	    }
 	}
-}
-;
+
+
+};
 
 class B_BTR : public DA
 {
@@ -142,7 +140,7 @@ class B_BTR : public DA
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
 	uint16_t setVal(TVal &val);
 	void setTU(uint8_t);
-	void runTU(uint8_t);
+	uint8_t runTU(uint8_t);
 	string getStatus(void);
 	void saveIO(void);
 	void loadIO(bool force = false);
