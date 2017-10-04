@@ -175,22 +175,22 @@ uint16_t KA_GNS::setVal(TVal &val)
 
 KA_NS::KA_NS(TMdPrm& prm, DA &parent, uint16_t id, bool has_params) :
     DA(prm, id), parentDA(parent), with_params(has_params),
-    State(TSYS::strMess("state", id), TSYS::strMess(_("State"), id)),
-    Function(TSYS::strMess("function", id), TSYS::strMess(_("Function"), id)),
-    TUOn(TSYS::strMess("TUOn", id), TSYS::strMess(_("TU on"), id)),
-    TUOff(TSYS::strMess("TUOff", id), TSYS::strMess(_("TU off"), id)),
-    TUStop(TSYS::strMess("TUstop", id), TSYS::strMess(_("TU stop"), id)),
-    TURemote(TSYS::strMess("TUremote", id), TSYS::strMess(_("TU remote"), id)),
-    TUManual(TSYS::strMess("TUmanual", id), TSYS::strMess(_("TU manual"), id)),
-    TimeOn(TSYS::strMess("TimeOn", id), TSYS::strMess(_("On time"), id)),
-    TimeOff(TSYS::strMess("TimeOff", id), TSYS::strMess(_("Off time"), id)),
-    TimeStop(TSYS::strMess("timeStop", id), TSYS::strMess(_("Stop time"), id)),
-    TimeRemote(TSYS::strMess("timeRemote", id), TSYS::strMess(_("Remote time"), id)),
-    TimeManual(TSYS::strMess("timeManual", id), TSYS::strMess(_("Manual time"), id)),
-    TCOn(TSYS::strMess("TCOn", id), TSYS::strMess(_("On TC"), id)),
-    TCOff(TSYS::strMess("TCOff", id), TSYS::strMess(_("Off TC"), id)),
-    TCMode(TSYS::strMess("tcMode", id), TSYS::strMess(_("Mode TC"), id)),
-    Time(TSYS::strMess("time", id), TSYS::strMess(_("Work time"), id))
+    State("state", _("State")),
+    Function("function", _("Function")),
+    TUOn("TUOn", _("TU on")),
+    TUOff("TUOff", _("TU off")),
+    TUStop("TUstop", _("TU stop")),
+    TURemote("TUremote", _("TU remote")),
+    TUManual("TUmanual", _("TU manual")),
+    TimeOn("TimeOn", _("On time")),
+    TimeOff("TimeOff", _("Off time")),
+    TimeStop("timeStop", _("Stop time")),
+    TimeRemote("timeRemote", _("Remote time")),
+    TimeManual("timeManual", _("Manual time")),
+    TCOn("TCOn", _("On TC")),
+    TCOff("TCOff", _("Off TC")),
+    TCMode("tcMode", _("Mode TC")),
+    Time("time", _("Work time"))
 {
     mTypeFT3 = KA;
 

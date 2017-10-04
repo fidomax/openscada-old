@@ -60,7 +60,6 @@ class KA_TC : public DA
 	~KA_TC();
 	bool with_params;
 	DA &parentDA;
-//	void AddChannel(uint8_t iid);
 	uint16_t GetState(void);
 	uint16_t PreInit(void);
 	uint16_t SetParams(void);
@@ -78,7 +77,6 @@ class KA_TC : public DA
 	void loadParam(void);
 	void tmHandler(void);
 	uint16_t config;
-//uint8_t id;
 	ui8Data Value, Period, Count;
 	int lnkSize()
 	{

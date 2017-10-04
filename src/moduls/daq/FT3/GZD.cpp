@@ -35,11 +35,6 @@ KA_GZD::KA_GZD(TMdPrm& prm, uint16_t id, uint16_t n, bool has_params, uint32_t v
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
-
-/*	for (int i = 0; i < count_n; i++) {
-        chan_err.insert(chan_err.end(), SDataRec());
-        AddZDChannel(i);
-    }*/
     loadIO(true);
 }
 
@@ -47,34 +42,6 @@ KA_GZD::~KA_GZD()
 {
 
 }
-
-/*void KA_GZD::AddZDChannel(uint8_t iid)
-   {
-    data.push_back(SKAZDchannel(iid, with_params, valve_type, this));
-    AddAttr(data.back().State.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:0", iid + 1));
-    AddAttr(data.back().Function.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:3", iid + 1));
-    if (with_params) {
-        AddAttr(data.back().TUOpen.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TUClose.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TUStop.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        if (valve_type == vt_6TU)
-            AddAttr(data.back().TUStopEx.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TURemote.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TUManual.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TimeOpen.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TimeClose.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TimeStop.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        if (valve_type == vt_6TU)
-            AddAttr(data.back().TimeStopEx.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TimeRemote.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TimeManual.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:1", iid + 1));
-        AddAttr(data.back().TCOpen.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-        AddAttr(data.back().TCClose.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-        AddAttr(data.back().TCMode.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-        AddAttr(data.back().TCOpenErr.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-        AddAttr(data.back().TCCloseErr.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("%d:2", iid + 1));
-    }
-   }*/
 
 string KA_GZD::getStatus(void)
 {
@@ -198,7 +165,6 @@ uint8_t KA_GZD::cmdSet(uint8_t * req, uint8_t addr)
 
     if (ft3ID.g != ID) return 0;
     uint l = 0;
-//    if(mess_lev() == TMess::Debug) mPrm.mess_sys(TMess::Debug, "cmdSet k %d n %d", ft3ID.k, ft3ID.n);
     return l;
 }
 
@@ -207,7 +173,7 @@ uint16_t KA_GZD::setVal(TVal &val)
 }
 
 KA_ZD::KA_ZD(TMdPrm& prm, DA &parent, uint16_t id, bool has_params, uint32_t v_type) :
-    DA(prm, id), parentDA(parent), with_params(has_params), valve_type(v_type),    // da(owner), id(iid),
+    DA(prm, id), parentDA(parent), with_params(has_params), valve_type(v_type),
     State("state", _("State")),
     Function("function", _("Function")),
     TUOpen("TUopen", _("TU open")),

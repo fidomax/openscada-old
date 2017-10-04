@@ -54,8 +54,6 @@ class KA_BVT : public DA
 	bool with_params;
 	uint16_t GetState(void);
 	uint16_t RefreshData(void);
-	//uint16_t PostInit(void);
-	//uint16_t RefreshData(void);
 	uint16_t HandleEvent(int64_t, uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
@@ -63,26 +61,6 @@ class KA_BVT : public DA
 	string getStatus(void);
 	void tmHandler(void);
 	uint16_t config;
-/*	int lnkSize()
-        {
-                return 0;
-        }
-        int lnkId(const string &id)
-        {
-            //throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
-            return -1;
-        }
-
-        DA::SLnk &lnk(int num);
-        {
-            throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
-        }
-
-        SLnk &lnk(int num);
-        {
-            throw TError(mPrm.nodePath().c_str(),_("Link list is empty."));
-        }*/
-
 };
 
 class KA_TT : public DA
@@ -93,7 +71,6 @@ class KA_TT : public DA
 	~KA_TT();
 	bool with_params;
 	DA &parentDA;
-//	void AddChannel(uint8_t iid);
 	uint16_t GetState(void);
 	uint16_t PreInit(void);
 	uint16_t SetParams(void);
