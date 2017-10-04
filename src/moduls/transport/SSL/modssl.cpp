@@ -1,7 +1,7 @@
 
 //OpenSCADA system module Transport.SSL file: modssl.cpp
 /***************************************************************************
- *   Copyright (C) 2008-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2008-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -41,10 +41,10 @@
 #define MOD_NAME	_("SSL")
 #define MOD_TYPE	STR_ID
 #define VER_TYPE	STR_VER
-#define MOD_VER		"1.5.0"
+#define MOD_VER		"1.6.0"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides transport based on the secure sockets' layer.\
- OpenSSL is used and SSLv2, SSLv3, TLSv1, TLSv1.1, TLSv1.2, DTLSv1 are supported.")
+ OpenSSL is used and SSLv3, TLSv1, TLSv1.1, TLSv1.2, DTLSv1 are supported.")
 #define LICENSE		"GPL2"
 //************************************************
 
@@ -286,12 +286,8 @@ void *TSocketIn::Task( void *sock_in )
     SSL_METHOD *meth;
 #endif
 
-#ifndef OPENSSL_NO_SSL2
-    if(ssl_method == "SSLv2")		meth = SSLv2_server_method();
-    else
-#endif
 #ifndef OPENSSL_NO_SSL3
-	if(ssl_method == "SSLv3")	meth = SSLv3_server_method();
+    if(ssl_method == "SSLv3")		meth = SSLv3_server_method();
     else
 #endif
 	if(ssl_method == "TLSv1")	meth = TLSv1_server_method();
@@ -627,7 +623,7 @@ void TSocketIn::cntrCmdProc( XMLNode *opt )
 	    "  [addr]:[port]:[mode] - where:\n"
 	    "    addr - address for SSL to be opened, '*' address opens for all interfaces;\n"
 	    "    port - network port (/etc/services);\n"
-	    "    mode - SSL mode and version (SSLv2, SSLv3, SSLv23, TLSv1, TLSv1_1, TLSv1_2, DTLSv1)."));
+	    "    mode - SSL mode and version (SSLv3, SSLv23, TLSv1, TLSv1_1, TLSv1_2, DTLSv1)."));
 	ctrMkNode("fld",opt,-1,"/prm/cfg/PROT",EVAL_STR,startStat()?R_R_R_:RWRWR_,"root",STR_ID);
 	ctrMkNode("fld",opt,-1,"/prm/cfg/certKey",_("Certificates and private key"),startStat()?R_R_R_:RWRWR_,"root",STR_ID,4,
 	    "tp","str","cols","90","rows","7","help",_("SSL PAM certificates chain and private key."));
@@ -750,7 +746,7 @@ void TSocketOut::start( int tmCon )
     string	cfile;
     char	err[255];
 
-    ResAlloc res(wres, true);
+    MtxAlloc res(reqRes(), true);
     if(runSt) return;
 
     ctx = NULL;
@@ -773,12 +769,8 @@ void TSocketOut::start( int tmCon )
     SSL_METHOD *meth;
 #endif
 
-#ifndef OPENSSL_NO_SSL2
-    if(ssl_method == "SSLv2")		meth = SSLv2_client_method();
-    else
-#endif
 #ifndef OPENSSL_NO_SSL3
-	if(ssl_method == "SSLv3")	meth = SSLv3_client_method();
+    if(ssl_method == "SSLv3")		meth = SSLv3_client_method();
     else
 #endif
 	if(ssl_method == "TLSv1")	meth = TLSv1_client_method();
@@ -928,7 +920,7 @@ void TSocketOut::start( int tmCon )
 
 void TSocketOut::stop( )
 {
-    ResAlloc res(wres, true);
+    MtxAlloc res(reqRes(), true);
     if(!runSt) return;
 
     //Status clear
@@ -952,7 +944,7 @@ void TSocketOut::stop( )
     TTransportOut::stop();
 }
 
-int TSocketOut::messIO( const char *oBuf, int oLen, char *iBuf, int iLen, int time, bool noRes )
+int TSocketOut::messIO( const char *oBuf, int oLen, char *iBuf, int iLen, int time )
 {
     string err = _("Unknown error");
     int	 ret = 0, reqTry = 0;;
@@ -961,9 +953,7 @@ int TSocketOut::messIO( const char *oBuf, int oLen, char *iBuf, int iLen, int ti
 	 writeReq = false;
     time = abs(time);
 
-    ResAlloc resN(nodeRes());
-    if(!noRes) resN.lock(true);
-    ResAlloc res(wres, true);
+    MtxAlloc res(reqRes(), true);
 
     if(!runSt) throw TError(nodePath().c_str(), _("Transport is not started!"));
 
@@ -978,12 +968,10 @@ repeate:
 	do { ret = BIO_write(conn, oBuf, oLen); } while(ret < 0 && SSL_get_error(ssl,ret) == SSL_ERROR_WANT_WRITE);
 	if(ret <= 0) {
 	    err = TSYS::strMess("%s (%d)", strerror(errno), errno);
-	    res.release();
 	    stop();
 	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Write error: %s"), err.c_str());
 	    if(noReq) throw TError(nodePath().c_str(), _("Write error: %s"), err.c_str());
 	    start();
-	    res.request(true);
 	    goto repeate;
 	}
 
@@ -1001,12 +989,10 @@ repeate:
 	if(ret > 0) trIn += ret;
 	else if(ret == 0) {
 	    err = TSYS::strMess("%s (%d)", strerror(errno), errno);
-	    res.release();
 	    stop();
 	    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Read error: %s"), err.c_str());
 	    if(!writeReq || noReq) throw TError(nodePath().c_str(),_("Read error: %s"), err.c_str());
 	    start();
-	    res.request(true);
 	    goto repeate;
 	}
 	else if(ret < 0 && SSL_get_error(ssl,ret) != SSL_ERROR_WANT_READ && SSL_get_error(ssl,ret) != SSL_ERROR_WANT_WRITE) {
@@ -1024,14 +1010,12 @@ repeate:
 	    FD_ZERO(&rd_fd); FD_SET(sock_fd, &rd_fd);
 	    kz = select(sock_fd+1, &rd_fd, NULL, NULL, &tv);
 	    if(kz == 0) {
-		res.release();
 		if(writeReq && !noReq) stop();
 		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Read timeouted."));
 		throw TError(nodePath().c_str(),_("Timeouted!"));
 	    }
 	    else if(kz < 0) {
 		err = TSYS::strMess("%s (%d)", strerror(errno), errno);
-		res.release();
 		stop();
 		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Read (select) error: %s"), err.c_str());
 		throw TError(nodePath().c_str(),_("Read (select) error: %s"), err.c_str());
@@ -1042,13 +1026,11 @@ repeate:
 		    while((ret=BIO_read(conn,iBuf,iLen)) == -1) sched_yield();
 		if(ret < 0) {
 		    err = TSYS::strMess("%s (%d)", strerror(errno), errno);
-		    res.release();
 		    stop();
 		    if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Read error: %s"), err.c_str());
 		    // * Pass to retry into the request mode and on the successful writing
 		    if(!writeReq || noReq) throw TError(nodePath().c_str(),_("Read error: %s"), err.c_str());
 		    start();
-		    res.request(true);
 		    goto repeate;
 		}
 		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), _("Read %s."), TSYS::cpct2str(vmax(0,ret)).c_str());
@@ -1071,7 +1053,7 @@ void TSocketOut::cntrCmdProc( XMLNode *opt )
 	    "  [addr]:[port]:[mode] - where:\n"
 	    "    addr - remote SSL host address;\n"
 	    "    port - network port (/etc/services);\n"
-	    "    mode - SSL mode and version (SSLv2, SSLv3, SSLv23, TLSv1, TLSv1_1, TLSv1_2, DTLSv1)."));
+	    "    mode - SSL mode and version (SSLv3, SSLv23, TLSv1, TLSv1_1, TLSv1_2, DTLSv1)."));
 	ctrMkNode("fld",opt,-1,"/prm/cfg/certKey",_("Certificates and private key"),RWRW__,"root",STR_ID,4,"tp","str","cols","90","rows","7",
 	    "help",_("SSL PAM certificates chain and private key."));
 	ctrMkNode("fld",opt,-1,"/prm/cfg/pkey_pass",_("Private key password"),RWRW__,"root",STR_ID,1,"tp","str");

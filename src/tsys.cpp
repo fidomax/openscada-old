@@ -20,7 +20,6 @@
 
 #include <features.h>
 #include <byteswap.h>
-#include <syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -40,9 +39,14 @@
 
 #include <algorithm>
 
+#include "ieee754.h"
 #include "terror.h"
 #include "tmess.h"
 #include "tsys.h"
+
+#ifdef HAVE_SYSCALL_H
+# include <syscall.h>
+#endif
 
 using namespace OSCADA;
 
@@ -53,19 +57,21 @@ bool TSYS::finalKill = false;
 pthread_key_t TSYS::sTaskKey;
 
 TSYS::TSYS( int argi, char ** argb, char **env ) : argc(argi), argv((const char **)argb), envp((const char **)env),
-    mUser("root"), mConfFile(sysconfdir_full"/oscada.xml"), mId("EmptySt"), mName(_("Empty Station")),
+    mUser("root"), mConfFile(sysconfdir_full"/oscada.xml"), mId("EmptySt"),
     mModDir(oscd_moddir_full), mIcoDir("icons;" oscd_datadir_full "/icons"), mDocDir("docs;" oscd_datadir_full "/docs"),
     mWorkDB(DB_CFG), mSaveAtExit(false), mSavePeriod(0), rootModifCnt(0), sysModifFlgs(0), mStopSignal(-1), mN_CPU(1),
     mainPthr(0), mSysTm(0), mClockRT(false), mRdStLevel(0), mRdRestConnTm(10), mRdTaskPer(1), mRdPrcTm(0), mRdPrimCmdTr(false)
 {
+    Mess = new TMess();
+
+    mName = _("Empty Station");
+
     finalKill = false;
     SYS = this;		//Init global access value
-    mSubst = grpAdd("sub_",true);
+    mSubst = grpAdd("sub_", true);
     nodeEn();
     mainPthr = pthread_self();
     pthread_key_create(&sTaskKey, NULL);
-
-    Mess = new TMess();
 
     if(getenv("USER")) mUser = getenv("USER");
 
@@ -77,9 +83,9 @@ TSYS::TSYS( int argi, char ** argb, char **env ) : argc(argi), argv((const char 
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     pthread_getaffinity_np(mainPthr, sizeof(cpu_set_t), &cpuset);
-#if __GLIBC_PREREQ(2,6)
+# if __GLIBC_PREREQ(2,6)
     mN_CPU = CPU_COUNT(&cpuset);
-#endif
+# endif
 #endif
 
     //Set signal handlers
@@ -394,6 +400,7 @@ string TSYS::optDescr( )
 	"==================== Generic options ======================================\n"
 	"===========================================================================\n"
 	"-h, --help		Info message about the system options.\n"
+	"    --lang=<LANG>	The station language, in view \"uk_UA.UTF-8\".\n"
 	"    --config=<file>	The station configuration file.\n"
 	"    --station=<id>	The station identifier.\n"
 	"    --statName=<name>	The station name.\n"
@@ -1329,15 +1336,7 @@ uint64_t TSYS::i64_BE( uint64_t in )
 float TSYS::floatLE( float in )
 {
 #if __BYTE_ORDER == __BIG_ENDIAN
-    union ieee754_be {
-	float f;
-	struct {
-	    unsigned int negative:1;
-	    unsigned int exponent:8;
-	    unsigned int mantissa:23;
-	} ieee;
-    } ieee754_be;
-
+    ieee754_float ieee754_be;
     union ieee754_le {
 	float f;
 	struct {
@@ -1437,15 +1436,7 @@ double TSYS::doubleLErev( double in )
 float TSYS::floatBE( float in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    union ieee754_le {
-	float f;
-	struct {
-	    unsigned int mantissa:23;
-	    unsigned int exponent:8;
-	    unsigned int negative:1;
-	} ieee;
-    } ieee754_le;
-
+    ieee754_float ieee754_le;
     union ieee754_be {
 	float f;
 	struct {
@@ -1469,15 +1460,7 @@ float TSYS::floatBE( float in )
 float TSYS::floatBErev( float in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    union ieee754_le {
-	float f;
-	struct {
-	    unsigned int mantissa:23;
-	    unsigned int exponent:8;
-	    unsigned int negative:1;
-	} ieee;
-    } ieee754_le;
-
+    ieee754_float ieee754_le;
     union ieee754_be {
 	float f;
 	struct {
@@ -1501,23 +1484,7 @@ float TSYS::floatBErev( float in )
 double TSYS::doubleBE( double in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    union ieee754_le {
-	double d;
-	struct {
-# if __FLOAT_WORD_ORDER == __BIG_ENDIAN
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-	    unsigned int mantissa1:32;
-# else
-	    unsigned int mantissa1:32;
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-# endif
-	} ieee;
-    } ieee754_le;
-
+    ieee754_double ieee754_le;
     union ieee754_be {
 	double d;
 	struct {
@@ -1543,23 +1510,7 @@ double TSYS::doubleBE( double in )
 double TSYS::doubleBErev( double in )
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-    union ieee754_le {
-	double d;
-	struct {
-# if __FLOAT_WORD_ORDER == __BIG_ENDIAN
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-	    unsigned int mantissa1:32;
-# else
-	    unsigned int mantissa1:32;
-	    unsigned int mantissa0:20;
-	    unsigned int exponent:11;
-	    unsigned int negative:1;
-# endif
-	} ieee;
-    } ieee754_le;
-
+    ieee754_double ieee754_le;
     union ieee754_be {
 	double d;
 	struct {
@@ -1863,7 +1814,9 @@ void *TSYS::taskWrap( void *stas )
 #endif
 
     //Final set for init finish indicate
+#ifdef HAVE_SYSCALL_H
     tsk->tid = syscall(SYS_gettid);
+#endif
     // Set nice level without realtime if it no permitted
     if(tsk->policy != SCHED_RR && tsk->prior > 0 && setpriority(PRIO_PROCESS,tsk->tid,-tsk->prior/5) != 0) tsk->prior = 0;
     tsk->thr = pthread_self();		//Task creation finish
@@ -2521,7 +2474,7 @@ void TSYS::ctrListFS( XMLNode *nd, const string &fsBaseIn, const string &fileExt
 void TSYS::cntrCmdProc( XMLNode *opt )
 {
     char buf[STR_BUF_LEN];
-    string u = opt->attr("user");
+    string u = opt->attr("user"), l = opt->attr("lang");
     string a_path = opt->attr("path");
 
     //Service commands process
@@ -2535,8 +2488,8 @@ void TSYS::cntrCmdProc( XMLNode *opt )
     //Get page info
     if(opt->name() == "info") {
 	TCntrNode::cntrCmdProc(opt);
-	snprintf(buf,sizeof(buf),_("%s station: \"%s\""),PACKAGE_NAME,trU(name(),u).c_str());
-	ctrMkNode("oscada_cntr",opt,-1,"/",buf,R_R_R_)->setAttr("doc","AboutOpenSCADA|ProgrammManual");
+	snprintf(buf,sizeof(buf),_("%s station: \"%s\""),PACKAGE_NAME,trLU(name(),l,u).c_str());
+	ctrMkNode("oscada_cntr",opt,-1,"/",buf,R_R_R_)->setAttr("doc","AboutOpenSCADA|ProgramManual");
 	if(ctrMkNode("branches",opt,-1,"/br","",R_R_R_))
 	    ctrMkNode("grp",opt,-1,"/br/sub_",_("Subsystem"),R_R_R_,"root","root",1,"idm","1");
 	if(TUIS::icoGet(id(),NULL,true).size()) ctrMkNode("img",opt,-1,"/ico","",R_R_R_);
@@ -2623,16 +2576,16 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 			"help",_("Enable common translation manage which cause full reloading for all built messages obtain."));
 	    }
 	    if(Mess->translEnMan()) {
-		ctrMkNode("fld",opt,-1,"/tr/langs",_("Languages"),RWRWR_,"root","root",2,"tp","str",
+		ctrMkNode("fld",opt,-1,"/tr/langs",_("Languages"),RWRW__,"root","root",2,"tp","str",
 		    "help",_("Processed languages list by two symbols code and separated symbol ';'."));
-		ctrMkNode("fld",opt,-1,"/tr/fltr",_("Source filter"),RWRWR_,"root","root",1,"tp","str");
-		ctrMkNode("fld",opt,-1,"/tr/chkUnMatch",_("Check for mismatch"),RWRWR_,"root","root",1,"tp","bool");
-		if(ctrMkNode("table",opt,-1,"/tr/mess",_("Messages"),RWRWR_,"root","root",1,"key","base")) {
-		    ctrMkNode("list",opt,-1,"/tr/mess/base",Mess->lang2CodeBase().c_str(),RWRWR_,"root","root",1,"tp","str");
+		ctrMkNode("fld",opt,-1,"/tr/fltr",_("Source filter"),RWRW__,"root","root",1,"tp","str");
+		ctrMkNode("fld",opt,-1,"/tr/chkUnMatch",_("Check for mismatch"),RWRW__,"root","root",1,"tp","bool");
+		if(ctrMkNode("table",opt,-1,"/tr/mess",_("Messages"),RWRW__,"root","root",1,"key","base")) {
+		    ctrMkNode("list",opt,-1,"/tr/mess/base",Mess->lang2CodeBase().c_str(),RWRW__,"root","root",1,"tp","str");
 		    string lngEl;
 		    for(int off = 0; (lngEl=strParse(Mess->translLangs(),0,";",&off)).size(); )
 			if(lngEl.size() == 2 && lngEl != Mess->lang2CodeBase())
-			    ctrMkNode("list",opt,-1,("/tr/mess/"+lngEl).c_str(),lngEl.c_str(),RWRWR_,"root","root",1,"tp","str");
+			    ctrMkNode("list",opt,-1,("/tr/mess/"+lngEl).c_str(),lngEl.c_str(),RWRW__,"root","root",1,"tp","str");
 		    ctrMkNode("list",opt,-1,"/tr/mess/src",_("Source"),R_R_R_,"root","root",1,"tp","str");
 		}
 	    }
@@ -2667,8 +2620,8 @@ void TSYS::cntrCmdProc( XMLNode *opt )
     else if(a_path == "/gen/ver" && ctrChkNode(opt))	opt->setText(VERSION);
     else if(a_path == "/gen/id" && ctrChkNode(opt))	opt->setText(id());
     else if(a_path == "/gen/stat") {
-	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(trU(name(),u));
-	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setName(trSetU(name(),u,opt->text()));
+	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(trLU(name(),l,u));
+	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	setName(trSetLU(name(),l,u,opt->text()));
     }
     else if(a_path == "/gen/CPU" && ctrChkNode(opt))	opt->setText(strMess(_("%dx%0.3gGHz"),nCPU(),(float)sysClk()/1e9));
     else if(a_path == "/gen/mainCPUs") {
@@ -2918,29 +2871,29 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	Mess->setTranslEnMan(s2i(opt->text()));
     }
     else if(a_path == "/tr/langs") {
-	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(Mess->translLangs());
-	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	Mess->setTranslLangs(opt->text());
+	if(ctrChkNode(opt,"get",RWRW__,"root","root",SEC_RD))	opt->setText(Mess->translLangs());
+	if(ctrChkNode(opt,"set",RWRW__,"root","root",SEC_WR))	Mess->setTranslLangs(opt->text());
     }
     else if(a_path == "/tr/fltr") {
-	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(TBDS::genDBGet(nodePath()+"TrFltr","",opt->attr("user")));
-	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	TBDS::genDBSet(nodePath()+"TrFltr",opt->text(),opt->attr("user"));
+	if(ctrChkNode(opt,"get",RWRW__,"root","root",SEC_RD))	opt->setText(TBDS::genDBGet(nodePath()+"TrFltr","",opt->attr("user")));
+	if(ctrChkNode(opt,"set",RWRW__,"root","root",SEC_WR))	TBDS::genDBSet(nodePath()+"TrFltr",opt->text(),opt->attr("user"));
     }
     else if(a_path == "/tr/chkUnMatch") {
-	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD))	opt->setText(TBDS::genDBGet(nodePath()+"TrChkUnMatch","0",opt->attr("user")));
-	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR))	TBDS::genDBSet(nodePath()+"TrChkUnMatch",opt->text(),opt->attr("user"));
+	if(ctrChkNode(opt,"get",RWRW__,"root","root",SEC_RD))	opt->setText(TBDS::genDBGet(nodePath()+"TrChkUnMatch","0",opt->attr("user")));
+	if(ctrChkNode(opt,"set",RWRW__,"root","root",SEC_WR))	TBDS::genDBSet(nodePath()+"TrChkUnMatch",opt->text(),opt->attr("user"));
     }
     else if(a_path == "/tr/mess") {
-	if(ctrChkNode(opt,"get",RWRWR_,"root","root",SEC_RD)) {
+	if(ctrChkNode(opt,"get",RWRW__,"root","root",SEC_RD)) {
 	    bool chkUnMatch = s2i(TBDS::genDBGet(nodePath()+"TrChkUnMatch","0",opt->attr("user")));
 	    string tStr, trFltr = TBDS::genDBGet(nodePath()+"TrFltr","",opt->attr("user"));
 	    TConfig req;
 	    vector<XMLNode*> ns;
 
 	    // Columns list prepare
-	    ns.push_back(ctrMkNode("list",opt,-1,"/tr/mess/base","",RWRWR_,"root","root"));
+	    ns.push_back(ctrMkNode("list",opt,-1,"/tr/mess/base","",RWRW__,"root","root"));
 	    for(int off = 0; (tStr=strParse(Mess->translLangs(),0,";",&off)).size(); )
 		if(tStr.size() == 2 && tStr != Mess->lang2CodeBase())
-		    ns.push_back(ctrMkNode("list",opt,-1,("/tr/mess/"+tStr).c_str(),tStr.c_str(),RWRWR_,"root","root"));
+		    ns.push_back(ctrMkNode("list",opt,-1,("/tr/mess/"+tStr).c_str(),tStr.c_str(),RWRW__,"root","root"));
 	    ns.push_back(ctrMkNode("list",opt,-1,"/tr/mess/src","",R_R_R_,"root","root"));
 
 	    // Values request from first source
@@ -3011,7 +2964,7 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 		}
 	    }
 	}
-	if(ctrChkNode(opt,"set",RWRWR_,"root","root",SEC_WR)) {
+	if(ctrChkNode(opt,"set",RWRW__,"root","root",SEC_WR)) {
 	    bool needReload = false;
 	    Mess->translSet(opt->attr("key_base"), ((opt->attr("col")=="base")?Mess->lang2CodeBase():opt->attr("col")), opt->text(), &needReload);
 	    if(!needReload) opt->setAttr("noReload","1");
@@ -3068,20 +3021,13 @@ void TSYS::cntrCmdProc( XMLNode *opt )
 }
 
 #if defined(__ANDROID__)
-int main( int argc, char *argv[], char *envp[] )
+int main( int argc, char *argv[] )
 {
     int rez = 0;
 
-    //Get current locale from Java and set its to the environment LANG
-    setenv("LANG", "uk_UA.UTF-8", 1);
-
     //Same load and start the core object TSYS
-    SYS = new TSYS(argc, argv, envp);
+    SYS = new TSYS(argc, argv, NULL);
     try {
-	//Print arguments and environments
-	mess_info("TEST_ARG", "Arguments %d, %p, %p", argc, argv, envp);
-
-
 	SYS->load();
 	if((rez=SYS->stopSignal()) > 0) throw TError(SYS->nodePath().c_str(), "Stop by signal %d on load.", rez);
 	rez = SYS->start();

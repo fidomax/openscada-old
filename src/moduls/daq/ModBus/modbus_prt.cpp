@@ -46,8 +46,8 @@ TProt::TProt( string name ) : TProtocol(PRT_ID), mPrtLen(0)
 
     //Node DB structure
     mNodeEl.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
-    mNodeEl.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
-    mNodeEl.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"300"));
+    mNodeEl.fldAdd(new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,OBJ_NM_SZ));
+    mNodeEl.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TFld::TransltText,"300"));
     mNodeEl.fldAdd(new TFld("EN",_("To enable"),TFld::Boolean,0,"1","0"));
     mNodeEl.fldAdd(new TFld("ADDR",_("Address"),TFld::Integer,0,"3","1","1;247"));
     mNodeEl.fldAdd(new TFld("InTR",_("Input transport"),TFld::String,0,OBJ_ID_SZ,"*"));
@@ -57,7 +57,7 @@ TProt::TProt( string name ) : TProtocol(PRT_ID), mPrtLen(0)
     // For "Data" mode
     mNodeEl.fldAdd(new TFld("DT_PER",_("Calculate data period (s)"),TFld::Real,0,"5.3","1","0.001;99"));
     mNodeEl.fldAdd(new TFld("DT_PR_TR",_("Allow program translation"),TFld::Boolean,TFld::NoFlag,"1","0"));
-    mNodeEl.fldAdd(new TFld("DT_PROG",_("Program"),TFld::String,TCfg::TransltText,"1000000"));
+    mNodeEl.fldAdd(new TFld("DT_PROG",_("Program"),TFld::String,TFld::TransltText,"1000000"));
     // For "Gateway" mode
     mNodeEl.fldAdd(new TFld("TO_TR",_("To transport"),TFld::String,0,OBJ_ID_SZ));
     mNodeEl.fldAdd(new TFld("TO_PRT",_("To protocol"),TFld::String,TFld::Selected,"5","RTU","RTU;ASCII;TCP",_("RTU;ASCII;TCP/IP")));
@@ -66,10 +66,10 @@ TProt::TProt( string name ) : TProtocol(PRT_ID), mPrtLen(0)
     //Node data IO DB structure
     mNodeIOEl.fldAdd(new TFld("NODE_ID",_("Node ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
     mNodeIOEl.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
-    mNodeIOEl.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
+    mNodeIOEl.fldAdd(new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,OBJ_NM_SZ));
     mNodeIOEl.fldAdd(new TFld("TYPE",_("Value type"),TFld::Integer,TFld::NoFlag,"1"));
     mNodeIOEl.fldAdd(new TFld("FLAGS",_("Flags"),TFld::Integer,TFld::NoFlag,"4"));
-    mNodeIOEl.fldAdd(new TFld("VALUE",_("Value"),TFld::String,TCfg::TransltText,"100"));
+    mNodeIOEl.fldAdd(new TFld("VALUE",_("Value"),TFld::String,TFld::TransltText,"100"));
     mNodeIOEl.fldAdd(new TFld("POS",_("Real position"),TFld::Integer,TFld::NoFlag,"4"));
 }
 
@@ -244,7 +244,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
     string mbap, err, rez;
     char buf[1000];
 
-    ResAlloc resN(tro.nodeRes(), true);
+    MtxAlloc resN(tro.reqRes(), true);
 
     string prt   = io.name();
     string sid   = io.attr("id");
@@ -268,7 +268,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 	    mbap += pdu;
 
 	    //Send request
-	    int resp_len = tro.messIO(mbap.data(), mbap.size(), buf, sizeof(buf), reqTm, true);
+	    int resp_len = tro.messIO(mbap.data(), mbap.size(), buf, sizeof(buf), reqTm);
 	    rez.assign(buf,resp_len);
 	    if(rez.size() < 7)	err = _("13:Error server respond");
 	    else {
@@ -276,7 +276,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 
 		//Wait tail
 		while(rez.size() < (resp_sz+6)) {
-		    resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), reqTm, true);
+		    resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), reqTm);
 		    if(!resp_len) throw TError(nodePath().c_str(),_("Not full respond"));
 		    rez.append(buf, resp_len);
 		}
@@ -294,11 +294,11 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 	    //Send request
 	    for(int i_tr = 0, resp_len = 0; i_tr < reqTry; i_tr++) {
 		try {
-		    resp_len = tro.messIO(mbap.data(), mbap.size(), buf, sizeof(buf), reqTm, true);
+		    resp_len = tro.messIO(mbap.data(), mbap.size(), buf, sizeof(buf), reqTm);
 		    rez.assign(buf, resp_len);
 		    //Wait tail
 		    while(resp_len) {
-			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError &err) { break; }
+			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf)); } catch(TError &err) { break; }
 			rez.append(buf, resp_len);
 		    }
 		} catch(TError &er) {	//By possible the send request breakdown and no response
@@ -325,11 +325,11 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 	    //Send request
 	    for(int i_tr = 0, resp_len = 0; i_tr < reqTry; i_tr++) {
 		try {
-		    resp_len = tro.messIO(mbap.data(), mbap.size(), buf, sizeof(buf), reqTm, true);
+		    resp_len = tro.messIO(mbap.data(), mbap.size(), buf, sizeof(buf), reqTm);
 		    rez.assign(buf, resp_len);
 		    //Wait tail
 		    while(resp_len && (rez.size() < 3 || rez.substr(rez.size()-2,2) != "\x0D\x0A")) {
-			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf), 0, true); } catch(TError &err) { break; }
+			try { resp_len = tro.messIO(NULL, 0, buf, sizeof(buf)); } catch(TError &err) { break; }
 			rez.append(buf, resp_len);
 		    }
 		} catch(TError &er) {	//By possible the send request breakdown and no response
@@ -1010,7 +1010,7 @@ bool Node::req( const string &itr, const string &iprt, unsigned char inode, stri
 				if(grpValIt != grpVals.end())	valIO = grpValIt->second.getS();
 				else { valIO = data->val.getS(itr->second.id); grpVals[itr->second.id] = valIO; }
 				valIO.resize(vmax(0,(itr->second.pos+1)*2), 0);
-				val = TSYS::getUnalign16(valIO.data()+itr->second.pos*2);
+				val = TSYS::i16_BE(TSYS::getUnalign16(valIO.data()+itr->second.pos*2));
 				break;
 			    }
 			    default:	val = data->val.getI(itr->second.id);	break;
@@ -1076,9 +1076,10 @@ bool Node::req( const string &itr, const string &iprt, unsigned char inode, stri
 			    break;
 			}
 			case 's': {
+			    val = TSYS::i16_BE(val);
 			    string valIO = data->val.getS(ir->second.id);
 			    valIO.resize(vmax((int)valIO.size(),(ir->second.pos+1)*2), 0);
-			    valIO.replace(ir->second.pos*2,2,(char*)&val,2);
+			    valIO.replace(ir->second.pos*2, 2, (char*)&val, 2);
 			    data->val.setS(ir->second.id, valIO);
 			    if((il=data->lnk.find(ir->second.id)) != data->lnk.end() && !il->second.freeStat())	il->second.at().setS(valIO);
 			    break;
@@ -1158,10 +1159,11 @@ bool Node::req( const string &itr, const string &iprt, unsigned char inode, stri
 				break;
 			    }
 			    case 's': {
+				val = TSYS::i16_BE(val);
 				map<int,TVariant>::iterator grpValIt = grpVals.find(ir->second.id);
 				string valIO = (grpValIt != grpVals.end()) ? grpValIt->second.getS() : data->val.getS(ir->second.id);
 				valIO.resize(vmax((int)valIO.size(),(ir->second.pos+1)*2), 0);
-				valIO.replace(ir->second.pos*2,2,(char*)&val,2);
+				valIO.replace(ir->second.pos*2, 2, (char*)&val, 2);
 				grpVals[ir->second.id] = valIO;
 				break;
 			    }

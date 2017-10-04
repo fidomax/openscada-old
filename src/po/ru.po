@@ -1,13 +1,13 @@
 # OpenSCADA core translate to Russian.
 # This file is distributed under the same license as the OpenSCADA package.
 #
-# Roman Savochenko <rom_as@oscada.org>, 2003-2016.
+# Roman Savochenko <rom_as@oscada.org>, 2003-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-09 16:07+0300\n"
+"POT-Creation-Date: 2017-09-14 15:57+0300\n"
 "PO-Revision-Date: 2007-10-05 19:25+0300\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <ru@li.org>\n"
@@ -204,8 +204,8 @@ msgstr "Предп. исп."
 msgid "Remote"
 msgstr "Удалённый"
 
-msgid "Messages archive"
-msgstr "Архив сообщений"
+msgid "Messages"
+msgstr "Сообщения"
 
 msgid "Messages buffer size"
 msgstr "Размер буфера сообщений"
@@ -263,9 +263,6 @@ msgstr ""
 "архиваторами.\n"
 "Установите '<buffer>' для обработки запроса буфером."
 
-msgid "Messages"
-msgstr "Сообщения"
-
 msgid "Time"
 msgstr "Время"
 
@@ -281,8 +278,8 @@ msgstr "Ур."
 msgid "Message"
 msgstr "Сообщение"
 
-msgid "Value archives"
-msgstr "Архивы значений"
+msgid "Values"
+msgstr "Значения"
 
 msgid "Get data period (ms)"
 msgstr "Период получения данных (мс)"
@@ -295,6 +292,9 @@ msgstr "Принудительно устанавливать метку вре�
 
 msgid "Number"
 msgstr "Количество"
+
+msgid "Value archives"
+msgstr "Архивы значений"
 
 #, c-format
 msgid "All: %d; Enabled: %d"
@@ -458,9 +458,6 @@ msgstr "Обработка"
 
 msgid "Period (s)"
 msgstr "Период (с)"
-
-msgid "Values"
-msgstr "Значения"
 
 msgid "Microseconds"
 msgstr "Микросекунды"
@@ -649,8 +646,8 @@ msgstr "Таблица: "
 msgid "Table"
 msgstr "Таблица"
 
-msgid "Table offset"
-msgstr "Смещение таблицы"
+msgid "Table offset, size"
+msgstr "Таблица - смещение, размер"
 
 msgid "Data"
 msgstr "Данные"
@@ -1634,6 +1631,7 @@ msgid ""
 "==================== Generic options ======================================\n"
 "===========================================================================\n"
 "-h, --help\t\tInfo message about the system options.\n"
+"    --lang=<LANG>\tThe station language, in view \"uk_UA.UTF-8\".\n"
 "    --config=<file>\tThe station configuration file.\n"
 "    --station=<id>\tThe station identifier.\n"
 "    --statName=<name>\tThe station name.\n"
@@ -1687,6 +1685,7 @@ msgstr ""
 "======================= Основные опции ====================================\n"
 "===========================================================================\n"
 "-h, --help\t\tИнформация по опциям системы.\n"
+"    --lang=<LANG>\tЯзык станции, в виде \"uk_UA.UTF-8\".\n"
 "    --config=<файл>\tКонфигурационный файл станции.\n"
 "    --station=<ид>\tИдентификатор станции.\n"
 "    --statName=<имя>\tИмя станции.\n"
@@ -2348,12 +2347,14 @@ msgid ""
 "Parameter's attribute\n"
 "  ID: '%s'\n"
 "  Name: '%s'\n"
-"  Type: '%s'"
+"  Type: '%s'\n"
+"  Read only: %d"
 msgstr ""
 "Атрибут параметра\n"
 "  ID: '%s'\n"
 "  Имя: '%s'\n"
-"  Тип: '%s'"
+"  Тип: '%s'\n"
+"  Только чтение: %d"
 
 msgid ""
 "\n"

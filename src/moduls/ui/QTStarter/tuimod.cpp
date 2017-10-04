@@ -52,7 +52,7 @@
 #else
 #define SUB_TYPE	""
 #endif
-#define MOD_VER		"2.1.1"
+#define MOD_VER		"2.1.4"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides the Qt GUI starter. Qt-starter is the only and compulsory component for all GUI modules based on the Qt library.")
 #define LICENSE		"GPL2"
@@ -127,9 +127,12 @@ TUIMod::~TUIMod( )
     if(runSt) modStop();
 }
 
-string TUIMod::modInfo( const string &name )
+string TUIMod::modInfo( const string &iname )
 {
+    string name = TSYS::strParse(iname, 0, ":");
+
     if(name == "SubType") return SUB_TYPE;
+
     return TModule::modInfo(name);
 }
 
@@ -244,7 +247,7 @@ void TUIMod::modStart()
 	    int iOff = 0;
 	    string sEl;
 	    while((sEl=TSYS::strSepParse(mod->mStartMod,0,';',&iOff)).size() && sEl != list[iL]) ;
-	    if((!sEl.empty() || !iOff) && winCntr->callQtModule(list[iL])) op_wnd++;
+	    if(mod->mStartMod.size() && (!sEl.empty() || !iOff) && winCntr->callQtModule(list[iL])) op_wnd++;
 	}
     list.clear();
 
@@ -372,14 +375,6 @@ void *TUIMod::Task( void * )
     I18NTranslator translator;
     mod->QtApp->installTranslator(&translator);
 
-    //Start splash create
-    /*if(!ico_t.load(TUIS::icoGet(SYS->id()+"_splash",NULL,true).c_str())) ico_t.load(":/images/splash.png");
-    QSplashScreen *splash = new QSplashScreen(QPixmap::fromImage(ico_t));
-    splash->show();
-    QFont wFnt = splash->font();
-    wFnt.setPixelSize(10);
-    splash->setFont(wFnt);*/
-
     mod->splashSet(SPLSH_START);
     while(!mod->startCom() && !mod->endRun()) {
 	SYS->archive().at().messGet(st_time, time(NULL), recs, "", TMess::Debug, BUF_ARCH_NM);
@@ -405,7 +400,7 @@ void *TUIMod::Task( void * )
 	    int iOff = 0;
 	    string sEl;
 	    while((sEl=TSYS::strSepParse(mod->mStartMod,0,';',&iOff)).size() && sEl != list[iL]) ;
-	    if((!sEl.empty() || !iOff) && winCntr->callQtModule(list[iL])) op_wnd++;
+	    if(mod->mStartMod.size() && (!sEl.empty() || !iOff) && winCntr->callQtModule(list[iL])) op_wnd++;
 	}
 
     //delete splash;
@@ -419,14 +414,7 @@ void *TUIMod::Task( void * )
     mod->QtApp->exec();
     delete winCntr;
 
-    //Stop splash create
-    /*if(!ico_t.load(TUIS::icoGet(SYS->id()+"_splash_exit",NULL,true).c_str())) ico_t.load(":/images/splash.png");
-    splash = new QSplashScreen(QPixmap::fromImage(ico_t));
-    splash->show();
-    splash->setFont(wFnt);*/
-
     mod->splashSet(SPLSH_STOP);
-
     st_time = time(NULL);
     while(!mod->endRun()) {
 	SYS->archive().at().messGet(st_time, time(NULL), recs, "", TMess::Debug, BUF_ARCH_NM);
@@ -439,7 +427,6 @@ void *TUIMod::Task( void * )
 	TSYS::sysSleep(0.5);
     }
     mod->splashSet(SPLSH_NULL);
-    //delete splash;
 
     //Qt application object free
     delete mod->QtApp; mod->QtApp = NULL;
@@ -611,14 +598,14 @@ StartDialog::StartDialog( WinControl *wcntr )
     // QTStarter manual
     if(!ico_t.load(TUIS::icoGet("manual",NULL,true).c_str())) ico_t.load(":/images/manual.png");
     QAction *actManual = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg(mod->modId().c_str()),this);
-    actManual->setProperty("doc", "Modules/UI.QTStarter|QTStarter");
+    actManual->setProperty("doc", "Modules/UI.QTStarter|Modules/QTStarter");
     actManual->setShortcut(Qt::Key_F1);
     actManual->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg(mod->modId().c_str()));
     actManual->setStatusTip(QString(_("Press to get the using %1 manual.")).arg(mod->modId().c_str()));
     connect(actManual, SIGNAL(triggered()), this, SLOT(enterManual()));
     // OpenSCADA manual index
     QAction *actManualSYS = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg(PACKAGE_STRING),this);
-    actManualSYS->setProperty("doc", "index|/");
+    actManualSYS->setProperty("doc", "index|Documents");
     actManualSYS->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg(PACKAGE_STRING));
     actManualSYS->setStatusTip(QString(_("Press to get the using %1 manual.")).arg(PACKAGE_STRING));
     connect(actManualSYS, SIGNAL(triggered()), this, SLOT(enterManual()));

@@ -48,13 +48,17 @@
 #include "vis_shapes.h"
 #include "vis_widgs.h"
 #include "vis_run_widgs.h"
+#include "vis_run.h"
 
 using namespace VISION;
+
+#undef _
+#define _(mess) mod->I18N(mess, lang.c_str())
 
 //*************************************************
 //* Id and name input dialog                      *
 //*************************************************
-InputDlg::InputDlg( QWidget *parent, const QIcon &icon, const QString &mess, const QString &ndlg, bool with_id, bool with_nm ) :
+InputDlg::InputDlg( QWidget *parent, const QIcon &icon, const QString &mess, const QString &ndlg, bool with_id, bool with_nm, const string &lang ) :
 	QDialog(parent), mId(NULL), mName(NULL)
 {
     //setMaximumSize(800, 600);
@@ -154,7 +158,7 @@ void InputDlg::showEvent( QShowEvent * event )
 //*************************************************
 //* User select dialog                            *
 //*************************************************
-DlgUser::DlgUser( const QString &iuser, const QString &ipass, const QString &iVCAstat, QWidget *parent ) :
+DlgUser::DlgUser( const QString &iuser, const QString &ipass, const QString &iVCAstat, QWidget *parent, const string &hint, const string &lang ) :
     QDialog(parent), VCAstat(iVCAstat)
 {
     setWindowTitle(_("Select user"));
@@ -196,14 +200,25 @@ DlgUser::DlgUser( const QString &iuser, const QString &ipass, const QString &iVC
 
     connect(this, SIGNAL(finished(int)), this, SLOT(finish(int)));
 
+    users->setEditText(mod->userStart().c_str());
+
+    if(hint == "$") { mAutoRes = (user() == iuser) ? SelCancel : SelOK; return; }
+
+    mAutoRes = NoAuto;
+    bool chckHintUser = hint.size() && hint != "*";
+
     //Fill users list
     XMLNode req("get");
     req.setAttr("path","/Security/%2fusgr%2fusers");
     if(!mod->cntrIfCmd(req,iuser.toStdString(),ipass.toStdString(),iVCAstat.toStdString(),true))
-	for(unsigned i_u = 0; i_u < req.childSize(); i_u++)
-	    users->addItem(req.childGet(i_u)->text().c_str());
-
-    users->setEditText(mod->userStart().c_str());
+	for(unsigned iU = 0; iU < req.childSize(); iU++) {
+	    users->addItem(req.childGet(iU)->text().c_str());
+	    if(chckHintUser && hint == req.childGet(iU)->text()) {
+		users->setEditText(hint.c_str());
+		mAutoRes = SelOK;
+		break;
+	    }
+	}
 }
 
 QString DlgUser::user( )	{ return users->currentText(); }
@@ -233,6 +248,51 @@ void DlgUser::showEvent( QShowEvent * event )
     adjustSize();
     resize(size().expandedTo(src));
 }
+
+//*********************************************
+//* Status bar user widget                    *
+//*********************************************
+UserStBar::UserStBar( const string &iuser, const string &ipass, const string &iVCAstat, QWidget *parent ) :
+    QLabel(parent), userTxt(resData), userPass(resData), VCAStat(resData)
+{
+    setUser(iuser);
+    setPass(ipass);
+    setVCAStation(iVCAstat);
+}
+
+void UserStBar::setUser( const string &val )
+{
+    setText(QString("<font color='%1'>%2</font>").arg((val=="root")?"red":"green").arg(val.size()?val.c_str():"*"));
+    userTxt = val;
+}
+
+bool UserStBar::event( QEvent *event )
+{
+    if(event->type() == QEvent::MouseButtonDblClick)	userSel();
+    return QLabel::event(event);
+}
+
+bool UserStBar::userSel( const string &hint )
+{
+    string lang = dynamic_cast<VisRun*>(window()) ? ((VisRun*)window())->lang() : "";
+
+    DlgUser d_usr(user().c_str(), pass().c_str(), VCAStation().c_str(), parentWidget(), hint, lang);
+    int rez = (d_usr.autoRes() == DlgUser::NoAuto) ? d_usr.exec() : d_usr.autoRes();
+    if(rez == DlgUser::SelOK && d_usr.user().toStdString() != user()) {
+	QString old_user = user().c_str(), old_pass = pass().c_str();
+	setUser(d_usr.user().toStdString());
+	setPass(d_usr.password().toStdString());
+	emit userChanged(old_user, old_pass);
+	return true;
+    }
+    else if(rez == DlgUser::SelErr)
+	mod->postMess(mod->nodePath().c_str(), QString(_("Authentication error for user '%1'!!!")).arg(d_usr.user()), TVision::Warning, this);
+
+    return false;
+}
+
+#undef _
+#define _(mess) mod->I18N(mess)
 
 //*********************************************
 //* Font select dialog                        *
@@ -349,46 +409,6 @@ void FontDlg::showEvent( QShowEvent * event )
     QSize src = size();
     adjustSize();
     resize(size().expandedTo(src));
-}
-
-//*********************************************
-//* Status bar user widget                    *
-//*********************************************
-UserStBar::UserStBar( const string &iuser, const string &ipass, const string &iVCAstat, QWidget *parent ) :
-    QLabel(parent), userTxt(resData), userPass(resData), VCAStat(resData)
-{
-    setUser(iuser);
-    setPass(ipass);
-    setVCAStation(iVCAstat);
-}
-
-void UserStBar::setUser( const string &val )
-{
-    setText(QString("<font color='%1'>%2</font>").arg((val=="root")?"red":"green").arg(val.size()?val.c_str():"*"));
-    userTxt = val;
-}
-
-bool UserStBar::event( QEvent *event )
-{
-    if(event->type() == QEvent::MouseButtonDblClick)	userSel();
-    return QLabel::event(event);
-}
-
-bool UserStBar::userSel( )
-{
-    DlgUser d_usr(user().c_str(), pass().c_str(), VCAStation().c_str(), parentWidget());
-    int rez = d_usr.exec();
-    if(rez == DlgUser::SelOK && d_usr.user().toStdString() != user()) {
-	QString old_user = user().c_str(), old_pass = pass().c_str();
-	setUser(d_usr.user().toStdString());
-	setPass(d_usr.password().toStdString());
-	emit userChanged(old_user, old_pass);
-	return true;
-    }
-    else if(rez == DlgUser::SelErr)
-	mod->postMess(mod->nodePath().c_str(), QString(_("Authentication error for user '%1'!!!")).arg(d_usr.user()), TVision::Warning, this);
-
-    return false;
 }
 
 //*********************************************************************************************
@@ -765,12 +785,17 @@ void SyntxHighl::highlightBlock(const QString &text)
     rule(&rules,text);
 }
 
+#undef _
+#define _(mess) mod->I18N(mess, lang.c_str())
+
 //*************************************************
 //* Text edit widget                              *
 //*************************************************
 TextEdit::TextEdit( QWidget *parent, bool prev_dis ) :
     QWidget(parent), isInit(false), snt_hgl(NULL), but_box(NULL), stWin(NULL)
 {
+    lang = dynamic_cast<VisRun*>(window()) ? ((VisRun*)window())->lang() : "";
+
     QVBoxLayout *box = new QVBoxLayout(this);
     box->setMargin(0);
     box->setSpacing(0);
@@ -982,6 +1007,9 @@ void TreeComboDelegate::paint( QPainter *painter, const QStyleOptionViewItem &op
     QItemDelegate::paint(painter, option, index);
 }*/
 
+#undef _
+#define _(mess) mod->I18N(mess)
+
 //****************************************
 //* Shape widget view                    *
 //****************************************
@@ -1027,7 +1055,7 @@ void WdgView::resizeF( const QSizeF &isz )
     mWSize.setWidth(vmax(mWSize.width(),3));
     mWSize.setHeight(vmax(mWSize.height(),3));
     resize(rRnd(posF().x()+sizeF().width()-xScale(true))-rRnd(posF().x())+1,
-	   rRnd(posF().y()+sizeF().height()-yScale(true))-rRnd(posF().y())+1);
+	rRnd(posF().y()+sizeF().height()-yScale(true))-rRnd(posF().y())+1);
 }
 
 WdgView *WdgView::newWdgItem( const string &iwid )	{ return new WdgView(iwid,wLevel()+1,mainWin(),this); }

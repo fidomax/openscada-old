@@ -1,13 +1,13 @@
 # OpenSCADA core translate to Ukrainian.
 # This file is distributed under the same license as the OpenSCADA package.
 #
-# Roman Savochenko <rom_as@oscada.org>, 2003-2016.
+# Roman Savochenko <rom_as@oscada.org>, 2003-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA 0.9\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-09 16:07+0300\n"
+"POT-Creation-Date: 2017-09-14 15:57+0300\n"
 "PO-Revision-Date: 2004-10-05 19:25+0300\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <uk@li.org>\n"
@@ -204,8 +204,8 @@ msgstr "Уподоб. вик."
 msgid "Remote"
 msgstr "Віддалений"
 
-msgid "Messages archive"
-msgstr "Архів повідомлень"
+msgid "Messages"
+msgstr "Повідомлення"
 
 msgid "Messages buffer size"
 msgstr "Розмір буферу повідомлень"
@@ -261,9 +261,6 @@ msgstr ""
 "Не встановлюйте поле для обробки запиту буфером та всіма архіваторами.\n"
 "Встановіть '<buffer>' для обробки запиту буфером."
 
-msgid "Messages"
-msgstr "Повідомлення"
-
 msgid "Time"
 msgstr "Час"
 
@@ -279,8 +276,8 @@ msgstr "Рів."
 msgid "Message"
 msgstr "Повідомлення"
 
-msgid "Value archives"
-msgstr "Архіви значень"
+msgid "Values"
+msgstr "Значення"
 
 msgid "Get data period (ms)"
 msgstr "Період отримання даних (мс)"
@@ -293,6 +290,9 @@ msgstr "Примусово встановлювати мітку часу у п�
 
 msgid "Number"
 msgstr "Кількість"
+
+msgid "Value archives"
+msgstr "Архіви значень"
 
 #, c-format
 msgid "All: %d; Enabled: %d"
@@ -456,9 +456,6 @@ msgstr "Обробка"
 
 msgid "Period (s)"
 msgstr "Період (с)"
-
-msgid "Values"
-msgstr "Значення"
 
 msgid "Microseconds"
 msgstr "Мікросекунди"
@@ -647,8 +644,8 @@ msgstr "Таблиця: "
 msgid "Table"
 msgstr "Таблиця"
 
-msgid "Table offset"
-msgstr "Зміщення таблиці"
+msgid "Table offset, size"
+msgstr "Таблиця - зміщення, розмір"
 
 msgid "Data"
 msgstr "Дані"
@@ -1631,6 +1628,7 @@ msgid ""
 "==================== Generic options ======================================\n"
 "===========================================================================\n"
 "-h, --help\t\tInfo message about the system options.\n"
+"    --lang=<LANG>\tThe station language, in view \"uk_UA.UTF-8\".\n"
 "    --config=<file>\tThe station configuration file.\n"
 "    --station=<id>\tThe station identifier.\n"
 "    --statName=<name>\tThe station name.\n"
@@ -1684,6 +1682,7 @@ msgstr ""
 "======================== Основні опції ====================================\n"
 "===========================================================================\n"
 "-h, --help\t\tІнформація про опції системи.\n"
+"    --lang=<LANG>\tМова станції, у вигляді \"uk_UA.UTF-8\".\n"
 "    --config=<файл>\tКонфігураційний файл станції.\n"
 "    --station=<ід>\tІдентифікатор станції.\n"
 "    --statName=<ім'я>\tІм'я станції.\n"
@@ -2344,12 +2343,14 @@ msgid ""
 "Parameter's attribute\n"
 "  ID: '%s'\n"
 "  Name: '%s'\n"
-"  Type: '%s'"
+"  Type: '%s'\n"
+"  Read only: %d"
 msgstr ""
 "Атрибут параметру\n"
 "  ID: '%s'\n"
 "  Ім'я: '%s'\n"
-"  Тип: '%s'"
+"  Тип: '%s'\n"
+"  Тільки читання: %d"
 
 msgid ""
 "\n"
@@ -2515,12 +2516,3 @@ msgstr "Встановлено назву проекту у:"
 
 msgid "already started."
 msgstr "вже запущено."
-
-#~ msgid "Start!"
-#~ msgstr "Запущено!"
-
-#~ msgid "Stop!"
-#~ msgstr "Зупинка!"
-
-#~ msgid "Doc check"
-#~ msgstr "Перевірка документу"

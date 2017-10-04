@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-09 16:07+0300\n"
+"POT-Creation-Date: 2017-09-14 15:57+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -189,7 +189,7 @@ msgstr ""
 msgid "Remote"
 msgstr ""
 
-msgid "Messages archive"
+msgid "Messages"
 msgstr ""
 
 msgid "Messages buffer size"
@@ -230,9 +230,6 @@ msgid ""
 "Set '<buffer>' for process by buffer."
 msgstr ""
 
-msgid "Messages"
-msgstr ""
-
 msgid "Time"
 msgstr ""
 
@@ -248,7 +245,7 @@ msgstr ""
 msgid "Message"
 msgstr ""
 
-msgid "Value archives"
+msgid "Values"
 msgstr ""
 
 msgid "Get data period (ms)"
@@ -261,6 +258,9 @@ msgid "Variable timestamp force to current time"
 msgstr ""
 
 msgid "Number"
+msgstr ""
+
+msgid "Value archives"
 msgstr ""
 
 #, c-format
@@ -406,9 +406,6 @@ msgid "Process"
 msgstr ""
 
 msgid "Period (s)"
-msgstr ""
-
-msgid "Values"
 msgstr ""
 
 msgid "Microseconds"
@@ -575,7 +572,7 @@ msgstr ""
 msgid "Table"
 msgstr ""
 
-msgid "Table offset"
+msgid "Table offset, size"
 msgstr ""
 
 msgid "Data"
@@ -801,7 +798,7 @@ msgstr ""
 msgid "Maximum calculate time (sec)"
 msgstr ""
 
-msgid "Program translation allow"
+msgid "Allow program translation"
 msgstr ""
 
 msgid "Program"
@@ -1472,6 +1469,7 @@ msgid ""
 "==================== Generic options ======================================\n"
 "===========================================================================\n"
 "-h, --help\t\tInfo message about the system options.\n"
+"    --lang=<LANG>\tThe station language, in view \"uk_UA.UTF-8\".\n"
 "    --config=<file>\tThe station configuration file.\n"
 "    --station=<id>\tThe station identifier.\n"
 "    --statName=<name>\tThe station name.\n"
@@ -2076,7 +2074,8 @@ msgid ""
 "Parameter's attribute\n"
 "  ID: '%s'\n"
 "  Name: '%s'\n"
-"  Type: '%s'"
+"  Type: '%s'\n"
+"  Read only: %d"
 msgstr ""
 
 msgid ""

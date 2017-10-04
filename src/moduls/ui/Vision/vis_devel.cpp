@@ -108,20 +108,20 @@ VisDevelop::VisDevelop( const string &open_user, const string &user_pass, const 
     //  Vision manual
     if(!ico_t.load(TUIS::icoGet("manual",NULL,true).c_str())) ico_t.load(":/images/manual.png");
     QAction *actManual = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg(mod->modId().c_str()),this);
-    actManual->setProperty("doc", "Modules/UI.Vision|Vision");
+    actManual->setProperty("doc", "Modules/UI.Vision|Modules/Vision");
     actManual->setShortcut(Qt::Key_F1);
     actManual->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg(mod->modId().c_str()));
     actManual->setStatusTip(QString(_("Press to get the using %1 manual.")).arg(mod->modId().c_str()));
     connect(actManual, SIGNAL(triggered()), this, SLOT(enterManual()));
     //  VCAEngine manual
     QAction *actManualVCA = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg("VCAEngine"),this);
-    actManualVCA->setProperty("doc", "Modules/UI.VCAEngine|VCAEngine");
+    actManualVCA->setProperty("doc", "Modules/UI.VCAEngine|Modules/VCAEngine");
     actManualVCA->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg("VCAEngine"));
     actManualVCA->setStatusTip(QString(_("Press to get the using %1 manual.")).arg("VCAEngine"));
     connect(actManualVCA, SIGNAL(triggered()), this, SLOT(enterManual()));
     //  OpenSCADA manual index
     QAction *actManualSYS = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg(PACKAGE_STRING),this);
-    actManualSYS->setProperty("doc", "index|/");
+    actManualSYS->setProperty("doc", "index|Documents");
     actManualSYS->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg(PACKAGE_STRING));
     actManualSYS->setStatusTip(QString(_("Press to get the using %1 manual.")).arg(PACKAGE_STRING));
     connect(actManualSYS, SIGNAL(triggered()), this, SLOT(enterManual()));
@@ -1324,7 +1324,7 @@ void VisDevelop::visualItEdit( )
 
 	scrl->parentWidget()->show();
 
-	if(!(work_space->activeSubWindow() && work_space->activeSubWindow()->isMaximized()))
+	if(/*work_space->subWindowList().length() <= 1*/ !(work_space->activeSubWindow() && work_space->activeSubWindow()->isMaximized()))
 	    scrl->parentWidget()->resize(fmax(300,fmin(work_space->width(),vw->size().width()+(scrl->parentWidget()->width()-scrl->width())+5)),
 				     fmax(200,fmin(work_space->height(),vw->size().height()+(scrl->parentWidget()->height()-scrl->height())+5)));
     }
@@ -1507,6 +1507,7 @@ void VisDevelop::visualItPaste( const string &wsrc, const string &wdst, const st
 	    dlg.edLay()->addWidget(wInher, 2, 1);
 	}
 	if(!wsrc.empty() || dlg.exec() == QDialog::Accepted) {
+	    dlg.setId(TSYS::strEncode(dlg.id().toStdString(),TSYS::oscdID).c_str());
 	    if(wdst.empty() && dlg.id().toStdString() != t1_el) {
 		unsigned i_w = 0;
 		for( ; i_w < req.childSize() && req.childGet(i_w)->attr("id") != dlg.id().toStdString(); i_w++) ;
@@ -1536,7 +1537,7 @@ void VisDevelop::visualItPaste( const string &wsrc, const string &wdst, const st
 		req.clear()->setName("set")->setAttr("path", "/%2fprm%2fcfg%2fcp%2fcp")->
 		    setAttr("src", s_elp+"/"+s_el)->setAttr("dst", d_elp+"/"+d_el);
 		if(cntrIfCmd(req))
-		    mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TVision::Error,this);
+		    mod->postMess(req.attr("mcat").c_str(), req.text().c_str(), TVision::Error, this);
 		else {
 		    if(it_nm.size()) {
 			req.clear()->setName("set")->setText(it_nm);

@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tmodule.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -127,13 +127,14 @@ bool TModule::modFunc( const string &prot, void (TModule::**offptr)(), bool noex
 
 void TModule::modInfo( vector<string> &list )
 {
-    for(unsigned i_opt = 0; i_opt < sizeof(lInfo)/sizeof(char *); i_opt++)
-	list.push_back(lInfo[i_opt]);
+    for(unsigned iOpt = 0; iOpt < sizeof(lInfo)/sizeof(char *); iOpt++)
+	list.push_back(lInfo[iOpt]);
 }
 
-string TModule::modInfo( const string &name )
+string TModule::modInfo( const string &iname )
 {
-    string info;
+    string  name = TSYS::strParse(iname, 0, ":"),
+	    info;
 
     if(name == lInfo[0])	info = mModId;
     else if(name == lInfo[1])	info = mModName;
@@ -153,7 +154,7 @@ void TModule::cntrCmdProc( XMLNode *opt )
     if(opt->name() == "info") {
 	TCntrNode::cntrCmdProc(opt);
 	ctrMkNode("oscada_cntr",opt,-1,"/",_("Module: ")+modId(),R_R_R_,"root","root",1,
-	    "doc",("Modules/"+owner().subId()+"."+modId()+"|"+modId()).c_str());
+	    "doc",("Modules/"+owner().subId()+"."+modId()+"|Modules/"+modId()).c_str());
 	ctrMkNode("branches",opt,-1,"/br","",R_R_R_);
 	if(TUIS::icoGet(owner().subId()+"."+modId(),NULL,true).size()) ctrMkNode("img",opt,-1,"/ico","",R_R_R_);
 	if(ctrMkNode("area",opt,-1,"/module",_("Module")))
@@ -189,11 +190,11 @@ void TModule::modInfoMainSet( const string &name, const string &type, const stri
     mModSource	= source;
 }
 
-const char *TModule::I18N( const char *mess )
+const char *TModule::I18N( const char *mess, const char *mLang )
 {
 #ifdef HAVE_LIBINTL_H
-    const char *rez = Mess->I18N(mess, lcId.c_str());
-    if(!strcmp(mess,rez)) rez = _(mess);
+    const char *rez = Mess->I18N(mess, lcId.c_str(), mLang);
+    //if(!strcmp(mess,rez)) rez = Mess->I18N(mess, NULL, mLang);	//_(mess);
     return rez;
 #else
     return mess;

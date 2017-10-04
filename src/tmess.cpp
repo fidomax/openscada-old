@@ -23,7 +23,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <langinfo.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <string.h>
@@ -38,11 +37,18 @@
 #include "resalloc.h"
 #include "tmess.h"
 
+#ifdef HAVE_LANGINFO_H
+# include <langinfo.h>
+#endif
 #ifdef HAVE_ICONV_H
 #include <iconv.h>
 #endif
 #ifdef HAVE_LIBINTL_H
 #include <libintl.h>
+#endif
+
+#ifdef HAVE_LIBINTL_H
+extern int _nl_msg_cat_cntr;	//Detection counter of an environment of language changes of gettext
 #endif
 
 using namespace OSCADA;
@@ -51,13 +57,16 @@ using namespace OSCADA;
 //* TMess                                         *
 //*************************************************
 TMess::TMess( ) : IOCharSet("UTF-8"), mMessLevel(Info), mLogDir(DIR_STDOUT|DIR_ARCHIVE),
-    mConvCode(true), mIsUTF8(true), mTranslDyn(false), mTranslDynPlan(false), mTranslEnMan(false), mTranslSet(false), mRes(true)
+    mConvCode(true), mIsUTF8(true), mTranslDyn(false), mTranslDynPlan(false), mTranslEnMan(false), mTranslSet(false),
+    mRes(true), getMessRes(true)
 {
     openlog(PACKAGE, 0, LOG_USER);
 
     setenv("LC_NUMERIC", "C", 1);
     setlocale(LC_ALL, "");
+#ifdef HAVE_LANGINFO_H
     IOCharSet = nl_langinfo(CODESET);
+#endif
 
 #ifdef HAVE_LIBINTL_H
     bindtextdomain(PACKAGE, localedir_full);
@@ -108,8 +117,8 @@ void TMess::put( const char *categ, int8_t level, const char *fmt,  ... )
 
 	// Check for match to selectDebugCats
 	bool matchOK = false;
-	for(unsigned i_dc = 0; !matchOK && i_dc < selectDebugCats.size(); i_dc++)
-	    matchOK = (strncmp(categ,selectDebugCats[i_dc].c_str(),selectDebugCats[i_dc].size()) == 0);
+	for(unsigned iDC = 0; !matchOK && iDC < selectDebugCats.size(); iDC++)
+	    matchOK = (strncmp(categ,selectDebugCats[iDC].c_str(),selectDebugCats[iDC].size()) == 0);
 	if(!matchOK) return;
     }
 
@@ -321,12 +330,20 @@ string TMess::translGetU( const string &base, const string &user, const string &
     return translGet(base, (SYS->security().at().usrPresent(user)?SYS->security().at().usrAt(user).at().lang():lang2Code()), src);
 }
 
+string TMess::translGetLU( const string &base, const string &lang, const string &user, const string &src )
+{
+    if(lang.size()) return translGet(base, lang, src);
+    return translGetU(base, user, src);
+}
+
 string TMess::translSet( const string &base, const string &lang, const string &mess, bool *needReload )
 {
     if(!translDyn() && !needReload) return mess;
 
     string trLang = lang2Code();
-    if(lang.size() >= 2) trLang = lang.substr(0,2);
+    if(lang.size() >= 2)	trLang = lang.substr(0,2);
+    else if(trLang.empty())	trLang = lang2Code();
+    if(base.empty() && mess.size())	trLang = lang2CodeBase();
     bool chBase = (trLang == lang2CodeBase());
 
     MtxAlloc res(mRes, true);
@@ -364,6 +381,12 @@ string TMess::translSetU( const string &base, const string &user, const string &
 {
     if(!translDyn() && !needReload) return mess;
     return translSet(base, (SYS->security().at().usrPresent(user)?SYS->security().at().usrAt(user).at().lang():lang2Code()), mess, needReload);
+}
+
+string TMess::translSetLU( const string &base, const string &lang, const string &user, const string &mess, bool *needReload )
+{
+    if(lang.size()) return translSet(base, lang, mess, needReload);
+    return translSetU(base, user, mess, needReload);
 }
 
 void TMess::translReg( const string &mess, const string &src, const string &prms )
@@ -435,11 +458,13 @@ void TMess::setLang( const string &lng, bool init )
 {
     char *prvLng = NULL;
     if((prvLng=getenv("LANGUAGE")) && strlen(prvLng)) setenv("LANGUAGE", lng.c_str(), 1);
-    else setenv("LC_MESSAGES", lng.c_str(), 1);
-    //setenv("LANG", lng.c_str(), 1);	//!!!! May be use further for the miss environment force set
+    //else setenv("LC_MESSAGES", lng.c_str(), 1);
+    else setenv("LANG", lng.c_str(), 1);	//!!!! May be use further for the miss environment force set
     setlocale(LC_ALL, "");
 
+#ifdef HAVE_LANGINFO_H
     IOCharSet = nl_langinfo(CODESET);
+#endif
 
     mLang2Code = lang();
     if(mLang2Code.size() < 2 || mLang2Code == "POSIX" || mLang2Code == "C") mLang2Code = "en";
@@ -495,10 +520,40 @@ string TMess::codeConv( const string &fromCH, const string &toCH, const string &
 #endif
 }
 
-const char *TMess::I18N( const char *mess, const char *d_name )
+const char *TMess::I18N( const char *mess, const char *d_name, const char *mLang )
 {
 #ifdef HAVE_LIBINTL_H
-    return dgettext(d_name, mess);
+    getMessRes.lock();
+    if(translDyn()) {
+	if(!mLang || !strlen(mLang)) {
+	    setenv("LANGUAGE", "", 1);
+	    //setenv("LC_MESSAGES", "", 1);
+	    ++_nl_msg_cat_cntr;	//Make change known.
+	    getMessLng = "";
+	}
+	else if(getMessLng != mLang) {
+	    setenv("LANGUAGE", mLang, 1);
+	    //setenv("LC_MESSAGES", mLang, 1);
+	    ++_nl_msg_cat_cntr;	//Make change known.
+	    getMessLng = mLang;
+	}
+    }
+    const char *rez = dgettext(d_name, mess);
+
+    /*bool chLng = (mLang && strlen(mLang) && translDyn());
+    if(chLng) {
+	setenv("LANGUAGE", mLang, 1);
+	//setenv("LC_MESSAGES", mLang, 1);
+	++_nl_msg_cat_cntr;	//Make change known.
+    }
+    const char *rez = dgettext(d_name, mess);
+    if(chLng) {
+	setenv("LANGUAGE", "", 1);
+	//setenv("LC_MESSAGES", "", 1);
+	++_nl_msg_cat_cntr;	//Make change known.
+    }*/
+    getMessRes.unlock();
+    return rez;
 #else
     return mess;
 #endif
@@ -510,6 +565,7 @@ void TMess::load( )
     string argCom, argVl;
     for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
 	if(strcasecmp(argCom.c_str(),"h") == 0 || strcasecmp(argCom.c_str(),"help") == 0) return;
+	else if(strcasecmp(argCom.c_str(),"lang") == 0) setLang(argVl, true);
 	else if(strcasecmp(argCom.c_str(),"messlev") == 0) {
 	    int i = atoi(optarg);
 	    if(i >= Debug && i <= Emerg) setMessLevel(i);

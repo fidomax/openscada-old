@@ -757,7 +757,7 @@ bool TMdContr::Transact(tagMsg * req, tagMsg * answ)
 
     AutoHD<TTransportOut> tr = SYS->transport().at().at(TSYS::strSepParse(cfg("ADDR").getS(), 0, '.')).at().outAt(
 	    TSYS::strSepParse(cfg("ADDR").getS(), 1, '.'));
-    ResAlloc resN(tr.at().nodeRes(), true);
+    MtxAlloc resN(tr.at().reqRes(), true);
     uint16_t l = 0;
     uint8_t cmd = req->C;
     string data_s = "";
@@ -781,11 +781,11 @@ bool TMdContr::Transact(tagMsg * req, tagMsg * answ)
 	    mess_sys(TMess::Debug, _("request: %s"), data_s.c_str());
 	}
 
-	int resp_len = tr.at().messIO(msg.data(), msg.length(), io_buf, 8, 0, true);
+	int resp_len = tr.at().messIO(msg.data(), msg.length(), io_buf, 8);
 	l = resp_len;
 	while(resp_len) {
 	    try {
-		resp_len = tr.at().messIO(NULL, 0, io_buf + l, 8 - l, 0, true);
+		resp_len = tr.at().messIO(NULL, 0, io_buf + l, 8 - l);
 	    } catch (TError er) {
 		resp_len = 0;
 	    }
@@ -802,7 +802,7 @@ bool TMdContr::Transact(tagMsg * req, tagMsg * answ)
 	    if(y) {
 		do {
 		    try {
-			resp_len = tr.at().messIO(NULL, 0, io_buf + l, y, 0, true);
+			resp_len = tr.at().messIO(NULL, 0, io_buf + l, y);
 		    } catch (TError er) {
 			resp_len = 0;
 		    }
