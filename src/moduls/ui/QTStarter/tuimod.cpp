@@ -52,7 +52,7 @@
 #else
 #define SUB_TYPE	""
 #endif
-#define MOD_VER		"2.1.4"
+#define MOD_VER		"2.1.6"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides the Qt GUI starter. Qt-starter is the only and compulsory component for all GUI modules based on the Qt library.")
 #define LICENSE		"GPL2"
@@ -310,7 +310,7 @@ string TUIMod::optDescr( )
     char buf[STR_BUF_LEN];
 
     snprintf(buf,sizeof(buf),_(
-	"======================= The module <%s:%s> options =======================\n"
+	"======================= Module <%s:%s> options =======================\n"
 	"----------- Qt debug commandline options ----------\n"
 	"    --noX11                Prevent Qt start, mostly for pure console.\n"
 	"    --sync                 Switches to synchronous mode X11 for debugging.\n"
@@ -679,7 +679,7 @@ StartDialog::StartDialog( WinControl *wcntr )
     gFrame->setFrameShadow(QFrame::Raised);
     wnd_lay->addWidget(gFrame,0,0);
 
-    QPushButton *butt = new QPushButton(QIcon(":/images/exit.png"),_("Exit from the system"), centralWidget());
+    QPushButton *butt = new QPushButton(QIcon(":/images/exit.png"),_("Exit from the program"), centralWidget());
     butt->setObjectName("*exit*");
     butt->setToolTip(_("Exit from the program"));
     butt->setWhatsThis(_("The button for exit from the program"));

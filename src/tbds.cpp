@@ -801,7 +801,7 @@ void TBD::cntrCmdProc( XMLNode *opt )
 		ctrMkNode("fld",opt,-1,"/prm/st/st",_("Enable"),RWRWR_,"root",SDB_ID,1,"tp","bool");
 		ctrMkNode("list",opt,-1,"/prm/st/allow_tbls",_("Accessible tables"),RWRW__,"root",SDB_ID,4,
 		    "tp","br","br_pref","tbl_","s_com","del","help",_("Tables which are in the DB, tables which are not opened at that moment."));
-		ctrMkNode("comm",opt,-1,"/prm/st/load",_("Load the system from this DB"),RWRW__,"root","root");
+		ctrMkNode("comm",opt,-1,"/prm/st/load",_("Load the program from this DB"),RWRW__,"root","root");
 	    }
 	    if(ctrMkNode("area",opt,-1,"/prm/cfg",_("Configuration"))) {
 		TConfig::cntrCmdMake(opt,"/prm/cfg",0,"root",SDB_ID,RWRWR_);
@@ -817,7 +817,7 @@ void TBD::cntrCmdProc( XMLNode *opt )
 		"tp","br","idSz","255","s_com","add,del","br_pref","tbl_",
 		"help",_("Opened table list.\nAdding and deleting tables operations are really open and close tables operations."));
 	if(enableStat() && ctrMkNode("area",opt,-1,"/sql",_("SQL"),R_R___,"root",SDB_ID)) {
-	    ctrMkNode("fld",opt,-1,"/sql/req",_("Request"),RWRW__,"root",SDB_ID,3,"tp","str","cols","100","rows","5");
+	    ctrMkNode("fld",opt,-1,"/sql/req",_("Request"),RWRW__,"root",SDB_ID,3,"tp","str","cols","100","rows","2");
 	    ctrMkNode("fld",opt,-1,"/sql/trans",_("Transaction"),RWRW__,"root",SDB_ID,4,"tp","dec","dest","select",
 		"sel_id","0;1;2","sel_list",_("Out;Into;No matter"));
 	    ctrMkNode("comm",opt,-1,"/sql/send",_("Send"),RWRW__,"root",SDB_ID);
