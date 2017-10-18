@@ -36,7 +36,6 @@ class KA_BTU : public DA
 	uint16_t count_nu;
 	bool with_params;
 	uint16_t GetState(void);
-	uint16_t RefreshData(void);
 	uint16_t HandleEvent(int64_t, uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
@@ -56,10 +55,10 @@ class KA_TU : public DA
 	DA &parentDA;
 
         uint16_t GetState(void);
-	uint16_t PreInit(void);
+	//uint16_t PreInit(void);
 	uint16_t SetParams(void);
 	uint16_t RefreshParams(void);
-	uint16_t PostInit(void);
+	//uint16_t PostInit(void);
 	uint16_t RefreshData(void);
 	uint16_t HandleEvent(int64_t, uint8_t *);
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);

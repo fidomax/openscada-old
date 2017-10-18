@@ -473,6 +473,7 @@ void TTpContr::postEnable(int flag)
     fldAdd(new TFld("PRM_BD_TT", _("TT Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_ZD", _("ZD Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_NS", _("NS Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_TU", _("TU Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
 
     fldAdd(new TFld("SCHEDULE", _("Acquisition schedule"), TFld::String, TFld::NoFlag, "100", "1"));
 //    fldAdd(new TFld("PERIOD", _("Gather data period (s)"), TFld::Integer, TFld::NoFlag, "3", "1", "0;100"));
@@ -584,6 +585,10 @@ void TTpContr::postEnable(int flag)
     t_prm = tpParmAdd("tp_NS", "PRM_BD_NS", _("NS"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
 
+    t_prm = tpParmAdd("tp_TU", "PRM_BD_TU", _("TU"), true);
+    tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
+
+
     elPrmIO.fldAdd(new TFld("PRM_ID", _("Parameter ID"), TFld::String, TCfg::Key, i2s(atoi(OBJ_ID_SZ) * 6).c_str()));
     elPrmIO.fldAdd(new TFld("ID", _("ID"), TFld::String, TCfg::Key, OBJ_ID_SZ));
     elPrmIO.fldAdd(new TFld("VALUE", _("Value"), TFld::String, TFld::NoFlag, "200"));
@@ -624,6 +629,7 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
     cfg("PRM_BD_TT").setS("FT3Prm_TT_" + name_c);
     cfg("PRM_BD_ZD").setS("FT3Prm_ZD_" + name_c);
     cfg("PRM_BD_NS").setS("FT3Prm_NS_" + name_c);
+    cfg("PRM_BD_TU").setS("FT3Prm_TU_" + name_c);
 
     MtxAlloc res(eventRes, true);
 
@@ -1590,7 +1596,7 @@ void TMdContr::cntrCmdProc(XMLNode *opt)
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TT");
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_ZD");
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_NS");
-
+	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TU");
 	return;
     }
 //> Process command to page
@@ -1720,7 +1726,24 @@ void TMdPrm::enable()
 
 	if (type().name == "tp_TANK") mDA = new KA_TANK(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	if (type().name == "tp_UPZ") mDA = new KA_UPZ(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-	if (type().name == "tp_BTU") mDA = new KA_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	//if (type().name == "tp_BTU") mDA = new KA_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+        if (type().name == "tp_BTU") {
+	    mDA = new KA_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
+	    for (int i = 1; i <= cfg("CHAN_COUNT").getI(); i++) {
+		if (!present(TSYS::strMess("TU%d", i))) {
+		    //	mess_sys(TMess::Info, "add tc");
+		    add(TSYS::strMess("TU%d", i), owner().owner().tpPrmToId("tp_TU"));
+		    at(TSYS::strMess("TU%d", i)).at().cfg("DEV_ID").setI(i);
+		    at(TSYS::strMess("TU%d", i)).at().setName(TSYS::strMess(("TU%d"), i));
+		}
+	    }
+
+	}
+	if (type().name == "tp_TU") {
+	    TMdPrm *t = dynamic_cast<TMdPrm*>(nodePrev());
+	    mDA = new KA_TU(*this, *t->mDA, cfg("DEV_ID").getI(), t->cfg("WITH_PARAMS").getB());
+	}
+
     } else {
 	if (type().name == "tp_BUC") mDA = new B_BUC(*this, cfg("DEV_ID").getI(), cfg("MOD").getI());
 	if (type().name == "tp_BVI") mDA = new B_BVI(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB(), cfg("EXT_PERIOD").getB());
