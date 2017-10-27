@@ -586,6 +586,14 @@ bool TMdPrm::InitAIM791(AIM791_CONFIGURATION* pConfig)
 	    pConfig->highLimit[i_p] = 0xFFFF;
 	}
     }
+    if(pConfig->scanRate != cfg("AI_SCANRATE").getI()) {
+        fConfig = true;
+        pConfig->scanRate = cfg("AI_SCANRATE").getI();
+    }
+    if(pConfig->filterDepth != cfg("AI_FILTER").getI()) {
+        fConfig = true;
+        pConfig->filterDepth = cfg("AI_FILTER").getI();
+    }
 
     switch(cfg("AI_RANGE").getI()) {
     case 0:
