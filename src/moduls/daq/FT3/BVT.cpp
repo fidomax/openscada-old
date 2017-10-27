@@ -285,7 +285,7 @@ void KA_TT::UpdateTTParam(uint16_t ID, uint8_t cl)
 bool KA_TT::IsNewParamOK(const struct KATTParams *params)
 {
     if ((State.vl == 4) && (params->MaxS > params->MinS) && (params->MaxPV > params->MinPV) && (params->MaxA > params->MinA) && (params->MaxW > params->MinW)
-	&& (params->Factor >= 0) && (0.02 > params->Adjust))
+	&& (params->Factor >= 0) && (0.02 > params->Factor))
 	return true;
     else
 	return false;
