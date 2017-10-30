@@ -251,7 +251,7 @@ void TTpContr::postEnable(int flag)
     //> Parameter AIM726 bd structure
     t_prm = tpParmAdd("AIM726", "PRM_BD_AIM726", _("AIM726"));
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "0", "0;63"));
-    tpPrmAt(t_prm).fldAdd(new TFld("AI_FILTER", _("Filter depth"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1:2", _("50Hz;500Hz;1000Hz")));
+    tpPrmAt(t_prm).fldAdd(new TFld("AI_FILTER", _("Filter depth"), TFld::Integer, TFld::Selected | TCfg::NoVal, "1", "0", "0;1;2", _("50Hz;500Hz;1000Hz")));
 
     //> Parameter AIM730 bd structure
     t_prm = tpParmAdd("AIM730", "PRM_BD_AIM730", _("AIM730"));
