@@ -327,6 +327,7 @@ class TMdContr : public TController
 	}
 	uint8_t devAddr;
 	uint8_t nChannel;
+        uint8_t KPState;
 
     protected:
 

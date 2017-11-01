@@ -417,6 +417,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
     }
     resp->A = msg->B;
     resp->B = devAddr;
+    resp->C |= (KPstate & 0x80);
     return resp->L;
 }
 
@@ -607,7 +608,7 @@ TController *TTpContr::ContrAttach(const string &name, const string &daq_db)
 //*************************************************
 TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
     TController(name_c, daq_db, cfgelem), prc_st(false), endrun_req(false), tm_gath(0), CntrState(StateNoConnection), NeedInit(true), enRes(true),
-    eventRes(true), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR").getId())
+    eventRes(true), KPState(0), mSched(cfg("SCHEDULE")), mPrior(cfg("PRIOR").getId())
 {
     cfg("PRM_BD_BUC").setS("FT3Prm_BUC_" + name_c);
     cfg("PRM_BD_BVTS").setS("FT3Prm_BVTS_" + name_c);
@@ -1727,7 +1728,7 @@ void TMdPrm::enable()
 	if (type().name == "tp_TANK") mDA = new KA_TANK(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	if (type().name == "tp_UPZ") mDA = new KA_UPZ(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	//if (type().name == "tp_BTU") mDA = new KA_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
-        if (type().name == "tp_BTU") {
+	if (type().name == "tp_BTU") {
 	    mDA = new KA_BTU(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI(), cfg("WITH_PARAMS").getB());
 	    for (int i = 1; i <= cfg("CHAN_COUNT").getI(); i++) {
 		if (!present(TSYS::strMess("TU%d", i))) {
