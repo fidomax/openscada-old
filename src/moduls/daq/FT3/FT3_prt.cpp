@@ -209,7 +209,7 @@ uint16_t TProt::Len(uint8_t l)
 	if (lD != 0) lD *= 2;
 	if ((lP % 16) != 0) lD += 2;
     }
-    return l += 5 + lD;
+    return lD + 5 + l;
 }
 //-------------------------------------------------------------------------------
 void TProt::cntrCmdProc(XMLNode *opt)
