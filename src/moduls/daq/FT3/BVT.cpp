@@ -164,16 +164,16 @@ uint8_t KA_BVT::cmdGet(uint16_t prmID, uint8_t * out)
 		mPrm.list(lst);
 		for (int i_l = 0; i_l < lst.size(); i_l++) {
 		    AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
-		    ll = t.at().cmdGet(PackID(ft3ID_TT), out + (i - 1) * 2);
+		    ll = t.at().cmdGet(PackID(ft3ID_TT), out + (i - 1) * 5);
 		    if (ll) break;
 		}
 		if (ll) {
-		    out[(i - 1) * 2] = i;
+		    out[(i - 1) * 5] = i;
 		    l += ll;
 		} else
 		    break;
 	    }
-	    if (l != count_n * 2) l = 0;
+	    if (l != count_n * 5) l = 0;
 	    break;
 	}
     }
