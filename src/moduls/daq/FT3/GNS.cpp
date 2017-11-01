@@ -350,7 +350,7 @@ uint8_t KA_NS::SetNewTCParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 	E[0] = addr;
 	memcpy(E + 1, val, 6);
 	PushInBE(1, sizeof(E), prmID, E);
-	return 2 + 10;
+	return 2 + 6;
     } else
 	return 0;
 }
