@@ -417,7 +417,7 @@ bool TMdContr::ProcessMessage(tagMsg *msg, tagMsg *resp)
     }
     resp->A = msg->B;
     resp->B = devAddr;
-    resp->C |= (KPstate & 0x80);
+    resp->C |= (KPState & 0x80);
     return resp->L;
 }
 

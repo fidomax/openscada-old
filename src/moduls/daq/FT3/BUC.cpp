@@ -426,7 +426,7 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
 			    state = req[2];
 		    }
 		    s_state = addr;
-		    KPstate = state;
+		    mPrm.owner().KPState = state;
 		    uint8_t E[2] = { addr, state };
 		    PushInBE(1, 2, prmID, E);
 		    l = 3;
