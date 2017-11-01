@@ -441,7 +441,7 @@ uint8_t KA_BUC::cmdSet(uint8_t * req, uint8_t addr)
 	    switch (ft3ID.n) {
 	    case 2:
 		s_state = addr;
-		state = clockstate = 1;
+		clockstate = 1;
 		rawtime = mPrm.owner().DateTimeToTime_t(req + 2);
 		stime(&rawtime);
 		l = 7;
