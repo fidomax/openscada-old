@@ -107,6 +107,48 @@ class KA_MA : public DA
 	ui16Data ZDOutID, ZDInID, DevID;
 	ui8Data Function;
 	ui16Data DelayStartOnOpening, DelayStartOnClosed, DelayQuickStart, DelayNormalStop, DelayEmergencyStop;
+	int lnkSize()
+	{
+	    return 9;
+	}
+	int lnkId(const string &id)
+	{
+	    if (ZDOutID.lnk.prmName == id) return 0;
+	    if (ZDInID.lnk.prmName == id) return 1;
+	    if (DevID.lnk.prmName == id) return 2;
+	    if (Function.lnk.prmName == id) return 3;
+	    if (DelayStartOnOpening.lnk.prmName == id) return 4;
+	    if (DelayStartOnClosed.lnk.prmName == id) return 5;
+	    if (DelayQuickStart.lnk.prmName == id) return 6;
+	    if (DelayNormalStop.lnk.prmName == id) return 7;
+	    if (DelayEmergencyStop.lnk.prmName == id) return 8;
+	    return -1;
+	}
+	SLnk &lnk(int num)
+	{
+	    switch (num) {
+	    case 0:
+		return ZDOutID.lnk;
+	    case 1:
+		return ZDInID.lnk;
+	    case 2:
+		return DevID.lnk;
+	    case 3:
+		return Function.lnk;
+	    case 4:
+		return DelayStartOnOpening.lnk;
+	    case 5:
+		return DelayStartOnClosed.lnk;
+	    case 6:
+		return DelayQuickStart.lnk;
+	    case 7:
+		return DelayNormalStop.lnk;
+	    case 8:
+		return DelayEmergencyStop.lnk;
+
+	    }
+	}
+
 };
 class KA_MASensor : public DA
 {
