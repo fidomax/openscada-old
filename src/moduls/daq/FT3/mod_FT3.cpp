@@ -38,6 +38,7 @@
 #include "GKR.h"
 #include "TANK.h"
 #include "UPZ.h"
+#include "SUB.h"
 
 #include "mod_FT3.h"
 #include "FT3_prt.h"
@@ -469,6 +470,8 @@ void TTpContr::postEnable(int flag)
     fldAdd(new TFld("PRM_BD_GKR", _("GKR Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_TANK", _("TANK Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_UPZ", _("UPZ Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_MA", _("MA Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
+    fldAdd(new TFld("PRM_BD_MASENSOR", _("MA Sensor Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
 
     fldAdd(new TFld("PRM_BD_TS", _("TS Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
     fldAdd(new TFld("PRM_BD_TT", _("TT Parameters table"), TFld::String, TFld::NoFlag, "30", ""));
@@ -574,6 +577,10 @@ void TTpContr::postEnable(int flag)
     tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
     tpPrmAt(t_prm).fldAdd(new TFld("WITH_PARAMS", _("With parameters"), TFld::Boolean, TCfg::NoVal, "1", "0"));
 
+    t_prm = tpParmAdd("tp_MA", "PRM_BD_MA", _("MA"), true);
+    tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "2", "11", "0;15"));
+    tpPrmAt(t_prm).fldAdd(new TFld("CHAN_COUNT", _("Channels count"), TFld::Integer, TCfg::NoVal, "3", "1", "0;32"));
+
     t_prm = tpParmAdd("tp_TS", "PRM_BD_TS", _("TS"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
 
@@ -587,6 +594,9 @@ void TTpContr::postEnable(int flag)
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
 
     t_prm = tpParmAdd("tp_TU", "PRM_BD_TU", _("TU"), true);
+    tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
+
+    t_prm = tpParmAdd("tp_MASENSOR", "PRM_BD_MASENSOR", _("MA Sensor"), true);
     tpPrmAt(t_prm).fldAdd(new TFld("DEV_ID", _("Device address"), TFld::Integer, TCfg::NoVal, "3", "1", "0;128"));
 
 
@@ -626,12 +636,13 @@ TMdContr::TMdContr(string name_c, const string &daq_db, TElem *cfgelem) :
     cfg("PRM_BD_GKR").setS("FT3Prm_GKR_" + name_c);
     cfg("PRM_BD_TANK").setS("FT3Prm_TANK_" + name_c);
     cfg("PRM_BD_UPZ").setS("FT3Prm_UPZ_" + name_c);
+    cfg("PRM_BD_MA").setS("FT3Prm_MA_" + name_c);
     cfg("PRM_BD_TS").setS("FT3Prm_TS_" + name_c);
     cfg("PRM_BD_TT").setS("FT3Prm_TT_" + name_c);
     cfg("PRM_BD_ZD").setS("FT3Prm_ZD_" + name_c);
     cfg("PRM_BD_NS").setS("FT3Prm_NS_" + name_c);
     cfg("PRM_BD_TU").setS("FT3Prm_TU_" + name_c);
-
+    cfg("PRM_BD_MASENSOR").setS("FT3Prm_MASENSOR_" + name_c);
     MtxAlloc res(eventRes, true);
 
 }
@@ -1593,11 +1604,13 @@ void TMdContr::cntrCmdProc(XMLNode *opt)
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_GKR");
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TANK");
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_UPZ");
+	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_MA");
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TS");
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TT");
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_ZD");
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_NS");
 	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_TU");
+	ctrRemoveNode(opt, "/cntr/cfg/PRM_BD_MASENSOR");
 	return;
     }
 //> Process command to page
@@ -1744,6 +1757,24 @@ void TMdPrm::enable()
 	    TMdPrm *t = dynamic_cast<TMdPrm*>(nodePrev());
 	    mDA = new KA_TU(*this, *t->mDA, cfg("DEV_ID").getI(), t->cfg("WITH_PARAMS").getB());
 	}
+
+        if (type().name == "tp_MA") {
+	    mDA = new KA_MA(*this, cfg("DEV_ID").getI(), cfg("CHAN_COUNT").getI());
+	    for (int i = 1; i <= cfg("CHAN_COUNT").getI(); i++) {
+		if (!present(TSYS::strMess("Sensor%d", i))) {
+		    //	mess_sys(TMess::Info, "add tc");
+		    add(TSYS::strMess("Sensor%d", i), owner().owner().tpPrmToId("tp_MASENSOR"));
+		    at(TSYS::strMess("Sensor%d", i)).at().cfg("DEV_ID").setI(i);
+		    at(TSYS::strMess("Sensor%d", i)).at().setName(TSYS::strMess(("Sensor%d"), i));
+		}
+	    }
+
+	}
+	if (type().name == "tp_MASENSOR") {
+	    TMdPrm *t = dynamic_cast<TMdPrm*>(nodePrev());
+	    mDA = new KA_MASensor(*this, *t->mDA, cfg("DEV_ID").getI());
+	}
+
 
     } else {
 	if (type().name == "tp_BUC") mDA = new B_BUC(*this, cfg("DEV_ID").getI(), cfg("MOD").getI());
