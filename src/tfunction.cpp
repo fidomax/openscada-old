@@ -293,7 +293,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 			}
 		    }
 		// Add Calc button and Calc time
-		ctrMkNode("fld",opt,-1,"/exec/n_clc",_("Number runs"),RWRW__,"root",grp,1,"tp","dec");
+		ctrMkNode("fld",opt,-1,"/exec/n_clc",_("Number of calculations"),RWRW__,"root",grp,1,"tp","dec");
 		ctrMkNode("fld",opt,-1,"/exec/tm",_("Spent time"),R_R___,"root",grp,1,"tp","str");
 		ctrMkNode("comm",opt,-1,"/exec/calc",_("Execute"),RWRW__,"root",grp);
 	    }
@@ -352,7 +352,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 	}
     }
     else if(a_path == "/exec/n_clc" && mTVal) {
-	if(ctrChkNode(opt,"get",RWRW__,"root",grp,SEC_RD))	opt->setText(TBDS::genDBGet(nodePath()+"ntCalc","10",opt->attr("user")));
+	if(ctrChkNode(opt,"get",RWRW__,"root",grp,SEC_RD))	opt->setText(TBDS::genDBGet(nodePath()+"ntCalc","1",opt->attr("user")));
 	if(ctrChkNode(opt,"set",RWRW__,"root",grp,SEC_WR))	TBDS::genDBSet(nodePath()+"ntCalc",opt->text(),opt->attr("user"));
     }
     else if(a_path == "/exec/tm" && mTVal && ctrChkNode(opt,"get",R_R___,"root",grp,SEC_RD))
@@ -369,7 +369,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 	    }
     }
     else if(a_path == "/exec/calc" && mTVal && ctrChkNode(opt,"set",RWRW__,"root",grp,SEC_WR)) {
-	int n_tcalc = s2i(TBDS::genDBGet(nodePath()+"ntCalc","10",opt->attr("user")));
+	int n_tcalc = s2i(TBDS::genDBGet(nodePath()+"ntCalc","1",opt->attr("user")));
 	string wuser = opt->attr("user");
 	time_t tm_lim = SYS->sysTm()+STD_WAIT_TM;
 	int64_t t_cnt = TSYS::curTime();

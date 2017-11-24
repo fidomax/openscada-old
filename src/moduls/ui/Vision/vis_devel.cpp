@@ -108,14 +108,14 @@ VisDevelop::VisDevelop( const string &open_user, const string &user_pass, const 
     //  Vision manual
     if(!ico_t.load(TUIS::icoGet("manual",NULL,true).c_str())) ico_t.load(":/images/manual.png");
     QAction *actManual = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg(mod->modId().c_str()),this);
-    actManual->setProperty("doc", "Modules/UI.Vision|Modules/Vision");
+    actManual->setProperty("doc", "Modules/Vision|Modules/Vision");
     actManual->setShortcut(Qt::Key_F1);
     actManual->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg(mod->modId().c_str()));
     actManual->setStatusTip(QString(_("Press to get the using %1 manual.")).arg(mod->modId().c_str()));
     connect(actManual, SIGNAL(triggered()), this, SLOT(enterManual()));
     //  VCAEngine manual
     QAction *actManualVCA = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg("VCAEngine"),this);
-    actManualVCA->setProperty("doc", "Modules/UI.VCAEngine|Modules/VCAEngine");
+    actManualVCA->setProperty("doc", "Modules/VCAEngine|Modules/VCAEngine");
     actManualVCA->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg("VCAEngine"));
     actManualVCA->setStatusTip(QString(_("Press to get the using %1 manual.")).arg("VCAEngine"));
     connect(actManualVCA, SIGNAL(triggered()), this, SLOT(enterManual()));
@@ -1153,7 +1153,8 @@ void VisDevelop::visualItAdd( QAction *cact, const QPointF &pnt, const string &i
 	// Create widget
 	int err = cntrIfCmd(req);
 	if(err) mod->postMess(req.attr("mcat").c_str(), req.text().c_str(), TVision::Error, this);
-	else {
+	if(err == 1)	emit modifiedItem(new_wdg+req.attr("id"));					//Warning
+	else if(!err) {
 	    new_wdg += req.attr("id");
 	    //  Set some parameters
 	    req.clear()->setName("set");
