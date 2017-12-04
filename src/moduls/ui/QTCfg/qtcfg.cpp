@@ -91,7 +91,7 @@ ConfApp::ConfApp( string open_user ) : reqPrgrs(NULL),
     QTCfgLayout->setMargin(3);
 
     //Init splitter
-    QSplitter *splitter = new QSplitter(centralWidget());
+    splitter = new QSplitter(centralWidget());
     splitter->setOrientation(Qt::Horizontal);
 
     //Create Navigator tree
@@ -420,6 +420,15 @@ ConfApp::ConfApp( string open_user ) : reqPrgrs(NULL),
 
     statusBar()->showMessage(_("Ready"), 2000);
 
+    //Generic state restore
+    string rst = TBDS::genDBGet(mod->nodePath()+"st", "800:600", wUser->user().toStdString());
+    int off = 0,
+	wH = s2i(TSYS::strParse(rst,0,":",&off)),
+	wW = s2i(TSYS::strParse(rst,0,":",&off));
+    string sRst = TSYS::strDecode(TSYS::strParse(rst,0,":",&off), TSYS::base64);
+    if(wH > 100 && wW > 100) resize(wH, wW);
+    if(sRst.size()) splitter->restoreState(QByteArray(sRst.data(),sRst.size()));
+
     //Other resources init
     // Create auto update timer
     autoUpdTimer = new QTimer(this);
@@ -458,6 +467,10 @@ ConfApp::~ConfApp( )
     // Threads delete
     for(map<string, SCADAHost*>::iterator iH = hosts.begin(); iH != hosts.end(); ++iH) delete iH->second;
     hosts.clear();
+
+    //Save generic state
+    QByteArray st = splitter->saveState();
+    TBDS::genDBSet(mod->nodePath()+"st", i2s(width())+":"+i2s(height())+":"+TSYS::strEncode(string(st.data(),st.size()),TSYS::base64,""), wUser->user().toStdString());
 }
 
 void ConfApp::quitSt( )
@@ -960,6 +973,11 @@ void ConfApp::closeEvent( QCloseEvent* ce )
     ce->accept();
 }
 
+void ConfApp::resizeEvent( QResizeEvent *rszEv )
+{
+    if((rszEv->size()-rszEv->oldSize()).height() && actStartUpd->isEnabled()) pageRefresh(true);
+}
+
 void ConfApp::selectItem( )
 {
     QList<QTreeWidgetItem *> sel_ls = CtrTree->selectedItems();
@@ -1171,7 +1189,7 @@ void ConfApp::selectChildRecArea( const XMLNode &node, const string &a_path, QWi
 
 	    //lstbox->setMinimumHeight(0);	//Fit reset
 
-	    //  Fill list
+	    //  Fill the list
 	    lab->setText((t_s.attr("dscr")+":").c_str());
 	    string helpVl = t_s.attr("help");
 	    lstbox->setToolTip((TSYS::strMess(TOOL_TIP_LIM,"%s",helpVl.c_str())+((helpVl.size()>TOOL_TIP_LIM)?TOOL_TIP_ADD:"")).c_str());
@@ -2338,7 +2356,10 @@ int ConfApp::cntrIfCmdHosts( XMLNode &node )
 	time_t stTm = SYS->sysTm();
 	while(iHost->reqBusy()) {
 	    reqPrgrsSet(vmax(0,SYS->sysTm()-stTm));
-	    if(reqPrgrs && reqPrgrs->wasCanceled()) iHost->sendSIGALRM();
+	    if(reqPrgrs && reqPrgrs->wasCanceled()) {
+		if(!actStartUpd->isEnabled()) pageCyclRefrStop();	//!!!! Could not check
+		else iHost->sendSIGALRM();
+	    }
 	    qApp->processEvents();
 	    TSYS::sysSleep(0.01);
 	}
@@ -2519,7 +2540,7 @@ void ConfApp::combBoxActivate( const QString& ival )
 	string path = comb->objectName().toStdString();
 	if(path[0] == 'b') { block = true; path = path.substr(1); }
 
-	n_el = SYS->ctrId(root,TSYS::strDecode(path,TSYS::PathEl) );
+	n_el = SYS->ctrId(root, TSYS::strDecode(path,TSYS::PathEl));
 
 	//Get list for index list check!
 	if(n_el->attr("dest") == "select") {

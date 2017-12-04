@@ -65,7 +65,7 @@ using namespace VISION;
 //****************************************
 ModInspAttr::ModInspAttr( const string &iwdg, VisDevelop *mainWind ) : main_win(mainWind)
 {
-    rootItem = new Item("wgrp",Item::WdgGrp);
+    rootItem = new Item("wgrp", Item::WdgGrp);
     setWdg(iwdg);
 }
 
@@ -364,6 +364,11 @@ QModelIndex ModInspAttr::index( int row, int column, const QModelIndex &parent )
     if(it_index) idx = createIndex(row, column, it_index);
 
     return idx;
+}
+
+QModelIndex ModInspAttr::sibling( int row, int column, const QModelIndex &idx ) const
+{
+    return QAbstractItemModel::sibling(row, column, idx);	//For prevent wrong here the QAbstractTableModel implementation on Qt > 5.3
 }
 
 QModelIndex ModInspAttr::parent( const QModelIndex &index ) const
