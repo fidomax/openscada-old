@@ -88,8 +88,8 @@ uint16_t KA_BVT::RefreshData(void)
     Msg.L = 0;
     Msg.C = AddrReq;
     Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ID, 0, 0));
+    Msg.L += 3;
     return mPrm.owner().DoCmd(&Msg);
-
 }
 
 void KA_BVT::tmHandler(void)
