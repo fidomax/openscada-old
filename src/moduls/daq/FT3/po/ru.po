@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.FT3 0.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-23 13:16+0300\n"
+"POT-Creation-Date: 2017-12-07 10:46+0300\n"
 "PO-Revision-Date: 2015-11-13 15:13+0300\n"
 "Last-Translator: Maxim Kochetkov <fido_max@inbox.ru>\n"
 "Language-Team: \n"
@@ -29,27 +29,33 @@ msgstr "Состояние %d"
 msgid "Value %d"
 msgstr "Значение %d"
 
-msgid "Measure period"
-msgstr "Период измерений"
+#, c-format
+msgid "Measure period %d"
+msgstr "Период измерений %d"
 
-msgid "Sensitivity"
-msgstr "Чувствительность"
+#, c-format
+msgid "Sensitivity %d"
+msgstr "Чувствительность %d"
 
 #, c-format
 msgid "Alarms %d"
 msgstr "Тревоги %d"
 
-msgid "Warning minimum"
-msgstr "Мин. предупред."
+#, c-format
+msgid "Warning minimum %d"
+msgstr "Мин. предупред. %d"
 
-msgid "Warning maximum"
-msgstr "Макс. предупред."
+#, c-format
+msgid "Warning maximum %d"
+msgstr "Макс. предупред. %d"
 
-msgid "Alarm minimum"
-msgstr "Мин. аварии ФВ"
+#, c-format
+msgid "Alarm minimum %d"
+msgstr "Мин. аварии ФВ %d"
 
-msgid "Alarm maximum"
-msgstr "Макс. аварии ФВ"
+#, c-format
+msgid "Alarm maximum %d"
+msgstr "Макс. аварии ФВ %d"
 
 #, c-format
 msgid "Ki %d"
@@ -65,6 +71,13 @@ msgstr ""
 
 msgid "Execution"
 msgstr "Исполнение"
+
+msgid "Line"
+msgstr "Линия"
+
+#, c-format
+msgid "Time %d"
+msgstr "Время %d"
 
 msgid "Select TU"
 msgstr "Выбор ТУ"
@@ -113,6 +126,57 @@ msgstr "Величина задержки 1"
 
 msgid "Delay 2"
 msgstr "Величина задержки 2"
+
+msgid "TC"
+msgstr "ТС"
+
+msgid "Period TC"
+msgstr "Период TC"
+
+msgid "Count TC"
+msgstr "Количество срабатываний"
+
+msgid "Value"
+msgstr "Значение"
+
+msgid "Measure period"
+msgstr "Период измерений"
+
+msgid "Sensitivity"
+msgstr "Чувствительность"
+
+msgid "Sensor minimum"
+msgstr "Мин. датчика"
+
+msgid "Sensor maximum"
+msgstr "Макс. датчика"
+
+msgid "PV minimum"
+msgstr "Мин. ФВ %d"
+
+msgid "PV maximum"
+msgstr "Макс. ФВ"
+
+msgid "Warning minimum"
+msgstr "Мин. предупред."
+
+msgid "Warning maximum"
+msgstr "Макс. предупред."
+
+msgid "Alarm minimum"
+msgstr "Мин. аварии ФВ"
+
+msgid "Alarm maximum"
+msgstr "Макс. аварии ФВ"
+
+msgid "Range factor"
+msgstr "Коэффициент расширения диапазона"
+
+msgid "Adjustment"
+msgstr "Смещение"
+
+msgid "Link list is empty."
+msgstr "Список связей пуст."
 
 #, c-format
 msgid "MakePacket one byte req %02X"
@@ -164,6 +228,81 @@ msgstr "L:%02d C:%02X A:%02d B:%02d"
 #, c-format
 msgid "response: %s"
 msgstr "ответ: %s"
+
+msgid "Function"
+msgstr "Функция"
+
+msgid "TU on"
+msgstr "ТУ включить"
+
+msgid "TU off"
+msgstr "ТУ выкл"
+
+msgid "TU stop"
+msgstr "ТУ стоп"
+
+msgid "TU remote"
+msgstr "ТУ дистанционный"
+
+msgid "TU manual"
+msgstr "ТУ ручной"
+
+msgid "On time"
+msgstr "Время вкл"
+
+msgid "Off time"
+msgstr "Время выкл"
+
+msgid "Stop time"
+msgstr "Время стоп"
+
+msgid "Remote time"
+msgstr "Время дист."
+
+msgid "Manual time"
+msgstr "Время ручн."
+
+msgid "On TC"
+msgstr "ТС вкл"
+
+msgid "Off TC"
+msgstr "ТС выкл"
+
+msgid "Mode TC"
+msgstr "ТС режим"
+
+msgid "Work time"
+msgstr "Время работы"
+
+msgid "TU open"
+msgstr "ТУ открыть"
+
+msgid "TU close"
+msgstr "ТУ закрыть"
+
+msgid "TU stop Ex"
+msgstr "ТУ стоп доп."
+
+msgid "Open time"
+msgstr "Время открыть"
+
+msgid "Close time"
+msgstr "Время закрыть"
+
+msgid "Stop time Ex"
+msgstr "Время стоп доп."
+
+msgid "Open TC"
+msgstr "ТС открыть"
+
+msgid "Close TC"
+msgstr "ТС закрыть"
+
+msgid "Open error TC"
+msgstr "ТС ошибка открытия"
+
+msgid "Close error TC"
+msgstr "ТС ошибка закрытия"
 
 #, c-format
 msgid "ProcessMessage one byte req A %02X"
@@ -261,6 +400,27 @@ msgstr "Таблица параметров РЕЗЕРВУАР"
 
 msgid "UPZ Parameters table"
 msgstr "Таблица параметров УПЗ"
+
+msgid "MA Parameters table"
+msgstr "Таблица параметров МА"
+
+msgid "MA Sensor Parameters table"
+msgstr "Таблица параметров датчиков МА"
+
+msgid "TS Parameters table"
+msgstr "Таблица параметров ТС"
+
+msgid "TT Parameters table"
+msgstr "Таблица параметров ТТ"
+
+msgid "ZD Parameters table"
+msgstr "Таблица параметров ЗД"
+
+msgid "NS Parameters table"
+msgstr "Таблица параметров НС"
+
+msgid "TU Parameters table"
+msgstr "Таблица параметров ТУ"
 
 msgid "Acquisition schedule"
 msgstr "Планирование опроса"
@@ -370,14 +530,32 @@ msgstr "РЕЗЕРВУАР"
 msgid "UPZ"
 msgstr "УПЗ"
 
+msgid "MA"
+msgstr "МА"
+
+msgid "TS"
+msgstr "ТС"
+
+msgid "TT"
+msgstr "ТТ"
+
+msgid "ZD"
+msgstr "ЗД"
+
+msgid "NS"
+msgstr "НС"
+
+msgid "TU"
+msgstr "ТУ"
+
+msgid "MA Sensor"
+msgstr "Датчик МА"
+
 msgid "Parameter ID"
 msgstr "ID параметра"
 
 msgid "ID"
 msgstr "ID"
-
-msgid "Value"
-msgstr "Значение"
 
 msgid "Attribute value"
 msgstr "Значение атрибута"
@@ -476,6 +654,10 @@ msgstr "Сброс с сохранением"
 msgid "Setup Clock"
 msgstr "Установка часов"
 
+#, c-format
+msgid "TT%d"
+msgstr ""
+
 msgid "No one device selected."
 msgstr "Ничего не выбрано"
 
@@ -494,8 +676,11 @@ msgstr "Невозможна предварительная инициализа
 msgid "No answer to PreInit"
 msgstr "Нет ответа на предварительную инициализацию"
 
-msgid "Block SetParams error"
-msgstr "Ошибка установки параметров блока"
+msgid "Can't SetParams"
+msgstr "Невозможена установка параметров"
+
+msgid "No answer to SetParams"
+msgstr "Нет ответа на установку параметров"
 
 msgid "Can't PostInit"
 msgstr "Невозможна пост-инициализация"
@@ -546,11 +731,38 @@ msgstr "Состояние крана %d"
 
 #, c-format
 msgid "Persistence time %d"
-msgstr "Время выжержки ТУ %d"
+msgstr "Время выдержки ТУ %d"
 
 #, c-format
 msgid "Persistence astime %d"
-msgstr "Доп. время выжержки ТУ %d"
+msgstr "Доп. время выдержки ТУ %d"
+
+msgid "Out valve address"
+msgstr "Адрес выходной задвижки"
+
+msgid "In valve address"
+msgstr "Адрес входной задвижки"
+
+msgid "Start on the opening valve delay"
+msgstr "Задержка запуска на открывающуюся задвижку"
+
+msgid "Start on the closed valve delay"
+msgstr "Задержка запуска на закрытую задвижку"
+
+msgid "Quick start delay"
+msgstr "Заддержка быстрого запуска"
+
+msgid "Normal stop delay"
+msgstr "Задержка нормального запуска"
+
+msgid "Emergency stop delay"
+msgstr "Задержка аварийного останова"
+
+msgid "Sensor address"
+msgstr "Адрес датчика"
+
+msgid "Delay"
+msgstr "Задержка"
 
 #, c-format
 msgid "Sensors ID %d"
@@ -704,11 +916,13 @@ msgstr "E %d"
 msgid "Dimension %d"
 msgstr "Размерность %d"
 
-msgid "Sensor minimum"
-msgstr "Мин. датчика"
+#, c-format
+msgid "Sensor minimum %d"
+msgstr "Мин. датчика %d"
 
-msgid "Sensor maximum"
-msgstr "Макс. датчика"
+#, c-format
+msgid "Sensor maximum %d"
+msgstr "Макс. датчика %d"
 
 #, c-format
 msgid "Frequency minimum %d"
@@ -718,16 +932,9 @@ msgstr "Мин. частоты %d"
 msgid "Frequency maximum %d"
 msgstr "Макс. частоты %d"
 
+#, c-format
 msgid "Range factor %d"
-msgstr "Коэффициент расширения диапазона"
-
-#, c-format
-msgid "Line %d"
-msgstr "Линия %d"
-
-#, c-format
-msgid "Time #%d %d"
-msgstr "Время #%d %d"
+msgstr "Коэффициент расширения диапазона %d"
 
 #, c-format
 msgid "On %d"
@@ -746,11 +953,8 @@ msgid "Reset %d"
 msgstr "Сброс %d"
 
 #, c-format
-msgid "Time %d"
-msgstr "Время %d"
-
-msgid "TC"
-msgstr "ТС"
+msgid "TC %d"
+msgstr "ТС %d"
 
 #, c-format
 msgid "ExTime %d"
@@ -760,24 +964,17 @@ msgstr "Доп. время %d"
 msgid "Count %d"
 msgstr "Счетчик %d"
 
-msgid "Period TC"
-msgstr "Период TC"
-
-msgid "Count TC"
-msgstr "Количество срабатываний"
-
 #, c-format
 msgid "Mask %d"
 msgstr "Маска %d"
 
-msgid "PV minimum"
+#, c-format
+msgid "PV minimum %d"
 msgstr "Мин. ФВ %d"
 
-msgid "PV maximum"
-msgstr "Макс. ФВ"
-
-msgid "Adjustment"
-msgstr "Смещение"
+#, c-format
+msgid "PV maximum %d"
+msgstr "Макс. ФВ %d"
 
 #, c-format
 msgid "Correcting factor %d"
@@ -824,93 +1021,11 @@ msgstr "Время смазки %d"
 msgid "Timeout_PO %d"
 msgstr "Таймаут предв. операции %d"
 
-msgid "Function"
-msgstr "Функция"
-
-#, c-format
-msgid "TU on %d"
-msgstr "ТУ вкл %d"
-
-#, c-format
-msgid "TU off %d"
-msgstr "ТУ выкл %d"
-
-msgid "TU stop"
-msgstr "ТУ стоп"
-
-msgid "TU remote"
-msgstr "ТУ дистанционный"
-
-msgid "TU manual"
-msgstr "ТУ ручной"
-
-#, c-format
-msgid "On time %d"
-msgstr "Время вкл. %d"
-
-#, c-format
-msgid "Off time %d"
-msgstr "Время выкл %d"
-
-msgid "Stop time"
-msgstr "Время стоп"
-
-msgid "Remote time"
-msgstr "Время дист."
-
-msgid "Manual time"
-msgstr "Время ручн."
-
-#, c-format
-msgid "On TC %d"
-msgstr "ТС вкл %d"
-
-#, c-format
-msgid "Off TC %d"
-msgstr "ТС выкл %d"
-
-msgid "Mode TC"
-msgstr "ТС режим"
-
-#, c-format
-msgid "Work time %d"
-msgstr "Время работы %d"
-
-msgid "TU open"
-msgstr "ТУ открыть"
-
-msgid "TU close"
-msgstr "ТУ закрыть"
-
-msgid "TU stop Ex"
-msgstr "ТУ стоп доп."
-
-msgid "Open time"
-msgstr "Время открыт"
-
-msgid "Close time"
-msgstr "Время закрыть"
-
-msgid "Stop time Ex"
-msgstr "Время стоп доп."
-
-msgid "Open TC"
-msgstr "ТС открыть"
-
-msgid "Close TC"
-msgstr "ТС закрытия"
-
-msgid "Open error TC"
-msgstr "ТС ошибка открытия"
-
-msgid "Close error TC"
-msgstr "ТС ошибка закрытия"
-
 msgid "DAQ FT3"
 msgstr "АПСТМ (FT3)"
 
-msgid "Maxim Kothetkov, Olga Avdeyeva, Olga Kuzmickaya"
-msgstr "Максим Кочетков, Ольга Авдеева, Ольга Кузьмицкая"
+msgid "Maxim Kothetkov, Olga Avdeyeva, Olga Kuzmickaya, Alexander Danilov"
+msgstr "Максим Кочетков, Ольга Авдеева, Ольга Кузьмицкая, Александр Данилов"
 
 msgid "Allow realization of FT3 master/slave service"
 msgstr "Предоставляет реализацию протокола FT3 для контроллеров АПСТМ"
@@ -918,6 +1033,10 @@ msgstr "Предоставляет реализацию протокола FT3 �
 #, c-format
 msgid "Drop volume %d"
 msgstr "Объем капли %d"
+
+#, c-format
+msgid "Function %d"
+msgstr "Функция %d"
 
 #, c-format
 msgid "Sens1 TC %d"
@@ -979,12 +1098,15 @@ msgstr "Адрес объекта 1 %d"
 msgid "Address object 2 %d"
 msgstr "Адрес объекта 2 %d"
 
+#, c-format
 msgid "Alarm object 1 %d"
 msgstr "Объект тревоги 1 %d"
 
+#, c-format
 msgid "Time1 %d"
 msgstr "Время1 %d"
 
+#, c-format
 msgid "Number function 1 %d"
 msgstr "Номер функции 1 %d"
 
@@ -992,16 +1114,18 @@ msgstr "Номер функции 1 %d"
 msgid "Number object 1 %d"
 msgstr "Номер объекта 1 %d"
 
+#, c-format
 msgid "Alarm object 2 %d"
 msgstr "Объект тревоги 2 %d"
 
+#, c-format
 msgid "Time2 %d"
 msgstr "Время2 %d"
 
+#, c-format
 msgid "Number function 2 %d"
 msgstr "Номер функции 2 %d"
 
 #, c-format
 msgid "Number object 2 %d"
 msgstr "Номер объекта 2 %d"
-

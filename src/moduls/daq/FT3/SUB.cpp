@@ -33,8 +33,8 @@ KA_MA::KA_MA(TMdPrm& prm, uint16_t id, uint16_t n) :
     ZDInID("inAddr", _("In valve address")),
     DevID("devAddr", _("Device address")),
     Function("function", _("Function")),
-    DelayStartOnOpening("delayStartOnOpening", _("Delay start on the opening valve")),
-    DelayStartOnClosed("delayStartOnClosed", _("Delay start on the closed valve")),
+    DelayStartOnOpening("delayStartOnOpening", _("Start on the opening valve delay")),
+    DelayStartOnClosed("delayStartOnClosed", _("Start on the closed valve delay")),
     DelayQuickStart("delayQuickStart", _("Quick start delay")),
     DelayNormalStop("delayNormalStop", _("Normal stop delay")),
     DelayEmergencyStop("delayEmergencyStop", _("Emergency stop delay"))
