@@ -40,7 +40,6 @@ KA_MA::KA_MA(TMdPrm& prm, uint16_t id, uint16_t n) :
     DelayEmergencyStop("delayEmergencyStop", _("Emergency stop delay"))
 {
     mTypeFT3 = KA;
-    //chan_err.clear();
     TFld * fld;
     mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
     fld->setReserve("0:0");
@@ -88,13 +87,15 @@ uint8_t KA_MA::SetNewSensorsParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 	mPrm.list(lst);
 	for (int i_l = 0; i_l < lst.size(); i_l++) {
 	    AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
-	    KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
-	    if (sDA.ID == i) {
-		sDA.SensorID.s = addr;
-		sDA.SensorID.Set(params[i].SensorID);
-		sDA.Delay.Set(params[i].Delay);
-		sDA.Function.Set(params[i].Function);
-		break;
+	    if (t.at().mDA) {
+		KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
+		if (sDA.ID == i) {
+		    sDA.SensorID.s = addr;
+		    sDA.SensorID.Set(params[i].SensorID);
+		    sDA.Delay.Set(params[i].Delay);
+		    sDA.Function.Set(params[i].Function);
+		    break;
+		}
 	    }
 	}
     }
@@ -189,16 +190,6 @@ string KA_MA::getStatus(void)
 
     if (NeedInit)
 	rez = "20: Опрос каналов:";
-/*	for(int i = 1; i <= count_n; i++) {
-        switch(chan_err[i].state) {
-        case 0:
-        rez += TSYS::strMess(" %d.", i);
-        break;
-        case 2:
-        rez += TSYS::strMess(" %d!!!", i);
-        break;
-        }
-    }*/
     else
 	rez = "0: Норма";
     return rez;
@@ -257,8 +248,10 @@ bool KA_MA::IsSensorsParamChanged()
     mPrm.list(lst);
     for (int i_l = 0; i_l < lst.size(); i_l++) {
 	AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
-	KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
-	changed |= sDA.IsSensorParamChanged();
+	if (t.at().mDA) {
+	    KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
+	    changed |= sDA.IsSensorParamChanged();
+	}
     }
     return changed;
 }
@@ -276,13 +269,15 @@ void KA_MA::UpdateSensorsParam(uint16_t ID, uint8_t cl)
 	    mPrm.list(lst);
 	    for (int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
-		KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
-		if (sDA.ID == i) {
-		    l += sDA.SensorID.Serialize(E + l);
-		    l += sDA.Delay.Serialize(E + l);
-		    l += sDA.Function.Serialize(E + l);
-		    foundDA = true;
-		    break;
+		if (t.at().mDA) {
+		    KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
+		    if (sDA.ID == i) {
+			l += sDA.SensorID.Serialize(E + l);
+			l += sDA.Delay.Serialize(E + l);
+			l += sDA.Function.Serialize(E + l);
+			foundDA = true;
+			break;
+		    }
 		}
 	    }
 	    if (!foundDA)
@@ -363,11 +358,13 @@ uint16_t KA_MA::HandleEvent(int64_t tm, uint8_t * D)
 		mPrm.list(lst);
 		for (int i_l = 0; i_l < lst.size(); i_l++) {
 		    AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
-		    KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
-		    if (sDA.ID == i) {
-			sDA.SensorID.Update(TSYS::getUnalign16(D + 2 + (i - 1) * 5), tm);
-			sDA.Delay.Update(TSYS::getUnalign16(D + 2 + (i - 1) * 5 + 2), tm);
-			sDA.Function.Update(D[2 + (i - 1) * 5 + 4], tm);
+		    if (t.at().mDA) {
+			KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
+			if (sDA.ID == i) {
+			    sDA.SensorID.Update(TSYS::getUnalign16(D + 2 + (i - 1) * 5), tm);
+			    sDA.Delay.Update(TSYS::getUnalign16(D + 2 + (i - 1) * 5 + 2), tm);
+			    sDA.Function.Update(D[2 + (i - 1) * 5 + 4], tm);
+			}
 		    }
 		}
 	    }
@@ -389,8 +386,6 @@ uint16_t KA_MA::HandleEvent(int64_t tm, uint8_t * D)
 uint8_t KA_MA::cmdGet(uint16_t prmID, uint8_t * out)
 {
     FT3ID ft3ID = UnpackID(prmID);
-
-    // FT3ID ft3ID_NS = UnpackID(prmID);
 
     if (ft3ID.g != ID) return 0;
     uint8_t l = 0;
@@ -425,13 +420,15 @@ uint8_t KA_MA::cmdGet(uint16_t prmID, uint8_t * out)
 		bool foundDA = false;
 		for (int i_l = 0; i_l < lst.size(); i_l++) {
 		    AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
-		    KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
-		    if (sDA.ID == i) {
-			l += sDA.SensorID.Serialize(out + l);
-			l += sDA.Delay.Serialize(out + l);
-			l += sDA.Function.Serialize(out + l);
-			foundDA = true;
-			break;
+		    if (t.at().mDA) {
+			KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
+			if (sDA.ID == i) {
+			    l += sDA.SensorID.Serialize(out + l);
+			    l += sDA.Delay.Serialize(out + l);
+			    l += sDA.Function.Serialize(out + l);
+			    foundDA = true;
+			    break;
+			}
 		    }
 		}
 		if (!foundDA) {
@@ -516,13 +513,15 @@ uint16_t KA_MA::setVal(TVal &val)
 	    bool foundDA = false;
 	    for (int i_l = 0; i_l < lst.size(); i_l++) {
 		AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
-		KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
-		if (sDA.ID == i) {
-		    Msg.L += sDA.SensorID.SerializeAttr(Msg.D + Msg.L);
-		    Msg.L += sDA.Delay.SerializeAttr(Msg.D + Msg.L);
-		    Msg.L += sDA.Function.SerializeAttr(Msg.D + Msg.L);
-		    foundDA = true;
-		    break;
+		if (t.at().mDA) {
+		    KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
+		    if (sDA.ID == i) {
+			Msg.L += sDA.SensorID.SerializeAttr(Msg.D + Msg.L);
+			Msg.L += sDA.Delay.SerializeAttr(Msg.D + Msg.L);
+			Msg.L += sDA.Function.SerializeAttr(Msg.D + Msg.L);
+			foundDA = true;
+			break;
+		    }
 		}
 	    }
 	    if (!foundDA) {
@@ -578,92 +577,6 @@ bool KA_MASensor::IsSensorParamChanged()
     return vl_change;
 }
 
-/*void KA_MASensor::UpdateSensorParam(uint16_t ID, uint8_t cl)
-   {
-    if (IsSensorParamChanged()) {
-        SensorID.s = 0;
-        uint8_t E[6];
-        uint8_t l = 0;
-        l += SerializeB(E + l, SensorID.s);
-        l += SensorID.Serialize(E + l);
-        l += Delay.Serialize(E + l);
-        l += Function.Serialize(E + l);
-        PushInBE(cl, l, ID, E);
-    }
-   }
-
-   uint8_t KA_MASensor::SetNewSensorParam(uint8_t addr, uint16_t prmID, uint8_t *val)
-   {
-    const struct KAMAAlarmSensorParams *params = (const struct KAMAAlarmSensorParams *)val;
-
-    if (SensorID.lnk.Connected() || Delay.lnk.Connected() || Function.lnk.Connected() ) {
-        SensorID.s = addr;
-        SensorID.Set(params->SensorID);
-        Delay.Set(params->Delay);
-        Function.Set(params->Function);
-        uint8_t E[6];
-        E[0] = addr;
-        memcpy(E + 1, val, 20);
-        PushInBE(1, sizeof(E), prmID, E);
-        return 2 + 20;
-    } else
-        return 0;
-   }
-
-   uint16_t KA_MASensor::SetParams(void)
-   {
-    uint16_t rc;
-    tagMsg Msg;
-
-    loadParam();
-    loadVal(State.lnk);
-    Msg.L = 0;
-    Msg.C = SetData;
-    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
-    Msg.L += SensorID.SerializeAttr(Msg.D + Msg.L);
-    Msg.L += Delay.SerializeAttr(Msg.D + Msg.L);
-    Msg.L += Function.SerializeAttr(Msg.D + Msg.L);
-    Msg.L += 3;
-    rc = mPrm.owner().DoCmd(&Msg);
-    if ((rc == BAD2) || (rc == BAD3))
-        mPrm.mess_sys(TMess::Error, "Can't set channel %d", ID);
-    else if (rc == ERROR)
-        mPrm.mess_sys(TMess::Error, "No answer to set channel %d", ID);
-
-    return rc;
-   }
-
-   uint16_t KA_MASensor::RefreshParams(void)
-   {
-    uint16_t rc;
-    tagMsg Msg;
-
-    Msg.L = 0;
-    Msg.C = AddrReq;
-    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
-    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 2));
-    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 4));
-    Msg.L += 3;
-    rc = mPrm.owner().DoCmd(&Msg);
-    if ((rc == BAD2) || (rc == BAD3))
-        mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", ID);
-    else if (rc == ERROR)
-        mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", ID);
-
-    return rc;
-   }
-
-   uint16_t KA_NS::RefreshData(void)
-   {
-    tagMsg Msg;
-
-    Msg.L = 0;
-    Msg.C = AddrReq;
-    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
-    Msg.L += 3;
-    return mPrm.owner().DoCmd(&Msg);
-   }
- */
 void KA_MASensor::loadIO(bool force)
 {
     if (mPrm.owner().startStat() && !force) {
@@ -695,138 +608,7 @@ void KA_MASensor::loadParam(void)
     loadVal(Delay.lnk);
     loadVal(Function.lnk);
 }
-/*
-   void KA_NS::tmHandler(void)
-   {
-    UpdateIDParam(PackID(parentDA.ID, ID, 1), 1);
-    NeedInit = false;
-   }
 
-   uint16_t KA_NS::HandleEvent(int64_t tm, uint8_t * D)
-   {
-    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
-
-    if (ft3ID.g != parentDA.ID) return 0;
-    if (ft3ID.k != ID) return 0;
-    uint16_t l = 0;
-
-    switch (ft3ID.n) {
-    case 0:
-        l = 4;
-        State.Update(D[3], tm);
-        break;
-    case 1:
-        if (with_params) {
-            TUOn.Update(TSYS::getUnalign16(D + 3), tm);
-            TimeOn.Update(TSYS::getUnalign16(D + 5), tm);
-            TUOff.Update(TSYS::getUnalign16(D + 7), tm);
-            TimeOff.Update(TSYS::getUnalign16(D + 9), tm);
-            TUStop.Update(TSYS::getUnalign16(D + 11), tm);
-            TimeStop.Update(TSYS::getUnalign16(D + 13), tm);
-            TURemote.Update(TSYS::getUnalign16(D + 15), tm);
-            TimeRemote.Update(TSYS::getUnalign16(D + 17), tm);
-            TUManual.Update(TSYS::getUnalign16(D + 19), tm);
-            TimeManual.Update(TSYS::getUnalign16(D + 21), tm);
-        }
-        l = 3 + 20;
-        break;
-    case 2:
-        if (with_params) {
-            TCOn.Update(TSYS::getUnalign16(D + 3), tm);
-            TCOff.Update(TSYS::getUnalign16(D + 5), tm);
-            TCMode.Update(TSYS::getUnalign16(D + 7), tm);
-        }
-        l = 3 + 6;
-        break;
-    case 3:
-        Function.Update(D[3], tm);
-        l = 4;
-        break;
-    case 4:
-        Time.Update(TSYS::getUnalign32(D + 3), tm);
-        l = 7;
-        break;
-
-    }
-    return l;
-   }
-
-   uint8_t KA_NS::cmdGet(uint16_t prmID, uint8_t * out)
-   {
-    FT3ID ft3ID = UnpackID(prmID);
-
-    if (ft3ID.g != parentDA.ID) return 0;
-    if (ft3ID.k != ID) return 0;
-    uint8_t l = 0;
-
-    switch (ft3ID.n) {
-    case 0:
-        l += SerializeB(out + l, State.s);
-        l += State.Serialize(out + l);
-        break;
-    case 1:
-        l += SerializeB(out + l, TUOn.s);
-        l += TUOn.Serialize(out + l);
-        l += TimeOn.Serialize(out + l);
-        l += TUOff.Serialize(out + l);
-        l += TimeOff.Serialize(out + l);
-        l += TUStop.Serialize(out + l);
-        l += TimeStop.Serialize(out + l);
-        l += TURemote.Serialize(out + l);
-        l += TimeRemote.Serialize(out + l);
-        l += TUManual.Serialize(out + l);
-        l += TimeManual.Serialize(out + l);
-        break;
-    case 2:
-        l += SerializeB(out + l, TCOn.s);
-        l += TCOn.Serialize(out + l);
-        l += TCOff.Serialize(out + l);
-        l += TCMode.Serialize(out + l);
-        break;
-    case 3:
-        l += SerializeB(out + l, Function.s);
-        l += Function.Serialize(out + l);
-        break;
-    case 4:
-        l += SerializeB(out + l, Time.s);
-        l += Time.Serialize(out + l);
-        break;
-
-    }
-    return l;
-   }
-
-
-   uint8_t KA_NS::cmdSet(uint8_t * req, uint8_t addr)
-   {
-    uint16_t prmID = TSYS::getUnalign16(req);
-    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(req));
-
-    if (ft3ID.g != parentDA.ID) return 0;
-    if (ft3ID.k != ID) return 0;
-    uint8_t l = 0;
-
-    switch (ft3ID.n) {
-    case 0:
-        l = SetNewState(addr, prmID, req + 2);
-        break;
-    case 1:
-        l = SetNewTUParam(addr, prmID, req + 2);
-        break;
-    case 2:
-        l = SetNewTCParam(addr, prmID, req + 2);
-        break;
-    case 3:
-        l = SetNewFunction(addr, prmID, req + 2);
-        break;
-    case 4:
-        l = SetNew32Val(Time, addr, prmID, TSYS::getUnalign32(req + 2));
-        break;
-    }
-
-    return l;
-   }
- */
 uint16_t KA_MASensor::setVal(TVal &val)
 {
     return parentDA.setVal(val);
