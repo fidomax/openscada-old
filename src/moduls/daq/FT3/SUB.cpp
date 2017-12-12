@@ -342,17 +342,17 @@ uint16_t KA_MA::HandleEvent(int64_t tm, uint8_t * D)
 	    l = 4;
 	    break;
 	case 2:
-	    l = 2 + 3 * 2;
-	    ZDOutID.Update(TSYS::getUnalign16(D + 2), tm);
-	    ZDInID.Update(TSYS::getUnalign16(D + 4), tm);
-	    DevID.Update(TSYS::getUnalign16(D + 6), tm);
+	    l = 2 + 1 + 3 * 2;
+	    ZDOutID.Update(TSYS::getUnalign16(D + 3), tm);
+	    ZDInID.Update(TSYS::getUnalign16(D + 5), tm);
+	    DevID.Update(TSYS::getUnalign16(D + 7), tm);
 	    break;
 	case 3:
 	    l = 3;
 	    Function.Update(D[2], tm);
 	    break;
 	case 4:
-	    l = 2 + count_n * 5;
+	    l = 2 + 1 + count_n * 5;
 	    for (uint8_t i = 1; i <= count_n; i++) {
 		vector<string> lst;
 		mPrm.list(lst);
@@ -361,21 +361,21 @@ uint16_t KA_MA::HandleEvent(int64_t tm, uint8_t * D)
 		    if (t.at().mDA) {
 			KA_MASensor &sDA = *(KA_MASensor*)t.at().mDA;
 			if (sDA.ID == i) {
-			    sDA.SensorID.Update(TSYS::getUnalign16(D + 2 + (i - 1) * 5), tm);
-			    sDA.Delay.Update(TSYS::getUnalign16(D + 2 + (i - 1) * 5 + 2), tm);
-			    sDA.Function.Update(D[2 + (i - 1) * 5 + 4], tm);
+			    sDA.SensorID.Update(TSYS::getUnalign16(D + 3 + (i - 1) * 5), tm);
+			    sDA.Delay.Update(TSYS::getUnalign16(D + 3 + (i - 1) * 5 + 2), tm);
+			    sDA.Function.Update(D[3 + (i - 1) * 5 + 4], tm);
 			}
 		    }
 		}
 	    }
 	    break;
 	case 5:
-	    l = 2 + 5 * 2;
-	    DelayStartOnOpening.Update(TSYS::getUnalign16(D + 2), tm);
-	    DelayStartOnClosed.Update(TSYS::getUnalign16(D + 4), tm);
-	    DelayQuickStart.Update(TSYS::getUnalign16(D + 6), tm);
-	    DelayNormalStop.Update(TSYS::getUnalign16(D + 6), tm);
-	    DelayEmergencyStop.Update(TSYS::getUnalign16(D + 6), tm);
+	    l = 2 + 1 + 5 * 2;
+	    DelayStartOnOpening.Update(TSYS::getUnalign16(D + 3), tm);
+	    DelayStartOnClosed.Update(TSYS::getUnalign16(D + 5), tm);
+	    DelayQuickStart.Update(TSYS::getUnalign16(D + 7), tm);
+	    DelayNormalStop.Update(TSYS::getUnalign16(D + 9), tm);
+	    DelayEmergencyStop.Update(TSYS::getUnalign16(D + 11), tm);
 	    break;
 	}
 	break;
@@ -413,6 +413,7 @@ uint8_t KA_MA::cmdGet(uint16_t prmID, uint8_t * out)
 	    l += Function.Serialize(out + l);
 	    break;
 	case 4:
+	    l += SerializeB(out + l, ZDOutID.s); //TODO need to fix
 	    for (uint8_t i = 1; i <= count_n; i++) {
 		//	ll = 0;
 		vector<string> lst;
@@ -439,7 +440,7 @@ uint8_t KA_MA::cmdGet(uint16_t prmID, uint8_t * out)
 		    out[l++] = 0;
 		}
 	    }
-	    if (l != count_n * 5) l = 0;
+	    if (l != count_n * 5 + 1) l = 0;
 	    break;
 	case 5:
 	    l += SerializeB(out + l, DelayStartOnOpening.s);
