@@ -29,6 +29,7 @@ using namespace FT3;
 
 KA_MA::KA_MA(TMdPrm& prm, uint16_t id, uint16_t n) :
     DA(prm, id), count_n(n), config(0xF | (n << 4) | (3 << 10)), max_count_data(40),
+    State("state", _("State")),
     ZDOutID("outAddr", _("Out valve address")),
     ZDInID("inAddr", _("In valve address")),
     DevID("devAddr", _("Device address")),
@@ -41,10 +42,11 @@ KA_MA::KA_MA(TMdPrm& prm, uint16_t id, uint16_t n) :
 {
     mTypeFT3 = KA;
     TFld * fld;
-    mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
-    fld->setReserve("0:0");
+    //mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
+    //fld->setReserve("0:0");
+    AddAttr(State.lnk, TFld::Integer, TVal::DirWrite, "0");
     AddAttr(ZDOutID.lnk, TFld::Integer, TVal::DirWrite, "2");
-    AddAttr(ZDInID.lnk, TFld::Integer, TVal::DirWrite, "2");
+    AddAttr(ZDInID.lnk, TFld::Integer, TVal::DirWrite,  "2");
     AddAttr(DevID.lnk, TFld::Integer, TVal::DirWrite, "2");
     AddAttr(Function.lnk, TFld::Integer, TVal::DirWrite, "3");
     AddAttr(DelayStartOnOpening.lnk, TFld::Integer, TVal::DirWrite, "5");
@@ -134,6 +136,7 @@ void KA_MA::loadIO(bool force)
 	mPrm.modif(true);
 	return;
     }   //Load/reload IO context only allow for stopped controllers for prevent throws
+    loadLnk(State.lnk);
     loadLnk(ZDOutID.lnk);
     loadLnk(ZDInID.lnk);
     loadLnk(DevID.lnk);
@@ -147,6 +150,7 @@ void KA_MA::loadIO(bool force)
 
 void KA_MA::saveIO(void)
 {
+    saveLnk(State.lnk);
     saveLnk(ZDOutID.lnk);
     saveLnk(ZDInID.lnk);
     saveLnk(DevID.lnk);
@@ -160,6 +164,7 @@ void KA_MA::saveIO(void)
 
 void KA_MA::saveParam(void)
 {
+    saveVal(State.lnk);
     saveVal(ZDOutID.lnk);
     saveVal(ZDInID.lnk);
     saveVal(DevID.lnk);
@@ -173,6 +178,7 @@ void KA_MA::saveParam(void)
 
 void KA_MA::loadParam(void)
 {
+    loadVal(State.lnk);
     loadVal(ZDOutID.lnk);
     loadVal(ZDInID.lnk);
     loadVal(DevID.lnk);
@@ -204,7 +210,7 @@ uint16_t KA_MA::GetState()
     Msg.C = AddrReq;
     *((uint16_t*)Msg.D) = PackID(ID, 0, 0);       //state
     if (mPrm.owner().DoCmd(&Msg) == GOOD3) {
-	switch (mPrm.vlAt("state").at().getI(0, true)) {
+	switch (mPrm.vlAt("state").at().getI(0, true) & 0x07) {
 	case MA_ST_UNDEF:
 	    rc = BlckStateError;
 	    break;
@@ -318,6 +324,7 @@ void KA_MA::UpdateDelayParam(uint16_t ID, uint8_t cl)
 
 void KA_MA::tmHandler(void)
 {
+        UpdateParam8(State, PackID(ID, 0, 0), 1);
     UpdateIDParam(PackID(ID, 0, 2), 1);
     UpdateParam8(Function, PackID(ID, 0, 3), 1);
     UpdateSensorsParam(PackID(ID, 0, 4), 1);
@@ -335,8 +342,9 @@ uint16_t KA_MA::HandleEvent(int64_t tm, uint8_t * D)
     case 0:
 	switch (ft3ID.n) {
 	case 0:
-	    mPrm.vlAt("state").at().setI(D[2], tm, true);
-	    l = 3;
+	    //mPrm.vlAt("state").at().setI(D[2], tm, true);
+	    State.Update(TSYS::getUnalign16(D + 3), tm);
+	    l = 4;
 	    break;
 	case 1:
 	    l = 4;
@@ -394,8 +402,8 @@ uint8_t KA_MA::cmdGet(uint16_t prmID, uint8_t * out)
 	switch (ft3ID.n) {
 	case 0:
 	    //state
-	    out[0] = 1;
-	    l = 1;
+	    l += SerializeB(out + l, State.s);
+	    l += State.Serialize(out + l);
 	    break;
 	case 1:
 	    out[0] = config >> 8;
@@ -465,6 +473,8 @@ uint8_t KA_MA::cmdSet(uint8_t * req, uint8_t addr)
     if (ft3ID.k != 0) return 0;
     uint l = 0;
     switch (ft3ID.n) {
+    case 0:
+	l = SetNew8Val(State, addr, prmID, req[2]);
     case 2:
 	l = SetNewIDParam(addr, prmID, req + 2);
 	break;
@@ -497,6 +507,10 @@ uint16_t KA_MA::setVal(TVal &val)
     Msg.C = SetData;
     Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
     switch (ft3ID.n) {
+    case 0:
+	Msg.L += State.SerializeAttr(Msg.D + Msg.L);
+	rc = 1;
+	break;
     case 2:
 	Msg.L += ZDOutID.SerializeAttr(Msg.D + Msg.L);
 	Msg.L += ZDInID.SerializeAttr(Msg.D + Msg.L);

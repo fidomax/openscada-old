@@ -105,47 +105,49 @@ class KA_MA : public DA
 	string getStatus(void);
 	uint16_t config;
 	ui16Data ZDOutID, ZDInID, DevID;
-	ui8Data Function;
+	ui8Data State, Function;
 	ui16Data DelayStartOnOpening, DelayStartOnClosed, DelayQuickStart, DelayNormalStop, DelayEmergencyStop;
 	int lnkSize()
 	{
-	    return 9;
+	    return 10;
 	}
 	int lnkId(const string &id)
 	{
-	    if (ZDOutID.lnk.prmName == id) return 0;
-	    if (ZDInID.lnk.prmName == id) return 1;
-	    if (DevID.lnk.prmName == id) return 2;
-	    if (Function.lnk.prmName == id) return 3;
-	    if (DelayStartOnOpening.lnk.prmName == id) return 4;
-	    if (DelayStartOnClosed.lnk.prmName == id) return 5;
-	    if (DelayQuickStart.lnk.prmName == id) return 6;
-	    if (DelayNormalStop.lnk.prmName == id) return 7;
-	    if (DelayEmergencyStop.lnk.prmName == id) return 8;
+	    if (State.lnk.prmName == id) return 0;
+	    if (ZDOutID.lnk.prmName == id) return 1;
+	    if (ZDInID.lnk.prmName == id) return 2;
+	    if (DevID.lnk.prmName == id) return 3;
+	    if (Function.lnk.prmName == id) return 4;
+	    if (DelayStartOnOpening.lnk.prmName == id) return 5;
+	    if (DelayStartOnClosed.lnk.prmName == id) return 6;
+	    if (DelayQuickStart.lnk.prmName == id) return 7;
+	    if (DelayNormalStop.lnk.prmName == id) return 8;
+	    if (DelayEmergencyStop.lnk.prmName == id) return 9;
 	    return -1;
 	}
 	SLnk &lnk(int num)
 	{
 	    switch (num) {
 	    case 0:
-		return ZDOutID.lnk;
+		return State.lnk;
 	    case 1:
-		return ZDInID.lnk;
+		return ZDOutID.lnk;
 	    case 2:
-		return DevID.lnk;
+		return ZDInID.lnk;
 	    case 3:
-		return Function.lnk;
+		return DevID.lnk;
 	    case 4:
-		return DelayStartOnOpening.lnk;
+		return Function.lnk;
 	    case 5:
-		return DelayStartOnClosed.lnk;
+		return DelayStartOnOpening.lnk;
 	    case 6:
-		return DelayQuickStart.lnk;
+		return DelayStartOnClosed.lnk;
 	    case 7:
-		return DelayNormalStop.lnk;
+		return DelayQuickStart.lnk;
 	    case 8:
+		return DelayNormalStop.lnk;
+	    case 9:
 		return DelayEmergencyStop.lnk;
-
 	    }
 	}
 
