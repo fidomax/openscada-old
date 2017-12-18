@@ -96,16 +96,17 @@ uint8_t KA_MA::SetNewSensorsParam(uint8_t addr, uint16_t prmID, uint8_t *val)
 		    sDA.SensorID.Set(params[i].SensorID);
 		    sDA.Delay.Set(params[i].Delay);
 		    sDA.Function.Set(params[i].Function);
+		    sDA.WorkTime.Set(params[i].WorkTime);
 		    break;
 		}
 	    }
 	}
     }
-    uint8_t E[5 * count_n + 1];
+    uint8_t E[7 * count_n + 1];
     E[0] = addr;
-    memcpy(E + 1, val, 5 * count_n);
+    memcpy(E + 1, val, 7 * count_n);
     PushInBE(1, sizeof(E), prmID, E);
-    return 2 + 5 * count_n;
+    return 2 + 7 * count_n;
 }
 
 uint8_t KA_MA::SetNewDelayParam(uint8_t addr, uint16_t prmID, uint8_t *val)
@@ -281,6 +282,7 @@ void KA_MA::UpdateSensorsParam(uint16_t ID, uint8_t cl)
 			l += sDA.SensorID.Serialize(E + l);
 			l += sDA.Delay.Serialize(E + l);
 			l += sDA.Function.Serialize(E + l);
+			l += sDA.WorkTime.Serialize(E + l);
 			foundDA = true;
 			break;
 		    }
@@ -324,7 +326,7 @@ void KA_MA::UpdateDelayParam(uint16_t ID, uint8_t cl)
 
 void KA_MA::tmHandler(void)
 {
-        UpdateParam8(State, PackID(ID, 0, 0), 1);
+    UpdateParam8(State, PackID(ID, 0, 0), 1);
     UpdateIDParam(PackID(ID, 0, 2), 1);
     UpdateParam8(Function, PackID(ID, 0, 3), 1);
     UpdateSensorsParam(PackID(ID, 0, 4), 1);
@@ -372,6 +374,7 @@ uint16_t KA_MA::HandleEvent(int64_t tm, uint8_t * D)
 			    sDA.SensorID.Update(TSYS::getUnalign16(D + 3 + (i - 1) * 5), tm);
 			    sDA.Delay.Update(TSYS::getUnalign16(D + 3 + (i - 1) * 5 + 2), tm);
 			    sDA.Function.Update(D[3 + (i - 1) * 5 + 4], tm);
+			    sDA.WorkTime.Update(TSYS::getUnalign16(D + 3 + (i - 1) * 5 + 5), tm);
 			}
 		    }
 		}
@@ -435,12 +438,15 @@ uint8_t KA_MA::cmdGet(uint16_t prmID, uint8_t * out)
 			    l += sDA.SensorID.Serialize(out + l);
 			    l += sDA.Delay.Serialize(out + l);
 			    l += sDA.Function.Serialize(out + l);
+			    l += sDA.WorkTime.Serialize(out + l);
 			    foundDA = true;
 			    break;
 			}
 		    }
 		}
 		if (!foundDA) {
+		    out[l++] = 0;
+		    out[l++] = 0;
 		    out[l++] = 0;
 		    out[l++] = 0;
 		    out[l++] = 0;
@@ -534,12 +540,15 @@ uint16_t KA_MA::setVal(TVal &val)
 			Msg.L += sDA.SensorID.SerializeAttr(Msg.D + Msg.L);
 			Msg.L += sDA.Delay.SerializeAttr(Msg.D + Msg.L);
 			Msg.L += sDA.Function.SerializeAttr(Msg.D + Msg.L);
+			Msg.L += sDA.WorkTime.SerializeAttr(Msg.D + Msg.L);
 			foundDA = true;
 			break;
 		    }
 		}
 	    }
 	    if (!foundDA) {
+		Msg.D[Msg.L++] = 0;
+		Msg.D[Msg.L++] = 0;
 		Msg.D[Msg.L++] = 0;
 		Msg.D[Msg.L++] = 0;
 		Msg.D[Msg.L++] = 0;
@@ -569,12 +578,14 @@ KA_MASensor::KA_MASensor(TMdPrm& prm, DA &parent, uint16_t id) :
     DA(prm, id), parentDA(parent),
     SensorID("sensorAddr", _("Sensor address")),
     Delay("delay", _("Delay")),
-    Function("function", _("Function"))
+    Function("function", _("Function")),
+    WorkTime("workTime", _("Work time"))
 {
     mTypeFT3 = KA;
     AddAttr(SensorID.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("4"));
     AddAttr(Delay.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("4"));
     AddAttr(Function.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("4"));
+    AddAttr(WorkTime.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("4"));
     loadIO(true);
 }
 
@@ -589,6 +600,7 @@ bool KA_MASensor::IsSensorParamChanged()
     vl_change |= SensorID.CheckUpdate();
     vl_change |= Delay.CheckUpdate();
     vl_change |= Function.CheckUpdate();
+    vl_change |= WorkTime.CheckUpdate();
     return vl_change;
 }
 
@@ -601,6 +613,7 @@ void KA_MASensor::loadIO(bool force)
     loadLnk(SensorID.lnk);
     loadLnk(Delay.lnk);
     loadLnk(Function.lnk);
+    loadLnk(WorkTime.lnk);
 }
 
 void KA_MASensor::saveIO(void)
@@ -608,6 +621,7 @@ void KA_MASensor::saveIO(void)
     saveLnk(SensorID.lnk);
     saveLnk(Delay.lnk);
     saveLnk(Function.lnk);
+    saveLnk(WorkTime.lnk);
 }
 
 void KA_MASensor::saveParam(void)
@@ -615,6 +629,7 @@ void KA_MASensor::saveParam(void)
     saveVal(SensorID.lnk);
     saveVal(Delay.lnk);
     saveVal(Function.lnk);
+    saveVal(WorkTime.lnk);
 }
 
 void KA_MASensor::loadParam(void)
@@ -622,6 +637,7 @@ void KA_MASensor::loadParam(void)
     loadVal(SensorID.lnk);
     loadVal(Delay.lnk);
     loadVal(Function.lnk);
+    loadVal(WorkTime.lnk);
 }
 
 uint16_t KA_MASensor::setVal(TVal &val)

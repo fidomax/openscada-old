@@ -63,6 +63,7 @@ struct KAMAAlarmSensorParams {
     uint16_t SensorID;
     uint16_t Delay;
     uint8_t Function;
+    uint16_t WorkTime;
 } __attribute__((packed));
 
 struct KAMADelayParams {
@@ -173,7 +174,7 @@ class KA_MASensor : public DA
 //	void tmHandler(void);
 
 	ui8Data Function;
-	ui16Data SensorID, Delay;
+	ui16Data SensorID, Delay, WorkTime;
 	int lnkSize()
 	{
 	    return 3;
