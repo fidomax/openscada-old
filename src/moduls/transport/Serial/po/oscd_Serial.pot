@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-22 17:17+0300\n"
+"POT-Creation-Date: 2017-12-22 21:11+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,7 +52,11 @@ msgid "No any expected respond but receive from modem %d: '%s'."
 msgstr ""
 
 #, c-format
-msgid "Traffic in %s, out %s. Maximum char timeout %.4g ms."
+msgid "Traffic in %s, out %s. Maximum char timeout %.4g ms. "
+msgstr ""
+
+#, c-format
+msgid "Processing time %s[%s]. "
 msgstr ""
 
 #, c-format
@@ -147,13 +151,13 @@ msgstr ""
 msgid "Modem"
 msgstr ""
 
-msgid "Timeout (sec)"
+msgid "Timeout, seconds"
 msgstr ""
 
-msgid "Pre-initial delay (sec)"
+msgid "Pre-initial delay, seconds"
 msgstr ""
 
-msgid "Post-initial delay (sec)"
+msgid "Post-initial delay, seconds"
 msgstr ""
 
 msgid "Initialization string 1"
@@ -176,6 +180,10 @@ msgstr ""
 
 #, c-format
 msgid "Traffic in %s, out %s. "
+msgstr ""
+
+#, c-format
+msgid "Respond time %s[%s]. "
 msgstr ""
 
 #, c-format
@@ -293,7 +301,7 @@ msgstr ""
 msgid "Sometime opened device closing can be breakage, on ICP-DAS LP PLC for example, then you alowed to prevent it by that option."
 msgstr ""
 
-msgid "Life time (sec)"
+msgid "Life time, seconds"
 msgstr ""
 
 msgid "Dial string"

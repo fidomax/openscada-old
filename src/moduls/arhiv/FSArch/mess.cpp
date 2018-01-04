@@ -38,7 +38,7 @@ using namespace FSArch;
 ModMArch::ModMArch( const string &iid, const string &idb, TElem *cf_el ) :
     TMArchivator(iid,idb,cf_el), infoTbl(dataRes()),
     mUseXml(false), mMaxSize(1024), mNumbFiles(30), mTimeSize(30), mChkTm(60), mPackTm(10),
-    mPackInfoFiles(false), mPrevDbl(false), mPrevDblTmCatLev(false), tmCalc(0), mLstCheck(0)
+    mPackInfoFiles(false), mPrevDbl(false), mPrevDblTmCatLev(false), tmProc(0), tmProcMax(0), mLstCheck(0)
 {
 
 }
@@ -196,7 +196,8 @@ bool ModMArch::put( vector<TMess::SRec> &mess, bool force )
 	    wrOK = files[iF]->put(mess[i_m]) && wrOK;
 	}
     }
-    tmCalc = TSYS::curTime()-t_cnt;
+
+    tmProc = TSYS::curTime() - t_cnt; tmProcMax = vmax(tmProcMax, tmProc);
 
     return wrOK;
 }
@@ -412,7 +413,7 @@ void ModMArch::cntrCmdProc( XMLNode *opt )
     string a_path = opt->attr("path");
     if(a_path == "/prm/cfg/dirList" && ctrChkNode(opt))		TSYS::ctrListFS(opt, addr());
     else if(a_path == "/prm/st/fsz" && ctrChkNode(opt))		opt->setText(TSYS::cpct2str(size()));
-    else if(a_path == "/prm/st/tarch" && ctrChkNode(opt))	opt->setText(tm2s(1e-6*tmCalc));
+    else if(a_path == "/prm/st/tarch" && ctrChkNode(opt))	opt->setText(tm2s(1e-6*tmProc) + "[" + tm2s(1e-6*tmProcMax) + "]");
     else if(a_path == "/prm/add/xml") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SARH_ID,SEC_RD))	opt->setText(useXML() ? "1" : "0");
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SARH_ID,SEC_WR))	setUseXML(s2i(opt->text()));
@@ -479,7 +480,7 @@ void ModMArch::cntrCmdProc( XMLNode *opt )
 //* FSArch::MFileArch - Messages archivator file  *
 //*************************************************
 MFileArch::MFileArch( ModMArch *owner ) :
-    dtRes(true), scan(false), mName(dtRes), mXML(true), mSize(0), mChars("UTF-8"), mErr(false), mWrite(false), mLoad(false), mPack(false),
+    scan(false), dtRes(true), mName(dtRes), mXML(true), mSize(0), mChars("UTF-8"), mErr(false), mWrite(false), mLoad(false), mPack(false),
     mBeg(0), mEnd(0), mNode(NULL), mOwner(owner)
 {
     cach_pr.tm = cach_pr.off = 0;
@@ -487,7 +488,7 @@ MFileArch::MFileArch( ModMArch *owner ) :
 }
 
 MFileArch::MFileArch( const string &iname, time_t ibeg, ModMArch *iowner, const string &icharset, bool ixml ) :
-    dtRes(true), scan(false), mName(dtRes), mXML(ixml), mSize(0), mChars(icharset), mErr(false), mWrite(false), mLoad(false), mPack(false),
+    scan(false), dtRes(true), mName(dtRes), mXML(ixml), mSize(0), mChars(icharset), mErr(false), mWrite(false), mLoad(false), mPack(false),
     mBeg(ibeg), mEnd(ibeg), mNode(NULL), mOwner(iowner)
 {
     mName = iname;
@@ -558,7 +559,7 @@ void MFileArch::attach( const string &iname, bool full )
     mAcces = time(NULL);
 
     try {
-	//Check archive and unpack if want
+	//Check archive and unpack if need
 	if(mPack) {
 	    bool infoOK = false;
 	    // Get archive info from info file
@@ -874,8 +875,10 @@ time_t MFileArch::get( time_t bTm, time_t eTm, vector<TMess::SRec> &mess, const 
     if(!upTo) upTo = time(NULL) + STD_INTERF_TM;
 
     if(mPack) {
-	try { mName = mod->unPackArch(name()); } catch(TError &err) { mErr = true; throw; }
+	res.request(true);
+	try { if(mPack) mName = mod->unPackArch(name()); } catch(TError &err) { mErr = true; throw; }
 	mPack = false;
+	res.request(false);
     }
 
     mAcces = time(NULL);

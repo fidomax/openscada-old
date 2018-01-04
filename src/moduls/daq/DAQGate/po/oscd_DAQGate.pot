@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-23 16:59+0300\n"
+"POT-Creation-Date: 2017-12-16 15:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,16 +29,13 @@ msgstr ""
 msgid "Parameters cache table"
 msgstr ""
 
-msgid "Gather data period (s)"
-msgstr ""
-
 msgid "Acquisition schedule"
 msgstr ""
 
 msgid "Gather task priority"
 msgstr ""
 
-msgid "Restore timeout (s)"
+msgid "Restore timeout, seconds"
 msgstr ""
 
 msgid "Restore data depth time (hour)"
@@ -50,7 +47,7 @@ msgstr ""
 msgid "==Disable==;Debug (0);Information (1);Notice (2);Warning (3);Error (4);Critical (5);Alert (6);Emergency (7)"
 msgstr ""
 
-msgid "Sync inter remote station period (s)"
+msgid "Sync inter remote station period, seconds"
 msgstr ""
 
 msgid "Remote stations list"
@@ -162,7 +159,7 @@ msgstr ""
 msgid "Type"
 msgstr ""
 
-msgid "Enable"
+msgid "Enabled"
 msgstr ""
 
 msgid "Id"

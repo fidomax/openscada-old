@@ -30,7 +30,6 @@
 #include <QApplication>
 #include <QLocale>
 #include <QDesktopWidget>
-#include <QMenu>
 #include <QTimer>
 #include <QMenuBar>
 #include <QCloseEvent>
@@ -159,25 +158,20 @@ VisRun::VisRun( const string &iprjSes_it, const string &open_user, const string 
     actAlrmLev = new QAction(QPixmap::fromImage(ico_t), "", this);
     actAlrmLev->setObjectName("alarmLev");
 
-    //Create menu
-    menuFile = menuBar()->addMenu("");
-    menuFile->addAction(menuPrint->menuAction());
-    menuFile->addAction(menuExport->menuAction());
-    menuFile->addSeparator();
-    menuFile->addAction(actClose);
-    menuFile->addAction(actQuit);
-    menuAlarm = menuBar()->addMenu("");
-    menuAlarm->addAction(actAlrmLev);
-    menuView = menuBar()->addMenu("");
-    menuView->addAction(actFullScr);
-    menuHelp = menuBar()->addMenu("");
-    menuHelp->addAction(actAbout);
-    menuHelp->addAction(actQtAbout);
-    menuHelp->addAction(actProjManual);
-    menuHelp->addAction(actManual);
-    menuHelp->addAction(actManualSYS);
-    menuHelp->addSeparator();
-    menuHelp->addAction(actWhatIs);
+    menuFile.addAction(menuPrint->menuAction());
+    menuFile.addAction(menuExport->menuAction());
+    menuFile.addSeparator();
+    menuFile.addAction(actClose);
+    menuFile.addAction(actQuit);
+    menuAlarm.addAction(actAlrmLev);
+    menuView.addAction(actFullScr);
+    menuHelp.addAction(actAbout);
+    menuHelp.addAction(actQtAbout);
+    menuHelp.addAction(actProjManual);
+    menuHelp.addAction(actManual);
+    menuHelp.addAction(actManualSYS);
+    menuHelp.addSeparator();
+    menuHelp.addAction(actWhatIs);
 
     //Init tool bars
     // Generic tools bar
@@ -281,6 +275,22 @@ VisRun::~VisRun( )
 #endif
 }
 
+void VisRun::setWinMenu( bool act )
+{
+    //Create menu
+    if(act) {
+	menuBar()->clear();
+	menuBar()->addMenu(&menuFile);
+	menuBar()->addMenu(&menuAlarm);
+	menuBar()->addMenu(&menuView);
+	menuBar()->addMenu(&menuHelp);
+	menuBar()->addMenu((QMenu*)TSYS::str2addr(qApp->property("menuStarterAddr").toString().toStdString()));
+	menuBar()->setVisible(true);
+    }
+    //Clear menu
+    else { menuBar()->clear(); menuBar()->setVisible(false); }
+}
+
 string VisRun::user( )		{ return mWUser->user(); }
 
 bool VisRun::userSel( const string &hint )	{ return mWUser->userSel(hint); }
@@ -372,7 +382,7 @@ void VisRun::closeEvent( QCloseEvent* ce )
 	    if(qobject_cast<QMainWindow*>(QApplication::topLevelWidgets()[i_w]) && QApplication::topLevelWidgets()[i_w]->isVisible())
 		winCnt++;
 
-	if(winCnt <= 1) SYS->stop();
+	if(winCnt <= 1 && !qApp->property("closeToTray").toBool()) SYS->stop();
     }
 
     endRunTimer->stop();
@@ -384,10 +394,10 @@ void VisRun::closeEvent( QCloseEvent* ce )
 
 void VisRun::resizeEvent( QResizeEvent *ev )
 {
-    if(ev && ev->oldSize().isValid() && masterPg()) {
+    if(ev && masterPg()) {
 	float x_scale_old = x_scale;
 	float y_scale_old = y_scale;
-	if(windowState() == Qt::WindowMaximized || windowState() == Qt::WindowFullScreen) {
+	if(windowState()&(Qt::WindowMaximized|Qt::WindowFullScreen)) {
 	    x_scale *= (float)((QScrollArea*)centralWidget())->maximumViewportSize().width()/(float)masterPg()->size().width();
 	    y_scale *= (float)((QScrollArea*)centralWidget())->maximumViewportSize().height()/(float)masterPg()->size().height();
 	    if(x_scale > 1 && x_scale < 1.02) x_scale = 1;
@@ -397,15 +407,14 @@ void VisRun::resizeEvent( QResizeEvent *ev )
 	if(x_scale_old != x_scale || y_scale_old != y_scale) {
 	    isResizeManual = true;
 	    fullUpdatePgs();
-
-	    // Fit to the master page size
-	    if(!(windowState()&(Qt::WindowMaximized|Qt::WindowFullScreen))) {
-		QRect ws = QApplication::desktop()->availableGeometry(this);
-		resize(fmin(ws.width()-10,masterPg()->size().width()+(centralWidget()->parentWidget()->width()-centralWidget()->width())+5),
-		       fmin(ws.height()-10,masterPg()->size().height()+(centralWidget()->parentWidget()->height()-centralWidget()->height())+5));
-	    }
-
 	    isResizeManual = false;
+	}
+
+	// Fit to the master page size
+	if((x_scale_old != x_scale || y_scale_old != y_scale || !ev->oldSize().isValid()) && !(windowState()&(Qt::WindowMaximized|Qt::WindowFullScreen))) {
+	    QRect ws = QApplication::desktop()->availableGeometry(this);
+	    resize(fmin(ws.width()-10,masterPg()->size().width()+(centralWidget()->parentWidget()->width()-centralWidget()->width())+5),
+		fmin(ws.height()-10,masterPg()->size().height()+(centralWidget()->parentWidget()->height()-centralWidget()->height())+5));
 	}
 
 	mess_debug(mod->nodePath().c_str(), _("Root page scale [%f:%f]."), x_scale, y_scale);
@@ -951,8 +960,8 @@ void VisRun::userChanged( const QString &oldUser, const QString &oldPass )
 	mod->postMess(req.attr("mcat").c_str(), req.text().c_str(), TVision::Error, this);
 	return;
     }
-    if(req.attr("userIsRoot").size()) menuBar()->setVisible(s2i(req.attr("userIsRoot")));
-    else menuBar()->setVisible(SYS->security().at().access(user(),SEC_WR,"root","root",RWRWR_));
+    if(req.attr("userIsRoot").size()) setWinMenu(s2i(req.attr("userIsRoot")));
+    else setWinMenu(SYS->security().at().access(user(),SEC_WR,"root","root",RWRWR_));
     int oldConId = mConId;
     mConId = s2i(req.attr("conId"));
     req.clear()->setName("disconnect")->setAttr("path","/%2fserv%2fsess")->setAttr("sess",workSess())->setAttr("conId", i2s(oldConId));
@@ -1145,8 +1154,8 @@ void VisRun::initSess( const string &iprjSes_it, bool icrSessForce )
 	}
 	return;
     }
-    if(req.attr("userIsRoot").size()) menuBar()->setVisible(s2i(req.attr("userIsRoot")));
-    else menuBar()->setVisible(SYS->security().at().access(user(),SEC_WR,"root","root",RWRWR_));
+    if(req.attr("userIsRoot").size()) setWinMenu(s2i(req.attr("userIsRoot")));
+    else setWinMenu(SYS->security().at().access(user(),SEC_WR,"root","root",RWRWR_));
 
     if(work_sess.empty()) work_sess = req.attr("sess");
     if(src_prj.empty()) src_prj = req.attr("prj");
@@ -1277,10 +1286,10 @@ void VisRun::messUpd( )
     actQtAbout->setStatusTip(_("Press to get the using QT information."));
 
     //Menus
-    menuFile->setTitle(_("&File"));
-    menuAlarm->setTitle(_("&Alarm"));
-    menuView->setTitle(_("&View"));
-    menuHelp->setTitle(_("&Help"));
+    menuFile.setTitle(_("&File"));
+    menuAlarm.setTitle(_("&Alarm"));
+    menuView.setTitle(_("&View"));
+    menuHelp.setTitle(_("&Help"));
 
     //Menu "Print"
     menuPrint->setTitle(_("&Print"));
@@ -1429,8 +1438,6 @@ void VisRun::callPage( const string& pg_it, bool updWdg )
 	((QScrollArea *)centralWidget())->setWidget(master_pg);
 	if(!(windowState()&(Qt::WindowFullScreen|Qt::WindowMaximized))) {
 	    QRect ws = QApplication::desktop()->availableGeometry(this);
-	    //resize(fmin(ws.width()-10,masterPg()->size().width()+(centralWidget()->parentWidget()->width()-centralWidget()->width())+5),
-	    //	   fmin(ws.height()-10,masterPg()->size().height()+(centralWidget()->parentWidget()->height()-centralWidget()->height())+5));
 	    resize(vmin(master_pg->size().width()+10,ws.width()-10), vmin(master_pg->size().height()+55,ws.height()-10));
 	}
 	else x_scale = y_scale = 1.0;
@@ -1531,8 +1538,8 @@ void VisRun::alarmSet( unsigned alarm )
 
     //Set notify to the alarm
     for(map<uint8_t,Notify*>::iterator iN = mNotify.begin(); isMaster && iN != mNotify.end(); ++iN) iN->second->ntf(alarm);
-    for(int iAl = 0; iAl < menuAlarm->actions().size(); ++iAl) {
-	QAction *cO = menuAlarm->actions()[iAl];
+    for(int iAl = 0; iAl < menuAlarm.actions().size(); ++iAl) {
+	QAction *cO = menuAlarm.actions()[iAl];
 	if(!cO || cO->objectName().toStdString().compare(0,8,"alarmNtf") != 0)	continue;
 	unsigned nTp = s2i(cO->objectName().toStdString().substr(8));
 	bool newSt;
@@ -1831,7 +1838,7 @@ VisRun::Notify::Notify( uint8_t itp, const string &ipgProps, VisRun *iown ) : pg
     }
     actAlrm->setProperty("quittanceRet", (bool)f_quittanceRet);
     actAlrm->setCheckable(f_quittanceRet);
-    owner()->menuAlarm->addAction(actAlrm);
+    owner()->menuAlarm.addAction(actAlrm);
     owner()->toolBarStatus->addAction(actAlrm);
 
     //Apply to the current alarm status

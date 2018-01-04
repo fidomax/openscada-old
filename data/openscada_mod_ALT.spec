@@ -1218,8 +1218,8 @@ install -m 644 doc/openscada_start.uk.1 %buildroot/%_mandir/uk/man1/openscada_st
 install -m 644 doc/openscada.ru.1 %buildroot/%_mandir/ru/man1/openscada.1
 install -m 644 doc/openscada_start.ru.1 %buildroot/%_mandir/ru/man1/openscada_start.1
 
-ln -s openscada_start %buildroot/%_bindir/openscada_AGLKS
-ln -s openscada_start %buildroot/%_bindir/openscada_Boiler
+ln -s openscada %buildroot/%_bindir/openscada_AGLKS
+ln -s openscada %buildroot/%_bindir/openscada_Boiler
 
 ln -s `relative %_defaultdocdir/%name-docEN-%version %_datadir/openscada/docs/en` %buildroot/%_datadir/openscada/docs/en
 ln -s `relative %_defaultdocdir/%name-docRU-%version %_datadir/openscada/docs/ru` %buildroot/%_datadir/openscada/docs/ru
@@ -1251,6 +1251,7 @@ ln -s `relative %_defaultdocdir/%name-docUK-%version %_datadir/openscada/docs/uk
 %config %_initdir/oscadad
 %_bindir/openscada
 %_bindir/openscada_start
+%_bindir/openscada-proj
 %doc README README_ru README_uk COPYING ChangeLog INSTALL TODO TODO_ru TODO_uk
 %_mandir/man1/*
 %_mandir/*/man1/*
@@ -1315,8 +1316,12 @@ ln -s `relative %_defaultdocdir/%name-docUK-%version %_datadir/openscada/docs/uk
 %_datadir/openscada/Boiler/*.db 
 
 %files plc
+%defattr(-,root,root)
+%config(noreplace) %_sysconfdir/oscada_plc.xml
 
 %files server
+%defattr(-,root,root)
+%config(noreplace) %_sysconfdir/oscada_start.xml
 
 %files visStation
 

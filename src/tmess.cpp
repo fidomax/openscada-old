@@ -571,15 +571,14 @@ const char *TMess::I18N( const char *mess, const char *d_name, const char *mLang
 void TMess::load( )
 {
     //Load params from command line
-    string argCom, argVl;
-    for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
-	if(strcasecmp(argCom.c_str(),"h") == 0 || strcasecmp(argCom.c_str(),"help") == 0) return;
-	else if(strcasecmp(argCom.c_str(),"lang") == 0) setLang(argVl, true);
-	else if(strcasecmp(argCom.c_str(),"messlev") == 0) {
-	    int i = atoi(optarg);
-	    if(i >= Debug && i <= Emerg) setMessLevel(i);
-	}
-	else if(strcasecmp(argCom.c_str(),"log") == 0) setLogDirect(s2i(argVl));
+    string argVl;
+    if(s2i(SYS->cmdOpt("h")) || s2i(SYS->cmdOpt("help"))) return;
+    if((argVl=SYS->cmdOpt("lang")).size()) setLang(argVl, true);
+    if((argVl=SYS->cmdOpt("messLev")).size()) {
+	int i = s2i(argVl);
+	if(i >= Debug && i <= Emerg) setMessLevel(i);
+    }
+    if((argVl=SYS->cmdOpt("log")).size()) setLogDirect(s2i(argVl));
 
     //Load params config-file
     setMessLevel(s2i(TBDS::genDBGet(SYS->nodePath()+"MessLev",i2s(messLevel()),"root",TBDS::OnlyCfg)));
@@ -589,6 +588,21 @@ void TMess::load( )
     mLang2CodeBase = TBDS::genDBGet(SYS->nodePath()+"Lang2CodeBase",mLang2CodeBase,"root",TBDS::OnlyCfg);
     setTranslDyn(s2i(TBDS::genDBGet(SYS->nodePath()+"TranslDyn",i2s(translDyn()),"root",TBDS::OnlyCfg)), false);
     setTranslEnMan(translDyn() || s2i(TBDS::genDBGet(SYS->nodePath()+"TranslEnMan",i2s(translEnMan()),"root",TBDS::OnlyCfg)), true);
+}
+
+void TMess::unload( )
+{
+    mRes.lock();
+    debugCats.clear();
+    selectDebugCats.clear();
+
+    mTranslLangs = "";
+    trMessIdx.clear();
+    trMessCache.clear();
+    mRes.unlock();
+
+    IOCharSet = "UTF-8", mMessLevel = Info, mLogDir = DIR_STDOUT|DIR_ARCHIVE;
+    mConvCode = mIsUTF8 = true, mTranslDyn = mTranslDynPlan = mTranslEnMan = mTranslSet = false;
 }
 
 void TMess::save( )
@@ -604,15 +618,15 @@ void TMess::save( )
 
 const char *TMess::labDB( )
 {
-    return _("DB address in format [<DB module>.<DB name>].\n"
-	     "For use main work DB set '*.*'.");
+    return _("DB address in format \"{DB module}.{DB name}\".\n"
+	     "For use the main work DB set '*.*'.");
 }
 
 const char *TMess::labSecCRON( )
 {
-    return _("Schedule is wrote in seconds periodic form or in standard CRON form.\n"
-	     "Seconds form is one real number (1.5, 1e-3).\n"
-	     "Cron it is standard form \"* * * * *\".\n"
+    return _("Schedule wrotes in seconds periodic form or in the standard CRON form.\n"
+	     "The seconds periodic form is one real number (1.5, 1e-3).\n"
+	     "Cron is the standard form \"* * * * *\".\n"
 	     "  Where items by order:\n"
 	     "    - minutes (0-59);\n"
 	     "    - hours (0-23);\n"
@@ -621,13 +635,13 @@ const char *TMess::labSecCRON( )
 	     "    - week day (0[Sunday]-6).\n"
 	     "  Where an item variants:\n"
 	     "    - \"*\" - any value;\n"
-	     "    - \"1,2,3\" - allowed values;\n"
+	     "    - \"1,2,3\" - allowed values list;\n"
 	     "    - \"1-5\" - raw range of allowed values;\n"
 	     "    - \"*/2\" - range divider for allowed values.\n"
 	     "Examples:\n"
-	     "  \"1e-3\" - periodic call by one millisecond;\n"
+	     "  \"1e-3\" - call with a period of one millisecond;\n"
 	     "  \"* * * * *\" - each minute;\n"
-	     "  \"10 23 * * *\" - only 23 hour and 10 minute for any day and month;\n"
+	     "  \"10 23 * * *\" - only at 23 hour and 10 minute for any day and month;\n"
 	     "  \"*/2 * * * *\" - for minutes: 0,2,4,...,56,58;\n"
 	     "  \"* 2-4 * * *\" - for any minutes in hours from 2 to 4(include).");
 }
@@ -645,7 +659,7 @@ const char *TMess::labTaskPrior( )
 
 int TMess::getUTF8( const string &str, int off, int32_t *symb )
 {
-    if(off < 0 || off >= str.size())	return 0;
+    if(off < 0 || off >= (int)str.size())	return 0;
     if(!isUTF8() || !(str[off]&0x80)) {
 	if(symb) *symb = (uint8_t)str[off];
 	return 1;
@@ -655,7 +669,7 @@ int TMess::getUTF8( const string &str, int off, int32_t *symb )
     if((str[off]&0xE0) == 0xC0)		{ len = 2; rez = str[off]&0x1F; }
     else if((str[off]&0xF0) == 0xE0)	{ len = 3; rez = str[off]&0x0F; }
     else if((str[off]&0xF8) == 0xF0)	{ len = 4; rez = str[off]&0x07; }
-    if((off+len) > str.size())	return 0;
+    if((off+len) > (int)str.size())	return 0;
     for(int iSmb = 1; iSmb < len; iSmb++)
 	if((str[off+iSmb]&0xC0) != 0x80) return 0;
 	else rez = (rez<<6) | (str[off+iSmb]&0x3F);

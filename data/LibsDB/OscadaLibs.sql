@@ -287,8 +287,10 @@ About:en,uk,ru:About.html
 Documents/Terms:en,uk,ru:Terms.html
 Functions_and_demands:en,uk,ru:Functions_and_demands.html
 Documents/FAQ:en,uk,ru:FAQ.html
-Documents/DAQ:en,uk,ru:DAQ.html
+Documents/Quick_start:en,ru:Quick_start.html
 Documents/Program_manual:en,uk,ru:Program_manual.html
+Documents/How_to:en,ru:How_to.html
+Documents/DAQ:en,uk,ru:DAQ.html
 Documents/User_API:en,uk,ru:User_API.html
 Modules/SQLite:en,uk,ru:Modules/SQLite.html
 Modules/MySQL:en,uk,ru:Modules/MySQL.html
@@ -314,6 +316,9 @@ Modules/ICP_DAS:en,uk,ru:Modules/ICP_DAS.html
 Modules/Siemens:en,uk,ru:Modules/Siemens.html
 Modules/DiamondBoards:en,uk,ru:Modules/DiamondBoards.html
 Modules/Comedi:en,uk,ru:Modules/Comedi.html
+Modules/SoundCard:en,uk,ru:Modules/SoundCard.html
+Modules/BFN:en,ru:Modules/BFN.html
+Modules/SMH2Gi:en,uk,ru:Modules/SMH2Gi.html
 Modules/FSArch:en,uk,ru:Modules/FSArch.html
 Modules/DBArch:en,uk,ru:Modules/DBArch.html
 Modules/VCAEngine:en,ru:Modules/VCAEngine.html
@@ -7441,7 +7446,7 @@ for(var ip in pgsOprc) {
 	//SYS.messInfo("OffLine", "TEST 00: pLang="+pLang);
 }
 
-res = "0: Fetched and processed pages="+pCnt+"; images="+imgCnt+"; links="+lnkCnt+"; languages="+lngCnt;','','',1512239196);
+res = "0: Fetched and processed pages="+pCnt+"; images="+imgCnt+"; links="+lnkCnt+"; languages="+lngCnt;','','',1513450007);
 CREATE TABLE 'flb_regEl' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"START" INTEGER DEFAULT '1' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '0' ,"FORMULA" TEXT DEFAULT '' ,"uk#FORMULA" TEXT DEFAULT '' ,"ru#FORMULA" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '' , PRIMARY KEY ("ID"));
 INSERT INTO "flb_regEl" VALUES('pidUnif','PID (unified)','ПІД (уніфікований)','ПИД (унифицированный)','Composite-unified analog and pulse PID. At the heart of the regulator is core a standard analog PID controller from the library "FLibComplex1" (http://wiki.oscada.org/HomePageEn/Doc/FLibComplex1#h902-15) and the implementation of the PWM for the pulse part.','Суміщений-уніфікований аналоговий та імпульсний ПІД-регулятор. У основі регулятора лежить мова стандартного аналогового ПІД-регулятора з бібліотеки "FLibComplex1" та реалізація ШІМ для імпульсної частини.','Совмещённый-унифицированный аналоговый и импульсный ПИД-регулятор. В основе регулятора лежит ядро стандартного аналогового ПИД-регулятора из библиотеки "FLibComplex1" (http://wiki.oscada.org/Doc/FLibComplex1#h91-15) и реализация ШИМ для импульсной части.',1,10,0,'//Call standard analog PID
 outA = Special.FLibComplex1.pid(var,sp,max,min,manIn,auto,casc,Kp,Ti,Kd,Td,Tzd,Hup,Hdwn,Zi,followSp,K1,in1,K2,in2,K3,in3,K4,in4,f_frq,int,dif,lag);
@@ -8662,7 +8667,7 @@ else if((request.charCodeAt(1)==0x08)&&(request.charCodeAt(2)==0x00)&&(answer.le
 ;}',1509290179);
 INSERT INTO "UserProtocol_uPrt" VALUES('NIK2303','NIK2303','','','Protocol level of three phase counter of electricity NIK 2303 from firm NIK LLC (http://www.nik.net.ua).
 Author: Ruslan Yarmoliuk <rylio74@gmail.com>
-Version: 1.0.0','','',1,1,0,'','','','JavaLikeCalc.JavaScript
+Version: 1.0.1','','',1,1,0,'','','','JavaLikeCalc.JavaScript
 //Protocol NIK 2303
 io.setAttr("err", "0");
 
@@ -8718,10 +8723,9 @@ request = SYS.strFromCharCode(0x7E) + request + SYS.strFromCharCode(FCS&0xFF, (F
 
 //message sending
 resp = tr.messIO(request);
-while(resp.length) {//io.setText(request);
-	if(!(tresp=tr.messIO("")).length) break;
-  	resp += tresp;
-}
+while(resp.length && resp.charCodeAt(resp.length-1) != 0x7E)
+	if((tresp=tr.messIO("")).length) resp += tresp;
+	else break;
 if(resp.length == 0) {io.setText(""); io.setAttr("err","1:"+tr("No a respond")); return; }
 //SYS.messDebug("/NIK2303I/PRT", "Respond: "+SYS.strDecode(resp, "Bin","|"));
 if(resp.length <= 3 || resp.charCodeAt(2) != resp.length-2)
@@ -8756,17 +8760,17 @@ io.setAttr("err", "0");','','',1512240522);
 CREATE TABLE 'flb_doc' ("ID" TEXT DEFAULT '' ,"NAME" TEXT DEFAULT '' ,"uk#NAME" TEXT DEFAULT '' ,"ru#NAME" TEXT DEFAULT '' ,"DESCR" TEXT DEFAULT '' ,"uk#DESCR" TEXT DEFAULT '' ,"ru#DESCR" TEXT DEFAULT '' ,"START" INTEGER DEFAULT '1' ,"MAXCALCTM" INTEGER DEFAULT '10' ,"PR_TR" INTEGER DEFAULT '0' ,"FORMULA" TEXT DEFAULT '' ,"uk#FORMULA" TEXT DEFAULT '' ,"ru#FORMULA" TEXT DEFAULT '' ,"TIMESTAMP" INTEGER DEFAULT '0' , PRIMARY KEY ("ID"));
 INSERT INTO "flb_doc" VALUES('getVal','Getting value from archive','Запит значення архіву','Запрос знач. архива','Query the value for a specified time from the assigned archive and issuing the result with the specified number of decimal points.
 Author: Roman Savochenko <rom_as@oscada.org>
-Version: 1.1.0','Запит значення на визначений час з вказаного архіву та видача результату з вказаною кількістю знаків після точки.
+Version: 1.1.1','Запит значення на визначений час з вказаного архіву та видача результату з вказаною кількістю знаків після точки.
 Автор: Роман Савоченко <rom_as@oscada.org>
-Версія: 1.1.0','Запрос значения на указанное время из установленного архива и выдача результата с указанным количеством знаков после точки.
+Версія: 1.1.1','Запрос значения на указанное время из установленного архива и выдача результата с указанным количеством знаков после точки.
 Автор: Роман Савоченко <rom_as@oscada.org>
-Версия: 1.1.0',1,10,0,'srcTime = time*1e6 + uTime;
+Версия: 1.1.1',1,10,0,'srcTime = time*1e6 + uTime;
 aO = SYS.nodeAt(addr).arch();
 if(aO) {
 	if(!tryTo || tryTo == srcTime)	val = aO.getVal(srcTime, false, archtor);
 	else {
-		aPer = aO.period(archtor);
-		if(srcTime < tryTo)
+		if((aPer=aO.period(archtor)) == 0)	val = EVAL;
+		else if(srcTime < tryTo)
 			for(srcTime1 = srcTime; srcTime < tryTo && (val=aO.getVal(srcTime1,false,archtor)).isEVal(); )
 			{ srcTime += aPer; srcTime1 = srcTime; }
 		else

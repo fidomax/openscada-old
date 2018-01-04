@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.Transport.Serial 0.7.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-22 17:17+0300\n"
+"POT-Creation-Date: 2017-12-22 21:11+0200\n"
 "PO-Revision-Date: 2009-03-31 18:28+0300\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <ru@li.org>\n"
@@ -54,9 +54,13 @@ msgid "No any expected respond but receive from modem %d: '%s'."
 msgstr "Нет ожидаемого ответа, но получено из модема %d: '%s'."
 
 #, c-format
-msgid "Traffic in %s, out %s. Maximum char timeout %.4g ms."
+msgid "Traffic in %s, out %s. Maximum char timeout %.4g ms. "
 msgstr ""
-"Трафик входящий %s, исходящий %s. Макс. время ожидания символа %.4g мс."
+"Трафик входящий %s, исходящий %s. Макс. время ожидания символа %.4g мс. "
+
+#, c-format
+msgid "Processing time %s[%s]. "
+msgstr "Время обработки %s[%s]. "
 
 #, c-format
 msgid "Serial port '%s' %s error: %s."
@@ -190,14 +194,14 @@ msgstr "Приоритет"
 msgid "Modem"
 msgstr "Модем"
 
-msgid "Timeout (sec)"
-msgstr "Время ожидания (с)"
+msgid "Timeout, seconds"
+msgstr "Время ожидания, секунд"
 
-msgid "Pre-initial delay (sec)"
-msgstr "Выдержка пре-инициализации (с)"
+msgid "Pre-initial delay, seconds"
+msgstr "Выдержка пре-инициализации, секунд"
 
-msgid "Post-initial delay (sec)"
-msgstr "Выдержка после-инициализации (с)"
+msgid "Post-initial delay, seconds"
+msgstr "Выдержка после-инициализации, секунд"
 
 msgid "Initialization string 1"
 msgstr "Строка инициализации 1"
@@ -220,6 +224,10 @@ msgstr "Ответ на звонок, результат"
 #, c-format
 msgid "Traffic in %s, out %s. "
 msgstr "Трафик входящий %s, исходящий %s. "
+
+#, c-format
+msgid "Respond time %s[%s]. "
+msgstr "Время ответа %s[%s]. "
 
 #, c-format
 msgid "Device '%s' is used now."
@@ -260,6 +268,7 @@ msgstr "Не записано данных"
 msgid "Write error: %s"
 msgstr "Ошибка записи: %s"
 
+#, c-format
 msgid "Transmitting error: %s"
 msgstr "Ошибка передачи: %s"
 
@@ -283,6 +292,7 @@ msgstr "Время ожидания получения истекло!"
 msgid "Read (select) error: %s"
 msgstr "Ошибка чтения (select): %s"
 
+#, c-format
 msgid "Receiving (select) error: %s"
 msgstr "Ошибка получения (select): %s"
 
@@ -293,6 +303,7 @@ msgstr "Нет данных"
 msgid "Read error: %s"
 msgstr "Ошибка чтения: %s"
 
+#, c-format
 msgid "Receiving error: %s"
 msgstr "Ошибка получения: %s"
 
@@ -384,8 +395,8 @@ msgstr ""
 "Иногда закрытие открытого устройства может быть разрушительным, например, на "
 "ПЛК LP от ICP-DAS, и Вы можете предотвратить это данной опцией."
 
-msgid "Life time (sec)"
-msgstr "Время жизни (с)"
+msgid "Life time, seconds"
+msgstr "Время жизни, секунд"
 
 msgid "Dial string"
 msgstr "Строка дозвона"

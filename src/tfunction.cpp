@@ -272,7 +272,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 		ctrMkNode("list",opt,-1,"/io/io/5",_("Default"),R_R_R_,"root",grp,1,"tp","str");
 	    }
 	if(ctrMkNode("area",opt,-1,"/exec",_("Execute"),RWRW__,"root",grp)) {
-	    ctrMkNode("fld",opt,-1,"/exec/en",_("Enable"),RWRW__,"root",grp,1,"tp","bool");
+	    ctrMkNode("fld",opt,-1,"/exec/en",_("Enabled"),RWRW__,"root",grp,1,"tp","bool");
 	    // Add test form
 	    if(mTVal) {
 		if(ctrMkNode("area",opt,-1,"/exec/io",_("IO")))
@@ -384,7 +384,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 //* IO                                            *
 //*************************************************
 IO::IO( const char *iid, const char *iname, IO::Type itype,  unsigned iflgs, const char *idef, bool ihide, const char *irez ) :
-    mId(iid), mName(iname), mType(itype), mFlg(iflgs), mHide(ihide), mDef(idef), mRez(irez), owner(NULL)
+    mId(iid), mName(iname), mType(itype), mFlg(iflgs), mDef(idef), mHide(ihide), mRez(irez), owner(NULL)
 {
 
 }
