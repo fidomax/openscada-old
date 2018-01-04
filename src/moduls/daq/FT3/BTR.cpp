@@ -141,10 +141,9 @@ uint8_t KA_BTU::runTU(uint8_t tu)
     mPrm.list(lst);
     for (int i_l = 0; i_l < lst.size(); i_l++) {
 	AutoHD<TMdPrm> t = mPrm.at(lst[i_l]);
-        DA *tDA = t.at().mDA;
-        if (tDA){
-          if (tDA->runTU(tu)) rc = 3;
-        }
+	DA *tDA = t.at().mDA;
+	if (tDA)
+	    if (tDA->runTU(tu)) rc = 3;
 
     }
 /*    if (tu == 0x55) {
@@ -558,6 +557,409 @@ uint16_t KA_TU::setVal(TVal &val)
     }
     return rc;
 }
+
+
+KA_BTR::KA_BTR(TMdPrm& prm, uint16_t id, uint16_t n) :
+    DA(prm, id), count_n(n), config(0x3 | (n << 4) | (3 << 10))
+{
+    mTypeFT3 = KA;
+    TFld * fld;
+    mPrm.p_el.fldAdd(fld = new TFld("state", _("State"), TFld::Integer, TFld::NoWrite));
+    fld->setReserve("0:0");
+    loadIO(true);
+}
+
+KA_BTR::~KA_BTR()
+{
+
+}
+
+string KA_BTR::getStatus(void)
+{
+    string rez;
+
+    if (NeedInit)
+	rez = "20: Опрос каналов:";
+    else
+	rez = "0: Норма";
+    return rez;
+}
+
+uint16_t KA_BTR::GetState()
+{
+    tagMsg Msg;
+    uint16_t rc = BlckStateUnknown;
+
+    Msg.L = 5;
+    Msg.C = AddrReq;
+    *((uint16_t*)Msg.D) = PackID(ID, 0, 0);       //state
+    if (mPrm.owner().DoCmd(&Msg) == GOOD3) {
+	switch (mPrm.vlAt("state").at().getI(0, true)) {
+	case KA_BTR_Error:
+	    rc = BlckStateError;
+	    break;
+	case KA_BTR_Normal:
+	    rc = BlckStateNormal;
+	    break;
+	}
+    }
+    return rc;
+}
+
+uint16_t KA_BTR::HandleEvent(int64_t tm, uint8_t * D)
+{
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+
+    if (ft3ID.g != ID) return 0;
+    uint16_t l = 0;
+    switch (ft3ID.k) {
+    case 0:
+	switch (ft3ID.n) {
+	case 0:
+	    mPrm.vlAt("state").at().setI(D[2], tm, true);
+	    l = 3;
+	    break;
+	case 1:
+	    l = 4;
+	    break;
+	}
+	break;
+    }
+
+    return l;
+}
+
+uint8_t KA_BTR::cmdGet(uint16_t prmID, uint8_t * out)
+{
+    FT3ID ft3ID = UnpackID(prmID);
+
+    if (ft3ID.g != ID) return 0;
+    uint8_t l = 0;
+    if (ft3ID.k == 0) {
+	switch (ft3ID.n) {
+	case 0:
+	    //state
+	    out[0] = 1;
+	    l = 1;
+	    break;
+	case 1:
+	    out[0] = config >> 8;
+	    out[1] = config;
+	    l = 2;
+	    break;
+	}
+    }
+    return l;
+}
+
+
+KA_TR::KA_TR(TMdPrm& prm, DA &parent, uint16_t id) :
+    DA(prm, id), parentDA(parent),
+    Value("value", _("Value")),
+    State("state", _("State"))
+{
+    mTypeFT3 = KA;
+    AddAttr(Value.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("0"));
+    AddAttr(State.lnk, TFld::Integer, TVal::DirWrite, TSYS::strMess("1"));
+    loadIO(true);
+}
+
+KA_TR::~KA_TR()
+{
+}
+
+/*string KA_TR::getStatus(void)
+{
+    string rez;
+
+    if (NeedInit)
+	rez = "20: Опрос";
+    else
+	rez = "0: Норма";
+    return rez;
+}
+
+uint16_t KA_TR::GetState()
+{
+    uint16_t rc = BlckStateUnknown;
+
+    return rc;
+}
+
+uint16_t KA_TR::SetParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+
+    loadParam();
+    Msg.L = 0;
+    Msg.C = SetData;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+    Msg.L += State.SerializeAttr(Msg.D + Msg.L);
+    Msg.L += 3;
+    rc = mPrm.owner().DoCmd(&Msg);
+    if ((rc == BAD2) || (rc == BAD3))
+	mPrm.mess_sys(TMess::Error, "Can't set channel %d", ID);
+    else if (rc == ERROR)
+	mPrm.mess_sys(TMess::Error, "No answer to set channel %d", ID);
+    return rc;
+}
+
+uint16_t KA_TR::RefreshData(void)
+{
+    tagMsg Msg;
+
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 0));
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+    Msg.L += 3;
+    return mPrm.owner().DoCmd(&Msg);
+}
+
+uint16_t KA_TR::RefreshParams(void)
+{
+    uint16_t rc;
+    tagMsg Msg;
+
+    Msg.L = 0;
+    Msg.C = AddrReq;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(parentDA.ID, ID, 1));
+    Msg.L += 3;
+    rc = mPrm.owner().DoCmd(&Msg);
+    if ((rc == BAD2) || (rc == BAD3))
+	mPrm.mess_sys(TMess::Error, "Can't refresh channel %d params", ID);
+    else if (rc == ERROR)
+	mPrm.mess_sys(TMess::Error, "No answer to refresh channel %d params", ID);
+
+    return rc;
+}
+
+void KA_TR::loadIO(bool force)
+{
+    if (mPrm.owner().startStat() && !force) {
+	mPrm.modif(true);
+	return;
+    } //Load/reload IO context only allow for stopped controllers for prevent throws
+    loadLnk(Value.lnk);
+    loadLnk(State.lnk);
+}
+
+void KA_TR::saveIO()
+{
+//Save links
+    saveLnk(Value.lnk);
+    saveLnk(State.lnk);
+}
+
+void KA_TR::saveParam(void)
+{
+    saveVal(State.lnk);
+}
+
+void KA_TR::loadParam(void)
+{
+    loadVal(State.lnk);
+}
+
+void KA_TR::tmHandler(void)
+{
+    UpdateParamFl(Value, PackID(parentDA.ID, ID, 0), 1);
+    UpdateParam8(State, PackID(parentDA.ID, ID, 1), 1);
+}
+
+/*uint16_t KA_TR::HandleEvent(int64_t tm, uint8_t * D)
+{
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(D));
+
+    if (ft3ID.g != parentDA.ID) return 0;
+    if (ft3ID.k != ID) return 0;
+    uint16_t l = 0;
+    switch (ft3ID.n) {
+    case 0:
+	Value.Update(D[3], tm);
+	l = 4;
+	break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+	if (with_params)
+	    Time[ft3ID.n - 1].Update(TSYS::getUnalign16(D + 3), tm);
+	l = 5;
+	break;
+    case 32:
+	if (with_params)
+	    Line.Update(TSYS::getUnalign16(D + 3), tm);
+	l = 5;
+	break;
+    }
+    return l;
+}
+
+uint8_t KA_TR::cmdGet(uint16_t prmID, uint8_t * out)
+{
+    FT3ID ft3ID = UnpackID(prmID);
+
+    if (ft3ID.g != parentDA.ID) return 0;
+    if (ft3ID.k != ID) return 0;
+    uint8_t l = 0;
+    switch (ft3ID.n) {
+    case 0:
+	l += SerializeB(out + l, Line.s);
+	l += SerializeB(out + l, iTY);
+	break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+	l += SerializeB(out + l, Time[ft3ID.n - 1].s);
+	l += Time[ft3ID.n - 1].Serialize(out + l);
+	break;
+    case 32:
+	l += SerializeB(out + l, Line.s);
+	l += Line.Serialize(out + l);
+	break;
+    }
+    return l;
+}
+
+uint8_t KA_TU::cmdSet(uint8_t * req, uint8_t addr)
+{
+    uint16_t prmID = TSYS::getUnalign16(req);
+    FT3ID ft3ID = UnpackID(TSYS::getUnalign16(req));
+    uint8_t E[2];
+
+    if (ft3ID.g != parentDA.ID) return 0;
+    if (ft3ID.k != ID) return 0;
+    uint8_t l = 0;
+    switch (ft3ID.n) {
+    case 0:
+	Line.s = addr;
+	iTY = req[2];
+	Line.vl = 1 << iTY - 1;
+	l = 3;
+	E[0] = addr;
+	E[1] = req[2];
+	PushInBE(1, sizeof(E), prmID, E);
+	break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+	l = SetNewWVal(Time[ft3ID.n - 1], addr, prmID, TSYS::getUnalign16(req + 2));
+	break;
+    case 32:
+	Line.s = addr;
+	iTY = 1;
+	Line.vl = TSYS::getUnalign16(req + 2);
+	l = 3;
+	E[0] = addr;
+	E[1] = req[2];
+	PushInBE(1, sizeof(E), prmID, E);
+	break;
+    }
+    return l;
+}
+
+uint8_t KA_TU::runTU(uint8_t tu)
+{
+    uint8_t rc = 0;
+
+    if (tu == 0x55) {
+	if (iTY) {
+	    if (Line.lnk.Connected()) {
+		Line.lnk.aprm.at().setI(Line.vl);
+		Line.vl = 0;
+		iTY = 0;
+		rc = 3;
+	    }
+	}
+    }
+    if (tu == 0x0) {
+	if (Line.lnk.Connected()) {
+	    Line.vl = 0;
+	    iTY = 0;
+	    Line.lnk.aprm.at().setI(Line.vl);
+	    rc = 3;
+	}
+
+    }
+    return rc;
+}
+
+
+uint16_t KA_TU::setVal(TVal &val)
+{
+    uint16_t rc = 0;
+    int off = 0;
+    FT3ID ft3ID;
+
+    ft3ID.k = ID;
+    ft3ID.n = s2i(val.fld().reserve());
+    ft3ID.g = parentDA.ID;
+
+    tagMsg Msg;
+    uint8_t run;
+    Msg.L = 0;
+    Msg.C = SetData;
+    Msg.L += SerializeUi16(Msg.D + Msg.L, PackID(ft3ID));
+
+    rc = 1;
+    if (ft3ID.n == 0)
+	Msg.L += SerializeB(Msg.D + Msg.L, val.getI(0, true));
+    else {
+	if (ft3ID.n <= 16)
+	    Msg.L += SerializeUi16(Msg.D + Msg.L, val.getI(0, true));
+	else {
+	    Msg.L = 0;
+	    rc = 0;
+	}
+    }
+
+    if (Msg.L > 2) {
+	Msg.L += 3;
+	mPrm.owner().DoCmd(&Msg);
+    }
+    return rc;
+}
+*/
 
 
 

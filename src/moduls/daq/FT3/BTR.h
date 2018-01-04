@@ -23,9 +23,70 @@
 
 namespace FT3
 {
+
+enum eKA_BTR_TR_State {
+    KA_BTR_TR_Error	= 0,
+    KA_BTR_TR_Normal	= 1,
+    KA_BTR_TR_Off	= 2
+};
+enum eKA_BTR_State {
+    KA_BTR_Error	= 0x0,
+    KA_BTR_Normal	= 0x1
+};
+class KA_BTR : public DA
+{
+    public:
+	//Methods
+	KA_BTR( TMdPrm& prm, uint16_t id, uint16_t n );
+	~KA_BTR();
+	uint16_t count_n;
+	uint16_t GetState( void );
+	uint16_t HandleEvent( int64_t, uint8_t * );
+	uint8_t cmdGet( uint16_t prmID, uint8_t * out );
+	string getStatus( void );
+	uint16_t config;
+};
+class KA_TR : public DA
+{
+    public:
+	KA_TR(TMdPrm& prm, DA &parent, uint16_t id);
+	~KA_TR();
+	DA &parentDA;
+	uint16_t setVal(TVal &val);
+	void saveIO(void);
+	void loadIO(bool force = false);
+	void saveParam(void);
+	void loadParam(void);
+	void tmHandler(void);
+
+	ui8Data State;
+	flData Value;
+	int lnkSize()
+	{
+	    return 2;
+	}
+	int lnkId(const string &id)
+	{
+	    if (Value.lnk.prmName == id) return 0;
+	    if (State.lnk.prmName == id) return 1;
+	    return -1;
+	}
+	SLnk &lnk(int num)
+	{
+	    switch (num) {
+	    case 0:
+		return Value.lnk;
+	    case 1:
+		return State.lnk;
+	    }
+	}
+
+    protected:
+};
+
 enum eKA_BTU_State {
-    KA_BTU_Error = 0x0,
-    KA_BTU_Normal = 0x1
+    KA_BTU_Error	= 0x0,
+    KA_BTU_Normal	= 0x1
 };
 class KA_BTU : public DA
 {
@@ -49,12 +110,12 @@ class KA_BTU : public DA
 class KA_TU : public DA
 {
     public:
-    	KA_TU(TMdPrm& prm, DA &parent, uint16_t id, bool has_params);
+	KA_TU(TMdPrm& prm, DA &parent, uint16_t id, bool has_params);
 	~KA_TU();
 	bool with_params;
 	DA &parentDA;
 
-        uint16_t GetState(void);
+	uint16_t GetState(void);
 	//uint16_t PreInit(void);
 	uint16_t SetParams(void);
 	uint16_t RefreshParams(void);
@@ -64,7 +125,7 @@ class KA_TU : public DA
 	uint8_t cmdGet(uint16_t prmID, uint8_t * out);
 	uint8_t cmdSet(uint8_t * req, uint8_t addr);
 	uint16_t setVal(TVal &val);
-        uint8_t runTU(uint8_t);
+	uint8_t runTU(uint8_t);
 	string getStatus(void);
 	void saveIO(void);
 	void loadIO(bool force = false);
