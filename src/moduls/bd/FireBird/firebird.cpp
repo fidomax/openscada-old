@@ -31,7 +31,7 @@
 #define MOD_NAME	_("DB FireBird")
 #define MOD_TYPE	SDB_ID
 #define VER_TYPE	SDB_VER
-#define MOD_VER		"1.5.0"
+#define MOD_VER		"1.5.2"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("DB module. Provides support of the DB FireBird.")
 #define LICENSE		"GPL2"
@@ -442,7 +442,7 @@ void MBD::cntrCmdProc( XMLNode *opt )
 	      "  file - full path to DB file in form: \"[{host}:]{filePath}\";\n"
 	      "  user - DB user;\n"
 	      "  pass - password of DB user;\n"
-	      "  conTm- connection timeout (s)."));
+	      "  conTm- connection timeout, seconds."));
 	return;
     }
     TBD::cntrCmdProc(opt);
@@ -569,7 +569,7 @@ bool MTable::fieldSeek( int row, TConfig &cfg, vector< vector<string> > *full )
     }
 
     row = full ? (row%SEEK_PRELOAD_LIM)+1 : 1;
-    if(tbl.size() < 2 || (full && row >= tbl.size())) return false;
+    if(tbl.size() < 2 || (full && row >= (int)tbl.size())) return false;
 
     //Processing of query
     for(unsigned iFld = 0; iFld < tbl[0].size(); iFld++) {

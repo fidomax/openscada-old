@@ -35,7 +35,7 @@
 #define MOD_NAME	_("HTTP-realization")
 #define MOD_TYPE	SPRT_ID
 #define VER_TYPE	SPRT_VER
-#define MOD_VER		"3.1.1"
+#define MOD_VER		"3.1.2"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides support for the HTTP protocol for WWW-based user interfaces.")
 #define LICENSE		"GPL2"
@@ -73,7 +73,7 @@ using namespace PrHTTP;
 //*************************************************
 TProt::TProt( string name ) : TProtocol(MOD_ID),
     mDeny(dataRes()), mAllow(dataRes()), mTmpl(dataRes()), mTmplMainPage(dataRes()), mAllowUsersAuth(dataRes()),
-    lstSesChk(0), mTAuth(10)
+    mTAuth(10), lstSesChk(0)
 {
     mod = this;
 
@@ -102,9 +102,7 @@ string TProt::optDescr( )
 void TProt::load_( )
 {
     //Load parameters from command line
-    string argCom, argVl;
-    for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
-	if(argCom == "h" || argCom == "help")	fprintf(stdout,"%s",optDescr().c_str());
+    if(s2i(SYS->cmdOpt("h")) || s2i(SYS->cmdOpt("help"))) fprintf(stdout, "%s", optDescr().c_str());
 
     //Load parameters from config-file
     setDeny(TBDS::genDBGet(nodePath()+"Deny",deny()));
@@ -569,7 +567,7 @@ void TProt::cntrCmdProc( XMLNode *opt )
 #undef _
 #define _(mess) mod->I18N(mess, lang().c_str())
 
-TProtIn::TProtIn( string name ) : TProtocolIn(name), mNoFull(false)
+TProtIn::TProtIn( string name ) : TProtocolIn(name), mNotFull(false)
 {
 
 }
@@ -602,9 +600,9 @@ bool TProtIn::mess( const string &reqst, string &answer )
     string sender = TSYS::strLine(srcAddr(), 0);
 
     //Continue for full reqst
-    if(mNoFull) {
+    if(mNotFull) {
 	mBuf.append(reqst);
-	mNoFull = false;
+	mNotFull = false;
     } else mBuf = reqst;	//Save request to buffer
 
     string request = mBuf;
@@ -616,7 +614,7 @@ bool TProtIn::mess( const string &reqst, string &answer )
 
 	//Parse first record
 	req = TSYS::strLine(request,0,&pos);
-	if(req == request) { mNoFull = true; return mNoFull; }	//HTTP header is not full
+	if(req == request) { mNotFull = true; return mNotFull; }	//HTTP header is not full
 	string method   = TSYS::strSepParse(req, 0, ' ');
 	string uris     = TSYS::strSepParse(req, 1, ' ');
 	string protocol = TSYS::strSepParse(req, 2, ' ');
@@ -624,7 +622,7 @@ bool TProtIn::mess( const string &reqst, string &answer )
 
 	if(!pgAccess(sender+uris)) {
 	    answer = pgCreator(TSYS::strMess("<div class='error'>Access for the URL '%s' is forbidden.</div>\n",(sender+uris).c_str()), "403 Forbidden");
-	    return mNoFull || KeepAlive;
+	    return mNotFull || KeepAlive;
 	}
 
 	prms = user = brLang = prmLang = "";
@@ -657,13 +655,13 @@ bool TProtIn::mess( const string &reqst, string &answer )
 	}
 
 	//Check content length
-	if((c_lng >= 0 && c_lng > (int)(request.size()-pos)) || (c_lng < 0 && method == "POST")) mNoFull = true;
-	if(mNoFull) return mNoFull;
+	if((c_lng >= 0 && c_lng > (int)(request.size()-pos)) || (c_lng < 0 && method == "POST")) mNotFull = true;
+	if(mNotFull) return mNotFull;
 
 	//Check protocol version
 	if(protocol != "HTTP/1.0" && protocol != "HTTP/1.1") {
 	    answer = pgCreator("<div class='error'>Bad Request<br/>This server doesn't undersand your request.</div>\n", "400 Bad Request");
-	    return mNoFull || KeepAlive;
+	    return mNotFull || KeepAlive;
 	}
 
 	//URL parameters parse
@@ -689,7 +687,7 @@ bool TProtIn::mess( const string &reqst, string &answer )
 	    if(method == "GET") {
 		if(sesId) mod->sesClose(sesId);
 		answer = getAuth(uri);
-		return mNoFull || KeepAlive;
+		return mNotFull || KeepAlive;
 	    }
 	    else if(method == "POST") {
 		map<string,string>	cnt;
@@ -709,14 +707,14 @@ bool TProtIn::mess( const string &reqst, string &answer )
 			answer = pgCreator("<h2 class='title'>"+TSYS::strMess(_("Going to the page: <b>%s</b>"),(uri+prms).c_str())+"</h2>\n", "200 OK",
 				"Set-Cookie: oscd_u_id="+i2s(mod->sesOpen(user,sender,userAgent))+"; path=/;",
 				"<META HTTP-EQUIV='Refresh' CONTENT='0; URL="+uri+prms+"'/>");
-			return mNoFull || KeepAlive;
+			return mNotFull || KeepAlive;
 		    }
 		}
 
 		mess_warning(owner().nodePath().c_str(), _("Auth wrong from user '%s'. Host: %s. User agent: %s."),
 		    user.c_str(), sender.c_str(), userAgent.c_str());
 		answer = getAuth(uri, _("<p style='color: #CF8122;'>Auth is wrong! Retry please.</p>"));
-		return mNoFull || KeepAlive;
+		return mNotFull || KeepAlive;
 	    }
 	}
 	// Logut
@@ -724,12 +722,12 @@ bool TProtIn::mess( const string &reqst, string &answer )
 	    if(sesId) mod->sesClose(sesId);
 	    answer = pgCreator("<h2 class='title'>"+TSYS::strMess(_("Going to the page: <b>%s</b>"),"/")+"</h2>\n", "200 OK",
 		"Set-Cookie: oscd_u_id=0; path=/;", "<META HTTP-EQUIV='Refresh' CONTENT='0; URL=/'/>");
-	    return mNoFull || KeepAlive;
+	    return mNotFull || KeepAlive;
 	}
 	// robots.txt
 	else if(name_mod == "robots.txt" && method == "GET") {
 	    answer = pgCreator("User-Agent: *\nDisallow: /", "200 OK", "Content-Type: text/plain;charset=us-ascii");
-	    return mNoFull || KeepAlive;
+	    return mNotFull || KeepAlive;
 	}
 
 	//Send request to the module
@@ -748,7 +746,7 @@ bool TProtIn::mess( const string &reqst, string &answer )
 		}
 		else answer = pgCreator("<h2 class='title'>"+TSYS::strMess(_("Going to the page: <b>%s</b>"),("/login/"+name_mod+uri+prms).c_str())+"</h2>\n",
 			"200 OK", "", "<META HTTP-EQUIV='Refresh' CONTENT='0; URL=/login/"+(name_mod+uri+prms)+"'/>");
-		return mNoFull || KeepAlive;
+		return mNotFull || KeepAlive;
 	    }
 
 	    vars.push_back("oscd_lang: "+lang());
@@ -806,7 +804,7 @@ bool TProtIn::mess( const string &reqst, string &answer )
 			answer = pgCreator(answer, "200 OK", "Content-Type: text/javascript;");
 		    else answer = pgCreator("<div class='error'>Bad Request!<br/>This server doesn't undersand your request.</div>\n",
 					    "400 Bad Request");
-		    return mNoFull || KeepAlive;
+		    return mNotFull || KeepAlive;
 		}
 	    }
 	    //Check for module's icon and other images into folder "icons/"
@@ -814,7 +812,7 @@ bool TProtIn::mess( const string &reqst, string &answer )
 		string icoTp, ico = TUIS::icoGet(name_mod.substr(0,name_mod.rfind(".")), &icoTp);
 		if(ico.size()) {
 		    answer = pgCreator(ico, "200 OK", "Content-Type: "+TUIS::mimeGet(name_mod,ico,"image/"+icoTp)+";");
-		    return mNoFull || KeepAlive;
+		    return mNotFull || KeepAlive;
 		}
 	    }
 
@@ -822,7 +820,7 @@ bool TProtIn::mess( const string &reqst, string &answer )
 	}
     }
 
-    return mNoFull || KeepAlive;
+    return mNotFull || KeepAlive;
 }
 
 string TProtIn::lang( )

@@ -217,12 +217,16 @@ class TSYS : public TCntrNode
 	static int64_t curTime( );	//Current system time (usec)
 
 	// Projects
+	string prjUserDir( );
 	bool prjCustMode( )			{ return mPrjCustMode; }
 	void setPrjCustMode( bool vl )		{ mPrjCustMode = vl; }
 	string prjNm( )				{ return mPrjNm; }
 	void setPrjNm( const string &vl )	{ mPrjNm = vl; }
 
 	bool prjSwitch( const string &prj, bool toCreate = false );
+
+	int  prjLockUpdPer( );
+	bool prjLock( const char *cmd );	//<cmd> variants: "hold", "free", "update"
 
 	// Tasks control
 	void taskCreate( const string &path, int priority, void *(*start_routine)(void *), void *arg, int wtm = 5, pthread_attr_t *pAttr = NULL, bool *startSt = NULL );
@@ -401,12 +405,15 @@ class TSYS : public TCntrNode
 		mName,		// Station name
 		mModDir,	// Modules directory
 		mIcoDir,	// Icons directory
-		mDocDir;	// Icons directory
+		mDocDir,	// Icons directory
+		prjLockFile;	// Lock file of the project OpenSCADA
 
 	string	mWorkDB, mSelDB,// Work and selected DB
 		mMainCPUs;	// Main used processors set
 	bool	mSaveAtExit;	// Save at exit
 	int	mSavePeriod;	// Save period (s) for periodic system saving to DB
+
+	bool	isLoaded;
 
 	XMLNode rootN;		// Root of the config-file tree
 	string	rootCfgFl;	// Root node's config-file name
@@ -437,8 +444,7 @@ class TSYS : public TCntrNode
 
 	unsigned char	mRdStLevel,	//Current station level
 			mRdRestConnTm;	//Redundant restore connection to reserve stations timeout in seconds
-	float		mRdTaskPer,	//Redundant task period in seconds
-			mRdPrcTm;	//Redundant process time
+	float		mRdTaskPer;	//Redundant task period in seconds
 	bool		mRdPrimCmdTr;	//Allow transfer local primary commands to redundant ones
 
 	struct sigaction	sigActOrig;

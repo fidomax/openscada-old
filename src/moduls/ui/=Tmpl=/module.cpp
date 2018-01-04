@@ -134,10 +134,8 @@ string TWEB::optDescr( )
 void TWEB::load_( )
 {
     //!!! Load self module command line parameters' values. Append your addition parameters process.
-    //> Load parameters from command line
-    string argCom, argVl;
-    for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
-        if(argCom == "h" || argCom == "help")	fprintf(stdout,"%s",optDescr().c_str());
+    // Load parameters from command line
+    if(s2i(SYS->cmdOpt("h")) || s2i(SYS->cmdOpt("help"))) fprintf(stdout, "%s", optDescr().c_str());
 
     //!!! Load addition your module specific data. For example, make loading addition module's parameters from OpenSCADA system DB or from main config-file.
     //> Load parameters from config-file
@@ -183,8 +181,8 @@ void TWEB::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("fld",opt,-1,"/prm/cfg/col",_("Collums"),RWRWR_,"root",SUI_ID,1,"tp","dec");
 	    ctrMkNode("fld",opt,-1,"/prm/cfg/hsize",_("Horizontal trend size (pixel)"),RWRWR_,"root",SUI_ID,1,"tp","dec");
 	    ctrMkNode("fld",opt,-1,"/prm/cfg/vsize",_("Vertical trend size (pixel)"),RWRWR_,"root",SUI_ID,1,"tp","dec");
-	    ctrMkNode("fld",opt,-1,"/prm/cfg/trnd_tm",_("Trend start time (sec)"),RWRWR_,"root",SUI_ID,1,"tp","time");
-	    ctrMkNode("fld",opt,-1,"/prm/cfg/trnd_len",_("Trend length (sec)"),RWRWR_,"root",SUI_ID,1,"tp","dec");
+	    ctrMkNode("fld",opt,-1,"/prm/cfg/trnd_tm",_("Trend start time, seconds"),RWRWR_,"root",SUI_ID,1,"tp","time");
+	    ctrMkNode("fld",opt,-1,"/prm/cfg/trnd_len",_("Trend length, seconds"),RWRWR_,"root",SUI_ID,1,"tp","dec");
 	}
 	return;
     }

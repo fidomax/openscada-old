@@ -206,7 +206,7 @@ Fuers Starten wird Kommando <openscada_Boiler> benutzt.
 %setup -T -D -a 1 -n %srcname
 
 %build
-%if %_vendor == "Mandriva"
+%if %_vendor == "redhat" || %_vendor == "Mandriva"
 autoreconf -ivf
 %endif
 
@@ -236,8 +236,8 @@ install -m 644 doc/openscada_start.uk.1 %buildroot/%_mandir/uk/man1/openscada_st
 install -m 644 doc/openscada.ru.1 %buildroot/%_mandir/ru/man1/openscada.1
 install -m 644 doc/openscada_start.ru.1 %buildroot/%_mandir/ru/man1/openscada_start.1
 
-ln -s openscada_start %buildroot/%_bindir/openscada_AGLKS
-ln -s openscada_start %buildroot/%_bindir/openscada_Boiler
+ln -s openscada %buildroot/%_bindir/openscada_AGLKS
+ln -s openscada %buildroot/%_bindir/openscada_Boiler
 
 ln -s %_defaultdocdir/%name-docEN-%version %buildroot/%_datadir/openscada/docs/en
 ln -s %_defaultdocdir/%name-docRU-%version %buildroot/%_datadir/openscada/docs/ru
@@ -250,9 +250,12 @@ ln -s %_defaultdocdir/%name-docUK-%version %buildroot/%_datadir/openscada/docs/u
 %defattr(-,root,root)
 %config(noreplace) %_sysconfdir/oscada.xml
 %config(noreplace) %_sysconfdir/oscada_start.xml
+%config(noreplace) %_sysconfdir/oscada_server.xml
+%config(noreplace) %_sysconfdir/oscada_plc.xml
 %config %_initdir/oscadad
 %_bindir/openscada
 %_bindir/openscada_start
+%_bindir/openscada-proj
 %doc README README_ru README_uk COPYING ChangeLog INSTALL TODO TODO_ru TODO_uk
 %_mandir/man1/*
 %_mandir/*/man1/*

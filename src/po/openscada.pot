@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-10 17:03+0200\n"
+"POT-Creation-Date: 2017-12-22 18:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,10 +62,10 @@ msgstr ""
 msgid "Preferable run"
 msgstr ""
 
-msgid "Value period (sec)"
+msgid "Value period, seconds"
 msgstr ""
 
-msgid "Period archiving (sec)"
+msgid "Period archiving, seconds"
 msgstr ""
 
 msgid "Selection priority"
@@ -89,7 +89,7 @@ msgstr ""
 msgid "Boolean;Integer;Real;String;Int16;Int32;Int64;Real(Float);Real(Double)"
 msgstr ""
 
-msgid "Buffer period (sec)"
+msgid "Buffer period, seconds"
 msgstr ""
 
 msgid "Buffer size (items)"
@@ -195,13 +195,13 @@ msgstr ""
 msgid "Messages buffer size"
 msgstr ""
 
-msgid "Archiving period (s)"
+msgid "Archiving period, seconds"
 msgstr ""
 
 msgid "View messages"
 msgstr ""
 
-msgid "Time, size (s) and level"
+msgid "Time, size (seconds) and level"
 msgstr ""
 
 msgid "Debug (0);Information (1);Notice (2);Warning (3);Error (4);Critical (5);Alert (6);Emergency (7);Information (1), ALARMS;Notice (2), ALARMS;Warning (3), ALARMS;Error (4), ALARMS;Critical (5), ALARMS;Alert (6), ALARMS;Emergency (7), ALARMS"
@@ -405,13 +405,13 @@ msgstr ""
 msgid "Process"
 msgstr ""
 
-msgid "Period (s)"
+msgid "Period, seconds"
 msgstr ""
 
 msgid "Microseconds"
 msgstr ""
 
-msgid "Size (s)"
+msgid "Size, seconds"
 msgstr ""
 
 msgid ""
@@ -510,7 +510,7 @@ msgstr ""
 msgid "Full DB delete"
 msgstr ""
 
-msgid "Select for full deletion DB on DB close. Else DB will be simply closed."
+msgid "Select for full DB deletion at this DB closing, else the DB will be simply closed."
 msgstr ""
 
 msgid "Data base: "
@@ -522,19 +522,19 @@ msgstr ""
 msgid "Data base"
 msgstr ""
 
-msgid "Enable"
+msgid "Enabled"
 msgstr ""
 
 msgid "Accessible tables"
 msgstr ""
 
-msgid "Tables which are in the DB, tables which are not opened at that moment."
+msgid "Tables in the database, but not open at this time."
 msgstr ""
 
 msgid "Load the program from this DB"
 msgstr ""
 
-msgid "Codepage of data into DB. For example: UTF-8, KOI8-R, KOI8-U ... ."
+msgid "Codepage of data into the DB. For example it is: UTF-8, KOI8-R, KOI8-U ... ."
 msgstr ""
 
 msgid "Tables"
@@ -544,8 +544,8 @@ msgid "Opened tables"
 msgstr ""
 
 msgid ""
-"Opened table list.\n"
-"Adding and deleting tables operations are really open and close tables operations."
+"Opened tables list.\n"
+"Adding and removing tables actually consists of opening and closing tables."
 msgstr ""
 
 msgid "SQL"
@@ -769,9 +769,6 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-msgid "Enabled"
-msgstr ""
-
 msgid "Controller DB"
 msgstr ""
 
@@ -795,7 +792,7 @@ msgstr ""
 msgid "Data Acquisition"
 msgstr ""
 
-msgid "Maximum calculate time (sec)"
+msgid "Maximum calculate time, seconds"
 msgstr ""
 
 msgid "Allow program translation"
@@ -1027,14 +1024,14 @@ msgid "Error input sequence convert: %s"
 msgstr ""
 
 msgid ""
-"DB address in format [<DB module>.<DB name>].\n"
-"For use main work DB set '*.*'."
+"DB address in format \"{DB module}.{DB name}\".\n"
+"For use the main work DB set '*.*'."
 msgstr ""
 
 msgid ""
-"Schedule is wrote in seconds periodic form or in standard CRON form.\n"
-"Seconds form is one real number (1.5, 1e-3).\n"
-"Cron it is standard form \"* * * * *\".\n"
+"Schedule wrotes in seconds periodic form or in the standard CRON form.\n"
+"The seconds periodic form is one real number (1.5, 1e-3).\n"
+"Cron is the standard form \"* * * * *\".\n"
 "  Where items by order:\n"
 "    - minutes (0-59);\n"
 "    - hours (0-23);\n"
@@ -1043,13 +1040,13 @@ msgid ""
 "    - week day (0[Sunday]-6).\n"
 "  Where an item variants:\n"
 "    - \"*\" - any value;\n"
-"    - \"1,2,3\" - allowed values;\n"
+"    - \"1,2,3\" - allowed values list;\n"
 "    - \"1-5\" - raw range of allowed values;\n"
 "    - \"*/2\" - range divider for allowed values.\n"
 "Examples:\n"
-"  \"1e-3\" - periodic call by one millisecond;\n"
+"  \"1e-3\" - call with a period of one millisecond;\n"
 "  \"* * * * *\" - each minute;\n"
-"  \"10 23 * * *\" - only 23 hour and 10 minute for any day and month;\n"
+"  \"10 23 * * *\" - only at 23 hour and 10 minute for any day and month;\n"
 "  \"*/2 * * * *\" - for minutes: 0,2,4,...,56,58;\n"
 "  \"* 2-4 * * *\" - for any minutes in hours from 2 to 4(include)."
 msgstr ""
@@ -1129,7 +1126,7 @@ msgid ""
 "Value '*' used for allow all modules."
 msgstr ""
 
-msgid "Check modules period (sec)"
+msgid "Check modules period, seconds"
 msgstr ""
 
 msgid "Check modules now."
@@ -1474,13 +1471,18 @@ msgid ""
 "==================== Generic options ======================================\n"
 "===========================================================================\n"
 "-h, --help\t\tInfo message about the program options.\n"
-"    --lang=<LANG>\tThe station language, in view \"uk_UA.UTF-8\".\n"
-"    --config=<file>\tThe station configuration file.\n"
-"    --station=<id>\tThe station identifier.\n"
-"    --statName=<name>\tThe station name.\n"
+"    --projName=<name>\tOpenSCADA project name to switch it.\n"
+"    --projUserDir={dir} Directory of user projects (writeable) of OpenSCADA, \"~/.openscada\" by default.\n"
+"\t\t\tFor this feature there also uses an environment variable \"OSCADA_ProjName\" and the program binary name \"openscada_{ProjName}\".\n"
+"    --projLock={per}\tUse projects locking by creation the \"lock\" file into the project folder and updating it in period <per>,\n"
+"\t\t\tby default it is enabled and the updating period <per> is 60 seconds. To disable set the updating period <per> to zero.\n"
+"    --lang=<LANG>\tStation language, in view \"uk_UA.UTF-8\".\n"
+"    --config=<file>\tStation configuration file.\n"
+"    --station=<id>\tStation identifier.\n"
+"    --statName=<name>\tStation name.\n"
 "    --demon, --daemon\tStart into the daemon mode.\n"
 "    --pidFile=<file>\tThe file for the programm process ID place here.\n"
-"    --coreDumpAllow\tSet the limits for a core dump creation allow on the crash.\n"
+"    --noCoreDump\tPrevent from core dumps creation on crashes, don't set the limit to unlimited value.\n"
 "    --messLev=<level>\tProcess messages <level> (0-7).\n"
 "    --log=<direct>\tDirect messages to, by bitfield:\n"
 "\t\t\t  0x1 - syslogd;\n"
@@ -1537,6 +1539,10 @@ msgstr ""
 
 #, c-format
 msgid "Configuration '%s' write error. %s"
+msgstr ""
+
+#, c-format
+msgid "Impossible to hold the project lock! Seems the project '%s' already running."
 msgstr ""
 
 msgid "Load!"
@@ -1709,26 +1715,26 @@ msgid "Work DB"
 msgstr ""
 
 msgid ""
-"Work DB address in format [<DB module>.<DB name>].\n"
-"Change it field if you want save or reload all system from other DB."
+"Work DB address in format \"{DB module}.{DB name}\".\n"
+"Change this field if you want to save or to reload all the program from other DB."
 msgstr ""
 
 msgid "Save the program at exit"
 msgstr ""
 
-msgid "Select for automatic system saving to DB on exit."
+msgid "Select for the program automatic saving to DB on exit."
 msgstr ""
 
 msgid "Save the program period"
 msgstr ""
 
-msgid "Use no zero period (seconds) for periodic saving of changed systems parts to DB."
+msgid "Use not a zero period (seconds) to periodically save program changes to the DB."
 msgstr ""
 
 msgid "Least level"
 msgstr ""
 
-msgid "Least messages level which process by the program."
+msgid "Least messages level which is procesed by the program."
 msgstr ""
 
 msgid "To syslog"
@@ -1749,10 +1755,10 @@ msgstr ""
 msgid "Station level"
 msgstr ""
 
-msgid "Redundant task period (s)"
+msgid "Redundant task period, seconds"
 msgstr ""
 
-msgid "Restore connection timeout (s)"
+msgid "Restore connection timeout, seconds"
 msgstr ""
 
 msgid "Local primary commands transfer"
@@ -1799,28 +1805,28 @@ msgstr ""
 msgid "Text variable's base language"
 msgstr ""
 
-msgid "Multilingual for variable texts support enabling by base language selection."
+msgid "Enable multilingual support for text variables by selecting the base language."
 msgstr ""
 
 msgid "Dynamic translation"
 msgstr ""
 
-msgid "Current dynamic translation state."
+msgid "Current state of the dynamic translation."
 msgstr ""
 
-msgid "Plan for dynamic translation at next start."
+msgid "Dynamic translation scheduling for next launch."
 msgstr ""
 
 msgid "Enable manager"
 msgstr ""
 
-msgid "Enable common translation manage which cause full reloading for all built messages obtain."
+msgid "Enable generic translation manager which cause full reloading for all built messages obtain."
 msgstr ""
 
 msgid "Languages"
 msgstr ""
 
-msgid "Processed languages list by two symbols code and separated symbol ';'."
+msgid "List of processed languages, in a two-character representation and separated by the character ';'."
 msgstr ""
 
 msgid "Source filter"
@@ -1854,7 +1860,7 @@ msgid "Monotonic %s"
 msgstr ""
 
 #, c-format
-msgid "Spent time: %s."
+msgid "Spent time: %s[%s]."
 msgstr ""
 
 msgid "<newStat>"
@@ -1996,7 +2002,7 @@ msgstr ""
 msgid "Log length"
 msgstr ""
 
-msgid "Use zero for the log disabling"
+msgid "Use zero for the log disabling."
 msgstr ""
 
 msgid "Log"
@@ -2020,16 +2026,16 @@ msgid "Wait timeout"
 msgstr ""
 
 msgid ""
-"Sign for expect by timeout when a response is received.\n"
-"Many systems in response to various protocols (HTTP) are send the response data in several pieces.\n"
-"Without this flag will be received and displayed only the first piece.\n"
-"When this flag will be set all the pieces awaiting an answer, until the lack of data during the timeout the transport elapsed ."
+"A sign of waiting timeout when receiving an answer.\n"
+"Many systems, when responding to different protocols (such as HTTP), can send response data in several parts.\n"
+"Without this, only the first part will be received and displayed.\n"
+"When this flag is set, all parts of the response will be waiting up to missing data during the transport timeout."
 msgstr ""
 
 msgid "Input buffer size, bytes"
 msgstr ""
 
-msgid "Direct set the input buffer size. Use 0 to disable waiting and reading to a data, only to write."
+msgid "Direct set the input buffer size. Use 0 to disable waiting and reading for a data - only to write."
 msgstr ""
 
 msgid "Answer"
