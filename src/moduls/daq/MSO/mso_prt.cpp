@@ -47,23 +47,23 @@ TProt::TProt( string name ) : TProtocol(PRT_ID), mPrtLen(0)
 
     //> Node DB structure
     mNodeEl.fldAdd( new TFld("ID",_("ID"),TFld::String,TCfg::Key|TFld::NoWrite,"20") );
-    mNodeEl.fldAdd( new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,"50") );
-    mNodeEl.fldAdd( new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"300") );
+    mNodeEl.fldAdd( new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,"50") );
+    mNodeEl.fldAdd( new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TFld::TransltText,"300") );
     mNodeEl.fldAdd( new TFld("EN",_("To enable"),TFld::Boolean,0,"1","0") );
     mNodeEl.fldAdd( new TFld("ADDR",_("Address"),TFld::Integer,0,"3","1","1;247") );
     mNodeEl.fldAdd( new TFld("InTR",_("Input transport"),TFld::String,0,"20","*") );
     mNodeEl.fldAdd( new TFld("OutTR",_("Output transport"),TFld::String,0,"20","*") );
     //>> For "Data" mode
     mNodeEl.fldAdd( new TFld("DT_PER",_("Calc data period (s)"),TFld::Real,0,"5.3","1","0.001;99") );
-    mNodeEl.fldAdd( new TFld("DT_PROG",_("Programm"),TFld::String,TCfg::TransltText,"10000") );
+    mNodeEl.fldAdd( new TFld("DT_PROG",_("Programm"),TFld::String,TFld::TransltText,"10000") );
 
     //> Node data IO DB structure
     mNodeIOEl.fldAdd( new TFld("NODE_ID",_("Node ID"),TFld::String,TCfg::Key,"20") );
     mNodeIOEl.fldAdd( new TFld("ID",_("ID"),TFld::String,TCfg::Key,"20") );
-    mNodeIOEl.fldAdd( new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,"50") );
+    mNodeIOEl.fldAdd( new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,"50") );
     mNodeIOEl.fldAdd( new TFld("TYPE",_("Value type"),TFld::Integer,TFld::NoFlag,"1") );
     mNodeIOEl.fldAdd( new TFld("FLAGS",_("Flags"),TFld::Integer,TFld::NoFlag,"4") );
-    mNodeIOEl.fldAdd( new TFld("VALUE",_("Value"),TFld::String,TCfg::TransltText,"100") );
+    mNodeIOEl.fldAdd( new TFld("VALUE",_("Value"),TFld::String,TFld::TransltText,"100") );
     mNodeIOEl.fldAdd( new TFld("POS",_("Real position"),TFld::Integer,TFld::NoFlag,"4") );
 }
 
@@ -194,7 +194,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
     string mbap, err, rez;
     char buf[1000];
 
-    ResAlloc resN( tro.nodeRes(), true );
+    MtxAlloc resN( tro.reqRes(), true );
 
     string prt   = io.name();
     string sid   = io.attr("id");
@@ -220,7 +220,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 	    mbap += pdu;
 
 	    //> Send request
-	    int resp_len = tro.messIO( mbap.data(), mbap.size(), buf, sizeof(buf), reqTm, true );
+	    int resp_len = tro.messIO( mbap.data(), mbap.size(), buf, sizeof(buf), reqTm);
 	    rez.assign(buf,resp_len);
 	    if( rez.size() < 7 )	err = _("13:Error server respond");
 	    else
@@ -230,7 +230,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 		//> Wait tail
 		while( rez.size() < (resp_sz+6) )
 		{
-		    resp_len = tro.messIO( NULL, 0, buf, sizeof(buf), reqTm, true );
+		    resp_len = tro.messIO( NULL, 0, buf, sizeof(buf), reqTm);
 		    rez.append( buf, resp_len );
 		}
 		pdu = rez.substr(7);
@@ -248,12 +248,12 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 	    //> Send request
 	    for( int i_tr = 0; i_tr < reqTry; i_tr++ )
 	    {
-		int resp_len = tro.messIO( mbap.data(), mbap.size(), buf, sizeof(buf), reqTm, true );
+		int resp_len = tro.messIO( mbap.data(), mbap.size(), buf, sizeof(buf), reqTm);
 		rez.assign( buf, resp_len );
 		//> Wait tail
 		while( true )
 		{
-		    try{ resp_len = tro.messIO( NULL, 0, buf, sizeof(buf), 0, true ); } catch(TError err){ break; }
+		    try{ resp_len = tro.messIO( NULL, 0, buf, sizeof(buf), 0); } catch(TError err){ break; }
 		    rez.append( buf, resp_len );
 		}
 
@@ -276,12 +276,12 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 	    //> Send request
 	    for( int i_tr = 0; i_tr < reqTry; i_tr++ )
 	    {
-		int resp_len = tro.messIO( mbap.data(), mbap.size(), buf, sizeof(buf), reqTm, true );
+		int resp_len = tro.messIO( mbap.data(), mbap.size(), buf, sizeof(buf), reqTm);
 		rez.assign(buf,resp_len);
 		//> Wait tail
 		while( rez.size() < 3 || rez.substr(rez.size()-2,2) != "\r\n" )
 		{
-		    try{ resp_len = tro.messIO( NULL, 0, buf, sizeof(buf), 0, true ); } catch(TError err){ break; }
+		    try{ resp_len = tro.messIO( NULL, 0, buf, sizeof(buf), 0); } catch(TError err){ break; }
 		    rez.append( buf, resp_len );
 		}
 
@@ -334,7 +334,7 @@ void TProt::outMess( XMLNode &io, TTransportOut &tro )
 
 void TProt::setPrtLen( int vl )
 {
-    ResAlloc res(nodeRes(),true);
+    MtxAlloc res(dataRes(),true);
 
     while( mPrt.size() > vl )	mPrt.pop_back();
 
@@ -343,7 +343,7 @@ void TProt::setPrtLen( int vl )
 
 void TProt::pushPrtMess( const string &vl )
 {
-    ResAlloc res(nodeRes(),true);
+    MtxAlloc res(dataRes(),true);
 
     if( !prtLen() )	return;
 
@@ -396,7 +396,7 @@ void TProt::cntrCmdProc( XMLNode *opt )
     }
     else if(a_path == "/rep/rep" && ctrChkNode(opt))
     {
-	ResAlloc res(nodeRes(),true);
+	MtxAlloc res(dataRes(),true);
 	for(int i_p = 0; i_p < mPrt.size(); i_p++)
 	    opt->setText(opt->text()+mPrt[i_p]+"\n");
     }

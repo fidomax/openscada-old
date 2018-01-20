@@ -277,7 +277,7 @@ int TMdContr::MSOReq(unsigned int channel, unsigned int type, unsigned int param
 	frame.can_dlc = 0; //strlen( frame.data );
 	if(mess_lev() == TMess::Debug)
 	mess_debug(nodePath().c_str(), "MSOReq id<%08X> dlc<%u>", frame.can_id, frame.can_dlc);
-	tr.at().messIO((const char *) &frame, sizeof(frame), NULL, 0, 0, true);
+	tr.at().messIO((const char *) &frame, sizeof(frame), NULL, 0, 0);
 	numTx++;
     } catch (TError err) {
 	return false;
