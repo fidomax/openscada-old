@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.VCAEngine file: widget.cpp
 /***************************************************************************
- *   Copyright (C) 2006-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2006-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -118,7 +118,7 @@ void Widget::postEnable( int flag )
     if(flag&TCntrNode::NodeRestore) setEnable(true);
     if(flag&TCntrNode::NodeConnect && !BACrtHoldOvr) {
 	//Add main attributes
-	attrAdd(new TFld("id",_("Id"),TFld::String,TFld::NoWrite|Attr::OnlyRead|Attr::Generic));
+	attrAdd(new TFld("id",_("Identifier"),TFld::String,TFld::NoWrite|Attr::OnlyRead|Attr::Generic));
 	attrAdd(new TFld("path",_("Path"),TFld::String,TFld::NoWrite|Attr::OnlyRead|Attr::Generic));
 	attrAdd(new TFld("parent",_("Parent"),TFld::String,TFld::NoWrite|Attr::OnlyRead|Attr::Generic));
 	attrAdd(new TFld("owner",_("Owner"),TFld::String,Attr::Generic|Attr::PreRead,"","root:UI"));
@@ -265,15 +265,15 @@ void Widget::setEnable( bool val, bool force )
 	    if(!(attrAt(ls[iL]).at().flgGlob()&Attr::Generic)) attrDel(ls[iL], true);
 
 	//Disable heritors widgets
-	for(unsigned i_h = 0; i_h < herit().size(); )
-	    if(herit()[i_h].at().enable())
-		try { herit()[i_h].at().setEnable(false); }
+	for(unsigned iH = 0; iH < herit().size(); )
+	    if(herit()[iH].at().enable())
+		try { herit()[iH].at().setEnable(false); }
 		catch(TError &err) {
 		    mess_err(err.cat.c_str(),"%s",err.mess.c_str());
-		    mess_err(nodePath().c_str(),_("Inheriting widget '%s' disable error."),herit()[i_h].at().id().c_str());
-		    i_h++;
+		    mess_err(nodePath().c_str(),_("Inheriting widget '%s' disable error."),herit()[iH].at().id().c_str());
+		    iH++;
 		}
-	    else i_h++;
+	    else iH++;
 
 	if(!mParent.freeStat()) {
 	    //Unregister heritater
@@ -310,17 +310,17 @@ AutoHD<Widget> Widget::parentNoLink( )	{ return parent().at().isLink() ? parent(
 void Widget::heritReg( Widget *wdg )
 {
     //Search already herited widget
-    for(unsigned i_h = 0; i_h < mHerit.size(); i_h++)
-	if(&mHerit[i_h].at() == wdg)	return;
+    for(unsigned iH = 0; iH < mHerit.size(); iH++)
+	if(&mHerit[iH].at() == wdg)	return;
     mHerit.push_back(AutoHD<Widget>(wdg));
 }
 
 void Widget::heritUnreg( Widget *wdg )
 {
     //Search herited widget
-    for(unsigned i_h = 0; i_h < mHerit.size(); i_h++)
-	if(&mHerit[i_h].at() == wdg) {
-	    mHerit.erase(mHerit.begin()+i_h);
+    for(unsigned iH = 0; iH < mHerit.size(); iH++)
+	if(&mHerit[iH].at() == wdg) {
+	    mHerit.erase(mHerit.begin()+iH);
 	    return;
 	}
 }
@@ -572,9 +572,9 @@ void Widget::attrDel( const string &attr, bool allInher  )
 
     //Delete from inheritant wigets
     if(!(attrAt(attr).at().flgGlob()&Attr::Mutable) || allInher)
-	for(unsigned i_h = 0; i_h < mHerit.size(); i_h++)
-	    if(mHerit[i_h].at().enable())
-		mHerit[i_h].at().attrDel(attr);
+	for(unsigned iH = 0; iH < mHerit.size(); iH++)
+	    if(mHerit[iH].at().enable())
+		mHerit[iH].at().attrDel(attr);
 
     //Self delete
     try {
@@ -652,9 +652,9 @@ bool Widget::attrChange( Attr &cfg, TVariant prev )
     if(cfg.owner() != this) return false;
 
     //Update heritors attributes
-    for(unsigned i_h = 0; i_h < mHerit.size(); i_h++)
-	if(mHerit[i_h].at().enable())
-	    mHerit[i_h].at().inheritAttr(cfg.id());
+    for(unsigned iH = 0; iH < mHerit.size(); iH++)
+	if(mHerit[iH].at().enable())
+	    mHerit[iH].at().inheritAttr(cfg.id());
 
     return true;
 }
@@ -676,9 +676,9 @@ void Widget::wdgAdd( const string &wid, const string &name, const string &path, 
     wdgAt(wid).at().setName(name);
 
     //Call heritors include widgets update
-    for(unsigned i_h = 0; i_h < mHerit.size(); i_h++)
-	if(mHerit[i_h].at().enable())
-	    mHerit[i_h].at().inheritIncl(wid);
+    for(unsigned iH = 0; iH < mHerit.size(); iH++)
+	if(mHerit[iH].at().enable())
+	    mHerit[iH].at().inheritIncl(wid);
 }
 
 AutoHD<Widget> Widget::wdgAt( const string &wdg, int lev, int off ) const
@@ -856,7 +856,7 @@ bool Widget::cntrCmdGeneric( XMLNode *opt )
 		    ctrMkNode("comm",opt,-1,"/wdg/st/goparent",_("Go to parent"),RWRWR_,"root",SUI_ID,1,"tp","lnk");
 	    }
 	    if(ctrMkNode("area",opt,-1,"/wdg/cfg",_("Configuration"))) {
-		ctrMkNode("fld",opt,-1,"/wdg/cfg/id",_("Id"),R_R_R_,"root",SUI_ID,1,"tp","str");
+		ctrMkNode("fld",opt,-1,"/wdg/cfg/id",_("Identifier"),R_R_R_,"root",SUI_ID,1,"tp","str");
 		ctrMkNode("fld",opt,-1,"/wdg/cfg/type",_("Type"),R_R_R_,"root",SUI_ID,1,"tp","str");
 		ctrMkNode("fld",opt,-1,"/wdg/cfg/root",_("Root"),R_R_R_,"root",SUI_ID,1,"tp","str");
 		ctrMkNode("fld",opt,-1,"/wdg/cfg/path",_("Path"),R_R_R_,"root",SUI_ID,1,"tp","str");
@@ -1387,7 +1387,7 @@ bool Widget::cntrCmdProcess( XMLNode *opt )
 	    wattr = TBDS::genDBGet(mod->nodePath()+"wdgAttr",".",opt->attr("user"));
 	    if(!wdgPresent(wattr))	wattr = ".";
 	    if(ctrMkNode("table",opt,-1,"/proc/attr",_("Attributes"),RWRWR_,"root",SUI_ID,2,"s_com","add,del","key","id")) {
-		ctrMkNode("list",opt,-1,"/proc/attr/id",_("Id"),RWRWR_,"root",SUI_ID,1,"tp","str");
+		ctrMkNode("list",opt,-1,"/proc/attr/id",_("Identifier"),RWRWR_,"root",SUI_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/proc/attr/name",_("Name"),RWRWR_,"root",SUI_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/proc/attr/type",_("Type"),RWRWR_,"root",SUI_ID,4,"tp","dec","idm","1","dest","select","select","/proc/tp_ls");
 		ctrMkNode("list",opt,-1,"/proc/attr/wa",_("Work area"),RWRWR_,"root",SUI_ID,1,"tp","str");

@@ -1,13 +1,13 @@
 # OpenSCADA.UI.Vision translate to Ukrainian.
 # This file is distributed under the same license as the OpenSCADA.UI.Vision package module.
 #
-# Roman Savochenko <rom_as@oscada.org>, 2005-2016.
+# Roman Savochenko <rom_as@oscada.org>, 2005-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.UI.Vision 1.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-12-02 20:01+0200\n"
+"POT-Creation-Date: 2018-01-19 19:51+0200\n"
 "PO-Revision-Date: 2007-11-06 20:42+0200\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <uk@li.org>\n"
@@ -982,8 +982,8 @@ msgstr "Період обчислення (мс):"
 msgid "Mime data"
 msgstr "Mime дані"
 
-msgid "Id"
-msgstr ""
+msgid "Identifier"
+msgstr "Ідентифікатор"
 
 msgid "Mime type"
 msgstr "Mime тип"
@@ -1036,8 +1036,8 @@ msgstr "мкс"
 msgid "Category"
 msgstr "Категорія"
 
-msgid "Lev."
-msgstr "Рів."
+msgid "Level"
+msgstr "Рівень"
 
 msgid "Message"
 msgstr "Повідомлення"
@@ -2096,9 +2096,6 @@ msgstr "Час відображення тренду: %f мс."
 
 msgid "Date and time"
 msgstr "Дата та час"
-
-msgid "Level"
-msgstr "Рівень"
 
 msgid "Print"
 msgstr "Друк"

@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tmess.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -619,7 +619,7 @@ void TMess::save( )
 const char *TMess::labDB( )
 {
     return _("DB address in format \"{DB module}.{DB name}\".\n"
-	     "For use the main work DB set '*.*'.");
+	     "Set '*.*' for use the main work DB.");
 }
 
 const char *TMess::labSecCRON( )
@@ -655,6 +655,13 @@ const char *TMess::labTaskPrior( )
 	     "  0         - standard userspace priority;\n"
 	     "  1...99    - realtime priority level (round-robin), often allowed only for \"root\";\n"
 	     "  100...199 - realtime priority level (FIFO), often allowed only for \"root\".");
+}
+
+const char *TMess::labMessCat( )
+{
+    return _("Specifies the category of the requested messages.\n"
+	     "Use template's symbols for group selection:\n  '*' - any substring;\n  '?' - any character.\n"
+	     "Regular expression enclosed between the symbols '/' (/mod_(System|LogicLev)/).");
 }
 
 int TMess::getUTF8( const string &str, int off, int32_t *symb )
