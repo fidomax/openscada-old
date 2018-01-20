@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.WebUser file: web_user.h
 /***************************************************************************
- *   Copyright (C) 2010-2017 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2010-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -46,6 +46,7 @@ class SSess
 	string	sender;			//request sender
 	string	user;			//sesion user
 	string	content;		//Contain
+	string	lang;			//Language
 
 	vector<XMLNode>		cnt;	//Parsed contain
 	map<string,string>	vars;	//request vars
@@ -116,6 +117,7 @@ class UserPg : public TCntrNode, public TConfig
 	char	&mAEn, mEn;
 	int64_t	&mTimeStamp;
 	string	mDB, mWorkProg;
+	bool	prgChOnEn;
 };
 
 //*************************************************
@@ -155,15 +157,16 @@ class TWEB: public TUI
 	string httpHead( const string &rcode, int cln, const string &cnt_tp = "text/html", const string &addattr = "" );
 
 	string pgCreator( TProtocolIn *iprt, const string &cnt, const string &rcode = "", const string &httpattrs = "",
-		const string &htmlHeadEls = "", const string &forceTmplFile = "" );
+		const string &htmlHeadEls = "", const string &forceTmplFile = "", const string &lang = "" );
+	bool pgAccess( TProtocolIn *iprt, const string &URL );
 
 	void HTTP_GET( const string &url, string &page, vector<string> &vars, const string &user, TProtocolIn *iprt );
 	void HTTP_POST( const string &url, string &page, vector<string> &vars, const string &user, TProtocolIn *iprt );
 
 	void cntrCmdProc( XMLNode *opt );	//Control interface command process
 
-	string modInfo( const string &name );
 	void   modInfo( vector<string> &list );
+	string modInfo( const string &name );
 
 	//Attributes
 	string	mDefPg;

@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tconfig.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -193,13 +193,13 @@ void TConfig::cntrCmdProc( XMLNode *opt, const string &elem, const string &user,
     }
     TCfg &cel = cfg(elem);
     if(TCntrNode::ctrChkNode(opt,"get",(cel.fld().flg()&TFld::NoWrite)?(perm&~0222):perm,user.c_str(),grp.c_str(),SEC_RD)) {
-	if(Mess->translDyn() && cel.fld().type() == TFld::String && !(cel.fld().flg()&TFld::NoStrTransl))
-	    opt->setText(trU(cel.getS(),opt->attr("user")));
+	if(Mess->translDyn() && cel.fld().type() == TFld::String && (cel.fld().flg()&TFld::TransltText))
+	    opt->setText(trLU(cel.getS(),opt->attr("lang"),opt->attr("user")));
 	else opt->setText(cel.getS());
     }
     if(TCntrNode::ctrChkNode(opt,"set",(cel.fld().flg()&TFld::NoWrite)?(perm&~0222):perm,user.c_str(),grp.c_str(),SEC_WR)) {
-	if(Mess->translDyn() && cel.fld().type() == TFld::String && !(cel.fld().flg()&TFld::NoStrTransl))
-	    cel.setS(trSetU(cel.getS(),opt->attr("user"),opt->text()));
+	if(Mess->translDyn() && cel.fld().type() == TFld::String && (cel.fld().flg()&TFld::TransltText))
+	    cel.setS(trSetLU(cel.getS(),opt->attr("lang"),opt->attr("user"),opt->text()));
 	else cel.setS(opt->text());
     }
 }
@@ -229,7 +229,7 @@ TVariant TConfig::objFunc( const string &iid, vector<TVariant> &prms, const stri
 //*************************************************
 //* TCfg                                          *
 //*************************************************
-TCfg::TCfg( TFld &fld, TConfig &owner ) : mView(true), mKeyUse(false), mNoTransl(false), mReqKey(false), mExtVal(false), mOwner(owner)
+TCfg::TCfg( TFld &fld, TConfig &owner ) : mView(true), mKeyUse(false), mNoTransl(false), mReqKey(false), mExtVal(false), mInCfgCh(false), mOwner(owner)
 {
     //Chek for self field for dinamic elements
     if(fld.flg()&TFld::SelfFld) {
@@ -248,7 +248,7 @@ TCfg::TCfg( TFld &fld, TConfig &owner ) : mView(true), mKeyUse(false), mNoTransl
     if(fld.flg()&TCfg::Hide)	mView = false;
 }
 
-TCfg::TCfg( const TCfg &src ) : mView(true), mKeyUse(false), mNoTransl(false), mReqKey(false), mExtVal(false), mOwner(src.mOwner)
+TCfg::TCfg( const TCfg &src ) : mView(true), mKeyUse(false), mNoTransl(false), mReqKey(false), mExtVal(false), mInCfgCh(false), mOwner(src.mOwner)
 {
     //Chek for self field for dinamic elements
     if(src.mFld->flg()&TFld::SelfFld) {
@@ -317,7 +317,7 @@ string TCfg::getS( ) const
     mOwner.mRes.unlock();
     if(!extVal()) return rez;
     else {
-	if(fld().flg()&TransltText && !noTransl()) {
+	if((fld().flg()&TFld::TransltText) && !noTransl()) {
 	    string rezT = TSYS::strSepParse(rez, 1, 0), rezSrc = TSYS::strSepParse(rez, 2, 0);
 	    rez = TSYS::strSepParse(rez, 0, 0);
 	    if(rez.size() && rezSrc.size()) Mess->translReg(rez, rezSrc);	//!!!! May be too busy
@@ -374,19 +374,22 @@ void TCfg::setS( const string &ival )
 	case TVariant::String: {
 	    mOwner.mRes.lock();
 	    string tVal = TVariant::getS();
-	    if(extVal() && (fld().flg()&TransltText) && !noTransl() && ival.find(char(0)) == string::npos) {
+	    if(extVal() && (fld().flg()&TFld::TransltText) && !noTransl() && ival.find(char(0)) == string::npos) {
 		if(Mess->lang2Code()==Mess->lang2CodeBase()) TVariant::setS(ival+string(2,0)+getS(ExtValThree));
 		else TVariant::setS(getS(ExtValOne)+string(1,0)+ival+string(1,0)+getS(ExtValThree));
 	    }
 	    else TVariant::setS(ival);
 	    mOwner.mRes.unlock();
+	    bool mInCfgCh_ = mInCfgCh;
 	    try {
-		if(!mOwner.cfgChange(*this,tVal)) {
+		if(!mInCfgCh && (mInCfgCh=true) && !mOwner.cfgChange(*this,tVal)) {
 		    mOwner.mRes.lock();
 		    TVariant::setS(tVal);
 		    mOwner.mRes.unlock();
 		}
+		if(!mInCfgCh_)	mInCfgCh = false;
 	    } catch(TError &err) {
+		if(!mInCfgCh_)	mInCfgCh = false;
 		mOwner.mRes.lock();
 		TVariant::setS(tVal);
 		mOwner.mRes.unlock();
@@ -409,8 +412,16 @@ void TCfg::setR( double ival )
 		ival = vmin(mFld->selValR()[1], vmax(mFld->selValR()[0],ival));
 	    double tVal = TVariant::getR();
 	    TVariant::setR(ival);
-	    try{ if(!mOwner.cfgChange(*this,tVal)) TVariant::setR(tVal); }
-	    catch(TError &err) { TVariant::setR(tVal); throw; }
+	    bool mInCfgCh_ = mInCfgCh;
+	    try {
+		if(!mInCfgCh && (mInCfgCh=true) && !mOwner.cfgChange(*this,tVal)) TVariant::setR(tVal);
+		if(!mInCfgCh_)	mInCfgCh = false;
+	    }
+	    catch(TError &err) {
+		if(!mInCfgCh_)	mInCfgCh = false;
+		TVariant::setR(tVal);
+		throw;
+	    }
 	    break;
 	}
 	default: break;
@@ -428,8 +439,16 @@ void TCfg::setI( int64_t ival )
 		ival = vmin(mFld->selValI()[1], vmax(mFld->selValI()[0],ival));
 	    int tVal = TVariant::getI();
 	    TVariant::setI(ival);
-	    try{ if(!mOwner.cfgChange(*this,tVal)) TVariant::setI(tVal); }
-	    catch(TError &err) { TVariant::setI(tVal); throw; }
+	    bool mInCfgCh_ = mInCfgCh;
+	    try {
+		if(!mInCfgCh && (mInCfgCh=true) && !mOwner.cfgChange(*this,tVal)) TVariant::setI(tVal);
+		if(!mInCfgCh_)	mInCfgCh = false;
+	    }
+	    catch(TError &err) {
+		if(!mInCfgCh_)	mInCfgCh = false;
+		TVariant::setI(tVal);
+		throw;
+	    }
 	    break;
 	}
 	default: break;
@@ -445,8 +464,16 @@ void TCfg::setB( char ival )
 	case TVariant::Boolean: {
 	    bool tVal = TVariant::getB();
 	    TVariant::setB(ival);
-	    try { if(!mOwner.cfgChange(*this,tVal)) TVariant::setB(tVal); }
-	    catch(TError &err) { TVariant::setB(tVal); throw; }
+	    bool mInCfgCh_ = mInCfgCh;
+	    try {
+		if(!mInCfgCh && (mInCfgCh=true) && !mOwner.cfgChange(*this,tVal)) TVariant::setB(tVal);
+		if(!mInCfgCh_)	mInCfgCh = false;
+	    }
+	    catch(TError &err) {
+		if(!mInCfgCh_)	mInCfgCh = false;
+		TVariant::setB(tVal);
+		throw;
+	    }
 	    break;
 	}
 	default: break;

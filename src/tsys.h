@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tsys.h
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -28,7 +28,7 @@
 #define PACKAGE_SITE	"http://oscada.org"
 
 //Other system's constants
-#define OBJ_ID_SZ	"20"	// Typical object's ID size. Warning the size can cause key limit on MySQL like DB.
+#define OBJ_ID_SZ	"20"	// Typical object's ID size. Warning, the size can cause key limit on MySQL like DB.
 #define OBJ_NM_SZ	"100"	// Typical object's NAME size.
 #define USER_FILE_LIMIT	1048576	// Loading and processing files limit into userspace
 #define STR_BUF_LEN	10000	// Length of string buffers (no string class)
@@ -56,7 +56,9 @@
 #define vmin(a,b) ((a) < (b) ? (a) : (b))
 #define vmax(a,b) ((a) > (b) ? (a) : (b))
 
-#include "config.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 #include "tbds.h"
 #include "tuis.h"
 #include "tarchives.h"
@@ -81,7 +83,7 @@ class TSYS : public TCntrNode
 
     public:
 	//Data
-	enum Code	{ PathEl, HttpURL, Html, JavaSc, SQL, Custom, base64, FormatPrint, oscdID, Bin, Reverse, ShieldSimb };
+	enum Code	{ PathEl, HttpURL, Html, JavaSc, SQL, Custom, base64, FormatPrint, oscdID, Bin, Reverse, ShieldSimb, ToLower };
 	enum IntView	{ Dec, Oct, Hex };
 
 	// Task structure
@@ -131,8 +133,10 @@ class TSYS : public TCntrNode
 	TSYS( int argi, char **argb, char **env );
 	~TSYS( );
 
+	void	unload( );
+
 	int	start( );
-	void	stop( );
+	void	stop( int sig = SIGUSR1 );	// SIGUSR2 used for reloading from other project
 
 	int	stopSignal( )	{ return mStopSignal; }
 
@@ -209,8 +213,20 @@ class TSYS : public TCntrNode
 	}
 	static long HZ( );
 
-	time_t	sysTm( ) volatile	{ return mSysTm; }	//System time fast access, from updated cell
+	time_t	sysTm( ) volatile	{ return mSysTm ? mSysTm : time(NULL); }	//System time fast access, from updated cell
 	static int64_t curTime( );	//Current system time (usec)
+
+	// Projects
+	string prjUserDir( );
+	bool prjCustMode( )			{ return mPrjCustMode; }
+	void setPrjCustMode( bool vl )		{ mPrjCustMode = vl; }
+	string prjNm( )				{ return mPrjNm; }
+	void setPrjNm( const string &vl )	{ mPrjNm = vl; }
+
+	bool prjSwitch( const string &prj, bool toCreate = false );
+
+	int  prjLockUpdPer( );
+	bool prjLock( const char *cmd );	//<cmd> variants: "hold", "free", "update"
 
 	// Tasks control
 	void taskCreate( const string &path, int priority, void *(*start_routine)(void *), void *arg, int wtm = 5, pthread_attr_t *pAttr = NULL, bool *startSt = NULL );
@@ -261,6 +277,9 @@ class TSYS : public TCntrNode
 	static string atime2str( time_t tm, const string &format = "" );
 	static string time2str( double tm );
 	static string cpct2str( double cnt );
+
+	// Convert value to string
+	static double str2real( const string &val );
 
 	// Adress convertors
 	static string addr2str( void *addr );
@@ -335,16 +354,17 @@ class TSYS : public TCntrNode
 	string getCmdOpt( int &curPos, string *argVal = NULL );
 	static string getCmdOpt_( int &curPos, string *argVal, int argc, char **argv );
 
+	string cmdOpt( const string &opt, const string &setVl = "" );
+
 	// System control interface functions
 	static void ctrListFS( XMLNode *nd, const string &fsBase, const string &fileExt = "" );	//Inline file system browsing
 
 	ResRW &cfgRes( )	{ return mCfgRes; }
 
 	//Public attributes
-	static bool finalKill;	//Final object's kill flag. For dead requsted resources
-	const int argc;		//Comand line seting counter.
-	const char **argv;	//Comand line seting buffer.
-	const char **envp;	//System environment.
+	static bool finalKill;		//Final object's kill flag. For dead requsted resources
+
+	AutoHD<TModule>	mainThr;	//A module to call into the main thread
 
     protected:
 	//Protected methods
@@ -358,11 +378,11 @@ class TSYS : public TCntrNode
 	//Private methods
 	const char *nodeName( ) const		{ return mId.c_str(); }
 	const char *nodeNameSYSM( ) const	{ return mName.c_str(); }
-	bool cfgFileLoad( );
-	void cfgFileSave( );
-	void cfgPrmLoad( );
-	void cfgFileScan( bool first = false, bool up = false );
-	void cntrCmdProc( XMLNode *opt );	// Control interface command process
+	bool	cfgFileLoad( );
+	void	cfgFileSave( );
+	void	cfgPrmLoad( );
+	void	cfgFileScan( bool first = false, bool up = false );
+	void	cntrCmdProc( XMLNode *opt );	// Control interface command process
 
 	TVariant objFuncCall( const string &id, vector<TVariant> &prms, const string &user );
 
@@ -370,22 +390,30 @@ class TSYS : public TCntrNode
 
 	static void *taskWrap( void *stas );
 
-	static void *HPrTask( void *isys );
-	static void *RdTask( void *param );
+	static void *ServTask( void * );
+	static void *HPrTask( void * );
+	static void *RdTask( void * );
 
 	//Private attributes
+	const int argc;		// Comand line seting counter.
+	const char **argv;	// Comand line seting buffer.
+	const char **envp;	// System environment.
+
 	string	mUser,		// A owner user name!
 	 	mConfFile,	// Config-file name
 		mId,		// Station id
 		mName,		// Station name
 		mModDir,	// Modules directory
 		mIcoDir,	// Icons directory
-		mDocDir;	// Icons directory
+		mDocDir,	// Icons directory
+		prjLockFile;	// Lock file of the project OpenSCADA
 
 	string	mWorkDB, mSelDB,// Work and selected DB
 		mMainCPUs;	// Main used processors set
 	bool	mSaveAtExit;	// Save at exit
 	int	mSavePeriod;	// Save period (s) for periodic system saving to DB
+
+	bool	isLoaded;
 
 	XMLNode rootN;		// Root of the config-file tree
 	string	rootCfgFl;	// Root node's config-file name
@@ -407,13 +435,16 @@ class TSYS : public TCntrNode
 	volatile time_t	mSysTm;
 	bool		mClockRT;	//Used clock REALTIME, else it is MONOTONIC
 
-	map<string, double>	mCntrs;	//Counters
-	map<string, SStat>	mSt;	//Remote stations
+	bool		mPrjCustMode;
+	MtxString	mPrjNm;
+
+	map<string, string>	mCmdOpts;	//Commandline options
+	map<string, double>	mCntrs;		//Counters
+	map<string, SStat>	mSt;		//Remote stations
 
 	unsigned char	mRdStLevel,	//Current station level
 			mRdRestConnTm;	//Redundant restore connection to reserve stations timeout in seconds
-	float		mRdTaskPer,	//Redundant task period in seconds
-			mRdPrcTm;	//Redundant process time
+	float		mRdTaskPer;	//Redundant task period in seconds
 	bool		mRdPrimCmdTr;	//Allow transfer local primary commands to redundant ones
 
 	struct sigaction	sigActOrig;
@@ -434,7 +465,7 @@ inline string tm2s( double tm )					{ return TSYS::time2str(tm); }
 
 inline int s2i( const string &val )		{ return atoi(val.c_str()); }
 inline long long s2ll( const string &val )	{ return atoll(val.c_str()); }
-inline double s2r( const string &val )		{ return atof(val.c_str()); }
+inline double s2r( const string &val )		{ return /*TSYS::str2real(val); }*/ atof(val.c_str()); }
 
 inline string sTrm( const string &val, const string &cfg = " \n\t\r") { return TSYS::strTrim(val, cfg); }
 

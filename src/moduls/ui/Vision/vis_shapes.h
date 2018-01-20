@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_shapes.h
 /***************************************************************************
- *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -142,7 +142,7 @@ class ShapeFormEl : public WdgShape
 	// Combo box and list events
 	void comboChange( const QString& );
 	// List events
-	void listChange( int );
+	void listChange( );
 	// Tree events
 	void treeChange( );
 	// Table events
@@ -163,7 +163,7 @@ class ShapeFormEl : public WdgShape
 	{
 	    public:
 		//Methods
-		ShpDt( ) : en(true), active(true), evLock(false), elType(-1), setType(false), wordWrap(false), addrWdg(NULL) { }
+		ShpDt( ) : en(true), active(true), evLock(false), elType(-1), setType(false), opt1(false), addrWdg(NULL) { }
 		//Attributes
 		short	en	:1;
 		short	active	:1;
@@ -171,7 +171,7 @@ class ShapeFormEl : public WdgShape
 		short	elType	:5;
 		short	setType	:1;
 		short	view	:4;
-		short	wordWrap:1;
+		short	opt1	:1;
 		short	mode	:5;
 		QWidget	*addrWdg;
 		QFont	font;
@@ -266,13 +266,13 @@ class ShapeMedia : public WdgShape
 	void clear( WdgView *view );
 
     public slots:
-        //Public slots
-        //>> Media play events
-        void mediaFinished( );
+	//Public slots
+	// Media play events
+	void mediaFinished( );
 
     private:
 	//Data
-	//> Map areas structure
+	// Map areas structure
 	class MapArea
 	{
 	    public:
@@ -286,7 +286,7 @@ class ShapeMedia : public WdgShape
 		string	title;		//Area title
 		QVector<QPoint>	pnts;	//Area points
 	};
-	//> Shape node date
+	// Shape node date
 	class ShpDt
 	{
 	    public:
@@ -399,8 +399,8 @@ class ShapeDiagram : public WdgShape
 	    public:
 		//Methods
 		ShpDt( ) : en(true), active(true), holdCur(true), geomMargin(0), tTimeCurent(false),
-		    sclWin(false), fMoveHold(false), fMoveTmCh(false),
-		    valsForPix(1), tTime(0), tPict(0), curTime(0), sclHorPer(0), trcPer(0), tSize(1),
+		    valsForPix(1), sclWin(false), fMoveHold(false), fMoveTmCh(false),
+		    tTime(0), tPict(0), curTime(0), sclHorPer(0), trcPer(0), tSize(1),
 		    sclVerScl(100), sclVerSclOff(0), sclHorScl(100), sclHorSclOff(0)	{ }
 
 		int64_t	arhEnd( int64_t def = 0 );
@@ -544,7 +544,9 @@ class ShapeDocument : public WdgShape
 
 		string	toHtml( );
 		void	nodeProcess( XMLNode *xcur );
+#ifndef QT_NO_PRINTER
 		void	print( QPrinter * printer );
+#endif
 
 		//Attributes
 		short	en	:1;

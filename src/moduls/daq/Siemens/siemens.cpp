@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.Siemens file: siemens.cpp
 /***************************************************************************
- *   Copyright (C) 2006-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2006-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -41,7 +41,7 @@
 #define MOD_NAME	_("Siemens DAQ")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"2.0.13"
+#define MOD_VER		"2.1.3"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides a data source PLC Siemens by means of Hilscher CIF cards, by using the MPI protocol,\
  and Libnodave library, or self, for the rest.")
@@ -88,10 +88,9 @@ void TTpContr::postEnable( int flag )
 
     //Controler's DB structure
     fldAdd(new TFld("PRM_BD",_("Parameters table"),TFld::String,TFld::NoFlag,"30",""));
-    fldAdd(new TFld("PERIOD",_("Request data period (ms)"),TFld::Integer,TFld::NoFlag,"5","0","0;10000"));	//!!!! Remove at further
     fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
-    fldAdd(new TFld("PRIOR",_("Request task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
-    fldAdd(new TFld("TM_REST",_("Restore timeout (s)"),TFld::Integer,TFld::NoFlag,"4","30","1;3600"));
+    fldAdd(new TFld("PRIOR",_("Priority of the acquisition task"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
+    fldAdd(new TFld("TM_REST",_("Restore timeout, seconds"),TFld::Integer,TFld::NoFlag,"4","30","1;3600"));
     fldAdd(new TFld("ASINC_WR",_("Asynchronous write mode"),TFld::Boolean,TFld::NoFlag,"1","0"));
     fldAdd(new TFld("TYPE",_("Connection type"),TFld::Integer,TFld::Selected,"1","0",
 	TSYS::strMess("%d;%d;%d;%d;%d",TMdContr::CIF_PB,TMdContr::ISO_TCP,TMdContr::ISO_TCP243,TMdContr::ADS,TMdContr::SELF_ISO_TCP).c_str(),
@@ -105,11 +104,11 @@ void TTpContr::postEnable( int flag )
     tpPrmAt(t_prm).fldAdd( new TFld("TMPL",_("Parameter template"),TFld::String,TCfg::NoVal,"50","") );
     // Parameter template IO DB structure
     elPrmIO.fldAdd(new TFld("PRM_ID",_("Parameter ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
-    elPrmIO.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
+    elPrmIO.fldAdd(new TFld("ID",_("Identifier"),TFld::String,TCfg::Key,OBJ_ID_SZ));
     elPrmIO.fldAdd(new TFld("VALUE",_("Value"),TFld::String,TFld::NoFlag,"200"));
 
     //CIF devices DB structure
-    elCifDev.fldAdd(new TFld("ID",_("ID"),TFld::Integer,TCfg::Key,"1"));
+    elCifDev.fldAdd(new TFld("ID",_("Identifier"),TFld::Integer,TCfg::Key,"1"));
     elCifDev.fldAdd(new TFld("ADDR",_("Address"),TFld::Integer,TFld::NoFlag,"3","5"));
     elCifDev.fldAdd(new TFld("SPEED",_("Speed"),TFld::Integer,TFld::NoFlag,"1","7"));
 
@@ -444,10 +443,10 @@ void TTpContr::cntrCmdProc( XMLNode *opt )
 //************************************************
 TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem ) :
 	::TController(name_c, daq_db, cfgelem),
-	mPerOld(cfg("PERIOD").getId()), mPrior(cfg("PRIOR").getId()), mType(cfg("TYPE").getId()),
+	mPrior(cfg("PRIOR").getId()), mType(cfg("TYPE").getId()),
 	mSlot(cfg("SLOT").getId()), mDev(cfg("CIF_DEV").getId()), restTm(cfg("TM_REST").getId()), mAssincWR(cfg("ASINC_WR").getBd()),
 	prcSt(false), callSt(false), endrunReq(false), isReload(false), isInitiated(false), alSt(-1), conErr(dataRes()), mInvokeID(-1),
-	di(NULL), dc(NULL), mPer(1e9), numR(0), numW(0), numErr(0), tmDelay(0)
+	di(NULL), dc(NULL), enRes(true), mPer(1e9), numR(0), numW(0), numErr(0), tmDelay(0)
 {
     cfg("PRM_BD").setS("SiemensPrm_"+name_c);
 }
@@ -500,9 +499,6 @@ TParamContr *TMdContr::ParamAttach( const string &name, int type ) { return new 
 void TMdContr::load_( )
 {
     //TController::load_();
-
-    //Check for get old period method value
-    if(mPerOld) { cfg("SCHEDULE").setS(r2s(mPerOld/1e3)); mPerOld = 0; modif(true); }
 }
 
 void TMdContr::save_( )
@@ -842,7 +838,7 @@ void TMdContr::getDB( unsigned n_db, long offset, string &buffer )
 		ADSread->len = buffer.size();
 
 		//Request
-		int resp_len = tr.at().messIO(buf, AmsTcpHD->len+sizeof(AMS_TCP_HEAD), res, sizeof(res), 0, true);
+		int resp_len = tr.at().messIO(buf, AmsTcpHD->len+sizeof(AMS_TCP_HEAD), res, sizeof(res));
 		int full_len = resp_len;
 		if(full_len < (int)sizeof(AMS_TCP_HEAD))	throw TError(_("ReadDB"), _("Error server respond."));
 		AmsTcpHD = (AMS_TCP_HEAD *)res;
@@ -850,7 +846,7 @@ void TMdContr::getDB( unsigned n_db, long offset, string &buffer )
 
 		//Wait tail
 		while(full_len < (int)(resp_sz+sizeof(AMS_TCP_HEAD))) {
-		    resp_len = tr.at().messIO(NULL, 0, res+full_len, sizeof(res)-full_len, 0, true);
+		    resp_len = tr.at().messIO(NULL, 0, res+full_len, sizeof(res)-full_len);
 		    if(!resp_len) throw TError(_("ReadDB"), _("Not full respond."));
 		    full_len += resp_len;
 		}
@@ -991,14 +987,14 @@ void TMdContr::putDB( unsigned n_db, long offset, const string &buffer )
 		memcpy(ADSreq+1, buffer.data(), buffer.size());
 
 		//Request
-		int resp_len = tr.at().messIO(buf, AmsTcpHD->len+sizeof(AMS_TCP_HEAD), res, sizeof(res), 0, true);
+		int resp_len = tr.at().messIO(buf, AmsTcpHD->len+sizeof(AMS_TCP_HEAD), res, sizeof(res));
 		int full_len = resp_len;
 		if(full_len < (int)sizeof(AMS_TCP_HEAD)) throw TError(_("WriteDB"), _("Error server respond."));
 		AmsTcpHD = (AMS_TCP_HEAD *)res;
 		unsigned resp_sz = AmsHD->len;
 		//Wait tail
 		while(full_len < (int)(resp_sz+sizeof(AMS_TCP_HEAD))) {
-		    resp_len = tr.at().messIO(NULL, 0, res+full_len, sizeof(res)-full_len, 0, true);
+		    resp_len = tr.at().messIO(NULL, 0, res+full_len, sizeof(res)-full_len);
 		    if(!resp_len) throw TError(_("WriteDB"), _("Not full respond."));
 		    full_len += resp_len;
 		}
@@ -1060,7 +1056,7 @@ void TMdContr::protIO( XMLNode &io )
     int sCd = 0;
     char buf[1000];
 
-    ResAlloc resN(tr.at().nodeRes(), true);
+    MtxAlloc resN(tr.at().reqRes(), true);
     try {
 	if(io.name() != "ISO-TCP")	throw TError("", _("Unknown target protocol '%s'."), io.name().c_str());
 
@@ -1262,7 +1258,7 @@ void TMdContr::protIO( XMLNode &io )
 
 int TMdContr::messIO( const char *oBuf, int oLen, char *iBuf, int iLen )
 {
-    return tr.at().messIO(oBuf, oLen, iBuf, iLen, ((enableStat() && !isReload)?0:1000), true);
+    return tr.at().messIO(oBuf, oLen, iBuf, iLen, ((enableStat() && !isReload)?0:1000));
 }
 
 void TMdContr::reset( )

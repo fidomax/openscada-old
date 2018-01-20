@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-19 17:17+0200\n"
+"POT-Creation-Date: 2018-01-19 19:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,10 +26,10 @@ msgstr ""
 msgid "Resource is timeouted!"
 msgstr ""
 
-msgid "Archives"
+msgid "Archives-History"
 msgstr ""
 
-msgid "ID"
+msgid "Identifier"
 msgstr ""
 
 msgid "Module(plugin) name"
@@ -62,10 +62,10 @@ msgstr ""
 msgid "Preferable run"
 msgstr ""
 
-msgid "Value period (sec)"
+msgid "Period of the values, seconds"
 msgstr ""
 
-msgid "Period archiving (sec)"
+msgid "Period of the archiving, seconds"
 msgstr ""
 
 msgid "Selection priority"
@@ -89,28 +89,28 @@ msgstr ""
 msgid "Boolean;Integer;Real;String;Int16;Int32;Int64;Real(Float);Real(Double)"
 msgstr ""
 
-msgid "Buffer period (sec)"
+msgid "Buffer period, seconds"
 msgstr ""
 
-msgid "Buffer size (items)"
+msgid "Buffer size, items"
 msgstr ""
 
-msgid "Buffer in hard time grid"
+msgid "Buffer in the hard time grid"
 msgstr ""
 
-msgid "Buffer in high time resolution"
+msgid "Buffer in the high time resolution"
 msgstr ""
 
-msgid "Fill pass points to a last value"
+msgid "Filling the passage points with the last value"
 msgstr ""
 
-msgid "Process into archivators"
+msgid "Process into archivers"
 msgstr ""
 
-msgid "Message archivators load error."
+msgid "Message archivers load error."
 msgstr ""
 
-msgid "Value archivators load error."
+msgid "Value archivers load error."
 msgstr ""
 
 msgid "Value archives load error."
@@ -118,7 +118,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"======================== Subsystem \"Archives\" options ===================\n"
+"======================== Subsystem \"Archives-History\" options ===================\n"
 "------------ Parameters of section '%s' in config-file -----------\n"
 "MessBufSize   <items>       Messages buffer size.\n"
 "MessPeriod    <sec>         Message archiving period.\n"
@@ -132,11 +132,11 @@ msgid "Start/update subsystem."
 msgstr ""
 
 #, c-format
-msgid "Message archivator '%s' start error."
+msgid "Message archiver '%s' start error."
 msgstr ""
 
 #, c-format
-msgid "Value archivator '%s' start error."
+msgid "Value archiver '%s' start error."
 msgstr ""
 
 #, c-format
@@ -144,11 +144,11 @@ msgid "Value archive '%s' start error."
 msgstr ""
 
 #, c-format
-msgid "Value archivator '%s' stop error."
+msgid "Value archiver '%s' stop error."
 msgstr ""
 
 #, c-format
-msgid "Message archivator '%s' stop error."
+msgid "Message archiver '%s' stop error."
 msgstr ""
 
 #, c-format
@@ -171,10 +171,10 @@ msgstr ""
 msgid "Overtime of the reserve history reload at start, days"
 msgstr ""
 
-msgid "Message archivators"
+msgid "Message archivers"
 msgstr ""
 
-msgid "Archivator"
+msgid "Archiver"
 msgstr ""
 
 msgid "Run."
@@ -183,54 +183,43 @@ msgstr ""
 msgid "Redund."
 msgstr ""
 
-msgid "Pref. run"
+msgid "Pref. to run"
 msgstr ""
 
 msgid "Remote"
 msgstr ""
 
-msgid "Messages archive"
+msgid "Messages"
 msgstr ""
 
-msgid "Messages buffer size"
+msgid "Buffer size"
 msgstr ""
 
-msgid "Archiving period (s)"
+msgid "Archiving period, seconds"
 msgstr ""
 
-msgid "View messages"
+msgid "View"
 msgstr ""
 
-msgid "Time, size (s) and level"
+msgid "Time, size (seconds) and level"
 msgstr ""
 
 msgid "Debug (0);Information (1);Notice (2);Warning (3);Error (4);Critical (5);Alert (6);Emergency (7);Information (1), ALARMS;Notice (2), ALARMS;Warning (3), ALARMS;Error (4), ALARMS;Critical (5), ALARMS;Alert (6), ALARMS;Emergency (7), ALARMS"
 msgstr ""
 
-msgid "Get messages for level more and equal it."
+msgid "Receiving messages with a level greater or equal to the specified."
 msgstr ""
 
 msgid "Category pattern"
 msgstr ""
 
-msgid ""
-"Messages category template or regular expression.\n"
-"Use template symbols for group selection:\n"
-"  '*' - any substring;\n"
-"  '?' - any symbol.\n"
-"Regular expression enclosed in symbols '/' (/mod_(System|LogicLev)/)."
-msgstr ""
-
-msgid "Archivators"
+msgid "Archivers"
 msgstr ""
 
 msgid ""
-"Message archivators.\n"
-"No set archivator for process by buffer and all archivators.\n"
-"Set '<buffer>' for process by buffer."
-msgstr ""
-
-msgid "Messages"
+"Message archivers.\n"
+"Do not set the field for processing the request by the buffer and all archivers.\n"
+"Set '<buffer>' for processing by the buffer."
 msgstr ""
 
 msgid "Time"
@@ -242,25 +231,28 @@ msgstr ""
 msgid "Category"
 msgstr ""
 
-msgid "Lev."
+msgid "Level"
 msgstr ""
 
 msgid "Message"
 msgstr ""
 
-msgid "Value archives"
+msgid "Values"
 msgstr ""
 
-msgid "Get data period (ms)"
+msgid "Period of the data receiving, milliseconds"
 msgstr ""
 
-msgid "Get data task priority level"
+msgid "Level of priority of the data receiving task"
 msgstr ""
 
-msgid "Variable timestamp force to current time"
+msgid "Forced to set timestampes in the current time"
 msgstr ""
 
 msgid "Number"
+msgstr ""
+
+msgid "Value archives"
 msgstr ""
 
 #, c-format
@@ -276,16 +268,16 @@ msgstr ""
 msgid "<Optimal>"
 msgstr ""
 
-msgid "Message archivator"
+msgid "Message archiver"
 msgstr ""
 
-msgid "Value archivator"
+msgid "Value archiver"
 msgstr ""
 
-msgid "Value archivators"
+msgid "Value archivers"
 msgstr ""
 
-msgid "Message archivator: "
+msgid "Message archiver: "
 msgstr ""
 
 msgid "State"
@@ -294,7 +286,7 @@ msgstr ""
 msgid "Running"
 msgstr ""
 
-msgid "Archivator DB"
+msgid "Archiver DB"
 msgstr ""
 
 msgid "End"
@@ -304,17 +296,6 @@ msgid "Begin"
 msgstr ""
 
 msgid "Configuration"
-msgstr ""
-
-msgid ""
-"Messages category template or regular expression to processing by archivator, separated by symbol ';'.\n"
-"Use template symbols for group selection:\n"
-"  '*' - any substring;\n"
-"  '?' - any symbol.\n"
-"Regular expression enclosed in symbols '/' (/mod_(System|LogicLev)/)."
-msgstr ""
-
-msgid "Level"
 msgstr ""
 
 #, c-format
@@ -384,88 +365,80 @@ msgid "Archive DB"
 msgstr ""
 
 msgid ""
-"The values buffer size have to much enough for archivators periodicity.\n"
-"Typical the value automatic adjusts to the archive period and archivators periodicity in 60 seconds."
+"The size of the buffer of values should be large enough for the periodicity of the archivers.\n"
+"By default, this value is automatically configured for periodicity of the values of this archive and periodicity of archivers in 60 seconds."
 msgstr ""
 
-msgid "Typical for fastest processing of values archivation."
+msgid "Default for fast processing of archiving values."
 msgstr ""
 
-msgid "Set for the values periodicity lesser to seconds."
+msgid "Set in case of periodicity of values in less than a second."
 msgstr ""
 
-msgid ""
-"Mostly the pass values fill by EVAL but sometime\n"
-"the source's data periodicity greater to the archive's one and it is normal."
+msgid "The passage values mostly fill by EVAL but sometime data periodicity of the source greater to the archive's one and it is normal."
 msgstr ""
 
-msgid "Start"
+msgid "Processing"
 msgstr ""
 
-msgid "Process"
-msgstr ""
-
-msgid "Period (s)"
-msgstr ""
-
-msgid "Values"
+msgid "Period, seconds"
 msgstr ""
 
 msgid "Microseconds"
 msgstr ""
 
-msgid "Size (s)"
+msgid "Size, seconds"
 msgstr ""
 
 msgid ""
-"Values archivator.\n"
-"No set archivator for process by buffer and all archivators.\n"
-"Set '<buffer>' for process by buffer."
+"Values archiver.\n"
+"If the value is empty, the request will be processed for the buffer and for all archivers.\n"
+"If \"<buffer>\" is specified then the request will be processed only for the archive buffer."
 msgstr ""
 
 msgid "Show trend"
 msgstr ""
 
-msgid "Values table"
+msgid "Table of the values"
 msgstr ""
 
 msgid "Value"
 msgstr ""
 
-msgid "Picture size"
+msgid "Image size"
 msgstr ""
 
-msgid "Picture width in pixels."
+msgid "Image width in pixels."
 msgstr ""
 
-msgid "Picture height in pixels."
+msgid "Image height in pixels."
 msgstr ""
 
-msgid "Value scale"
+msgid "Scale of the values"
 msgstr ""
 
-msgid "Picture minimum value."
+msgid "Image minimum value."
 msgstr ""
 
-msgid "Picture maximum value."
+msgid "Image maximum value."
 msgstr ""
 
-msgid "Values trend"
+msgid "Trend of the values"
 msgstr ""
 
-msgid "Value archivator: "
+msgid "Value archiver: "
 msgstr ""
 
 msgid "Archiving time"
 msgstr ""
 
-msgid "Set zero period for disable using the archiver for buffer processing, only for direct write."
+msgid "Set a zero period to disable the use of the archiver in processing the buffer - just a direct recording."
 msgstr ""
 
-msgid "Selection the archiver priority for \"All\" sources using mode. Set to zero for full the selection disable."
+msgid "Selection of a priority of the archiver for using in the source mode \"All\". Set to zero for full the selection disabling."
 msgstr ""
 
-msgid "Buffer size"
+msgid "Archives"
 msgstr ""
 
 msgid "Last read buffer"
@@ -500,7 +473,7 @@ msgstr ""
 msgid ""
 "========================= Subsystem \"DB\" options ========================\n"
 "----------- The config-file station '%s' parameters -----------\n"
-"SYSStPref    <1>   Use station id prefix into generic (SYS) table.\n"
+"SYSStPref    <1>   The station id prefix using into the generic (SYS) table.\n"
 "\n"
 msgstr ""
 
@@ -513,7 +486,7 @@ msgstr ""
 msgid "Full DB delete"
 msgstr ""
 
-msgid "Select for full deletion DB on DB close. Else DB will be simply closed."
+msgid "Select for full DB deletion at this DB closing, else the DB will be simply closed."
 msgstr ""
 
 msgid "Data base: "
@@ -525,19 +498,19 @@ msgstr ""
 msgid "Data base"
 msgstr ""
 
-msgid "Enable"
+msgid "Enabled"
 msgstr ""
 
 msgid "Accessible tables"
 msgstr ""
 
-msgid "Tables which are in the DB, tables which are not opened at that moment."
+msgid "Tables in the database, but not open at this time."
 msgstr ""
 
-msgid "Load the system from this DB"
+msgid "Load the program from this DB"
 msgstr ""
 
-msgid "Codepage of data into DB. For example: UTF-8, KOI8-R, KOI8-U ... ."
+msgid "Codepage of data into the DB. For example it is: UTF-8, KOI8-R, KOI8-U ... ."
 msgstr ""
 
 msgid "Tables"
@@ -547,8 +520,8 @@ msgid "Opened tables"
 msgstr ""
 
 msgid ""
-"Opened table list.\n"
-"Adding and deleting tables operations are really open and close tables operations."
+"Opened tables list.\n"
+"Adding and removing tables actually consists of opening and closing tables."
 msgstr ""
 
 msgid "SQL"
@@ -575,7 +548,7 @@ msgstr ""
 msgid "Table"
 msgstr ""
 
-msgid "Table offset"
+msgid "Table offset, size"
 msgstr ""
 
 msgid "Data"
@@ -772,9 +745,6 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-msgid "Run"
-msgstr ""
-
 msgid "Controller DB"
 msgstr ""
 
@@ -791,17 +761,17 @@ msgid "Diagnostics"
 msgstr ""
 
 msgid ""
-"Get messages for level more and equal it.\n"
-"Also affect to specific-diagnostic messages generation by data source."
+"Display messages for larger or even levels.\n"
+"Also affects to specific-diagnostic messages generation by the data sources."
 msgstr ""
 
 msgid "Data Acquisition"
 msgstr ""
 
-msgid "Maximum calculate time (sec)"
+msgid "Maximum calculate time, seconds"
 msgstr ""
 
-msgid "Program translation allow"
+msgid "Allow program translation"
 msgstr ""
 
 msgid "Program"
@@ -810,7 +780,7 @@ msgstr ""
 msgid "Date of modification"
 msgstr ""
 
-msgid "Template ID"
+msgid "Template identifier"
 msgstr ""
 
 msgid "Flags"
@@ -871,7 +841,7 @@ msgstr ""
 msgid "Template library"
 msgstr ""
 
-msgid "Depth time of restoring data at start, hours"
+msgid "Depth time of restoring data at the starting, hours"
 msgstr ""
 
 msgid "Controllers"
@@ -955,9 +925,6 @@ msgstr ""
 msgid "Used"
 msgstr ""
 
-msgid "Id"
-msgstr ""
-
 msgid "IO"
 msgstr ""
 
@@ -976,7 +943,7 @@ msgstr ""
 msgid "Execute"
 msgstr ""
 
-msgid "Number runs"
+msgid "Number of calculations"
 msgstr ""
 
 msgid "Spent time"
@@ -1030,14 +997,14 @@ msgid "Error input sequence convert: %s"
 msgstr ""
 
 msgid ""
-"DB address in format [<DB module>.<DB name>].\n"
-"For use main work DB set '*.*'."
+"DB address in format \"{DB module}.{DB name}\".\n"
+"Set '*.*' for use the main work DB."
 msgstr ""
 
 msgid ""
-"Schedule is wrote in seconds periodic form or in standard CRON form.\n"
-"Seconds form is one real number (1.5, 1e-3).\n"
-"Cron it is standard form \"* * * * *\".\n"
+"Schedule wrotes in seconds periodic form or in the standard CRON form.\n"
+"The seconds periodic form is one real number (1.5, 1e-3).\n"
+"Cron is the standard form \"* * * * *\".\n"
 "  Where items by order:\n"
 "    - minutes (0-59);\n"
 "    - hours (0-23);\n"
@@ -1046,13 +1013,13 @@ msgid ""
 "    - week day (0[Sunday]-6).\n"
 "  Where an item variants:\n"
 "    - \"*\" - any value;\n"
-"    - \"1,2,3\" - allowed values;\n"
+"    - \"1,2,3\" - allowed values list;\n"
 "    - \"1-5\" - raw range of allowed values;\n"
 "    - \"*/2\" - range divider for allowed values.\n"
 "Examples:\n"
-"  \"1e-3\" - periodic call by one millisecond;\n"
+"  \"1e-3\" - call with a period of one millisecond;\n"
 "  \"* * * * *\" - each minute;\n"
-"  \"10 23 * * *\" - only 23 hour and 10 minute for any day and month;\n"
+"  \"10 23 * * *\" - only at 23 hour and 10 minute for any day and month;\n"
 "  \"*/2 * * * *\" - for minutes: 0,2,4,...,56,58;\n"
 "  \"* 2-4 * * *\" - for any minutes in hours from 2 to 4(include)."
 msgstr ""
@@ -1065,6 +1032,14 @@ msgid ""
 "  100...199 - realtime priority level (FIFO), often allowed only for \"root\"."
 msgstr ""
 
+msgid ""
+"Specifies the category of the requested messages.\n"
+"Use template's symbols for group selection:\n"
+"  '*' - any substring;\n"
+"  '?' - any character.\n"
+"Regular expression enclosed between the symbols '/' (/mod_(System|LogicLev)/)."
+msgstr ""
+
 msgid "Modules Scheduler"
 msgstr ""
 
@@ -1075,7 +1050,7 @@ msgid ""
 "------------ Parameters of section '%s' in config-file -----------\n"
 "ModPath  <path>        Path to shared libraries(modules).\n"
 "ModAllow <list>        List of shared libraries allowed for automatic loading, attaching and starting (bd_DBF.so;daq_JavaLikeCalc.so).\n"
-"                       Use '*' value for allow all modules.\n"
+"                       Use '*' value to allow all modules.\n"
 "ModDeny  <list>        List of shared libraries deny for automatic loading, attaching and starting (bd_DBF.so;daq_JavaLikeCalc.so).\n"
 "ChkPer   <sec>         Period of checking at new shared libraries(modules).\n"
 "\n"
@@ -1132,7 +1107,7 @@ msgid ""
 "Value '*' used for allow all modules."
 msgstr ""
 
-msgid "Check modules period (sec)"
+msgid "Check modules period, seconds"
 msgstr ""
 
 msgid "Check modules now."
@@ -1187,7 +1162,7 @@ msgstr ""
 msgid "Parameter: "
 msgstr ""
 
-msgid "Change type lead to data lost for specific configurations."
+msgid "The type changing leads to lose some data of the specific configurations."
 msgstr ""
 
 msgid "Inclusion"
@@ -1226,10 +1201,7 @@ msgstr ""
 msgid "Attribute"
 msgstr ""
 
-msgid "No attribute;Read only;Full access"
-msgstr ""
-
-msgid "Configure"
+msgid "Not attribute;Read only;Full access"
 msgstr ""
 
 msgid "Variable;Constant;Link"
@@ -1267,8 +1239,8 @@ msgid "Library DB"
 msgstr ""
 
 msgid ""
-"DB address in format [<DB module>.<DB name>.<Table name>].\n"
-"For use main work DB set '*.*'."
+"DB address in format \"{DB module}.{DB name}.{Table name}\".\n"
+"Set '*.*.{Table name}' for use the main work DB."
 msgstr ""
 
 msgid "Parameter templates"
@@ -1345,6 +1317,14 @@ msgstr ""
 msgid "Groups"
 msgstr ""
 
+#, c-format
+msgid "Error crypt_r(): %s (%d)"
+msgstr ""
+
+#, c-format
+msgid "Error crypt(): %s (%d)"
+msgstr ""
+
 msgid "User "
 msgstr ""
 
@@ -1364,7 +1344,7 @@ msgid "Specials"
 msgstr ""
 
 msgid ""
-"======================= Subsystem \"Special\" options =====================\n"
+"======================= Subsystem \"Specials\" options =====================\n"
 "\n"
 msgstr ""
 
@@ -1471,13 +1451,19 @@ msgid ""
 "===========================================================================\n"
 "==================== Generic options ======================================\n"
 "===========================================================================\n"
-"-h, --help\t\tInfo message about the system options.\n"
-"    --config=<file>\tThe station configuration file.\n"
-"    --station=<id>\tThe station identifier.\n"
-"    --statName=<name>\tThe station name.\n"
+"-h, --help\t\tInfo message about the program options.\n"
+"    --projName=<name>\tOpenSCADA project name to switch it.\n"
+"    --projUserDir={dir} Directory of user projects (writeable) of OpenSCADA, \"~/.openscada\" by default.\n"
+"\t\t\tFor this feature there also uses an environment variable \"OSCADA_ProjName\" and the program binary name \"openscada_{ProjName}\".\n"
+"    --projLock={per}\tUse projects locking by creation the \"lock\" file into the project folder and updating it in period <per>,\n"
+"\t\t\tby default it is enabled and the updating period <per> is 60 seconds. To disable set the updating period <per> to zero.\n"
+"    --lang=<LANG>\tStation language, in view \"uk_UA.UTF-8\".\n"
+"    --config=<file>\tStation configuration file.\n"
+"    --station=<id>\tStation identifier.\n"
+"    --statName=<name>\tStation name.\n"
 "    --demon, --daemon\tStart into the daemon mode.\n"
 "    --pidFile=<file>\tThe file for the programm process ID place here.\n"
-"    --coreDumpAllow\tSet the limits for a core dump creation allow on the crash.\n"
+"    --noCoreDump\tPrevent from core dumps creation on crashes, don't set the limit to unlimited value.\n"
 "    --messLev=<level>\tProcess messages <level> (0-7).\n"
 "    --log=<direct>\tDirect messages to, by bitfield:\n"
 "\t\t\t  0x1 - syslogd;\n"
@@ -1488,10 +1474,10 @@ msgid ""
 "StName     <nm>\tStation name.\n"
 "WorkDB     <Type.Name> Work DB (type and name).\n"
 "WorkDir    <path>\tWork directory.\n"
-"ModDir     <path>\tModules directory.\n"
+"ModDir     <path>\tDirectories with modules, separated by ';', they can include a files' template into the end.\n"
 "IcoDir     <path>\tIcons directory.\n"
 "DocDir     <path>\tDocuments directory.\n"
-"MessLev    <level>     Messages <level> (0-7).\n"
+"MessLev    <level>\tMessages <level> (0-7).\n"
 "SelDebCats <list>\tDebug categories list (separated by ';').\n"
 "LogTarget  <direction> Direct messages to, by bitfield:\n"
 "\t\t\t  0x1 - syslogd;\n"
@@ -1502,8 +1488,8 @@ msgid ""
 "Lang2CodeBase <lang>\tBase language for variable texts translation, two symbols code.\n"
 "MainCPUs   <list>\tMain used CPUs list (separated by ':').\n"
 "ClockRT    <0|1>\tSet for use REALTIME (else MONOTONIC) clock, some problematic with the system clock modification.\n"
-"SaveAtExit <0|1>\tSave the system at exit.\n"
-"SavePeriod <sec>\tSave the system period.\n"
+"SaveAtExit <0|1>\tSave the program at exit.\n"
+"SavePeriod <sec>\tSave the program period.\n"
 "RdStLevel  <lev>\tLevel of redundancy current station.\n"
 "RdTaskPer  <s>\t\tCall period of the redundant task.\n"
 "RdRestConnTm <s>\tRestore connection timeout of try to the \"dead\" reserve stations.\n"
@@ -1536,6 +1522,10 @@ msgstr ""
 msgid "Configuration '%s' write error. %s"
 msgstr ""
 
+#, c-format
+msgid "Impossible to hold the project lock! Seems the project '%s' already running."
+msgstr ""
+
 msgid "Load!"
 msgstr ""
 
@@ -1549,21 +1539,21 @@ msgstr ""
 msgid "Save!"
 msgstr ""
 
-msgid "Start!"
+msgid "Starting ..."
 msgstr ""
 
 #, c-format
 msgid "Error start subsystem '%s'."
 msgstr ""
 
-msgid "Final starting!"
+msgid "Final of the starting!"
 msgstr ""
 
-msgid "Stop!"
+msgid "Stopping ..."
 msgstr ""
 
 #, c-format
-msgid "Error stop subsystem '%s'."
+msgid "Error for subsystem '%s' stopping."
 msgstr ""
 
 msgid "Termination signal is received. Stop the station!"
@@ -1706,26 +1696,26 @@ msgid "Work DB"
 msgstr ""
 
 msgid ""
-"Work DB address in format [<DB module>.<DB name>].\n"
-"Change it field if you want save or reload all system from other DB."
+"Work DB address in format \"{DB module}.{DB name}\".\n"
+"Change this field if you want to save or to reload all the program from other DB."
 msgstr ""
 
-msgid "Save the system at exit"
+msgid "Save the program at exit"
 msgstr ""
 
-msgid "Select for automatic system saving to DB on exit."
+msgid "Select for the program automatic saving to DB on exit."
 msgstr ""
 
-msgid "Save the system period"
+msgid "Save the program period"
 msgstr ""
 
-msgid "Use no zero period (seconds) for periodic saving of changed systems parts to DB."
+msgid "Use not a zero period (seconds) to periodically save program changes to the DB."
 msgstr ""
 
 msgid "Least level"
 msgstr ""
 
-msgid "Least messages level which process by the system."
+msgid "Least messages level which is procesed by the program."
 msgstr ""
 
 msgid "To syslog"
@@ -1746,10 +1736,10 @@ msgstr ""
 msgid "Station level"
 msgstr ""
 
-msgid "Redundant task period (s)"
+msgid "Redundant task period, seconds"
 msgstr ""
 
-msgid "Restore connection timeout (s)"
+msgid "Restore connection timeout, seconds"
 msgstr ""
 
 msgid "Local primary commands transfer"
@@ -1761,7 +1751,7 @@ msgstr ""
 msgid "Live"
 msgstr ""
 
-msgid "Cntr."
+msgid "Counter"
 msgstr ""
 
 msgid "Go to remote stations list configuration"
@@ -1796,28 +1786,28 @@ msgstr ""
 msgid "Text variable's base language"
 msgstr ""
 
-msgid "Multilingual for variable texts support enabling by base language selection."
+msgid "Enable multilingual support for text variables by selecting the base language."
 msgstr ""
 
 msgid "Dynamic translation"
 msgstr ""
 
-msgid "Current dynamic translation state."
+msgid "Current state of the dynamic translation."
 msgstr ""
 
-msgid "Plan for dynamic translation at next start."
+msgid "Dynamic translation scheduling for next launch."
 msgstr ""
 
 msgid "Enable manager"
 msgstr ""
 
-msgid "Enable common translation manage which cause full reloading for all built messages obtain."
+msgid "Enable generic translation manager which cause full reloading for all built messages obtain."
 msgstr ""
 
 msgid "Languages"
 msgstr ""
 
-msgid "Processed languages list by two symbols code and separated symbol ';'."
+msgid "List of processed languages, in a two-character representation and separated by the character ';'."
 msgstr ""
 
 msgid "Source filter"
@@ -1833,6 +1823,9 @@ msgid "Counters"
 msgstr ""
 
 msgid "Debug categories"
+msgstr ""
+
+msgid "Process"
 msgstr ""
 
 msgid "See to messages"
@@ -1851,7 +1844,7 @@ msgid "Monotonic %s"
 msgstr ""
 
 #, c-format
-msgid "Spent time: %s."
+msgid "Spent time: %s[%s]."
 msgstr ""
 
 msgid "<newStat>"
@@ -1987,6 +1980,18 @@ msgstr ""
 msgid "Transport DB"
 msgstr ""
 
+msgid "IO log"
+msgstr ""
+
+msgid "Log length"
+msgstr ""
+
+msgid "Use zero for the log disabling."
+msgstr ""
+
+msgid "Log"
+msgstr ""
+
 #, c-format
 msgid "Established: %s. "
 msgstr ""
@@ -2005,16 +2010,16 @@ msgid "Wait timeout"
 msgstr ""
 
 msgid ""
-"Sign for expect by timeout when a response is received.\n"
-"Many systems in response to various protocols (HTTP) are send the response data in several pieces.\n"
-"Without this flag will be received and displayed only the first piece.\n"
-"When this flag will be set all the pieces awaiting an answer, until the lack of data during the timeout the transport elapsed ."
+"A sign of waiting timeout when receiving an answer.\n"
+"Many systems, when responding to different protocols (such as HTTP), can send response data in several parts.\n"
+"Without this, only the first part will be received and displayed.\n"
+"When this flag is set, all parts of the response will be waiting up to missing data during the transport timeout."
 msgstr ""
 
 msgid "Input buffer size, bytes"
 msgstr ""
 
-msgid "Direct set the input buffer size. Use 0 to disable waiting and reading to a data, only to write."
+msgid "Direct set the input buffer size. Use 0 to disable waiting and reading for a data - only to write."
 msgstr ""
 
 msgid "Answer"
@@ -2052,9 +2057,6 @@ msgid ""
 "\n"
 msgstr ""
 
-msgid "Doc check"
-msgstr ""
-
 msgid "User interface"
 msgstr ""
 
@@ -2079,7 +2081,8 @@ msgid ""
 "Parameter's attribute\n"
 "  ID: '%s'\n"
 "  Name: '%s'\n"
-"  Type: '%s'"
+"  Type: '%s'\n"
+"  Read only: %d"
 msgstr ""
 
 msgid ""

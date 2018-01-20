@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.QTCfg file: qtcfg.h
 /***************************************************************************
- *   Copyright (C) 2004-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2004-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -48,6 +48,7 @@ class QLineEdit;
 class QHBoxLayout;
 class QLabel;
 class QTabWidget;
+class QSplitter;
 
 using namespace OSCADA;
 
@@ -114,9 +115,13 @@ public:
     ConfApp( string open_user );
     ~ConfApp( );
 
+signals:
+    void makeStarterMenu( QWidget *mn );
+
 protected:
     //Methods
-    void closeEvent( QCloseEvent* );
+    void closeEvent( QCloseEvent* );		//Close window event
+    void resizeEvent( QResizeEvent * );		//Resize window event
 
 private slots:
     //Slots
@@ -134,7 +139,7 @@ private slots:
     void itCut( );
     void itCopy( );
     void itPaste( );
-    void pageRefresh( bool tm = false );
+    void pageRefresh( int tm = 0 );
     void pageCyclRefrStart( );
     void pageCyclRefrStop( );
 
@@ -206,6 +211,7 @@ private:
     QTimer	*endRunTimer, *autoUpdTimer, *reqPrgrsTimer;
 
     QTreeWidget	*CtrTree;
+    QSplitter	*splitter;
     QLabel	*titleIco,
 		*titleLab,
 		*mStModify;
@@ -234,7 +240,7 @@ private:
     int		inHostReq;
     map<string, SCADAHost*> hosts;
 
-    bool	tblInit;
+    bool	tblInit, pgDisplay;
 };
 
 }

@@ -1,13 +1,13 @@
 # OpenSCADA.Protocol.UserProtocol translate to Russian.
 # This file is distributed under the same license as the OpenSCADA.Protocol.UserProtocol package module.
 #
-# Roman Savochenko <rom_as@oscada.org>, 2010-2015.
+# Roman Savochenko <rom_as@oscada.org>, 2010-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.Protocol.UserProtocol 0.6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-11-13 11:11+0200\n"
+"POT-Creation-Date: 2018-01-13 20:15+0200\n"
 "PO-Revision-Date: 2010-03-04 21:26+0200\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <ru@li.org>\n"
@@ -27,8 +27,8 @@ msgstr ""
 "Позволяет создавать собственные пользовательские протоколы на любом "
 "OpenSCADA языке."
 
-msgid "ID"
-msgstr ""
+msgid "Identifier"
+msgstr "Идентификатор"
 
 msgid "Name"
 msgstr "Имя"
@@ -39,7 +39,7 @@ msgstr "Описание"
 msgid "To enable"
 msgstr "Включать"
 
-msgid "Program translation allow"
+msgid "Allow program translation"
 msgstr "Переводить программу"
 
 msgid "Wait request timeout, ms"
@@ -87,6 +87,9 @@ msgstr "Отключен. "
 msgid "Enabled. "
 msgstr "Включен. "
 
+msgid "Modified, re-enable to apply! "
+msgstr "Модифицирован, перевключить для применения! "
+
 #, c-format
 msgid "Requests input %.4g, output %.4g."
 msgstr "Запрошено входов %.4g, выходов %.4g."
@@ -100,7 +103,7 @@ msgstr "Состояние"
 msgid "Status"
 msgstr "Состояние"
 
-msgid "Enable"
+msgid "Enabled"
 msgstr "Включен"
 
 msgid "DB"

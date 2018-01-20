@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-03 12:33+0200\n"
+"POT-Creation-Date: 2018-01-13 20:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,7 +45,7 @@ msgstr ""
 msgid "State"
 msgstr ""
 
-msgid "Enable"
+msgid "Enabled"
 msgstr ""
 
 msgid "Library DB"
@@ -62,7 +62,7 @@ msgstr ""
 msgid "Configuration"
 msgstr ""
 
-msgid "Id"
+msgid "Identifier"
 msgstr ""
 
 msgid "Name"
@@ -94,7 +94,7 @@ msgid "Widget is not container!"
 msgstr ""
 
 #, c-format
-msgid "You try to create widget with name '%s' of the widget that was the early inherited and deleted from base container!"
+msgid "Restoring '%s' from the base container!"
 msgstr ""
 
 msgid "Library widget: "
@@ -253,10 +253,13 @@ msgstr ""
 msgid "Standard;Checkable;Menu;Load;Save"
 msgstr ""
 
+msgid "Items"
+msgstr ""
+
 msgid "Set value"
 msgstr ""
 
-msgid "Items"
+msgid "Multiple selection"
 msgstr ""
 
 msgid "Check"
@@ -555,7 +558,7 @@ msgstr ""
 msgid "Diagram widget of the finite visualization."
 msgstr ""
 
-msgid "Tracing period (s)"
+msgid "Tracing period, seconds"
 msgstr ""
 
 msgid "Trend;Spectrum;XY"
@@ -817,19 +820,19 @@ msgstr ""
 msgid "Last time"
 msgstr ""
 
-msgid "Repeat time (s)"
+msgid "Repeat time, seconds"
 msgstr ""
 
-msgid "Repeat time (us)"
+msgid "Repeat time, microseconds"
 msgstr ""
 
 msgid "Repeat period"
 msgstr ""
 
-msgid "Message time"
+msgid "Message time, seconds"
 msgstr ""
 
-msgid "Message time (mcs)"
+msgid "Message time, microseconds"
 msgstr ""
 
 msgid "Message level"
@@ -870,6 +873,9 @@ msgstr ""
 
 #, c-format
 msgid "Messages block %d: %0.2f%% loaded."
+msgstr ""
+
+msgid "Document generation terminated."
 msgstr ""
 
 msgid "Built-in function"
@@ -953,9 +959,6 @@ msgstr ""
 msgid "Time"
 msgstr ""
 
-msgid "Size (s)"
-msgstr ""
-
 msgid "Messages"
 msgstr ""
 
@@ -991,7 +994,7 @@ msgstr ""
 msgid "Page: open state"
 msgstr ""
 
-msgid "Page: process no opened"
+msgid "Page: process not opened"
 msgstr ""
 
 msgid "For page can use only Box-based widgets!"
@@ -1107,10 +1110,13 @@ msgstr ""
 msgid "Connections counter"
 msgstr ""
 
-msgid "Last request"
+msgid "Last request time, user, language"
 msgstr ""
 
-msgid "Left to force close (s)"
+msgid "Last user action"
+msgstr ""
+
+msgid "Left to force close, seconds"
 msgstr ""
 
 msgid "Period (ms)"
@@ -1178,9 +1184,6 @@ msgstr ""
 msgid "The main visual control area engine."
 msgstr ""
 
-msgid "ID"
-msgstr ""
-
 msgid "DB table"
 msgstr ""
 
@@ -1218,6 +1221,9 @@ msgid "Configuration template"
 msgstr ""
 
 msgid "Configuration value"
+msgstr ""
+
+msgid "Child identifier"
 msgstr ""
 
 msgid "Attribute generic flags and type"

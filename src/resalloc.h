@@ -26,6 +26,17 @@
 
 #include <string>
 
+//Platform specific
+#if defined(__ANDROID__)
+# include <android/api-level.h>
+#else
+# define __ANDROID_API__ 0
+#endif
+
+#ifndef __GLIBC_PREREQ
+# define __GLIBC_PREREQ(maj, min)	1
+#endif
+
 using std::string;
 
 namespace OSCADA

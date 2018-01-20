@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.MMS file: module.cpp
 /***************************************************************************
- *   Copyright (C) 2013-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2013-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -37,7 +37,7 @@
 #define MOD_NAME	_("MMS(IEC-9506)")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.3.11"
+#define MOD_VER		"1.3.14"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("MMS(IEC-9506) client implementation.")
 #define LICENSE		"GPL2"
@@ -82,8 +82,8 @@ void TTpContr::postEnable( int flag )
     fldAdd(new TFld("PRM_BD",_("Parameters table"),TFld::String,TFld::NoFlag,"30",""));
     fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
     fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
-    fldAdd(new TFld("TM_REST",_("Restore timeout (s)"),TFld::Integer,TFld::NoFlag,"4","10","1;3600"));
-    fldAdd(new TFld("SYNCPER",_("Sync inter remote station period (s)"),TFld::Integer,TFld::NoFlag,"4","0","0;1000"));
+    fldAdd(new TFld("TM_REST",_("Restore timeout, seconds"),TFld::Integer,TFld::NoFlag,"4","10","1;3600"));
+    fldAdd(new TFld("SYNCPER",_("Sync inter remote station period, seconds"),TFld::Integer,TFld::NoFlag,"4","0","0;1000"));
     fldAdd(new TFld("ADDR",_("Server address"),TFld::String,TFld::NoFlag,"50","localhost:102"));
     fldAdd(new TFld("VARS_RD_REQ",_("Variables into read request"),TFld::Integer,TFld::NoFlag,"3","100","1;9999"));
     fldAdd(new TFld("COTP_DestTSAP",_("Destination TSAP"),TFld::Integer,TFld::NoFlag,"3","512","0;65535"));
@@ -194,7 +194,7 @@ void TMdContr::reqService( MMS::XML_N &io )
 
 void TMdContr::protIO( MMS::XML_N &io )
 {
-    ResAlloc resN(tr.at().nodeRes(), true);
+    MtxAlloc resN(tr.at().reqRes(), true);
     if(messLev() == TMess::Debug) io.setAttr("debug", "1");
     try { Client::protIO(io); }
     catch(TError &er) { io.setAttr("err", TSYS::strMess("%s:%s", _("Remote host error"), er.mess.c_str())); }
@@ -202,7 +202,7 @@ void TMdContr::protIO( MMS::XML_N &io )
 
 int TMdContr::messIO( const char *obuf, int len_ob, char *ibuf, int len_ib )
 {
-    return tr.at().messIO(obuf, len_ob, ibuf, len_ib, ((enableStat() && !isReload)?0:1000), true);
+    return tr.at().messIO(obuf, len_ob, ibuf, len_ib, ((enableStat() && !isReload)?0:1000));
 }
 
 void TMdContr::debugMess( const string &mess )	{ mess_debug_(nodePath().c_str(), "%s", mess.c_str()); }

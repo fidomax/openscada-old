@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.QTStarter file: tuimod.h
 /***************************************************************************
- *   Copyright (C) 2005-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2005-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -21,12 +21,12 @@
 #ifndef TUIMOD_H
 #define TUIMOD_H
 
-#include <QObject>
 #include <QTranslator>
 #include <QMainWindow>
 #include <QApplication>
 #include <QCloseEvent>
 #include <QSessionManager>
+#include <QSystemTrayIcon>
 
 #include <tuis.h>
 
@@ -34,6 +34,10 @@
 #define _(mess) mod->I18N(mess)
 
 class QTimer;
+class QSplashScreen;
+class QListWidget;
+class QPushButton;
+class QMenu;
 
 using namespace OSCADA;
 
@@ -59,31 +63,6 @@ public:
 };
 
 //*************************************************
-//* WinControl                                    *
-//*************************************************
-class WinControl: public QObject
-{
-    Q_OBJECT
-public:
-    //Methods
-    WinControl( );
-    ~WinControl( );
-
-    bool callQtModule( const string &nm );
-    void startDialog( );
-
-private slots:
-    //Methods
-    void checkForEnd( );
-    void callQtModule( );
-    void lastWinClose( );
-
-private:
-    //Attributes
-    QTimer	*tm;
-};
-
-//*************************************************
 //* StartDialog                                   *
 //*************************************************
 class StartDialog: public QMainWindow
@@ -91,11 +70,17 @@ class StartDialog: public QMainWindow
     Q_OBJECT
 public:
     //Methods
-    StartDialog( WinControl *wcntr );
+    StartDialog( );
 
 protected:
     //Methods
+    void showEvent( QShowEvent* );
     void closeEvent( QCloseEvent* );
+
+private:
+    //Attributes
+    QListWidget	*prjsLs;
+    QPushButton	*prjsBt;
 
 private slots:
     //Methods
@@ -103,6 +88,9 @@ private slots:
     void aboutQt( );
     void enterWhatsThis( );
     void enterManual( );
+
+    void projSelect( );
+    void projSwitch( );
 };
 
 //*************************************************
@@ -112,10 +100,40 @@ class StApp : public QApplication
 {
     Q_OBJECT
 
-    public:
-	StApp( int &argv, char **args ) : QApplication(argv, args) { }
+public:
+    //Methods
+    StApp( int &argv, char **args );
+    ~StApp( );
 
-	void saveState( QSessionManager &manager )	{ manager.setRestartHint(QSessionManager::RestartNever); }
+    bool trayPresent( )	{ return tray; }
+
+    void createTray( );
+    bool callQtModule( const string &nm );
+
+    void saveState( QSessionManager &manager );
+
+    int stExec( );
+    void stClear( );
+
+protected:
+    //Methods
+    void timerEvent( QTimerEvent *event );
+
+private slots:
+    void check( );
+    void startDialog( );
+    void callQtModule( );
+    void makeStarterMenu( QWidget *mn = NULL );
+    void lastWinClose( );
+    void trayAct( QSystemTrayIcon::ActivationReason reason );
+
+private:
+    //Attributes
+    bool	inExec;
+    QMenu	*trayMenu;
+    QSystemTrayIcon *tray;
+    StartDialog	*stDlg;
+    bool	initExec;
 };
 
 //*************************************************
@@ -124,18 +142,36 @@ class StApp : public QApplication
 class TUIMod: public TUI
 {
 public:
+    //Data
+    enum SplashFlag { SPLSH_NULL = 0, SPLSH_START, SPLSH_STOP };
+
     //Methods
     TUIMod( string name );
     ~TUIMod( );
 
+    // Module's info attributes
+    string modInfo( const string &name );
+    void   modInfo( vector<string> &list );
+
     bool endRun( )	{ return mEndRun; }
     bool startCom( )	{ return mStartCom; }
     string startMod( )	{ return mStartMod; }
+    string style( );
+    string styleSheets( );
+    bool closeToTray( )	{ return mCloseToTray; }
 
     void setStartMod( const string &vl )	{ mStartMod = vl; modif(); }
-
+    void setStyle( const string &vl )		{ mStyle = vl; modif(); }
+    void setStyleSheets( const string &vl )	{ mStyleSheets = vl; modif(); }
+    void setCloseToTray( bool vl )		{ mCloseToTray = vl; modif(); }
     void modStart( );
     void modStop( );
+
+    void	splashSet( SplashFlag flg = SPLSH_NULL );
+
+public:
+    //Attributes
+    StApp	*QtApp;
 
 protected:
     //Methods
@@ -143,22 +179,29 @@ protected:
     void save_( );
     void cntrCmdProc( XMLNode *opt );		//Control interface command process
     void postEnable( int flag );
+    void preDisable( int flag );
     void postDisable( int flag );
 
 private:
+#ifndef EN_QtMainThrd
     //Methods
     static void *Task( void * );
+#endif
+
+    //Methods
     string	optDescr( );
     void	toQtArg( const char *nm, const char *arg = NULL );
 
     //Attributes
-    bool	demonMode, mEndRun, mStartCom;
-    string	mStartMod;
+    bool	hideMode, mEndRun, mStartCom, mCloseToTray;
+    MtxString	mStartMod, mStyle, mStyleSheets;
 
     // Command line options binding to Qt
     int		qtArgC, qtArgEnd;		//Arguments counter and end position
     char	*qtArgV[10];			//Argument's values
     char	qtArgBuf[1000];			//Arguments' strings buffer
+
+    QSplashScreen *splash;
 };
 
 extern TUIMod *mod;

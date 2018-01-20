@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.System file: os_contr.cpp
 /***************************************************************************
- *   Copyright (C) 2005-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2005-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -49,7 +49,7 @@
 #define MOD_NAME	_("System DA")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"2.1.0"
+#define MOD_VER		"2.2.0"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides data acquisition from the OS. Supported OS Linux data sources: HDDTemp, Sensors, Uptime, Memory, CPU, UPS etc.")
 #define LICENSE		"GPL2"
@@ -124,9 +124,8 @@ void TTpContr::postEnable( int flag )
     //Controler's bd structure
     fldAdd(new TFld("AUTO_FILL",_("Auto create active DA"),TFld::Integer,TFld::Selected,"1","0","0;1;2;3",_("Manual;Fast sources;Slow sources;All sources")));
     fldAdd(new TFld("PRM_BD",_("System parameters table"),TFld::String,TFld::NoFlag,"30","system"));
-    fldAdd(new TFld("PERIOD",_("Request data period (ms)"),TFld::Integer,TFld::NoFlag,"5","0","0;10000"));	//!!!! Remove at further
     fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
-    fldAdd(new TFld("PRIOR",_("Request task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
+    fldAdd(new TFld("PRIOR",_("Priority of the acquisition task"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
 
     //Parameter type bd structure
     // Make enumerated
@@ -176,7 +175,7 @@ void TTpContr::perSYSCall( unsigned int cnt )
 //* TMdContr                                      *
 //*************************************************
 TMdContr::TMdContr( string name_c, const string &daq_db, TElem *cfgelem) : TController(name_c,daq_db,cfgelem),
-    mPerOld(cfg("PERIOD").getId()), mPrior(cfg("PRIOR").getId()),
+    mPrior(cfg("PRIOR").getId()),
     prcSt(false), callSt(false), endrunReq(false), mPer(1e9)
 {
     cfg("PRM_BD").setS("OSPrm_"+name_c);
@@ -219,9 +218,6 @@ void TMdContr::load_( )
     if(!SYS->chkSelDB(DB())) throw TError();
 
     //TController::load_();
-
-    //Check for get old period method value
-    if(mPerOld) { cfg("SCHEDULE").setS(r2s(mPerOld/1e3)); mPerOld = 0; }
 }
 
 void TMdContr::enable_( )

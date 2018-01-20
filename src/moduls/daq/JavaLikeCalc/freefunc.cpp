@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.JavaLikeCalc file: freefunc.cpp
 /***************************************************************************
- *   Copyright (C) 2005-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2005-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -1768,13 +1768,25 @@ void Func::setValO( TValFunc *io, RegW &rg, AutoHD<TVarObj> val )
 
 void Func::calc( TValFunc *val )
 {
-    ResAlloc res(fRes(), false);
+    fRes().resRequestR();
+    if(!startStat()) { fRes().resRelease(); return; }
+
+    //Exec calc
+    try {
+	ExecData dt = { SYS->sysTm(), 0 };
+	exec(val, (const uint8_t*)prg.c_str(), dt);
+	if(dt.flg&0x08) throw TError(nodePath().c_str(),_("Function execution terminated by error"));
+    } catch(...) { fRes().resRelease(); throw; }
+    fRes().resRelease();
+
+    /*ResAlloc res(fRes(), false);
     if(!startStat()) return;
 
     //Exec calc
     ExecData dt = { SYS->sysTm(), 0 };
     exec(val, (const uint8_t*)prg.c_str(), dt);
-    if(dt.flg&0x08) throw TError(nodePath().c_str(),_("Function execution terminated by error"));
+    if(dt.flg&0x08) throw TError(nodePath().c_str(),_("Function execution terminated by error"));*/
+
 }
 
 void Func::exec( TValFunc *val, const uint8_t *cprg, ExecData &dt )
@@ -2576,7 +2588,7 @@ void Func::exec( TValFunc *val, const uint8_t *cprg, ExecData &dt )
 #ifdef OSC_DEBUG
 		if(mess_lev() == TMess::Debug) mess_debug(nodePath().c_str(), "%ph: Function %d=tr(%d).", cprg, ptr->rez, ptr->a);
 #endif
-		reg[ptr->rez] = Mess->translGetU(getValS(val,reg[ptr->a]),val->user(),"uapi:"+val->func()->stor());
+		reg[ptr->rez] = Mess->translGetLU(getValS(val,reg[ptr->a]),val->lang(),val->user(),"uapi:"+val->func()->stor());
 		cprg += sizeof(SCode); continue;
 	    }
 	    case Reg::CProc:
@@ -2590,6 +2602,7 @@ void Func::exec( TValFunc *val, const uint8_t *cprg, ExecData &dt )
 		    TValFunc *vfnc = val->ctxGet(ctxId);
 		    if(!vfnc) {
 			vfnc = new TValFunc("JavaLikeFuncCalc", fromR ? &reg[ptr->f_r].val().f->at() : &mFncs[ptr->f].at());
+			vfnc->setUser(val->user()); vfnc->setLang(val->lang());
 			val->ctxSet(ctxId, vfnc);
 		    }
 #ifdef OSC_DEBUG
@@ -2737,11 +2750,11 @@ void Func::cntrCmdProc( XMLNode *opt )
 	ctrMkNode("fld",opt,-1,"/func/cfg/descr",_("Description"),owner().DB().empty()?R_R_R_:RWRWR_,"root",SDAQ_ID,3,
 	    "tp","str","cols","100","rows","5");
 	ctrMkNode("fld",opt,-1,"/func/cfg/toStart",_("To start"),RWRWR_,"root",SDAQ_ID,1,"tp","bool");
-	ctrMkNode("fld",opt,-1,"/func/cfg/m_calc_tm",_("Maximum calculate time (sec)"),RWRWR_,"root",SDAQ_ID,3,
+	ctrMkNode("fld",opt,-1,"/func/cfg/m_calc_tm",_("Maximum calculate time, seconds"),RWRWR_,"root",SDAQ_ID,3,
 	    "tp","dec","min","0","max","3600");
 	if(ctrMkNode("area",opt,-1,"/io",_("Program"))) {
 	    if(ctrMkNode("table",opt,-1,"/io/io",_("IO"),RWRWR_,"root",SDAQ_ID,1,"s_com","add,del,ins,move")) {
-		ctrMkNode("list",opt,-1,"/io/io/0",_("Id"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
+		ctrMkNode("list",opt,-1,"/io/io/0",_("Identifier"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/io/io/1",_("Name"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/io/io/2",_("Type"),RWRWR_,"root",SDAQ_ID,5,"tp","dec","idm","1","dest","select",
 		    "sel_id",TSYS::strMess("%d;%d;%d;%d;%d;%d",IO::Real,IO::Integer,IO::Boolean,IO::String,IO::String|(IO::FullText<<8),IO::Object).c_str(),

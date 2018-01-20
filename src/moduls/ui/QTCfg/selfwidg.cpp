@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.QTCfg file: selfwidg.cpp
 /***************************************************************************
- *   Copyright (C) 2004-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2004-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -56,7 +56,9 @@ using namespace QTCFG;
 //************************************************
 ListView::ListView( QWidget * parent ) : QListWidget(parent)	{ }
 
-QSize ListView::sizeHint( ) const	{ return QSize(QListWidget::sizeHint().width(), QFontMetrics(font()).height()*5); }
+QSize ListView::sizeHint( ) const	{ return QSize(QListWidget::sizeHint().width(), QFontMetrics(font()).height()*4); }
+
+QSize ListView::minimumSizeHint( ) const	{ return QSize(QListWidget::minimumSizeHint().width(), QFontMetrics(font()).height()*4); }
 
 //*************************************************
 //* ImgView: Image view widget.                   *
@@ -338,12 +340,12 @@ bool LineEdit::event( QEvent * e )
 //*************************************************
 //* SyntxHighl: Syntax highlighter                *
 //*************************************************
-SyntxHighl::SyntxHighl(QTextDocument *parent) : QSyntaxHighlighter(parent)
+SyntxHighl::SyntxHighl( QTextDocument *parent ) : QSyntaxHighlighter(parent)
 {
 
 }
 
-void SyntxHighl::setSnthHgl(XMLNode nd)
+void SyntxHighl::setSnthHgl( XMLNode nd )
 {
     rules = nd;
 
@@ -364,10 +366,10 @@ void SyntxHighl::setSnthHgl(XMLNode nd)
     rehighlight();
 }
 
-void SyntxHighl::rule(XMLNode *irl, const QString &text, int off, char lev)
+void SyntxHighl::rule( XMLNode *irl, const QString &text, int off, char lev )
 {
     XMLNode *rl;
-    vector<int> rul_pos(irl->childSize(),-1);
+    vector<int> rul_pos(irl->childSize(), -1);
     int minPos = -1, minRule, endIndex, startBlk, sizeBlk;
     QTextCharFormat kForm;
     QRegExp expr;
@@ -378,25 +380,25 @@ void SyntxHighl::rule(XMLNode *irl, const QString &text, int off, char lev)
     int curBlk = (currentBlockState()>>(lev*8))&0xFF;
 
     //Stream process by rules
-    for(int i_t = 0; i_t < text.length(); ) {
-	if(curBlk && !i_t) { minRule = curBlk-1; minPos = 0; }
+    for(int iT = 0; iT < text.length(); ) {
+	if(curBlk && !iT) { minRule = curBlk-1; minPos = 0; }
 	else minRule = -1;
 
-	for(int i_ch = 0; i_t != minPos && i_ch < (int)irl->childSize(); i_ch++) {
-	    if(!(minPos < i_t || rul_pos[i_ch] < i_t || rul_pos[i_ch] < minPos)) continue;
-	    if(rul_pos[i_ch] >= i_t && rul_pos[i_ch] < minPos)	{ minPos = rul_pos[i_ch]; minRule = i_ch; continue; }
-	    if(rul_pos[i_ch] == i_t && rul_pos[i_ch] == minPos)	{ minRule = i_ch; break; }
+	for(int iCh = 0; iT != minPos && iCh < (int)irl->childSize(); iCh++) {
+	    if(!(minPos < iT || rul_pos[iCh] < iT || rul_pos[iCh] < minPos)) continue;
+	    if(rul_pos[iCh] >= iT && rul_pos[iCh] < minPos)	{ minPos = rul_pos[iCh]; minRule = iCh; continue; }
+	    if(rul_pos[iCh] == iT && rul_pos[iCh] == minPos)	{ minRule = iCh; break; }
 
 	    //Call rule
-	    rl = irl->childGet(i_ch);
+	    rl = irl->childGet(iCh);
 	    if(rl->name() == "rule")	expr.setPattern(rl->attr("expr").c_str());
 	    else if(rl->name() == "blk")expr.setPattern(rl->attr("beg").c_str());
 	    else continue;
 	    expr.setMinimal(s2i(rl->attr("min")));
-	    rul_pos[i_ch] = expr.indexIn(text,i_t);
+	    rul_pos[iCh] = expr.indexIn(text,iT);
 	    if(expr.matchedLength() <= 0) continue;
-	    if(rul_pos[i_ch] < 0) rul_pos[i_ch] = text.length();
-	    if(minPos < i_t || rul_pos[i_ch] < minPos) { minPos = rul_pos[i_ch]; minRule = i_ch; }
+	    if(rul_pos[iCh] < 0) rul_pos[iCh] = text.length();
+	    if(minPos < iT || rul_pos[iCh] < minPos) { minPos = rul_pos[iCh]; minRule = iCh; }
 	}
 	if(minRule < 0)	break;
 
@@ -409,18 +411,18 @@ void SyntxHighl::rule(XMLNode *irl, const QString &text, int off, char lev)
 	if(rl->name() == "rule") {
 	    expr.setPattern(rl->attr("expr").c_str());
 	    expr.setMinimal(s2i(rl->attr("min")));
-	    if(expr.indexIn(text,i_t) != rul_pos[minRule]) break;
+	    if(expr.indexIn(text,iT) != rul_pos[minRule]) break;
 	    setFormat(rul_pos[minRule]+off, expr.matchedLength(), kForm);
 	    //Call include rules
 	    if(rl->childSize()) rule(rl, text.mid(rul_pos[minRule],expr.matchedLength()), rul_pos[minRule]+off, lev+1);
-	    i_t = rul_pos[minRule]+expr.matchedLength();
+	    iT = rul_pos[minRule]+expr.matchedLength();
 	}
 	else if(rl->name() == "blk") {
 	    if(curBlk) rul_pos[minRule] = curBlk = startBlk = 0;
 	    else {
 		expr.setPattern(rl->attr("beg").c_str());
 		expr.setMinimal(s2i(rl->attr("min")));
-		if(expr.indexIn(text,i_t) != rul_pos[minRule]) break;
+		if(expr.indexIn(text,iT) != rul_pos[minRule]) break;
 		startBlk = rul_pos[minRule]+expr.matchedLength();
 	    }
 	    QRegExp eExpr(rl->attr("end").c_str());
@@ -429,12 +431,12 @@ void SyntxHighl::rule(XMLNode *irl, const QString &text, int off, char lev)
 	    if(endIndex == -1 || eExpr.matchedLength() <= 0) {
 		setFormat(rul_pos[minRule]+off, (text.length()-rul_pos[minRule]), kForm);
 		sizeBlk = text.length()-startBlk;
-		i_t = text.length();
+		iT = text.length();
 	    }
 	    else {
 		setFormat(rul_pos[minRule]+off, (endIndex-rul_pos[minRule]+eExpr.matchedLength()), kForm);
 		sizeBlk = endIndex-startBlk;
-		i_t = endIndex + eExpr.matchedLength();
+		iT = endIndex + eExpr.matchedLength();
 	    }
 	    //Call include rules
 	    if(rl->childSize()) rule(rl, text.mid(startBlk,sizeBlk), startBlk+off, lev+1);
@@ -445,7 +447,7 @@ void SyntxHighl::rule(XMLNode *irl, const QString &text, int off, char lev)
     }
 }
 
-void SyntxHighl::highlightBlock(const QString &text)
+void SyntxHighl::highlightBlock( const QString &text )
 {
     setCurrentBlockState((previousBlockState()<0)?0:previousBlockState());
     rule(&rules, text);
@@ -503,7 +505,14 @@ TextEdit::TextEdit( QWidget *parent, const char *name, bool prev_dis ) :
 
 QSize TextEdit::sizeHint( ) const
 {
-    return QSize(edFld->sizeHint().width(), 2*edFld->currentFont().pointSize()*mRowCol.height());
+    return QSize(edFld->sizeHint().width(), QFontMetrics(edFld->currentFont()).height()*(mRowCol.height()+2));
+					    //2*edFld->currentFont().pointSize()*(mRowCol.height()+1));
+}
+
+QSize TextEdit::minimumSizeHint( ) const
+{
+    return QSize(edFld->minimumSizeHint().width(), QFontMetrics(edFld->currentFont()).height()*(mRowCol.height()+2));
+						//2*edFld->currentFont().pointSize()*(mRowCol.height()+1));
 }
 
 bool TextEdit::isChanged( )		{ return (butBox && butBox->isVisible()); }
@@ -627,20 +636,20 @@ void TextEdit::find( )
     int fopt = (QTextDocument::FindFlag)actFind->objectName().section(':',0,0).toInt();
     QString fstr = actFind->objectName().section(':',1);
     if(sender() == actFind) {
-	InputDlg dlg(this,actFind->icon(),QString(_("Enter text string for search:")),_("String search"),0,0);
-	QLineEdit *le = new QLineEdit(fstr,&dlg);
+	InputDlg dlg(this,actFind->icon(), QString(_("Enter text string for search:")), _("String search"), 0, 0);
+	QLineEdit *le = new QLineEdit(fstr, &dlg);
 	dlg.edLay->addWidget(le, 0, 0);
-	QCheckBox *bw = new QCheckBox(_("Backward"),&dlg);
+	QCheckBox *bw = new QCheckBox(_("Backward"), &dlg);
 	if(fopt & QTextDocument::FindBackward) bw->setCheckState(Qt::Checked);
 	dlg.edLay->addWidget(bw, 1, 0);
-	QCheckBox *cs = new QCheckBox(_("Case sensitively"),&dlg);
+	QCheckBox *cs = new QCheckBox(_("Case sensitively"), &dlg);
 	if(fopt & QTextDocument::FindCaseSensitively) cs->setCheckState(Qt::Checked);
 	dlg.edLay->addWidget(cs, 2, 0);
-	QCheckBox *ww = new QCheckBox(_("Whole words"),&dlg);
+	QCheckBox *ww = new QCheckBox(_("Whole words"), &dlg);
 	if(fopt & QTextDocument::FindWholeWords) ww->setCheckState(Qt::Checked);
 	dlg.edLay->addWidget(ww, 3, 0);
 	le->setFocus(Qt::OtherFocusReason);
-	dlg.resize(400,210);
+	dlg.resize(400, 210);
 	if(dlg.exec() == QDialog::Accepted && !le->text().isEmpty()) {
 	    fopt = (QTextDocument::FindFlag)0;
 	    if(bw->checkState() == Qt::Checked) fopt |= QTextDocument::FindBackward;
@@ -793,7 +802,7 @@ void InputDlg::showEvent( QShowEvent * event )
 //* ReqIdNameDlg: Request node identifier and/or name *
 //*****************************************************
 ReqIdNameDlg::ReqIdNameDlg( QWidget *parent, const QIcon &icon, const QString &mess, const QString &ndlg ) :
-    InputDlg(parent, icon, mess, ndlg , 20, 500)
+    InputDlg(parent, icon, mess, ndlg, 1000, 10000)
 {
     itTpLab = new QLabel(_("Item type:"), this);
     edLay->addWidget(itTpLab, 0, 0);
@@ -814,9 +823,9 @@ void ReqIdNameDlg::setTargets( const vector<string> &tgs )
 {
     itTp->clear();
     int defPos = 0;
-    for(unsigned i_t = 0; i_t < tgs.size(); i_t++) {
-	itTp->addItem(TSYS::strSepParse(tgs[i_t],3,'\n').c_str(), tgs[i_t].c_str());
-	if(s2i(TSYS::strSepParse(tgs[i_t],4,'\n'))) defPos = itTp->count()-1;
+    for(unsigned iT = 0; iT < tgs.size(); iT++) {
+	itTp->addItem(TSYS::strSepParse(tgs[iT],3,'\n').c_str(), tgs[iT].c_str());
+	if(s2i(TSYS::strSepParse(tgs[iT],4,'\n'))) defPos = itTp->count()-1;
     }
     if(tgs.size()) itTp->setCurrentIndex(defPos);
     bool tpView = !(itTp->count()==1 && itTp->itemText(0).isEmpty());

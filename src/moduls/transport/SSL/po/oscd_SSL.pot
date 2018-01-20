@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-28 18:49+0300\n"
+"POT-Creation-Date: 2017-12-22 21:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgstr ""
 msgid "Roman Savochenko"
 msgstr ""
 
-msgid "Provides transport based on the secure sockets' layer. OpenSSL is used and SSLv2, SSLv3, TLSv1, TLSv1.1, TLSv1.2, DTLSv1 are supported."
+msgid "Provides transport based on the secure sockets' layer. OpenSSL is used and SSLv3, TLSv1, TLSv1.1, TLSv1.2, DTLSv1 are supported."
 msgstr ""
 
 msgid "Addition parameters"
@@ -33,7 +33,17 @@ msgid "Start error: "
 msgstr ""
 
 #, c-format
-msgid "Connections %d, opened %d. Traffic in %s, out %s. Closed connections by limit %d."
+msgid "Connections %d, opened %d. Traffic in %s, out %s. Closed connections by limit %d. "
+msgstr ""
+
+#, c-format
+msgid "Processing time %s[%s]. "
+msgstr ""
+
+msgid "Started"
+msgstr ""
+
+msgid "Stopped"
 msgstr ""
 
 #, c-format
@@ -67,11 +77,19 @@ msgid "The message is received with the size '%d'."
 msgstr ""
 
 #, c-format
+msgid "%d:Received from '%s'\n"
+msgstr ""
+
+#, c-format
 msgid "The message is replied with the size '%d'."
 msgstr ""
 
 #, c-format
-msgid "Socket has been disconnected by '%s'!"
+msgid "%d:Transmitted to '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "Has been disconnected by '%s'!"
 msgstr ""
 
 #, c-format
@@ -79,10 +97,22 @@ msgid "Socket has been terminated by execution: %s"
 msgstr ""
 
 #, c-format
+msgid "%d:Has been terminated by execution: %s"
+msgstr ""
+
+#, c-format
 msgid "New input protocol's object '%s' created!"
 msgstr ""
 
 msgid "Error request to protocol."
+msgstr ""
+
+#, c-format
+msgid "A new client %d from '%s' connected"
+msgstr ""
+
+#, c-format
+msgid "Client %d from '%s' disconnected"
 msgstr ""
 
 msgid "State"
@@ -93,10 +123,10 @@ msgstr ""
 
 msgid ""
 "SSL input transport has address format:\n"
-"  [addr]:[port]:[mode] - where:\n"
+"  {addr}:{port}[:{mode}] - where:\n"
 "    addr - address for SSL to be opened, '*' address opens for all interfaces;\n"
 "    port - network port (/etc/services);\n"
-"    mode - SSL mode and version (SSLv2, SSLv3, SSLv23, TLSv1, TLSv1_1, TLSv1_2, DTLSv1)."
+"    mode - SSL mode and version (SSLv3, SSLv23, TLSv1, TLSv1_1, TLSv1_2, DTLSv1)."
 msgstr ""
 
 msgid "Certificates and private key"
@@ -128,7 +158,7 @@ msgid ""
 "Zero value for disable (not close ever)."
 msgstr ""
 
-msgid "Keep alive timeout (s)"
+msgid "Keep alive timeout, seconds"
 msgstr ""
 
 msgid ""
@@ -140,11 +170,19 @@ msgid "Priority"
 msgstr ""
 
 #, c-format
-msgid "%s %d(%s): last %s; traffic in %s, out %s."
+msgid "%s %d(%s): last %s; traffic in %s, out %s; "
+msgstr ""
+
+#, c-format
+msgid "processing time %s[%s]; "
 msgstr ""
 
 #, c-format
 msgid "Traffic in %s, out %s."
+msgstr ""
+
+#, c-format
+msgid "Respond time %s[%s]. "
 msgstr ""
 
 #, c-format
@@ -198,11 +236,25 @@ msgid "Write error: %s"
 msgstr ""
 
 #, c-format
+msgid "Transmitting error: %s"
+msgstr ""
+
+#, c-format
 msgid "Wrote %s."
+msgstr ""
+
+msgid "Transmitted to\n"
+msgstr ""
+
+msgid "No data"
 msgstr ""
 
 #, c-format
 msgid "Read error: %s"
+msgstr ""
+
+#, c-format
+msgid "Receiving error: %s"
 msgstr ""
 
 msgid "Read timeouted."
@@ -216,15 +268,22 @@ msgid "Read (select) error: %s"
 msgstr ""
 
 #, c-format
+msgid "Receiving (select) error: %s"
+msgstr ""
+
+#, c-format
 msgid "Read %s."
+msgstr ""
+
+msgid "Received from\n"
 msgstr ""
 
 msgid ""
 "SSL output transport has address format:\n"
-"  [addr]:[port]:[mode] - where:\n"
+"  {addr}:{port}[:{mode}] - where:\n"
 "    addr - remote SSL host address;\n"
 "    port - network port (/etc/services);\n"
-"    mode - SSL mode and version (SSLv2, SSLv3, SSLv23, TLSv1, TLSv1_1, TLSv1_2, DTLSv1)."
+"    mode - SSL mode and version (SSLv3, SSLv23, TLSv1, TLSv1_1, TLSv1_2, DTLSv1)."
 msgstr ""
 
 msgid "Timings"

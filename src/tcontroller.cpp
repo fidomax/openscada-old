@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tcontroller.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -474,8 +474,8 @@ void TController::cntrCmdProc( XMLNode *opt )
 	if(ctrMkNode("area",opt,-1,"/cntr",_("Controller"))) {
 	    if(ctrMkNode("area",opt,-1,"/cntr/st",_("State"))) {
 		ctrMkNode("fld",opt,-1,"/cntr/st/status",_("Status"),R_R_R_,"root",SDAQ_ID,1,"tp","str");
-		ctrMkNode("fld",opt,-1,"/cntr/st/enSt",_("Enable"),RWRWR_,"root",SDAQ_ID,1,"tp","bool");
-		ctrMkNode("fld",opt,-1,"/cntr/st/runSt",_("Run"),RWRWR_,"root",SDAQ_ID,1,"tp","bool");
+		ctrMkNode("fld",opt,-1,"/cntr/st/enSt",_("Enabled"),RWRWR_,"root",SDAQ_ID,1,"tp","bool");
+		ctrMkNode("fld",opt,-1,"/cntr/st/runSt",_("Running"),RWRWR_,"root",SDAQ_ID,1,"tp","bool");
 		ctrMkNode("fld",opt,-1,"/cntr/st/db",_("Controller DB"),RWRWR_,"root",SDAQ_ID,4,
 		    "tp","str","dest","select","select","/db/list","help",TMess::labDB());
 	    }
@@ -496,18 +496,18 @@ void TController::cntrCmdProc( XMLNode *opt )
 	    }
 	}
 	if(ctrMkNode("area",opt,-1,"/mess",_("Diagnostics"))) {
-	    ctrMkNode("fld",opt,-1,"/mess/tm",_("Time, size (s) and level"),RWRW__,"root",SDAQ_ID,1,"tp","time");
+	    ctrMkNode("fld",opt,-1,"/mess/tm",_("Time, size (seconds) and level"),RWRW__,"root",SDAQ_ID,1,"tp","time");
 	    ctrMkNode("fld",opt,-1,"/mess/size","",RWRW__,"root",SDAQ_ID,1,"tp","dec");
 	    ctrMkNode("fld",opt,-1,"/mess/lvl","",RWRW__,"root",SDAQ_ID,5,"tp","dec","dest","select",
 		"sel_id","0;1;2;3;4;5;6;7",
 		"sel_list",_("Debug (0);Information (1);Notice (2);Warning (3);Error (4);Critical (5);Alert (6);Emergency (7)"),
-		"help",_("Get messages for level more and equal it.\n"
-			 "Also affect to specific-diagnostic messages generation by data source."));
+		"help",_("Display messages for larger or even levels.\n"
+			 "Also affects to specific-diagnostic messages generation by the data sources."));
 	    if(ctrMkNode("table",opt,-1,"/mess/mess",_("Messages"),R_R___,"root",SDAQ_ID)) {
 		ctrMkNode("list",opt,-1,"/mess/mess/0",_("Time"),R_R___,"root",SDAQ_ID,1,"tp","time");
 		ctrMkNode("list",opt,-1,"/mess/mess/0a",_("mcsec"),R_R___,"root",SDAQ_ID,1,"tp","dec");
 		ctrMkNode("list",opt,-1,"/mess/mess/1",_("Category"),R_R___,"root",SDAQ_ID,1,"tp","str");
-		ctrMkNode("list",opt,-1,"/mess/mess/2",_("Lev."),R_R___,"root",SDAQ_ID,1,"tp","dec");
+		ctrMkNode("list",opt,-1,"/mess/mess/2",_("Level"),R_R___,"root",SDAQ_ID,1,"tp","dec");
 		ctrMkNode("list",opt,-1,"/mess/mess/3",_("Message"),R_R___,"root",SDAQ_ID,1,"tp","str");
 	    }
 	}

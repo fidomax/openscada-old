@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tconfig.h
 /***************************************************************************
- *   Copyright (C) 2003-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -46,10 +46,9 @@ class TCfg : public TVariant
     public:
 	//Data
 	enum AttrFlg {
-	    TransltText	= 0x100,	//String value type: Use translation variable texts mechanism
-	    NoVal	= 0x200,	//No mirrore to value
-	    Key		= 0x400,	//Primary key
-	    Hide	= 0x800		//Attribute hide
+	    NoVal	= 0x100,	//Do not mirrore to value
+	    Key		= 0x200,	//Primary key
+	    Hide	= 0x400		//Hide attribute
 	};
 	enum ReqFlg {
 	    ForceUse	= 0x01,		//Force use flag
@@ -122,6 +121,7 @@ class TCfg : public TVariant
 	uint8_t	mExtVal		: 1;	//Double value mode: For key and translation processing,
 					//where TVariant type force to String and value separated by one value (set for key)
 					//and two value (base for key) by 0 symbol
+	uint8_t	mInCfgCh	: 1;
 
 	TFld	*mFld;
 	TConfig	&mOwner;

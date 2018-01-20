@@ -1374,8 +1374,8 @@ chrpath --delete %buildroot/%_bindir/openscada
 %__install -m 755 -pD data/oscada_RH.init %buildroot/%_initrddir/openscadad
 %__install -m 755 -d %buildroot/%_datadir/openscada/{DATA,icons,LibsDB,AGLKS,Boiler}
 
-ln -s openscada_start %buildroot/%_bindir/openscada_AGLKS
-ln -s openscada_start %buildroot/%_bindir/openscada_Boiler
+ln -s openscada %buildroot/%_bindir/openscada_AGLKS
+ln -s openscada %buildroot/%_bindir/openscada_Boiler
 
 %find_lang o.* %name.lang
 
@@ -1392,6 +1392,7 @@ ln -s openscada_start %buildroot/%_bindir/openscada_Boiler
 %_initrddir/openscadad
 %_bindir/openscada
 %_bindir/openscada_start
+%_bindir/openscada-proj
 %doc README README_ru README_uk COPYING ChangeLog INSTALL TODO TODO_ru TODO_uk
 %_libdir/*.so.*
 %_libdir/openscada/*.so
@@ -1447,9 +1448,11 @@ ln -s openscada_start %buildroot/%_bindir/openscada_Boiler
 
 %files plc
 %defattr(-,root,root)
+%config(noreplace) %_sysconfdir/oscada_plc.xml
 
 %files server
 %defattr(-,root,root)
+%config(noreplace) %_sysconfdir/oscada_server.xml
 
 %files visStation
 %defattr(-,root,root)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-27 17:23+0200\n"
+"POT-Creation-Date: 2018-01-13 20:28+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,7 +52,11 @@ msgid "No any expected respond but receive from modem %d: '%s'."
 msgstr ""
 
 #, c-format
-msgid "Traffic in %s, out %s. Maximum char timeout %.4g ms."
+msgid "Traffic in %s, out %s. Maximum char timeout %.4g ms. "
+msgstr ""
+
+#, c-format
+msgid "Processing time %s[%s]. "
 msgstr ""
 
 #, c-format
@@ -83,8 +87,17 @@ msgstr ""
 msgid "No response to initial request '%s'."
 msgstr ""
 
+msgid "Started"
+msgstr ""
+
+msgid "Stopped"
+msgstr ""
+
 #, c-format
 msgid "Serial received message '%d'."
+msgstr ""
+
+msgid "Received from\n"
 msgstr ""
 
 msgid "Error request to protocol."
@@ -99,6 +112,9 @@ msgstr ""
 
 #, c-format
 msgid "Write: error '%s (%d)'."
+msgstr ""
+
+msgid "Transmitted to\n"
 msgstr ""
 
 msgid ""
@@ -135,13 +151,13 @@ msgstr ""
 msgid "Modem"
 msgstr ""
 
-msgid "Timeout (sec)"
+msgid "Timeout, seconds"
 msgstr ""
 
-msgid "Pre-initial delay (sec)"
+msgid "Pre-initial delay, seconds"
 msgstr ""
 
-msgid "Post-initial delay (sec)"
+msgid "Post-initial delay, seconds"
 msgstr ""
 
 msgid "Initialization string 1"
@@ -164,6 +180,10 @@ msgstr ""
 
 #, c-format
 msgid "Traffic in %s, out %s. "
+msgstr ""
+
+#, c-format
+msgid "Respond time %s[%s:%s/1.5]. "
 msgstr ""
 
 #, c-format
@@ -206,6 +226,10 @@ msgid "Write error: %s"
 msgstr ""
 
 #, c-format
+msgid "Transmitting error: %s"
+msgstr ""
+
+#, c-format
 msgid "Wrote %s."
 msgstr ""
 
@@ -218,8 +242,15 @@ msgstr ""
 msgid "Read timeouted."
 msgstr ""
 
+msgid "Receiving timeouted"
+msgstr ""
+
 #, c-format
 msgid "Read (select) error: %s"
+msgstr ""
+
+#, c-format
+msgid "Receiving (select) error: %s"
 msgstr ""
 
 msgid "No data"
@@ -227,6 +258,10 @@ msgstr ""
 
 #, c-format
 msgid "Read error: %s"
+msgstr ""
+
+#, c-format
+msgid "Receiving error: %s"
 msgstr ""
 
 #, c-format
@@ -266,7 +301,7 @@ msgstr ""
 msgid "Sometime opened device closing can be breakage, on ICP-DAS LP PLC for example, then you alowed to prevent it by that option."
 msgstr ""
 
-msgid "Life time (sec)"
+msgid "Life time, seconds"
 msgstr ""
 
 msgid "Dial string"

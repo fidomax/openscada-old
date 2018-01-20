@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.JavaLikeCalc file: virtual.cpp
 /***************************************************************************
- *   Copyright (C) 2005-2017 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2005-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -36,7 +36,7 @@
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
 #define SUB_TYPE	"LIB"
-#define MOD_VER		"3.6.3"
+#define MOD_VER		"3.6.12"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides based on java like language calculator and engine of libraries. \
  The user can create and modify functions and libraries.")
@@ -93,9 +93,12 @@ void TpContr::modInfo( vector<string> &list )
     list.push_back("HighPriority");
 }
 
-string TpContr::modInfo( const string &name )
+string TpContr::modInfo( const string &iname )
 {
+    string name = TSYS::strParse(iname, 0, ":");
+
     if(name == "HighPriority")	return "1";
+
     return TModule::modInfo(name);
 }
 
@@ -119,28 +122,28 @@ void TpContr::postEnable( int flag )
     tpPrmAt(t_prm).fldAdd(new TFld("FLD",_("Data fields"),TFld::String,TFld::FullText|TCfg::NoVal,"300"));
 
     //Lib's db structure
-    lb_el.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
-    lb_el.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
-    lb_el.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TCfg::TransltText,"300"));
+    lb_el.fldAdd(new TFld("ID",_("Identifier"),TFld::String,TCfg::Key,OBJ_ID_SZ));
+    lb_el.fldAdd(new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,OBJ_NM_SZ));
+    lb_el.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::TransltText,"300"));
     lb_el.fldAdd(new TFld("DB",_("Data base"),TFld::String,TFld::NoFlag,"30"));
 
     //Function's structure
-    fnc_el.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
-    fnc_el.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
-    fnc_el.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TCfg::TransltText,"300"));
+    fnc_el.fldAdd(new TFld("ID",_("Identifier"),TFld::String,TCfg::Key,OBJ_ID_SZ));
+    fnc_el.fldAdd(new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,OBJ_NM_SZ));
+    fnc_el.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::TransltText,"300"));
     fnc_el.fldAdd(new TFld("START",_("To start"),TFld::Boolean,TFld::NoFlag,"1","1"));
-    fnc_el.fldAdd(new TFld("MAXCALCTM",_("Maximum calculate time (sec)"),TFld::Integer,TFld::NoFlag,"4","10","0;3600"));
-    fnc_el.fldAdd(new TFld("PR_TR",_("Program translation allow"),TFld::Boolean,TFld::NoFlag,"1","0"));
-    fnc_el.fldAdd(new TFld("FORMULA",_("Formula"),TFld::String,TCfg::TransltText,"1000000"));
+    fnc_el.fldAdd(new TFld("MAXCALCTM",_("Maximum calculate time, seconds"),TFld::Integer,TFld::NoFlag,"4","10","0;3600"));
+    fnc_el.fldAdd(new TFld("PR_TR",_("Allow program translation"),TFld::Boolean,TFld::NoFlag,"1","0"));
+    fnc_el.fldAdd(new TFld("FORMULA",_("Program"),TFld::String,TFld::TransltText,"1000000"));
     fnc_el.fldAdd(new TFld("TIMESTAMP",_("Date of modification"),TFld::Integer,TFld::DateTimeDec));
 
     //Function's IO structure
     fncio_el.fldAdd(new TFld("F_ID",_("Function ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
-    fncio_el.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
-    fncio_el.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
+    fncio_el.fldAdd(new TFld("ID",_("Identifier"),TFld::String,TCfg::Key,OBJ_ID_SZ));
+    fncio_el.fldAdd(new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,OBJ_NM_SZ));
     fncio_el.fldAdd(new TFld("TYPE",_("Type"),TFld::Integer,TFld::NoFlag,"1"));
     fncio_el.fldAdd(new TFld("MODE",_("Mode"),TFld::Integer,TFld::NoFlag,"1"));
-    fncio_el.fldAdd(new TFld("DEF",_("Default value"),TFld::String,TCfg::TransltText,"20"));
+    fncio_el.fldAdd(new TFld("DEF",_("Default value"),TFld::String,TFld::TransltText,"20"));
     fncio_el.fldAdd(new TFld("HIDE",_("Hide"),TFld::Boolean,TFld::NoFlag,"1"));
     fncio_el.fldAdd(new TFld("POS",_("Position"),TFld::Integer,TFld::NoFlag,"3"));
 
@@ -256,7 +259,7 @@ string TpContr::compileFunc( const string &lang, TFunction &fnc_cfg, const strin
 	    func.free();
 	    lbAt("sys_compile").at().del(funcId.c_str());
 	}
-	throw TError(nodePath().c_str(),_("Compile error: %s"),err.mess.c_str());
+	throw TError((nodePath()+"sys_compile/"+funcId).c_str(), _("Compile error: %s"), err.mess.c_str());
     }
 
     return func.at().nodePath(0,true);
@@ -346,7 +349,7 @@ void TpContr::cntrCmdProc( XMLNode *opt )
 	TTypeDAQ::cntrCmdProc(opt);
 	ctrMkNode("grp",opt,-1,"/br/lib_",_("Library"),RWRWR_,"root",SDAQ_ID,2,"idm",OBJ_NM_SZ,"idSz",OBJ_ID_SZ);
 	if(ctrMkNode("area",opt,0,"/prm",MOD_ID))
-	    ctrMkNode("fld",opt,-1,"/prm/safeTm",_("Safe timeout (sec)"),RWRWR_,"root",SDAQ_ID,3,"tp","dec","min","0","max","3600");
+	    ctrMkNode("fld",opt,-1,"/prm/safeTm",_("Safe timeout, seconds"),RWRWR_,"root",SDAQ_ID,3,"tp","dec","min","0","max","3600");
 	if(ctrMkNode("area",opt,1,"/libs",_("Functions' Libraries")))
 	    ctrMkNode("list",opt,-1,"/libs/lb",_("Libraries"),RWRWR_,"root",SDAQ_ID,5,
 		"tp","br","idm",OBJ_NM_SZ,"s_com","add,del","br_pref","lib_","idSz",OBJ_ID_SZ);
@@ -635,7 +638,7 @@ void Contr::cntrCmdProc( XMLNode *opt )
 	ctrMkNode("fld",opt,-1,"/cntr/cfg/PRIOR",cfg("PRIOR").fld().descr(),startStat()?R_R_R_:RWRWR_,"root",SDAQ_ID,1,"help",TMess::labTaskPrior());
 	if(enableStat() && ctrMkNode("area",opt,-1,"/fnc",_("Calculation"))) {
 	    if(ctrMkNode("table",opt,-1,"/fnc/io",_("Data"),RWRWR_,"root",SDAQ_ID,1,"s_com","add,del,ins,move"/*,"rows","15"*/)) {
-		ctrMkNode("list",opt,-1,"/fnc/io/0",_("Id"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
+		ctrMkNode("list",opt,-1,"/fnc/io/0",_("Identifier"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/fnc/io/1",_("Name"),RWRWR_,"root",SDAQ_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/fnc/io/2",_("Type"),RWRWR_,"root",SDAQ_ID,5,"tp","dec","idm","1","dest","select",
 		    "sel_id",TSYS::strMess("%d;%d;%d;%d;%d;%d",IO::Real,IO::Integer,IO::Boolean,IO::String,IO::String|(IO::FullText<<8),IO::Object).c_str(),

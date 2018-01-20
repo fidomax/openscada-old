@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.LogicLev file: logiclev.cpp
 /***************************************************************************
- *   Copyright (C) 2006-2017 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2006-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -36,10 +36,10 @@
 //*************************************************
 //* Modul info!                                   *
 #define MOD_ID		"LogicLev"
-#define MOD_NAME	_("Logic level")
+#define MOD_NAME	_("Logical level")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"1.7.5"
+#define MOD_VER		"1.8.1"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides the logical level of parameters.")
 #define LICENSE		"GPL2"
@@ -50,12 +50,12 @@ LogicLev::TTpContr *LogicLev::mod;	//Pointer for direct access to the module
 extern "C"
 {
 #ifdef MOD_INCL
-    TModule::SAt daq_LogicLev_module( int n_mod )
+    TModule::SAt daq_LogicLev_module( int nMod )
 #else
-    TModule::SAt module( int n_mod )
+    TModule::SAt module( int nMod )
 #endif
     {
-	if(n_mod == 0)	return TModule::SAt(MOD_ID, MOD_TYPE, VER_TYPE);
+	if(nMod == 0)	return TModule::SAt(MOD_ID, MOD_TYPE, VER_TYPE);
 	return TModule::SAt("");
     }
 
@@ -100,9 +100,8 @@ void TTpContr::postEnable( int flag )
     //Controler's bd structure
     fldAdd(new TFld("PRM_BD",_("Parameters table by template"),TFld::String,TFld::NoFlag,"40",""));
     fldAdd(new TFld("PRM_BD_REFL",_("Parameters table for reflection"),TFld::String,TFld::NoFlag,"50",""));
-    fldAdd(new TFld("PERIOD",_("Request data period (ms)"),TFld::Integer,TFld::NoFlag,"5","0","0;10000"));	//!!!! Remove at further
-    fldAdd(new TFld("SCHEDULE",_("Calculate schedule"),TFld::String,TFld::NoFlag,"100", "1"));
-    fldAdd(new TFld("PRIOR",_("Request task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
+    fldAdd(new TFld("SCHEDULE",_("Schedule of the calculation"),TFld::String,TFld::NoFlag,"100", "1"));
+    fldAdd(new TFld("PRIOR",_("Priority of the acquisition task"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
 
     //Parameter type bd structure
     // Standard parameter type by template
@@ -110,8 +109,8 @@ void TTpContr::postEnable( int flag )
     tpPrmAt(t_prm).fldAdd(new TFld("PRM",_("Parameter template"),TFld::String,TCfg::NoVal,"100",""));
     //  Logical level parameter IO BD structure
     elPrmIO.fldAdd(new TFld("PRM_ID",_("Parameter ID"),TFld::String,TCfg::Key,i2s(atoi(OBJ_ID_SZ)*6).c_str()));
-    elPrmIO.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
-    elPrmIO.fldAdd(new TFld("VALUE",_("Value"),TFld::String,TCfg::TransltText,"200"));
+    elPrmIO.fldAdd(new TFld("ID",_("Identifier"),TFld::String,TCfg::Key,OBJ_ID_SZ));
+    elPrmIO.fldAdd(new TFld("VALUE",_("Value"),TFld::String,TFld::TransltText,"1000000"));
 
     // A parameter direct reflection
     t_prm = tpParmAdd("pRefl", "PRM_BD_REFL", _("Parameter reflection"), true);
@@ -124,8 +123,7 @@ TController *TTpContr::ContrAttach( const string &name, const string &daq_db )	{
 //* TMdContr                                      *
 //*************************************************
 TMdContr::TMdContr( string name_c, const string &daq_db, ::TElem *cfgelem) : ::TController(name_c,daq_db,cfgelem), enRes(true),
-    mPerOld(cfg("PERIOD").getId()), mPrior(cfg("PRIOR").getId()),
-    prcSt(false), callSt(false), endrunReq(false), mPer(1e9)
+    mPrior(cfg("PRIOR").getId()), prcSt(false), callSt(false), endrunReq(false), mPer(1e9)
 {
     cfg("PRM_BD").setS("LogLevPrm_"+name_c);
     cfg("PRM_BD_REFL").setS("LogLevPrmRefl_"+name_c);
@@ -169,9 +167,6 @@ void TMdContr::load_( )
     if(!SYS->chkSelDB(DB())) throw TError();
 
     //TController::load_();
-
-    //Check for get old period method value
-    if(mPerOld) { cfg("SCHEDULE").setS(r2s(mPerOld/1e3)); mPerOld = 0; modif(true); }
 }
 
 void TMdContr::start_( )
@@ -211,7 +206,7 @@ void *TMdContr::Task( void *icntr )
 
     bool isStart = true;
     bool isStop  = false;
-    int64_t tCnt1, tCnt2;
+    int64_t tCnt1 = 0, tCnt2 = 0;
 
     while(true) {
 	//Update controller's data
@@ -302,7 +297,7 @@ void TMdContr::cntrCmdProc( XMLNode *opt )
 //*************************************************
 TMdPrm::TMdPrm( string name, TTypeParam *tp_prm ) :
     TParamContr(name,tp_prm), tmCalc(0), tmCalcMax(0), prmRefl(NULL), pEl("w_attr"), chkLnkNeed(false),
-    idFreq(-1), idStart(-1), idStop(-1), idSh(-1), idNm(-1), idDscr(-1)
+    idFreq(-1), idStart(-1), idStop(-1), idErr(-1), idSh(-1), idNm(-1), idDscr(-1)
 {
     setType(type().name);
 }
@@ -598,7 +593,7 @@ void TMdPrm::vlGet( TVal &val )
 	if(isStd() && tmpl->val.func() && idErr >= 0) {
 	    if(tmpl->val.getS(idErr) != EVAL_STR) val.setS(tmpl->val.getS(idErr), 0, true);
 	} else val.setS("0", 0, true);
-	if(owner().messLev() == TMess::Debug)
+	if(owner().messLev() == TMess::Debug && (idErr < 0 || tmpl->val.getS(idErr) != EVAL_STR))
 	    val.setS(val.getS(NULL,true)+": "+TSYS::strMess(_("Spent time %s[%s]"),tm2s(tmCalc).c_str(),tm2s(tmCalcMax).c_str()), 0, true);
     }
 }
@@ -611,8 +606,8 @@ void TMdPrm::vlSet( TVal &vo, const TVariant &vl, const TVariant &pvl )
     if(owner().redntUse()) {
 	if(vl == pvl) return;
 	XMLNode req("set");
-	req.setAttr("path",nodePath(0,true)+"/%2fserv%2fattr")->childAdd("el")->setAttr("id",vo.name())->setText(vl.getS());
-	SYS->daq().at().rdStRequest(owner().workId(),req);
+	req.setAttr("path", nodePath(0,true)+"/%2fserv%2fattr")->childAdd("el")->setAttr("id", vo.name())->setText(vl.getS());
+	SYS->daq().at().rdStRequest(owner().workId(), req);
 	return;
     }
 

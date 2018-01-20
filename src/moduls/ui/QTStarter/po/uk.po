@@ -1,13 +1,13 @@
 # OpenSCADA.UI.QTStarter translate to Ukrainian.
 # This file is distributed under the same license as the OpenSCADA.UI.QTStarter package module.
 #
-# Roman Savochenko <rom_as@oscada.org>, 2005-2015.
+# Roman Savochenko <rom_as@oscada.org>, 2005-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.UI.QTStarter 1.6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-08 11:24+0300\n"
+"POT-Creation-Date: 2018-01-13 20:53+0200\n"
 "PO-Revision-Date: 2007-10-29 22:03+0200\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <uk@li.org>\n"
@@ -479,20 +479,23 @@ msgstr "Додатково"
 msgid "Mon"
 msgstr "Пон"
 
+msgid "Hold at reloading in different project."
+msgstr "Утримувати при перевантажені до іншого проекту."
+
 msgid "Load module."
 msgstr "Завантаження модуля."
 
 msgid "Save module."
 msgstr "Збереження модуля."
 
-msgid "Start module."
-msgstr "Запуск модуля."
+msgid "Starting the module..."
+msgstr "Запуск модуля..."
 
-msgid "Stop module."
-msgstr "Зупинка модуля."
+msgid "Stopping the module..."
+msgstr "Зупинка модуля..."
 
 msgid ""
-"======================= The module <%s:%s> options =======================\n"
+"======================= Module <%s:%s> options =======================\n"
 "----------- Qt debug commandline options ----------\n"
 "    --noX11                Prevent Qt start, mostly for pure console.\n"
 "    --sync                 Switches to synchronous mode X11 for debugging.\n"
@@ -516,12 +519,13 @@ msgid ""
 "    --geometry=<geom>      Sets the client geometry of the first window that "
 "is shown.\n"
 "---------- Parameters of the module section '%s' in config-file ----------\n"
-"StartMod  <moduls>    Start modules list (sep - ';').\n"
+"StartMod    <moduls>       Start modules list (sep - ';').\n"
 "\n"
 msgstr ""
 "========================= Опції модуля <%s:%s> ===========================\n"
 "------ Налагоджувані параметри Qt, командного рядка --\n"
-"    --noX11                Запобігати запуску Qt, переважно для чистої консолі.\n"
+"    --noX11                Запобігати запуску Qt, переважно для чистої "
+"консолі.\n"
 "    --sync                 Переключення у синхроний режим X11 для "
 "налагодження.\n"
 "    --widgetcount          Друк налагоджувальних повідомлень при виході, у "
@@ -544,7 +548,7 @@ msgstr ""
 "    --geometry=<геом>      Встановити клієнтську геометрію першого "
 "відображуваного вікна.\n"
 "-------- Параметри модульної секції '%s' у конфігураційному файлі --------\n"
-"StartMod  <модулі>    Перелік запускаємих модулів (розд. - ';');\n"
+"StartMod    <модулі>       Перелік запускаємих модулів (розд. - ';');\n"
 "\n"
 
 msgid "Module options"
@@ -553,8 +557,29 @@ msgstr "Опції модуля"
 msgid "Start Qt modules (sep - ';')"
 msgstr "Запускаємі Qt модулі (розд. - ';')"
 
-msgid "OpenSCADA system Qt-starter"
-msgstr "Qt-стартер системи OpenSCADA"
+msgid "Style"
+msgstr "Стилі"
+
+msgid "Style Sheets"
+msgstr "Таблиці Стилів"
+
+msgid "Close (all windows) or start to tray"
+msgstr "Закривати (всі вікна) або запускати у трей"
+
+msgid "OpenSCADA Project: %1"
+msgstr "OpenSCADA Проект: %1"
+
+msgid "Exit from the program"
+msgstr "Вихід з програми"
+
+msgid "Qt-starter of OpenSCADA"
+msgstr "Qt-пускач OpenSCADA"
+
+msgid "Project: %1"
+msgstr "Проект: %1"
+
+msgid "OpenSCADA start"
+msgstr "Запуск OpenSCADA"
 
 msgid "&About"
 msgstr "&Про ..."
@@ -562,11 +587,8 @@ msgstr "&Про ..."
 msgid "Program and OpenSCADA information"
 msgstr "Інформація про програму та OpenSCADA"
 
-msgid "The button for display program and OpenSCADA information"
-msgstr "Кнопка для відображення інформації про програму та OpenSCADA"
-
-msgid "Press to display program and OpenSCADA information"
-msgstr "Натиснути для відображення інформації про програму та OpenSCADA"
+msgid "The button for display program and OpenSCADA information."
+msgstr "Кнопка для відображення інформації про програму та OpenSCADA."
 
 msgid "About &Qt"
 msgstr "Про &Qt"
@@ -574,20 +596,14 @@ msgstr "Про &Qt"
 msgid "Qt information"
 msgstr "Qt інформація"
 
-msgid "The button for getting the using Qt information"
-msgstr "Кнопка для отримання інформації про використання Qt"
-
-msgid "Press to get the using Qt information."
-msgstr "Натиснути для отримання інформації про використання Qt."
+msgid "The button for getting the using Qt information."
+msgstr "Кнопка для отримання інформації про використання Qt."
 
 msgid "%1 manual"
 msgstr "%1 підручник"
 
-msgid "The button for getting the using %1 manual"
-msgstr "Кнопка для отримання підручника %1"
-
-msgid "Press to get the using %1 manual."
-msgstr "Натиснути для отримання підручника %1."
+msgid "The button for getting the using %1 manual."
+msgstr "Кнопка для отримання підручника %1."
 
 msgid "What's &This"
 msgstr "Що &це"
@@ -595,14 +611,15 @@ msgstr "Що &це"
 msgid "Question about GUI elements"
 msgstr "Питання про GUI елементи"
 
-msgid "The button for requesting the information about user interface elements"
-msgstr "Кнопка для запиту інформації про елементи інтерфейсу користувача"
-
-msgid "Press for requesting about user interface elements"
-msgstr "Натисніть для запиту інформації про елементи інтерфейсу користувача"
+msgid ""
+"The button for requesting the information about user interface elements."
+msgstr "Кнопка для запиту інформації про елементи інтерфейсу користувача."
 
 msgid "&Help"
 msgstr "&Допомога"
+
+msgid "Qt modules of OpenSCADA"
+msgstr "Qt модулі OpenSCADA"
 
 msgid "Call the Qt-based UI module '%1'"
 msgstr "Виклик базованого на Qt модуля '%1'"
@@ -624,14 +641,50 @@ msgstr ""
 "Опис: %6\n"
 "Ліцензія: %7"
 
-msgid "Exit from the system"
-msgstr "Вийти з системи"
+msgid "Projects of OpenSCADA"
+msgstr "Проекти OpenSCADA"
 
-msgid "Exit from the program"
-msgstr "Вихід з програми"
+msgid "List of allowed to call/switch projects of OpenSCADA"
+msgstr "Перелік проектів OpenSCADA доступних для виклику/переключення"
 
-msgid "The button for exit from the program"
-msgstr "Кнопка для виходу з програми"
+msgid "The list for call and switch to allowed projects of OpenSCADA."
+msgstr "Перелік проектів OpenSCADA доступних для виклику та переключення."
+
+msgid "<Creation-updating>"
+msgstr "<Створення-оновлення>"
+
+msgid ""
+"New projects creation or updating of presented ones, like to desktop links"
+msgstr ""
+"Створення нових проектів або оновлення наявних, на кшталт посилань робочої "
+"стільниці"
+
+msgid "=== User projects ==="
+msgstr "=== Користувацькі проекти ==="
+
+msgid "current"
+msgstr "поточний"
+
+msgid "running"
+msgstr "виконується"
+
+msgid "=== Common projects ==="
+msgstr "=== Загальні проекти ==="
+
+msgid "Switch to the selected project"
+msgstr "Переключитися на обраний проект"
+
+msgid "Call the selected project"
+msgstr "Викликати обраний проект"
+
+msgid "The button for switch to the selected project."
+msgstr "Кнопка для переключення на обраний проект."
+
+msgid "The button for call the selected project."
+msgstr "Кнопка для виклику обраного проекту."
+
+msgid "The button for exit from the program."
+msgstr "Кнопка для виходу з програми."
 
 #, c-format
 msgid ""
@@ -662,6 +715,33 @@ msgstr "Підручник"
 
 msgid "No the manual '%1' found offline or online!"
 msgstr "Не знайдено підручника локально та у мережі!"
+
+msgid "New project or project to update"
+msgstr "Новий проект або проект для оновлення"
+
+msgid "Project name for new one creation or to update present one:"
+msgstr "Ім'я проекту для створення нового або оновлення існуючого:"
+
+msgid "Empty name of the project is unavailable!"
+msgstr "Порожне ім'я проекту недозволене!"
+
+msgid "Switch project"
+msgstr "Переключити проект"
+
+msgid "Do you really want to change the current project \"%1\" to \"%2\"?"
+msgstr "Ви дійсно бажаєте змінити поточний проект \"%1\" на \"%2\"?"
+
+msgid "Call project"
+msgstr "Викликати проект"
+
+msgid "Project \"%1\" seems running now! You still want to switch the project?"
+msgstr "Проект \"%1\" схоже виконується! Ви ще бажаєте переключити проект?"
+
+msgid "Project \"%1\" seems running now! You still want to call the project?"
+msgstr "Проект \"%1\" схоже виконується! Ви ще бажаєте викликати проект?"
+
+msgid "Project \"%1\" seems wrong or broken!"
+msgstr "Проект \"%1\" схоже помилковий або зламаний!"
 
 #, c-format
 msgid "No translated Qt message: '%s'"

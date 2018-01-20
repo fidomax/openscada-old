@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tmess.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,11 +23,13 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <langinfo.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <string.h>
 #include <errno.h>
+#if defined(__ANDROID__)
+#include <android/log.h>
+#endif
 
 #include <algorithm>
 
@@ -35,11 +37,18 @@
 #include "resalloc.h"
 #include "tmess.h"
 
+#ifdef HAVE_LANGINFO_H
+# include <langinfo.h>
+#endif
 #ifdef HAVE_ICONV_H
 #include <iconv.h>
 #endif
 #ifdef HAVE_LIBINTL_H
 #include <libintl.h>
+#endif
+
+#ifdef HAVE_LIBINTL_H
+extern int _nl_msg_cat_cntr;	//Detection counter of an environment of language changes of gettext
 #endif
 
 using namespace OSCADA;
@@ -48,25 +57,29 @@ using namespace OSCADA;
 //* TMess                                         *
 //*************************************************
 TMess::TMess( ) : IOCharSet("UTF-8"), mMessLevel(Info), mLogDir(DIR_STDOUT|DIR_ARCHIVE),
-    mConvCode(true), mIsUTF8(true), mTranslDyn(false), mTranslDynPlan(false), mTranslEnMan(false), mTranslSet(false), mRes(true)
+    mConvCode(true), mIsUTF8(true), mTranslDyn(false), mTranslDynPlan(false), mTranslEnMan(false), mTranslSet(false),
+    mRes(true), mLang2CodeBase(mRes), mLang2Code(mRes), getMessRes(true)
 {
     openlog(PACKAGE, 0, LOG_USER);
 
     setenv("LC_NUMERIC", "C", 1);
-    setlocale(LC_ALL,"");
+    setlocale(LC_ALL, "");
+#ifdef HAVE_LANGINFO_H
     IOCharSet = nl_langinfo(CODESET);
+#endif
 
 #ifdef HAVE_LIBINTL_H
     bindtextdomain(PACKAGE, localedir_full);
     textdomain(PACKAGE);
 #endif
 
-    mLang2Code = lang();
-    if(mLang2Code.size() < 2 || mLang2Code == "POSIX" || mLang2Code == "C") mLang2Code = "en";
-    else mLang2Code = mLang2Code.substr(0,2);
+    string tLng = lang();
+    mLang2Code = tLng;
+    if(mLang2Code.size() < 2 || mLang2Code.getVal() == "POSIX" || mLang2Code.getVal() == "C") mLang2Code = "en";
+    else mLang2Code = mLang2Code.getVal().substr(0,2);
     mIsUTF8 = (IOCharSet == "UTF-8" || IOCharSet == "UTF8" || IOCharSet == "utf8");
 
-    if(mLang2Code == "en" && (IOCharSet.compare(0,10,"ISO-8859-1")==0 || IOCharSet.compare(0,14,"ANSI_X3.4-1968")==0))
+    if(tLng == "C" || (mLang2Code.getVal() == "en" && (IOCharSet == "ISO-8859-1" || IOCharSet == "ANSI_X3.4-1968" || IOCharSet == "ASCII" || IOCharSet == "US-ASCII")))
 	mConvCode = false;
 }
 
@@ -105,8 +118,8 @@ void TMess::put( const char *categ, int8_t level, const char *fmt,  ... )
 
 	// Check for match to selectDebugCats
 	bool matchOK = false;
-	for(unsigned i_dc = 0; !matchOK && i_dc < selectDebugCats.size(); i_dc++)
-	    matchOK = (strncmp(categ,selectDebugCats[i_dc].c_str(),selectDebugCats[i_dc].size()) == 0);
+	for(unsigned iDC = 0; !matchOK && iDC < selectDebugCats.size(); iDC++)
+	    matchOK = (strncmp(categ,selectDebugCats[iDC].c_str(),selectDebugCats[iDC].size()) == 0);
 	if(!matchOK) return;
     }
 
@@ -137,7 +150,24 @@ void TMess::putArg( const char *categ, int8_t level, const char *fmt, va_list ap
     //string sMess = i2s(level) + "|" + categ + " | " + mess;
     string sMess = i2s(level) + "[" + categ + "] " + mess;
 
-    if(mLogDir & DIR_SYSLOG) {
+#if defined(__ANDROID__)
+    if(mLogDir&(DIR_SYSLOG|DIR_STDOUT|DIR_STDERR)) {
+	int level_sys;
+	switch((int8_t)abs(level)) {
+	    case Debug:		level_sys = ANDROID_LOG_DEBUG;	break;
+	    case Info:		level_sys = ANDROID_LOG_INFO;	break;
+	    case Notice:	level_sys = ANDROID_LOG_DEFAULT;break;
+	    case Warning:	level_sys = ANDROID_LOG_WARN;	break;
+	    case Error:		level_sys = ANDROID_LOG_ERROR;	break;
+	    case Crit:
+	    case Alert:
+	    case Emerg:		level_sys = ANDROID_LOG_FATAL;	break;
+	    default: 		level_sys = ANDROID_LOG_DEFAULT;
+	}
+	__android_log_vprint(level_sys, PACKAGE_NAME, sMess.c_str(), ap);
+    }
+#else
+    if(mLogDir&DIR_SYSLOG) {
 	int level_sys;
 	switch((int8_t)abs(level)) {
 	    case Debug:		level_sys = LOG_DEBUG;	break;
@@ -154,6 +184,8 @@ void TMess::putArg( const char *categ, int8_t level, const char *fmt, va_list ap
     }
     if(mLogDir&DIR_STDOUT)	fprintf(stdout, "%s %s\n", atm2s(SYS->sysTm(),"%Y-%m-%dT%H:%M:%S").c_str(), sMess.c_str());
     if(mLogDir&DIR_STDERR)	fprintf(stderr, "%s %s\n", atm2s(SYS->sysTm(),"%Y-%m-%dT%H:%M:%S").c_str(), sMess.c_str());
+#endif
+
     if((mLogDir&DIR_ARCHIVE) && SYS->present("Archive"))
 	SYS->archive().at().messPut(ctm/1000000, ctm%1000000, categ, level, mess);
 }
@@ -168,9 +200,9 @@ string TMess::translFld( const string &lng, const string &fld, bool isCfg )	{ re
 void TMess::setLang2CodeBase( const string &vl )
 {
     mLang2CodeBase = vl;
-    if((!mLang2CodeBase.empty() && mLang2CodeBase.size() < 2) || mLang2CodeBase == "POSIX" || mLang2CodeBase == "C")
+    if((!mLang2CodeBase.empty() && mLang2CodeBase.size() < 2) || mLang2CodeBase.getVal() == "POSIX" || mLang2CodeBase.getVal() == "C")
 	mLang2CodeBase = "en";
-    else mLang2CodeBase = mLang2CodeBase.substr(0,2);
+    else mLang2CodeBase = mLang2CodeBase.getVal().substr(0,2);
 
     SYS->modif();
 }
@@ -299,12 +331,20 @@ string TMess::translGetU( const string &base, const string &user, const string &
     return translGet(base, (SYS->security().at().usrPresent(user)?SYS->security().at().usrAt(user).at().lang():lang2Code()), src);
 }
 
+string TMess::translGetLU( const string &base, const string &lang, const string &user, const string &src )
+{
+    if(lang.size()) return translGet(base, lang, src);
+    return translGetU(base, user, src);
+}
+
 string TMess::translSet( const string &base, const string &lang, const string &mess, bool *needReload )
 {
     if(!translDyn() && !needReload) return mess;
 
     string trLang = lang2Code();
-    if(lang.size() >= 2) trLang = lang.substr(0,2);
+    if(lang.size() >= 2)	trLang = lang.substr(0,2);
+    else if(trLang.empty())	trLang = lang2Code();
+    if(base.empty() && mess.size())	trLang = lang2CodeBase();
     bool chBase = (trLang == lang2CodeBase());
 
     MtxAlloc res(mRes, true);
@@ -342,6 +382,12 @@ string TMess::translSetU( const string &base, const string &user, const string &
 {
     if(!translDyn() && !needReload) return mess;
     return translSet(base, (SYS->security().at().usrPresent(user)?SYS->security().at().usrAt(user).at().lang():lang2Code()), mess, needReload);
+}
+
+string TMess::translSetLU( const string &base, const string &lang, const string &user, const string &mess, bool *needReload )
+{
+    if(lang.size()) return translSet(base, lang, mess, needReload);
+    return translSetU(base, user, mess, needReload);
 }
 
 void TMess::translReg( const string &mess, const string &src, const string &prms )
@@ -413,16 +459,21 @@ void TMess::setLang( const string &lng, bool init )
 {
     char *prvLng = NULL;
     if((prvLng=getenv("LANGUAGE")) && strlen(prvLng)) setenv("LANGUAGE", lng.c_str(), 1);
-    else setenv("LC_MESSAGES", lng.c_str(), 1);
-    //setenv("LANG", lng.c_str(), 1);	//!!!! May be use further for the miss environment force set
+    //else setenv("LC_MESSAGES", lng.c_str(), 1);
+    else setenv("LANG", lng.c_str(), 1);	//!!!! May be use further for the miss environment force set
     setlocale(LC_ALL, "");
 
+#ifdef HAVE_LANGINFO_H
     IOCharSet = nl_langinfo(CODESET);
+#endif
 
-    mLang2Code = lang();
-    if(mLang2Code.size() < 2 || mLang2Code == "POSIX" || mLang2Code == "C") mLang2Code = "en";
-    else mLang2Code = mLang2Code.substr(0, 2);
+    string tLng = lang();
+    mLang2Code = tLng;
+    if(mLang2Code.size() < 2 || mLang2Code.getVal() == "POSIX" || mLang2Code.getVal() == "C") mLang2Code = "en";
+    else mLang2Code = mLang2Code.getVal().substr(0, 2);
     mIsUTF8 = (IOCharSet == "UTF-8" || IOCharSet == "UTF8" || IOCharSet == "utf8");
+
+    mConvCode = !(tLng == "C" || (mLang2Code.getVal() == "en" && (IOCharSet == "ISO-8859-1" || IOCharSet == "ANSI_X3.4-1968" || IOCharSet == "ASCII" || IOCharSet == "US-ASCII")));
 
     if(init) SYS->sysModifFlgs &= ~TSYS::MDF_LANG;
     else { SYS->sysModifFlgs |= TSYS::MDF_LANG; SYS->modif(); }
@@ -436,7 +487,12 @@ string TMess::codeConv( const string &fromCH, const string &toCH, const string &
     //Make convert to blocks 1000 bytes
     string buf;
     buf.reserve(mess.size());
-    char   *ibuf, outbuf[1000], *obuf;
+# if defined(__UCLIBC__)
+    const char	*ibuf;
+# else
+    char	*ibuf;
+# endif
+    char	outbuf[1000], *obuf;
     size_t ilen, olen, chwrcnt = 0;
     iconv_t hd;
 
@@ -473,10 +529,40 @@ string TMess::codeConv( const string &fromCH, const string &toCH, const string &
 #endif
 }
 
-const char *TMess::I18N( const char *mess, const char *d_name )
+const char *TMess::I18N( const char *mess, const char *d_name, const char *mLang )
 {
 #ifdef HAVE_LIBINTL_H
-    return dgettext(d_name, mess);
+    getMessRes.lock();
+    if(translDyn()) {
+	if(!mLang || !strlen(mLang)) {
+	    setenv("LANGUAGE", "", 1);
+	    //setenv("LC_MESSAGES", "", 1);
+	    ++_nl_msg_cat_cntr;	//Make change known.
+	    getMessLng = "";
+	}
+	else if(getMessLng != mLang) {
+	    setenv("LANGUAGE", mLang, 1);
+	    //setenv("LC_MESSAGES", mLang, 1);
+	    ++_nl_msg_cat_cntr;	//Make change known.
+	    getMessLng = mLang;
+	}
+    }
+    const char *rez = dgettext(d_name, mess);
+
+    /*bool chLng = (mLang && strlen(mLang) && translDyn());
+    if(chLng) {
+	setenv("LANGUAGE", mLang, 1);
+	//setenv("LC_MESSAGES", mLang, 1);
+	++_nl_msg_cat_cntr;	//Make change known.
+    }
+    const char *rez = dgettext(d_name, mess);
+    if(chLng) {
+	setenv("LANGUAGE", "", 1);
+	//setenv("LC_MESSAGES", "", 1);
+	++_nl_msg_cat_cntr;	//Make change known.
+    }*/
+    getMessRes.unlock();
+    return rez;
 #else
     return mess;
 #endif
@@ -485,14 +571,14 @@ const char *TMess::I18N( const char *mess, const char *d_name )
 void TMess::load( )
 {
     //Load params from command line
-    string argCom, argVl;
-    for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
-	if(strcasecmp(argCom.c_str(),"h") == 0 || strcasecmp(argCom.c_str(),"help") == 0) return;
-	else if(strcasecmp(argCom.c_str(),"messlev") == 0) {
-	    int i = atoi(optarg);
-	    if(i >= Debug && i <= Emerg) setMessLevel(i);
-	}
-	else if(strcasecmp(argCom.c_str(),"log") == 0) setLogDirect(s2i(argVl));
+    string argVl;
+    if(s2i(SYS->cmdOpt("h")) || s2i(SYS->cmdOpt("help"))) return;
+    if((argVl=SYS->cmdOpt("lang")).size()) setLang(argVl, true);
+    if((argVl=SYS->cmdOpt("messLev")).size()) {
+	int i = s2i(argVl);
+	if(i >= Debug && i <= Emerg) setMessLevel(i);
+    }
+    if((argVl=SYS->cmdOpt("log")).size()) setLogDirect(s2i(argVl));
 
     //Load params config-file
     setMessLevel(s2i(TBDS::genDBGet(SYS->nodePath()+"MessLev",i2s(messLevel()),"root",TBDS::OnlyCfg)));
@@ -502,6 +588,21 @@ void TMess::load( )
     mLang2CodeBase = TBDS::genDBGet(SYS->nodePath()+"Lang2CodeBase",mLang2CodeBase,"root",TBDS::OnlyCfg);
     setTranslDyn(s2i(TBDS::genDBGet(SYS->nodePath()+"TranslDyn",i2s(translDyn()),"root",TBDS::OnlyCfg)), false);
     setTranslEnMan(translDyn() || s2i(TBDS::genDBGet(SYS->nodePath()+"TranslEnMan",i2s(translEnMan()),"root",TBDS::OnlyCfg)), true);
+}
+
+void TMess::unload( )
+{
+    mRes.lock();
+    debugCats.clear();
+    selectDebugCats.clear();
+
+    mTranslLangs = "";
+    trMessIdx.clear();
+    trMessCache.clear();
+    mRes.unlock();
+
+    IOCharSet = "UTF-8", mMessLevel = Info, mLogDir = DIR_STDOUT|DIR_ARCHIVE;
+    mConvCode = mIsUTF8 = true, mTranslDyn = mTranslDynPlan = mTranslEnMan = mTranslSet = false;
 }
 
 void TMess::save( )
@@ -517,15 +618,15 @@ void TMess::save( )
 
 const char *TMess::labDB( )
 {
-    return _("DB address in format [<DB module>.<DB name>].\n"
-	     "For use main work DB set '*.*'.");
+    return _("DB address in format \"{DB module}.{DB name}\".\n"
+	     "Set '*.*' for use the main work DB.");
 }
 
 const char *TMess::labSecCRON( )
 {
-    return _("Schedule is wrote in seconds periodic form or in standard CRON form.\n"
-	     "Seconds form is one real number (1.5, 1e-3).\n"
-	     "Cron it is standard form \"* * * * *\".\n"
+    return _("Schedule wrotes in seconds periodic form or in the standard CRON form.\n"
+	     "The seconds periodic form is one real number (1.5, 1e-3).\n"
+	     "Cron is the standard form \"* * * * *\".\n"
 	     "  Where items by order:\n"
 	     "    - minutes (0-59);\n"
 	     "    - hours (0-23);\n"
@@ -534,13 +635,13 @@ const char *TMess::labSecCRON( )
 	     "    - week day (0[Sunday]-6).\n"
 	     "  Where an item variants:\n"
 	     "    - \"*\" - any value;\n"
-	     "    - \"1,2,3\" - allowed values;\n"
+	     "    - \"1,2,3\" - allowed values list;\n"
 	     "    - \"1-5\" - raw range of allowed values;\n"
 	     "    - \"*/2\" - range divider for allowed values.\n"
 	     "Examples:\n"
-	     "  \"1e-3\" - periodic call by one millisecond;\n"
+	     "  \"1e-3\" - call with a period of one millisecond;\n"
 	     "  \"* * * * *\" - each minute;\n"
-	     "  \"10 23 * * *\" - only 23 hour and 10 minute for any day and month;\n"
+	     "  \"10 23 * * *\" - only at 23 hour and 10 minute for any day and month;\n"
 	     "  \"*/2 * * * *\" - for minutes: 0,2,4,...,56,58;\n"
 	     "  \"* 2-4 * * *\" - for any minutes in hours from 2 to 4(include).");
 }
@@ -554,4 +655,31 @@ const char *TMess::labTaskPrior( )
 	     "  0         - standard userspace priority;\n"
 	     "  1...99    - realtime priority level (round-robin), often allowed only for \"root\";\n"
 	     "  100...199 - realtime priority level (FIFO), often allowed only for \"root\".");
+}
+
+const char *TMess::labMessCat( )
+{
+    return _("Specifies the category of the requested messages.\n"
+	     "Use template's symbols for group selection:\n  '*' - any substring;\n  '?' - any character.\n"
+	     "Regular expression enclosed between the symbols '/' (/mod_(System|LogicLev)/).");
+}
+
+int TMess::getUTF8( const string &str, int off, int32_t *symb )
+{
+    if(off < 0 || off >= (int)str.size())	return 0;
+    if(!isUTF8() || !(str[off]&0x80)) {
+	if(symb) *symb = (uint8_t)str[off];
+	return 1;
+    }
+    int len = 0;
+    int32_t rez = 0;
+    if((str[off]&0xE0) == 0xC0)		{ len = 2; rez = str[off]&0x1F; }
+    else if((str[off]&0xF0) == 0xE0)	{ len = 3; rez = str[off]&0x0F; }
+    else if((str[off]&0xF8) == 0xF0)	{ len = 4; rez = str[off]&0x07; }
+    if((off+len) > (int)str.size())	return 0;
+    for(int iSmb = 1; iSmb < len; iSmb++)
+	if((str[off+iSmb]&0xC0) != 0x80) return 0;
+	else rez = (rez<<6) | (str[off+iSmb]&0x3F);
+    if(symb) *symb = rez;
+    return len;
 }

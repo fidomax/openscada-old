@@ -39,7 +39,7 @@
 #define MOD_NAME	_("AMR devices")
 #define MOD_TYPE	SDAQ_ID
 #define VER_TYPE	SDAQ_VER
-#define MOD_VER		"0.6.11"
+#define MOD_VER		"0.6.14"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides access to automatic meter reading devices. Supported devices: Kontar (http://www.mzta.ru).")
 #define LICENSE		"GPL2"
@@ -141,7 +141,7 @@ void TTpContr::postEnable( int flag )
     //Controler's bd generic structure
     fldAdd(new TFld("SCHEDULE",_("Acquisition schedule"),TFld::String,TFld::NoFlag,"100","1"));
     fldAdd(new TFld("PRIOR",_("Gather task priority"),TFld::Integer,TFld::NoFlag,"2","0","-1;199"));
-    fldAdd(new TFld("TM_REST",_("Restore timeout (s)"),TFld::Integer,TFld::NoFlag,"3","30","1;3600"));
+    fldAdd(new TFld("TM_REST",_("Restore timeout, seconds"),TFld::Integer,TFld::NoFlag,"3","30","1;3600"));
     fldAdd(new TFld("REQ_TRY",_("Request tries"),TFld::Integer,TFld::NoFlag,"1","1","1;10"));
 
     //Parameter types append
@@ -187,7 +187,7 @@ void TMdContr::start_( )
     if(prc_st) return;
 
     //Schedule process
-    mPer = TSYS::strSepParse(cron(),1,' ').empty() ? vmax(0,(int64_t)(1e9*atof(cron().c_str()))) : 0;
+    mPer = TSYS::strSepParse(cron(),1,' ').empty() ? vmax(0,(int64_t)(1e9*s2r(cron()))) : 0;
 
     //Start the gathering data task
     SYS->taskCreate(nodePath('.',true), mPrior, TMdContr::Task, this);

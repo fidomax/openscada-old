@@ -3,13 +3,13 @@
 #
 # Irina Popkova <IrischkaPopkova@yandex.ru>, 2009, 2011.
 # Klaus Fetscher <k.fetscher@fetron.de>, 2009.
-# Roman Savochenko <rom_as@oscada.org>, 2014-2015.
+# Roman Savochenko <rom_as@oscada.org>, 2014-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.UI.QTStarter 1.6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-08 11:24+0300\n"
+"POT-Creation-Date: 2018-01-13 20:53+0200\n"
 "PO-Revision-Date: 2011-07-19 20:56+0400\n"
 "Last-Translator: Irina Popkova <IrischkaPopkova@yandex.ru>\n"
 "Language-Team: German <de@li.org>\n"
@@ -483,20 +483,23 @@ msgstr "Erweitert"
 msgid "Mon"
 msgstr "Mon"
 
+msgid "Hold at reloading in different project."
+msgstr "Beim Neuladen in verschiedenen Projekten halten."
+
 msgid "Load module."
 msgstr "Modul laden."
 
 msgid "Save module."
 msgstr "Modul speichern."
 
-msgid "Start module."
-msgstr "Modul starten."
+msgid "Starting the module..."
+msgstr "Starten des Moduls ..."
 
-msgid "Stop module."
-msgstr "Modul anhalten."
+msgid "Stopping the module..."
+msgstr "Stoppen des Moduls ..."
 
 msgid ""
-"======================= The module <%s:%s> options =======================\n"
+"======================= Module <%s:%s> options =======================\n"
 "----------- Qt debug commandline options ----------\n"
 "    --noX11                Prevent Qt start, mostly for pure console.\n"
 "    --sync                 Switches to synchronous mode X11 for debugging.\n"
@@ -520,13 +523,14 @@ msgid ""
 "    --geometry=<geom>      Sets the client geometry of the first window that "
 "is shown.\n"
 "---------- Parameters of the module section '%s' in config-file ----------\n"
-"StartMod  <moduls>    Start modules list (sep - ';').\n"
+"StartMod    <moduls>       Start modules list (sep - ';').\n"
 "\n"
 msgstr ""
 "======================== Optionen des Moduls <%s:%s> "
 "============================\n"
 "------ Evaluation Parameter der Qt, die Befehlszeile --\n"
-"    --noX11                Verhindern, dass Qt starten, vor allem für reine Konsole.\n"
+"    --noX11                Verhindern, dass Qt starten, vor allem für reine "
+"Konsole.\n"
 "    --sync                 Schaltet auf Synchronmodus X11 zum Debuggen.\n"
 "    --widgetcount          Drucken Debugging-Meldungen an der Ausfahrt, die "
 "verbleibende\n"
@@ -549,7 +553,7 @@ msgstr ""
 "    --geometry=<Geom>      Installieren Sie den Client Geometrie der ersten "
 "Display-Fenster.\n"
 "------- Parameter des Abschnitts '%s' in der Konfigurationsdatei ---------\n"
-"StartMod  <moduls>    Liste der Startmodulen (Trennzeichen - ';');\n"
+"StartMod    <moduls>       Liste der Startmodulen (Trennzeichen - ';');\n"
 "\n"
 
 msgid "Module options"
@@ -558,8 +562,29 @@ msgstr "Optionen des Moduls"
 msgid "Start Qt modules (sep - ';')"
 msgstr "Qt-Startmodule (trenn. - ';')"
 
-msgid "OpenSCADA system Qt-starter"
-msgstr "Qt-Starter des Systems OpenSCADA"
+msgid "Style"
+msgstr "Stil"
+
+msgid "Style Sheets"
+msgstr "Stilvorlagen"
+
+msgid "Close (all windows) or start to tray"
+msgstr "Schließe (alle Fenster) oder beginne mit dem Tray"
+
+msgid "OpenSCADA Project: %1"
+msgstr "OpenSCADA Projekt: %1"
+
+msgid "Exit from the program"
+msgstr "Ausfahrt aus dem Programm"
+
+msgid "Qt-starter of OpenSCADA"
+msgstr "Qt-Starter von OpenSCADA"
+
+msgid "Project: %1"
+msgstr "Projekt: %1"
+
+msgid "OpenSCADA start"
+msgstr "OpenSCADA starten"
 
 msgid "&About"
 msgstr "&Über"
@@ -567,11 +592,8 @@ msgstr "&Über"
 msgid "Program and OpenSCADA information"
 msgstr "Programm und OpenSCADA Information"
 
-msgid "The button for display program and OpenSCADA information"
-msgstr "Schaltfläche für Informationen über Programm und OpenSCADA"
-
-msgid "Press to display program and OpenSCADA information"
-msgstr "Betätigen um Informationen über Programm und OpenSCADA zu erhalten"
+msgid "The button for display program and OpenSCADA information."
+msgstr "Die Schaltfläche für das Anzeigeprogramm und OpenSCADA-Informationen."
 
 msgid "About &Qt"
 msgstr "Über &Qt"
@@ -579,20 +601,14 @@ msgstr "Über &Qt"
 msgid "Qt information"
 msgstr "Qt Information"
 
-msgid "The button for getting the using Qt information"
-msgstr "Schaltfläche für Informationen über Qt"
-
-msgid "Press to get the using Qt information."
-msgstr "Betätigen um Informationen über Qt zu erhalten."
+msgid "The button for getting the using Qt information."
+msgstr "Die Schaltfläche zum Abrufen der verwendeten Qt-Informationen."
 
 msgid "%1 manual"
 msgstr "%1 Handbuch"
 
-msgid "The button for getting the using %1 manual"
-msgstr "Schaltfläche für %1 Handbuch"
-
-msgid "Press to get the using %1 manual."
-msgstr "Betätigen um %1 Handbuch."
+msgid "The button for getting the using %1 manual."
+msgstr "Die Schaltfläche zum Abrufen des %1 Handbuchs."
 
 msgid "What's &This"
 msgstr "Was ist &das"
@@ -600,14 +616,17 @@ msgstr "Was ist &das"
 msgid "Question about GUI elements"
 msgstr "Hilfe über die Elemente der Benutzerschnittstelle"
 
-msgid "The button for requesting the information about user interface elements"
-msgstr "Schaltfläche für Informationen über die Benutzerschnittstelle"
-
-msgid "Press for requesting about user interface elements"
-msgstr "Betätigen um Informationen über die Benutzerschnittstelle zu erhalten"
+msgid ""
+"The button for requesting the information about user interface elements."
+msgstr ""
+"Die Schaltfläche zum Anfordern von Informationen zu "
+"Benutzeroberflächenelementen."
 
 msgid "&Help"
 msgstr "&Hilfe"
+
+msgid "Qt modules of OpenSCADA"
+msgstr "Qt-Module von OpenSCADA"
 
 msgid "Call the Qt-based UI module '%1'"
 msgstr "Rufen Sie die Qt-basierte UI-Modul '%1'"
@@ -629,14 +648,50 @@ msgstr ""
 "Beschreibung: %6\n"
 "Lizenz: %7"
 
-msgid "Exit from the system"
-msgstr "System verlassen"
+msgid "Projects of OpenSCADA"
+msgstr "Projekte von OpenSCADA"
 
-msgid "Exit from the program"
-msgstr "Ausfahrt aus dem Programm"
+msgid "List of allowed to call/switch projects of OpenSCADA"
+msgstr "Liste der erlaubten Aufrufe/Wechsel von Projekten von OpenSCADA"
 
-msgid "The button for exit from the program"
-msgstr "Die Schaltfläche für die Ausreise aus dem Programm"
+msgid "The list for call and switch to allowed projects of OpenSCADA."
+msgstr "Die Liste für Anruf und Wechsel zu erlaubten Projekten von OpenSCADA."
+
+msgid "<Creation-updating>"
+msgstr "<Erstellungsaktualisierung>"
+
+msgid ""
+"New projects creation or updating of presented ones, like to desktop links"
+msgstr ""
+"Neue Projekte erstellen oder aktualisieren von vorgestellten, wie Desktop-"
+"Links"
+
+msgid "=== User projects ==="
+msgstr "=== Benutzerprojekte ==="
+
+msgid "current"
+msgstr "aktuell"
+
+msgid "running"
+msgstr "laufen"
+
+msgid "=== Common projects ==="
+msgstr "=== Gemeinsame Projekte ==="
+
+msgid "Switch to the selected project"
+msgstr "Wechseln Sie zum ausgewählten Projekt"
+
+msgid "Call the selected project"
+msgstr "Rufen Sie das ausgewählte Projekt"
+
+msgid "The button for switch to the selected project."
+msgstr "Die Schaltfläche zum Wechseln zum ausgewählten Projekt."
+
+msgid "The button for call the selected project."
+msgstr "Die Schaltfläche zum Aufrufen des ausgewählten Projekts."
+
+msgid "The button for exit from the program."
+msgstr "Die Taste zum Verlassen des Programms."
 
 #, c-format
 msgid ""
@@ -667,6 +722,38 @@ msgstr "Handbuch"
 
 msgid "No the manual '%1' found offline or online!"
 msgstr "Nein das Handbuch '%1' gefunden, offline oder online!"
+
+msgid "New project or project to update"
+msgstr "Neues Projekt oder Projekt zum Aktualisieren"
+
+msgid "Project name for new one creation or to update present one:"
+msgstr ""
+"Projektname für eine neue Kreation oder um die aktuelle zu aktualisieren:"
+
+msgid "Empty name of the project is unavailable!"
+msgstr "Der leere Name des Projekts ist nicht verfügbar!"
+
+msgid "Switch project"
+msgstr "Projekt wechseln"
+
+msgid "Do you really want to change the current project \"%1\" to \"%2\"?"
+msgstr "Möchten Sie das aktuelle Projekt \"%1\" wirklich in \"%2\" ändern?"
+
+msgid "Call project"
+msgstr "Projekt aufrufen"
+
+msgid "Project \"%1\" seems running now! You still want to switch the project?"
+msgstr ""
+"Project \"%1\" scheint jetzt zu laufen! Sie möchten das Projekt trotzdem "
+"wechseln?"
+
+msgid "Project \"%1\" seems running now! You still want to call the project?"
+msgstr ""
+"Project \"%1\" scheint jetzt zu laufen! Sie möchten das Projekt trotzdem "
+"aufrufen?"
+
+msgid "Project \"%1\" seems wrong or broken!"
+msgstr "Project \"%1\" scheint falsch oder defekt!"
 
 #, c-format
 msgid "No translated Qt message: '%s'"

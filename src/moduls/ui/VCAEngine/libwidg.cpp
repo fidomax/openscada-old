@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.VCAEngine file: libwidg.cpp
 /***************************************************************************
- *   Copyright (C) 2006-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2006-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -326,14 +326,14 @@ void WidgetLib::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("grp",opt,-1,"/br/wdg_",_("Widget"),RWRWR_,"root",SUI_ID,2,"idm","1","idSz","30");
 	if(ctrMkNode("area",opt,-1,"/obj",_("Library"))) {
 	    if(ctrMkNode("area",opt,-1,"/obj/st",_("State"))) {
-		ctrMkNode("fld",opt,-1,"/obj/st/en",_("Enable"),RWRWR_,"root",SUI_ID,1,"tp","bool");
+		ctrMkNode("fld",opt,-1,"/obj/st/en",_("Enabled"),RWRWR_,"root",SUI_ID,1,"tp","bool");
 		ctrMkNode("fld",opt,-1,"/obj/st/db",_("Library DB"),RWRWR_,"root",SUI_ID,4,
 		    "tp","str","dest","sel_ed","select",("/db/tblList:wlb_"+id()).c_str(),
 		    "help",_("DB address in format [<DB module>.<DB name>.<Table name>].\nFor use main work DB set '*.*'."));
 		ctrMkNode("fld",opt,-1,"/obj/st/timestamp",_("Date of modification"),R_R_R_,"root",SUI_ID,1,"tp","time");
 	    }
 	    if(ctrMkNode("area",opt,-1,"/obj/cfg",_("Configuration"))) {
-		ctrMkNode("fld",opt,-1,"/obj/cfg/id",_("Id"),R_R_R_,"root",SUI_ID,1,"tp","str");
+		ctrMkNode("fld",opt,-1,"/obj/cfg/id",_("Identifier"),R_R_R_,"root",SUI_ID,1,"tp","str");
 		ctrMkNode("fld",opt,-1,"/obj/cfg/name",_("Name"),RWRWR_,"root",SUI_ID,2,"tp","str","len",OBJ_NM_SZ);
 		ctrMkNode("fld",opt,-1,"/obj/cfg/descr",_("Description"),RWRWR_,"root",SUI_ID,3,"tp","str","cols","100","rows","3");
 		ctrMkNode("img",opt,-1,"/obj/cfg/ico",_("Icon"),RWRWR_,"root",SUI_ID,2,"v_sz","64","h_sz","64");
@@ -343,7 +343,7 @@ void WidgetLib::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("list",opt,-1,"/wdg/wdg",_("Widgets"),RWRWR_,"root",SUI_ID,5,"tp","br","idm","1","s_com","add,del","br_pref","wdg_","idSz","30");
 	if(ctrMkNode("area",opt,-1,"/mime",_("Mime data")))
 	    if(ctrMkNode("table",opt,-1,"/mime/mime",_("Mime data"),RWRWR_,"root",SUI_ID,2,"s_com","add,del","key","id")) {
-		ctrMkNode("list",opt,-1,"/mime/mime/id",_("Id"),RWRWR_,"root",SUI_ID,1,"tp","str");
+		ctrMkNode("list",opt,-1,"/mime/mime/id",_("Identifier"),RWRWR_,"root",SUI_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/mime/mime/tp",_("Mime type"),RWRWR_,"root",SUI_ID,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/mime/mime/dt",_("Data"),RWRWR_,"root",SUI_ID,2,"tp","str","dest","data");
 	    }
@@ -351,7 +351,7 @@ void WidgetLib::cntrCmdProc( XMLNode *opt )
     }
 
     //Process command to page
-    string a_path = opt->attr("path"), u = opt->attr("user");
+    string a_path = opt->attr("path"), u = opt->attr("user"), l = opt->attr("lang");
     if(a_path == "/obj/st/en") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SUI_ID,SEC_RD))	opt->setText(i2s(enable()));
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SUI_ID,SEC_WR))	setEnable(s2i(opt->text()));
@@ -373,19 +373,19 @@ void WidgetLib::cntrCmdProc( XMLNode *opt )
     }
     else if(a_path == "/obj/cfg/id" && ctrChkNode(opt,"get",R_R_R_,"root",SUI_ID)) opt->setText(id());
     else if(a_path == "/obj/cfg/name") {
-	if(ctrChkNode(opt,"get",RWRWR_,"root",SUI_ID,SEC_RD))	opt->setText(trU(name(),u));
-	if(ctrChkNode(opt,"set",RWRWR_,"root",SUI_ID,SEC_WR))	setName(trSetU(name(),u,opt->text()));
+	if(ctrChkNode(opt,"get",RWRWR_,"root",SUI_ID,SEC_RD))	opt->setText(trLU(name(),l,u));
+	if(ctrChkNode(opt,"set",RWRWR_,"root",SUI_ID,SEC_WR))	setName(trSetLU(name(),l,u,opt->text()));
     }
     else if(a_path == "/obj/cfg/descr") {
-	if(ctrChkNode(opt,"get",RWRWR_,"root",SUI_ID,SEC_RD))	opt->setText(trU(descr(),u));
-	if(ctrChkNode(opt,"set",RWRWR_,"root",SUI_ID,SEC_WR))	setDescr(trSetU(descr(),u,opt->text()));
+	if(ctrChkNode(opt,"get",RWRWR_,"root",SUI_ID,SEC_RD))	opt->setText(trLU(descr(),l,u));
+	if(ctrChkNode(opt,"set",RWRWR_,"root",SUI_ID,SEC_WR))	setDescr(trSetLU(descr(),l,u,opt->text()));
     }
     else if(a_path == "/br/wdg_" || a_path == "/wdg/wdg") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SUI_ID,SEC_RD)) {
 	    vector<string> lst;
 	    list(lst);
 	    for(unsigned i_f=0; i_f < lst.size(); i_f++)
-		opt->childAdd("el")->setAttr("id",lst[i_f])->setText(trU(at(lst[i_f]).at().name(),u));
+		opt->childAdd("el")->setAttr("id",lst[i_f])->setText(trLU(at(lst[i_f]).at().name(),l,u));
 	}
 	if(ctrChkNode(opt,"add",RWRWR_,"root",SUI_ID,SEC_WR)) {
 	    string vid = TSYS::strEncode(opt->attr("id"),TSYS::oscdID);
@@ -715,6 +715,8 @@ void LWidget::wdgAdd( const string &wid, const string &name, const string &path,
     if(!isContainer())	throw TError(nodePath().c_str(),_("Widget is not container!"));
     if(wdgPresent(wid))	return;
 
+    bool toRestoreInher = false;
+
     //Check for label <deleted>
     if(!force) {
 	string db  = ownerLib().DB();
@@ -723,19 +725,27 @@ void LWidget::wdgAdd( const string &wid, const string &name, const string &path,
 	cEl.cfg("IDW").setS(id());
 	cEl.cfg("ID").setS(wid);
 	if(SYS->db().at().dataGet(db+"."+tbl,mod->nodePath()+tbl,cEl,false,true) && cEl.cfg("PARENT").getS() == "<deleted>") {
-	    if(!parent().at().wdgPresent(wid))	SYS->db().at().dataDel(db+"."+tbl, mod->nodePath()+tbl, cEl, true, false, true);
-	    else throw TError(nodePath().c_str(),_("You try to create widget with name '%s' of the widget that was the early inherited and deleted from base container!"),wid.c_str());
+	    SYS->db().at().dataDel(db+"."+tbl, mod->nodePath()+tbl, cEl, true, false, true);
+	    toRestoreInher = parent().at().wdgPresent(wid);
 	}
     }
 
-    //Same widget add
-    chldAdd(inclWdg,new CWidget(wid,path));
-    wdgAt(wid).at().setName(name);
+    //Same widget addition or restoring
+    if(toRestoreInher) {
+	inheritIncl(wid);
+	wdgAt(wid).at().setEnable(true);
+    }
+    else {
+	chldAdd(inclWdg, new CWidget(wid,path));
+	wdgAt(wid).at().setName(name);
+    }
 
     //Call heritors include widgets update
-    for(unsigned i_h = 0; i_h < mHerit.size(); i_h++)
-	if(mHerit[i_h].at().enable())
-	    mHerit[i_h].at().inheritIncl(wid);
+    for(unsigned iH = 0; iH < mHerit.size(); iH++)
+	if(mHerit[iH].at().enable())
+	    mHerit[iH].at().inheritIncl(wid);
+
+    if(toRestoreInher)	throw TError("warning", _("Restoring '%s' from the base container!"), wid.c_str());
 }
 
 AutoHD<CWidget> LWidget::wdgAt( const string &wdg ) const	{ return Widget::wdgAt(wdg); }
@@ -764,16 +774,27 @@ string LWidget::resourceGet( const string &id, string *mime )
     return mimeData;
 }
 
+void LWidget::procChange( bool src )
+{
+    if(!src && proc().size()) return;
+
+    //Update heritors procedures
+    for(unsigned iH = 0; iH < mHerit.size(); iH++)
+	if(mHerit[iH].at().enable())
+	    mHerit[iH].at().procChange(false);
+}
+
 void LWidget::inheritAttr( const string &attr )
 {
     bool mdf = isModify();
-    Widget::inheritAttr( attr );
-    if(!mdf)	modifClr( );
+    Widget::inheritAttr(attr);
+    if(!mdf)	modifClr();
 }
 
 bool LWidget::cfgChange( TCfg &co, const TVariant &pc )
 {
     if(co.name() == "PR_TR") cfg("PROC").setNoTransl(!calcProgTr());
+    else if(co.name() == "PROC" && co.getS() != pc.getS()) procChange();
     modif();
     return true;
 }
@@ -796,6 +817,8 @@ void LWidget::cntrCmdProc( XMLNode *opt )
     else if(opt->attr("path") == "/wdg/st/timestamp" && ctrChkNode(opt)) opt->setText(i2s(timeStamp()));
     else TCntrNode::cntrCmdProc(opt);
 }
+
+
 
 //************************************************
 //* CWidget: Container stored widget             *
@@ -873,9 +896,9 @@ void CWidget::setEnable( bool val, bool force )
 
     //Enable heritors widgets
     if(val)
-	for(unsigned i_h = 0; i_h < ownerLWdg().herit().size(); i_h++)
-	    if(!ownerLWdg().herit()[i_h].at().wdgAt(id()).at().enable() && ownerLWdg().herit()[i_h].at().wdgPresent(id()))
-		try { ownerLWdg().herit()[i_h].at().wdgAt(id()).at().setEnable(true); }
+	for(unsigned iH = 0; iH < ownerLWdg().herit().size(); iH++)
+	    if(!ownerLWdg().herit()[iH].at().wdgAt(id()).at().enable() && ownerLWdg().herit()[iH].at().wdgPresent(id()))
+		try { ownerLWdg().herit()[iH].at().wdgAt(id()).at().setEnable(true); }
 		catch(...) { mess_err(nodePath().c_str(),_("Inheriting widget '%s' enable error."),id().c_str()); }
 }
 

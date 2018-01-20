@@ -1,13 +1,13 @@
 # OpenSCADA.Transport.Serial translate to Russian.
 # This file is distributed under the same license as the OpenSCADA.Transport.Serial package module.
 #
-# Roman Savochenko <rom_as@oscada.org>, 2009-2017.
+# Roman Savochenko <rom_as@oscada.org>, 2009-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.Transport.Serial 0.7.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-27 17:23+0200\n"
+"POT-Creation-Date: 2018-01-13 20:28+0200\n"
 "PO-Revision-Date: 2009-03-31 18:28+0300\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <ru@li.org>\n"
@@ -54,9 +54,13 @@ msgid "No any expected respond but receive from modem %d: '%s'."
 msgstr "Нет ожидаемого ответа, но получено из модема %d: '%s'."
 
 #, c-format
-msgid "Traffic in %s, out %s. Maximum char timeout %.4g ms."
+msgid "Traffic in %s, out %s. Maximum char timeout %.4g ms. "
 msgstr ""
-"Трафик входящий %s, исходящий %s. Макс. время ожидания символа %.4g мс."
+"Трафик входящий %s, исходящий %s. Макс. время ожидания символа %.4g мс. "
+
+#, c-format
+msgid "Processing time %s[%s]. "
+msgstr "Время обработки %s[%s]. "
 
 #, c-format
 msgid "Serial port '%s' %s error: %s."
@@ -86,13 +90,23 @@ msgstr "Ошибка в количестве стоп битов '%d'."
 msgid "No response to initial request '%s'."
 msgstr "Нет ответа на запрос инициализации '%s'."
 
+msgid "Started"
+msgstr "Запущен"
+
+msgid "Stopped"
+msgstr "Остановлен"
+
 #, c-format
 msgid "Serial received message '%d'."
 msgstr "Serial получил сообщение '%d'."
 
+msgid "Received from\n"
+msgstr "Получено\n"
+
 msgid "Error request to protocol."
 msgstr "Ошибка запроса к протоколу."
 
+#, c-format
 msgid "Serial is replied by message '%d'."
 msgstr "Serial ответил сообщением '%d'."
 
@@ -102,6 +116,9 @@ msgstr "Запись: ответ ноль байт."
 #, c-format
 msgid "Write: error '%s (%d)'."
 msgstr "Запись: ошибка '%s (%d)'."
+
+msgid "Transmitted to\n"
+msgstr "Передано\n"
 
 msgid ""
 "Serial transport has address format: \"dev:speed:format[:fc[:mdm]]\". "
@@ -177,14 +194,14 @@ msgstr "Приоритет"
 msgid "Modem"
 msgstr "Модем"
 
-msgid "Timeout (sec)"
-msgstr "Время ожидания (с)"
+msgid "Timeout, seconds"
+msgstr "Время ожидания, секунд"
 
-msgid "Pre-initial delay (sec)"
-msgstr "Выдержка пре-инициализации (с)"
+msgid "Pre-initial delay, seconds"
+msgstr "Выдержка пре-инициализации, секунд"
 
-msgid "Post-initial delay (sec)"
-msgstr "Выдержка после-инициализации (с)"
+msgid "Post-initial delay, seconds"
+msgstr "Выдержка после-инициализации, секунд"
 
 msgid "Initialization string 1"
 msgstr "Строка инициализации 1"
@@ -207,6 +224,9 @@ msgstr "Ответ на звонок, результат"
 #, c-format
 msgid "Traffic in %s, out %s. "
 msgstr "Трафик входящий %s, исходящий %s. "
+
+msgid "Respond time %s[%s:%s/1.5]. "
+msgstr "Время ответа %s[%s:%s/1.5]. "
 
 #, c-format
 msgid "Device '%s' is used now."
@@ -248,6 +268,10 @@ msgid "Write error: %s"
 msgstr "Ошибка записи: %s"
 
 #, c-format
+msgid "Transmitting error: %s"
+msgstr "Ошибка передачи: %s"
+
+#, c-format
 msgid "Wrote %s."
 msgstr "Записано %s."
 
@@ -260,9 +284,16 @@ msgstr "Ошибка чтения эхо запроса."
 msgid "Read timeouted."
 msgstr "Время ожидания чтения истекло!"
 
+msgid "Receiving timeouted"
+msgstr "Время ожидания получения истекло!"
+
 #, c-format
 msgid "Read (select) error: %s"
 msgstr "Ошибка чтения (select): %s"
+
+#, c-format
+msgid "Receiving (select) error: %s"
+msgstr "Ошибка получения (select): %s"
 
 msgid "No data"
 msgstr "Нет данных"
@@ -270,6 +301,10 @@ msgstr "Нет данных"
 #, c-format
 msgid "Read error: %s"
 msgstr "Ошибка чтения: %s"
+
+#, c-format
+msgid "Receiving error: %s"
+msgstr "Ошибка получения: %s"
 
 #, c-format
 msgid "Read %s."
@@ -359,8 +394,8 @@ msgstr ""
 "Иногда закрытие открытого устройства может быть разрушительным, например, на "
 "ПЛК LP от ICP-DAS, и Вы можете предотвратить это данной опцией."
 
-msgid "Life time (sec)"
-msgstr "Время жизни (с)"
+msgid "Life time, seconds"
+msgstr "Время жизни, секунд"
 
 msgid "Dial string"
 msgstr "Строка дозвона"

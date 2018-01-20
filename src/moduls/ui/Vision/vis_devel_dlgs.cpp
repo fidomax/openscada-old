@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_devel_dlgs.cpp
 /***************************************************************************
- *   Copyright (C) 2007-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -211,7 +211,7 @@ LibProjProp::LibProjProp( VisDevelop *parent ) :
     mimeDataTable = new QTableWidget(0, 3, tab_w);
     mimeDataTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     connect(mimeDataTable, SIGNAL(cellChanged(int,int)), this, SLOT(mimeDataChange(int,int)));
-    mimeDataTable->setHorizontalHeaderLabels(QStringList() << _("Id") << _("Mime type") << _("Data size"));
+    mimeDataTable->setHorizontalHeaderLabels(QStringList() << _("Identifier") << _("Mime type") << _("Data size"));
     dlg_lay->addWidget(mimeDataTable, 0, 0, 1, 4);
 
     buttDataAdd = new QPushButton(_("Add record"),tab_w);
@@ -259,7 +259,7 @@ LibProjProp::LibProjProp( VisDevelop *parent ) :
     stl_table->setObjectName("/style/props");
     stl_table->setSelectionBehavior(QAbstractItemView::SelectRows);
     connect(stl_table, SIGNAL(cellChanged(int,int)), this, SLOT(stlTableChange(int,int)));
-    stl_table->setHorizontalHeaderLabels(QStringList() << _("Id") << _("Value"));
+    stl_table->setHorizontalHeaderLabels(QStringList() << _("Identifier") << _("Value"));
     dlg_lay->addWidget(stl_table, 4, 0, 1, 4);
 
     buttStlTableDel = new QPushButton(_("Delete record"),tab_w);
@@ -302,7 +302,7 @@ LibProjProp::LibProjProp( VisDevelop *parent ) :
     messTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     messTable->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     messTable->setMinimumHeight(150);
-    messTable->setHorizontalHeaderLabels(QStringList() << _("Time") << _("mcsec") << _("Category") << _("Lev.") << _("Message"));
+    messTable->setHorizontalHeaderLabels(QStringList() << _("Time") << _("mcsec") << _("Category") << _("Level") << _("Message"));
     dlg_lay->addWidget(messTable, 2, 0, 1, 3);
 
     //Add button box
@@ -314,14 +314,21 @@ LibProjProp::LibProjProp( VisDevelop *parent ) :
 
     tab_lay->addWidget(butbox);
 
-    //End resize
-    //------------
-    resize(800,600);
+    //resize(800, 600);
+
+    //Restore the window state
+    int off = 0;
+    string rst = mod->uiPropGet("dlgPropLibProjState", owner()->user());
+    int	wH = s2i(TSYS::strParse(rst,0,":",&off)),
+	wW = s2i(TSYS::strParse(rst,0,":",&off));
+    if(wH > 100 && wW > 100) resize(wH, wW);
+    else resize(800, 600);
 }
 
 LibProjProp::~LibProjProp( )
 {
-
+    //Save the window state
+    mod->uiPropSet("dlgPropLibProjState", i2s(width())+":"+i2s(height()), owner()->user());
 }
 
 VisDevelop *LibProjProp::owner( ) const	{ return (VISION::VisDevelop*)parentWidget(); }
@@ -547,11 +554,11 @@ void LibProjProp::showDlg( const string &iit, bool reload )
 	if(gnd) {
 	    req.clear()->setAttr("path", ed_it+"/"+TSYS::strEncode(stl_table->objectName().toStdString(),TSYS::PathEl));
 	    owner()->cntrIfCmd(req);
-	    for(unsigned i_c = 0; i_c < req.childSize() && i_c < 2; i_c++) {
-		stl_table->setRowCount(req.childGet(i_c)->childSize());
-		for(unsigned i_r = 0; i_r < req.childGet(i_c)->childSize(); i_r++) {
-		    stl_table->setItem(i_r, i_c, new QTableWidgetItem(req.childGet(i_c)->childGet(i_r)->text().c_str()));
-		    stl_table->item(i_r, i_c)->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable|((i_c==1)?Qt::ItemIsEditable:(Qt::ItemFlags)0));
+	    for(unsigned iC = 0; iC < req.childSize() && iC < 2; iC++) {
+		stl_table->setRowCount(req.childGet(iC)->childSize());
+		for(unsigned i_r = 0; i_r < req.childGet(iC)->childSize(); i_r++) {
+		    stl_table->setItem(i_r, iC, new QTableWidgetItem(req.childGet(iC)->childGet(i_r)->text().c_str()));
+		    stl_table->item(i_r, iC)->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable|((iC==1)?Qt::ItemIsEditable:(Qt::ItemFlags)0));
 		}
 	    }
 	    stl_table->resizeColumnsToContents();
@@ -578,39 +585,39 @@ void LibProjProp::showDlg( const string &iit, bool reload )
 	if((gnd=TCntrNode::ctrId(root,messTable->objectName().toStdString(),true))) {
 	    req.clear()->setAttr("path", ed_it+"/"+TSYS::strEncode(messTable->objectName().toStdString(),TSYS::PathEl));
 	    owner()->cntrIfCmd(req);
-	    for(unsigned i_c = 0; i_c < req.childSize() && i_c < 5; i_c++) {
-		messTable->setRowCount(req.childGet(i_c)->childSize());
-		for(unsigned i_r = 0; i_r < req.childGet(i_c)->childSize(); i_r++) {
-		    string val = req.childGet(i_c)->childGet(i_r)->text();
-		    if(i_c == 0) val = atm2s(s2i(val));
-		    messTable->setItem(i_r, i_c, new QTableWidgetItem(val.c_str()));
-		    messTable->item(i_r, i_c)->setFlags(Qt::ItemIsEnabled);
+	    for(unsigned iC = 0; iC < req.childSize() && iC < 5; iC++) {
+		messTable->setRowCount(req.childGet(iC)->childSize());
+		for(unsigned i_r = 0; i_r < req.childGet(iC)->childSize(); i_r++) {
+		    string val = req.childGet(iC)->childGet(i_r)->text();
+		    if(iC == 0) val = atm2s(s2i(val));
+		    messTable->setItem(i_r, iC, new QTableWidgetItem(val.c_str()));
+		    messTable->item(i_r, iC)->setFlags(Qt::ItemIsEnabled);
 		}
 	    }
 
 	    //  Resize to optimal
 	    messTable->resizeColumnsToContents();
-	    int tblWdth = size().width() * 0.9;
+	    int tblWdth = size().width() * 0.93;
 	    int tblHeight = size().height() * 0.8;
 	    int averWdth = tblWdth/messTable->columnCount();
 	    int fullColsWdth = 0, niceForceColsWdth = 0, busyCols = 0;
 	    //   Count width params
-	    for(int i_c = 0; i_c < messTable->columnCount(); i_c++) {
-		fullColsWdth += messTable->columnWidth(i_c);
-		if(messTable->columnWidth(i_c) <= averWdth) niceForceColsWdth += messTable->columnWidth(i_c);
+	    for(int iC = 0; iC < messTable->columnCount(); iC++) {
+		fullColsWdth += messTable->columnWidth(iC);
+		if(messTable->columnWidth(iC) <= averWdth) niceForceColsWdth += messTable->columnWidth(iC);
 		else busyCols++;
 	    }
 	    //   Set busyCols
 	    if(fullColsWdth > tblWdth && busyCols) {
 		int busyColsWdth = (tblWdth-niceForceColsWdth)/busyCols;
-		for(int i_c = 0; i_c < messTable->columnCount(); i_c++)
-		    if(messTable->columnWidth(i_c) > averWdth && messTable->columnWidth(i_c) > busyColsWdth)
-			messTable->setColumnWidth(i_c, busyColsWdth);
+		for(int iC = 0; iC < messTable->columnCount(); iC++)
+		    if(messTable->columnWidth(iC) > averWdth && messTable->columnWidth(iC) > busyColsWdth)
+			messTable->setColumnWidth(iC, busyColsWdth);
 	    }
 
 	    messTable->resizeRowsToContents();
-	    for(int i_rw = 0; i_rw < messTable->rowCount(); i_rw++)
-		messTable->setRowHeight(i_rw, vmin(messTable->rowHeight(i_rw),tblHeight/1.3));
+	    for(int iRw = 0; iRw < messTable->rowCount(); iRw++)
+		messTable->setRowHeight(iRw, vmin(messTable->rowHeight(iRw),tblHeight/1.3));
 	}
     }
 
@@ -684,7 +691,7 @@ void LibProjProp::selectIco( )
 
     XMLNode req("set");
     req.setAttr("path", ed_it+"/"+TSYS::strEncode(obj_ico->objectName().toStdString(),TSYS::PathEl))->
-	setText(TSYS::strEncode(string(ba.data(),ba.size()),TSYS::base64));
+	setText(TSYS::strEncode(string(ba.data(),ba.size()),TSYS::base64,"\n"));
     if(owner()->cntrIfCmd(req)) mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TVision::Error,this);
 
     is_modif = true;
@@ -726,10 +733,10 @@ void LibProjProp::isModify( QObject *snd )
     else if(oname == rldPushBt->objectName()){ oname = messTime->objectName(); req.setText("0"); update = true; }
     else return;
 
-    req.setAttr("path",ed_it+"/"+TSYS::strEncode(oname.toStdString(),TSYS::PathEl));
+    req.setAttr("path", ed_it+"/"+TSYS::strEncode(oname.toStdString(),TSYS::PathEl));
     if(owner()->cntrIfCmd(req)) {
 	mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TVision::Error,this);
-	showDlg(ed_it,true);
+	showDlg(ed_it, true);
     }
     else if(update)	showDlg(ed_it,true);
 
@@ -817,7 +824,7 @@ void LibProjProp::loadMimeData( )
 	setAttr("key_id", mimeDataTable->selectedItems().empty() ?
 	    QFileInfo(fileName).fileName().toStdString() :
 	    mimeDataTable->selectedItems()[0]->text().toStdString())->
-		setText(TSYS::strEncode(string(data.data(),data.size()),TSYS::base64));
+		setText(TSYS::strEncode(string(data.data(),data.size()),TSYS::base64,"\n"));
     if(owner()->cntrIfCmd(req)) mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TVision::Error,this);
 
     tabChanged(1);
@@ -1042,14 +1049,14 @@ VisItProp::VisItProp( VisDevelop *parent ) :
     dlg_lay->addWidget(obj_attr,0,0);
 
     //Add tab 'Attribute cofiguration'
-    QSplitter *split = new QSplitter();
-    split->setOrientation( Qt::Vertical );
-    wdg_tabs->addTab(split,_("Widget process"));
+    proc_split = new QSplitter();
+    proc_split->setOrientation(Qt::Vertical);
+    wdg_tabs->addTab(proc_split, _("Widget process"));
 
-    QFrame *attr_cf_fr = new QFrame(split);
+    QFrame *attr_cf_fr = new QFrame(proc_split);
     attr_cf_fr->setFrameShape(QFrame::StyledPanel);
     attr_cf_fr->setFrameShadow(QFrame::Raised);
-    split->addWidget(attr_cf_fr);
+    proc_split->addWidget(attr_cf_fr);
 
     glay = new QGridLayout(attr_cf_fr);
     glay->setMargin(9);
@@ -1063,7 +1070,7 @@ VisItProp::VisItProp( VisDevelop *parent ) :
     obj_attr_cfg->setSelectionBehavior(QAbstractItemView::SelectRows);
     obj_attr_cfg->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     connect(obj_attr_cfg, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(changeAttr(QTreeWidgetItem*,int)));
-    obj_attr_cfg->setHeaderLabels(QStringList() << _("Id") << _("Name") << _("Data type") << _("Work area") << _("Proc.")
+    obj_attr_cfg->setHeaderLabels(QStringList() << _("Identifier") << _("Name") << _("Data type") << _("Work area") << _("Proc.")
 						<< _("Configuration") << _("Configuration template"));
     glay->addWidget(obj_attr_cfg,0,0,1,2);
 
@@ -1074,10 +1081,10 @@ VisItProp::VisItProp( VisDevelop *parent ) :
     connect(buttAttrDel, SIGNAL(clicked()), this, SLOT(delAttr()));
     glay->addWidget(buttAttrDel,1,1);
 
-    QFrame *wdg_proc_fr = new QFrame(split);
+    QFrame *wdg_proc_fr = new QFrame(proc_split);
     wdg_proc_fr->setFrameShape(QFrame::StyledPanel);
     wdg_proc_fr->setFrameShadow(QFrame::Raised);
-    split->addWidget(wdg_proc_fr);
+    proc_split->addWidget(wdg_proc_fr);
 
     glay = new QGridLayout(wdg_proc_fr);
     glay->setMargin(9);
@@ -1133,12 +1140,24 @@ VisItProp::VisItProp( VisDevelop *parent ) :
     tab_lay->addWidget(butbox);
 
     //End resize
-    resize(800,600);
+    //resize(800,600);
+
+    //Restore the window state
+    int off = 0;
+    string rst = mod->uiPropGet("dlgPropVisItState", owner()->user());
+    int	wH = s2i(TSYS::strParse(rst,0,":",&off)),
+	wW = s2i(TSYS::strParse(rst,0,":",&off));
+    if(wH > 100 && wW > 100) resize(wH, wW);
+    else resize(800, 600);
+    string sRst = TSYS::strDecode(TSYS::strParse(rst,0,":",&off), TSYS::base64);
+    if(sRst.size()) proc_split->restoreState(QByteArray(sRst.data(),sRst.size()));
 }
 
 VisItProp::~VisItProp( )
 {
-
+    //Save the window state
+    QByteArray st = proc_split->saveState();
+    mod->uiPropSet("dlgPropVisItState", i2s(width())+":"+i2s(height())+":"+TSYS::strEncode(string(st.data(),st.size()),TSYS::base64,""), owner()->user());
 }
 
 VisDevelop *VisItProp::owner( ) const	{ return (VISION::VisDevelop*)parentWidget(); }
@@ -1475,7 +1494,7 @@ void VisItProp::selectIco( )
 
     XMLNode req("set");
     req.setAttr("path",ed_it+"/"+TSYS::strEncode(obj_ico->objectName().toStdString(),TSYS::PathEl))->
-	setText(TSYS::strEncode(string(ba.data(),ba.size()),TSYS::base64));
+	setText(TSYS::strEncode(string(ba.data(),ba.size()),TSYS::base64,"\n"));
     if(owner()->cntrIfCmd(req)) mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TVision::Error,this);
 
     is_modif = true;

@@ -36,9 +36,9 @@ using namespace FSArch;
 //* FSArch::ModMArch - Messages archivator       *
 //************************************************
 ModMArch::ModMArch( const string &iid, const string &idb, TElem *cf_el ) :
-    TMArchivator(iid,idb,cf_el),
+    TMArchivator(iid,idb,cf_el), infoTbl(dataRes()),
     mUseXml(false), mMaxSize(1024), mNumbFiles(30), mTimeSize(30), mChkTm(60), mPackTm(10),
-    mPackInfoFiles(false), mPrevDbl(false), mPrevDblTmCatLev(false), tmCalc(0), mLstCheck(0)
+    mPackInfoFiles(false), mPrevDbl(false), mPrevDblTmCatLev(false), tmProc(0), tmProcMax(0), mLstCheck(0)
 {
 
 }
@@ -47,6 +47,8 @@ ModMArch::~ModMArch( )
 {
     try { stop(); } catch(...) { }
 }
+
+string ModMArch::infoDBnm( )	{ return MOD_ID "_Mess_"+id()+"_info"; }
 
 void ModMArch::load_( )
 {
@@ -87,6 +89,21 @@ void ModMArch::save_( )
 
 void ModMArch::start( )
 {
+    //Create and/or update the SQLite info file, special for the archivator and placed with main files of the archivator
+    if(!startStat() && packInfoFiles()) {
+	try {
+	    if(!SYS->db().at().at("SQLite").at().openStat(infoDBnm())) SYS->db().at().at("SQLite").at().open(infoDBnm());
+	    AutoHD<TBD> infoDB = SYS->db().at().at("SQLite").at().at(infoDBnm());
+	    infoDB.at().setName(TSYS::strMess(_("%s: Mess: %s: information"),MOD_ID,id().c_str()));
+	    infoDB.at().setDscr(TSYS::strMess(_("Local info DB for the messages archivator '%s'. "
+		"Created automatically then don't modify, save and remove it!"),id().c_str()));
+	    infoDB.at().setAddr(addr()+"/info.db");
+	    infoDB.at().enable();
+	    infoDB.at().modifClr();
+	    infoTbl = "SQLite."+infoDBnm()+"."+TSYS::strParse(mod->filesDB(),2,".");
+	} catch(TError&) { infoTbl = ""; }
+    }
+
     //First scan dir
     checkArchivator();
     TMArchivator::start();
@@ -94,11 +111,15 @@ void ModMArch::start( )
 
 void ModMArch::stop( )
 {
+    bool curSt = startStat();
+
     TMArchivator::stop();
 
     //Clear archive files list
     ResAlloc res(mRes, true);
     while(files.size()) { delete files[0]; files.pop_front(); }
+
+    if(curSt)	infoTbl = "";
 }
 
 time_t ModMArch::begin( )
@@ -175,7 +196,8 @@ bool ModMArch::put( vector<TMess::SRec> &mess, bool force )
 	    wrOK = files[iF]->put(mess[i_m]) && wrOK;
 	}
     }
-    tmCalc = TSYS::curTime()-t_cnt;
+
+    tmProc = TSYS::curTime() - t_cnt; tmProcMax = vmax(tmProcMax, tmProc);
 
     return wrOK;
 }
@@ -220,10 +242,16 @@ void ModMArch::checkArchivator( bool now )
 	while(readdir_r(IdDir,scan_dirent,&scan_rez) == 0 && scan_rez) {
 	    if(strcmp(scan_rez->d_name,"..") == 0 || strcmp(scan_rez->d_name,".") == 0) continue;
 	    string NameArhFile = addr() + "/" + scan_rez->d_name;
+
 	    stat(NameArhFile.c_str(), &file_stat);
 	    if((file_stat.st_mode&S_IFMT) != S_IFREG || access(NameArhFile.c_str(),F_OK|R_OK) != 0) continue;
-	    // Check for info files
+
+	    // Remove for empty files mostly after wrong or limited FSs
+	    if(file_stat.st_size == 0) { remove(NameArhFile.c_str()); remove((NameArhFile+".info").c_str()); continue; }
+
+	    // Pass info and other improper files
 	    if(NameArhFile.compare(NameArhFile.size()-4,4,".msg") != 0 && NameArhFile.compare(NameArhFile.size()-7,7,".msg.gz") != 0) continue;
+
 	    // Check all files
 	    unsigned iF;
 	    res.request(false);
@@ -259,7 +287,7 @@ void ModMArch::checkArchivator( bool now )
 	free(scan_dirent);
 	closedir(IdDir);
 
-	//Check deleting Archives
+	//Check for archives deletion
 	res.request(true);
 	for(unsigned iF = 0; iF < files.size(); )
 	    if(!files[iF]->scan) {
@@ -286,6 +314,20 @@ void ModMArch::checkArchivator( bool now )
 		    }
 	    }
 	}
+
+	//Check for not presented files into the info table
+	if(infoTbl.size() && !now) {
+	    vector<vector<string> > full;
+	    TConfig cEl(&mod->packFE());
+	    cEl.cfgViewAll(false);
+
+	    for(int fldCnt = 0; SYS->db().at().dataSeek(infoTbl,mod->nodePath()+"Pack",fldCnt++,cEl,false,&full); )
+		if(stat(cEl.cfg("FILE").getS().c_str(),&file_stat) != 0 || (file_stat.st_mode&S_IFMT) != S_IFREG) {
+		    if(!SYS->db().at().dataDel(infoTbl,mod->nodePath()+"Pack",cEl,true,false,true))	break;
+		    if(full.empty()) fldCnt--;
+	    }
+	}
+
 	mLstCheck = time(NULL);
     }
 
@@ -310,47 +352,48 @@ void ModMArch::cntrCmdProc( XMLNode *opt )
     //Get page info
     if(opt->name() == "info") {
 	TMArchivator::cntrCmdProc(opt);
-	ctrMkNode("fld",opt,-1,"/prm/st/fsz",_("Archivator files size"),R_R_R_,"root",SARH_ID,1,"tp","str");
+	ctrMkNode("fld",opt,-1,"/prm/st/fsz",_("Overall size of the archiver files"),R_R_R_,"root",SARH_ID,1,"tp","str");
 	ctrMkNode("fld",opt,-1,"/prm/st/tarch",_("Archiving time"),R_R_R_,"root",SARH_ID,1,"tp","str");
 	ctrMkNode("fld",opt,-1,"/prm/cfg/ADDR",EVAL_STR,startStat()?R_R_R_:RWRWR_,"root",SARH_ID,3,
-	    "dest","sel_ed","select","/prm/cfg/dirList","help",_("Path to directory for archivator's of messages files."));
+	    "dest","sel_ed","select","/prm/cfg/dirList","help",_("Path to a directory for files of messages of the archivator."));
 	ctrRemoveNode(opt,"/prm/cfg/A_PRMS");
 	if(ctrMkNode("area",opt,-1,"/prm/add",_("Additional options"),R_R_R_,"root",SARH_ID)) {
-	    ctrMkNode("fld",opt,-1,"/prm/add/xml",_("XML archive files"),RWRWR_,"root",SARH_ID,2,"tp","bool","help",
-		_("Enables archiving of messages in XML-format files, rather than plain text.\n"
-		  "The use of XML-format archiving requires more RAM because is needed full download file,\n"
-		  "XML-parsing and storing in memory at the time of use."));
-	    ctrMkNode("fld",opt,-1,"/prm/add/sz",_("Maximum archive file size (kB)"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
-		_("Sets a limit on the size of one archive file.\n"
-		  "Disable the restriction can be by setting the parameter to zero."));
-	    ctrMkNode("fld",opt,-1,"/prm/add/fl",_("Maximum files number"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
-		_("Limits the maximum number of archive files and share with the size of single file\n"
-		  "determines the size of archive on disk. Completely remove this restriction can be set to zero."));
-	    ctrMkNode("fld",opt,-1,"/prm/add/len",_("File's time size (days)"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
-		_("Sets a limit on the size of a single archive file on time."));
-	    ctrMkNode("fld",opt,-1,"/prm/add/pcktm",_("Pack files timeout (min)"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
-		_("Sets the time after which, in the absence of appeals, archive files will be packaged in gzip archiver.\n"
-		 "Set to zero for disable packing by gzip."));
-	    ctrMkNode("fld",opt,-1,"/prm/add/tm",_("Checking the archives period (min)"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
-		_("Sets the frequency of checking the archives for the emergence or delete new files\n"
-		  "in a directory of archives, as well as exceeding the limits and removing old archive files."));
-	    ctrMkNode("fld",opt,-1,"/prm/add/pack_info_fl",_("Using info files for the packed archives"),RWRWR_,"root",SARH_ID,2,"tp","bool","help",
-		_("Specifies whether to create files with information about the packed archive files by gzip-archiver.\n"
-		  "When copying files of archive on another station, these info files can speed up the target station\n"
-		  "process of first run by eliminating the need to decompress by gzip-archives in order to obtain information."));
-	    ctrMkNode("fld",opt,-1,"/prm/add/prev_dbl",_("Prevent duplicates"),RWRWR_,"root",SARH_ID,2,"tp","bool","help",
-		_("Enables checks for duplicate messages at the time put a message in the archive.\n"
+	    ctrMkNode("fld",opt,-1,"/prm/add/xml",_("Files of the archive in XML"),RWRWR_,"root",SARH_ID,2,"tp","bool","help",
+		_("Enables archiving of messages by files in XML-format, rather than plain text.\n"
+		  "Use of archiving in XML-format requires more RAM because it needs for full downloading of the file, "
+		  "XML-parsing and storing the content into memory at the time of use."));
+	    ctrMkNode("fld",opt,-1,"/prm/add/sz",_("Maximum size of archive's file (kB)"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
+		_("Sets limit on the size of one archive file.\n"
+		  "Disabling the restriction can be performed by setting the parameter to zero."));
+	    ctrMkNode("fld",opt,-1,"/prm/add/fl",_("Maximum number of the files"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
+		_("Limits the maximum number for files of the archive and additional with the size of single file "
+		  "it determines the size of archive on disk.\n"
+		  "Completely removing this restriction can be performed by setting the parameter to zero."));
+	    ctrMkNode("fld",opt,-1,"/prm/add/len",_("Time size of the archive files, days"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
+		_("Sets limit on the size of single archive file on time."));
+	    ctrMkNode("fld",opt,-1,"/prm/add/pcktm",_("Timeout to pack files of the archive (min)"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
+		_("Sets the time after which, in the absence of requests, the archive file will be packaged in a gzip archive.\n"
+		 "Set to zero for disabling the packing by gzip."));
+	    ctrMkNode("fld",opt,-1,"/prm/add/tm",_("Period of the archives checking (min)"),RWRWR_,"root",SARH_ID,2,"tp","dec","help",
+		_("Sets for checking frequency of the archives for the files emergence or deletion "
+		  "into the directory of the archive, as well as exceeding the limits and removing for old files."));
+	    ctrMkNode("fld",opt,-1,"/prm/add/pack_info_fl",_("Use an info file for the packed archives"),RWRWR_,"root",SARH_ID,2,"tp","bool","help",
+		_("Specifies whether to create a file with information about the packed archive files by gzip-archiver.\n"
+		  "When copying files of archive to another station, this info file can speed up the target station "
+		  "process of first run by eliminating the need to decompress by gzip-archiver in order to obtain the information."));
+	    ctrMkNode("fld",opt,-1,"/prm/add/prev_dbl",_("Prevent for duplicates"),RWRWR_,"root",SARH_ID,2,"tp","bool","help",
+		_("Enables checking for duplicate messages at the time of putting a message into the archive.\n"
 		  "If there is a duplicate the message does not fit into the archive.\n"
-		  "This feature some increases the recording time to archive, but in cases of\n"
-		  "placing messages in the archive by past time from external sources it allows to eliminate duplication."));
-	    ctrMkNode("fld",opt,-1,"/prm/add/prev_TmCatLev_dbl",_("Mean as duplicates equal time, category, level and prevent its"),RWRWR_,"root",SARH_ID,2,"tp","bool","help",
-		_("Enables checks for duplicate messages at the time put a message in the archive.\n"
-		  "As duplicates mean messages equal to time, category and level.\n"
-		  "If there is a duplicate then the new message will replace the old into the archive.\n"
-		  "This feature mostly usable for messages record's text change in time, for alarm's state to example."));
-	    ctrMkNode("comm",opt,-1,"/prm/add/chk_nw",_("Check archivator directory now"),RWRW__,"root",SARH_ID,1,"help",
-		_("The command, which allows you to immediately start checking the archives,\n"
-		  "for example, after manual changes to the directory archiver."));
+		  "This feature some increases the recording time to archive, but in cases of "
+		  "placing messages in the archive by past time from external sources it allows to eliminate the duplication."));
+	    ctrMkNode("fld",opt,-1,"/prm/add/prev_TmCatLev_dbl",_("Mean as duplicates and prevent its for equal time, category, level"),RWRWR_,"root",SARH_ID,2,"tp","bool","help",
+		_("Enables checking for duplicate messages at the time of putting a message into the archive.\n"
+		  "As duplicates there mean messages which equal to time, category and level.\n"
+		  "If there is a duplicate then the new message will replace the old one into the archive.\n"
+		  "This feature mostly usable for text of messages changing in time, for alarm's state to example."));
+	    ctrMkNode("comm",opt,-1,"/prm/add/chk_nw",_("Check now for the directory of the archivator"),RWRW__,"root",SARH_ID,1,"help",
+		_("The command, which allows you to immediately start for checking the archives, "
+		  "for example, after some manual changes into the directory of the archiver."));
 	}
 	if(ctrMkNode("area",opt,-1,"/files",_("Files"),R_R___,"root",SARH_ID))
 	    if(ctrMkNode("table",opt,-1,"/files/files",_("Files"),R_R___,"root",SARH_ID)) {
@@ -370,7 +413,7 @@ void ModMArch::cntrCmdProc( XMLNode *opt )
     string a_path = opt->attr("path");
     if(a_path == "/prm/cfg/dirList" && ctrChkNode(opt))		TSYS::ctrListFS(opt, addr());
     else if(a_path == "/prm/st/fsz" && ctrChkNode(opt))		opt->setText(TSYS::cpct2str(size()));
-    else if(a_path == "/prm/st/tarch" && ctrChkNode(opt))	opt->setText(tm2s(1e-6*tmCalc));
+    else if(a_path == "/prm/st/tarch" && ctrChkNode(opt))	opt->setText(tm2s(1e-6*tmProc) + "[" + tm2s(1e-6*tmProcMax) + "]");
     else if(a_path == "/prm/add/xml") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SARH_ID,SEC_RD))	opt->setText(useXML() ? "1" : "0");
 	if(ctrChkNode(opt,"set",RWRWR_,"root",SARH_ID,SEC_WR))	setUseXML(s2i(opt->text()));
@@ -437,7 +480,7 @@ void ModMArch::cntrCmdProc( XMLNode *opt )
 //* FSArch::MFileArch - Messages archivator file  *
 //*************************************************
 MFileArch::MFileArch( ModMArch *owner ) :
-    scan(false), mXML(true), mSize(0), mChars("UTF-8"), mErr(false), mWrite(false), mLoad(false), mPack(false),
+    scan(false), dtRes(true), mName(dtRes), mXML(true), mSize(0), mChars("UTF-8"), mErr(false), mWrite(false), mLoad(false), mPack(false),
     mBeg(0), mEnd(0), mNode(NULL), mOwner(owner)
 {
     cach_pr.tm = cach_pr.off = 0;
@@ -445,9 +488,10 @@ MFileArch::MFileArch( ModMArch *owner ) :
 }
 
 MFileArch::MFileArch( const string &iname, time_t ibeg, ModMArch *iowner, const string &icharset, bool ixml ) :
-    scan(false), mName(iname), mXML(ixml), mSize(0), mChars(icharset), mErr(false), mWrite(false), mLoad(false), mPack(false),
+    scan(false), dtRes(true), mName(dtRes), mXML(ixml), mSize(0), mChars(icharset), mErr(false), mWrite(false), mLoad(false), mPack(false),
     mBeg(ibeg), mEnd(ibeg), mNode(NULL), mOwner(iowner)
 {
+    mName = iname;
     cach_pr.tm = cach_pr.off = 0;
 
     int hd = open(name().c_str(), O_RDWR|O_CREAT|O_TRUNC, 0666);
@@ -463,8 +507,8 @@ MFileArch::MFileArch( const string &iname, time_t ibeg, ModMArch *iowner, const 
 	mChars = "UTF-8";
 	mNode = new XMLNode();
 
-	mNode->clear()->setName(mod->modId())->
-	    setAttr("Version", mod->modInfo("Version"))->
+	mNode->clear()->setName(MOD_ID)->
+	    setAttr("Version", MOD_VER)->
 	    setAttr("Begin", i2s(mBeg,TSYS::Hex))->
 	    setAttr("End", i2s(mEnd,TSYS::Hex));
 	string x_cf = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + mNode->save(XMLNode::BrOpenPrev);
@@ -472,10 +516,10 @@ MFileArch::MFileArch( const string &iname, time_t ibeg, ModMArch *iowner, const 
     }
     else {
 	//Prepare plain text file
-	char s_buf[STR_BUF_LEN];
-	snprintf(s_buf, sizeof(s_buf), "%s %s %s %8x %8x\n",
-	    mod->modId().c_str(), mod->modInfo("Version").c_str(), mChars.c_str(), (unsigned int)mBeg, (unsigned int)mEnd);
-	fOK = (write(hd,s_buf,strlen(s_buf)) == (int)strlen(s_buf));
+	int bufSz = STR_BUF_LEN;
+	char buf[bufSz+1]; buf[bufSz] = 0;
+	snprintf(buf, bufSz, "%s %s %s %8x %8x\n", MOD_ID, MOD_VER, mChars.c_str(), (unsigned int)mBeg, (unsigned int)mEnd);
+	fOK = (write(hd,buf,strlen(buf)) == (int)strlen(buf));
     }
     close(hd);
     //if(!fOK) throw owner().err_sys(_("Write to file '%s' error"), name().c_str());
@@ -504,7 +548,8 @@ void MFileArch::delFile( )
 void MFileArch::attach( const string &iname, bool full )
 {
     FILE *f = NULL;
-    char buf[STR_BUF_LEN];
+    int bufSz = STR_BUF_LEN;
+    char buf[bufSz+1]; buf[bufSz] = 0;
     ResAlloc res(mRes, true);
 
     mErr = false;
@@ -514,14 +559,14 @@ void MFileArch::attach( const string &iname, bool full )
     mAcces = time(NULL);
 
     try {
-	//Check archive and unpack if want
+	//Check archive and unpack if need
 	if(mPack) {
 	    bool infoOK = false;
 	    // Get archive info from info file
 	    int hd = open((name()+".info").c_str(), O_RDONLY);
 	    if(hd > 0) {
-		int rsz = read(hd, buf, sizeof(buf));
-		if(rsz > 0 && rsz < (int)sizeof(buf)) {
+		int rsz = read(hd, buf, bufSz);
+		if(rsz > 0 && rsz < bufSz) {
 		    buf[rsz] = 0;
 		    char bChars[100];
 		    if(sscanf(buf,"%lx %lx %99s %hhd",&mBeg,&mEnd,bChars,&mXML) == 4) { mChars = bChars; infoOK = true; }
@@ -531,13 +576,13 @@ void MFileArch::attach( const string &iname, bool full )
 
 	    // Get archive info from DB
 	    if(!infoOK) {
-		TConfig c_el(&mod->packFE());
-		c_el.cfg("FILE").setS(name());
-		if(SYS->db().at().dataGet(mod->filesDB(),mod->nodePath()+"Pack/",c_el,false,true)) {
-		    mBeg = strtol(c_el.cfg("BEGIN").getS().c_str(),NULL,16);
-		    mEnd = strtol(c_el.cfg("END").getS().c_str(),NULL,16);
-		    mChars = c_el.cfg("PRM1").getS();
-		    mXML = s2i(c_el.cfg("PRM2").getS());
+		TConfig cEl(&mod->packFE());
+		cEl.cfg("FILE").setS(name());
+		if(SYS->db().at().dataGet((owner().infoTbl.size()?owner().infoTbl:mod->filesDB()),mod->nodePath()+"Pack/",cEl,false,true)) {
+		    mBeg = strtol(cEl.cfg("BEGIN").getS().c_str(),NULL,16);
+		    mEnd = strtol(cEl.cfg("END").getS().c_str(),NULL,16);
+		    mChars = cEl.cfg("PRM1").getS();
+		    mXML = s2i(cEl.cfg("PRM2").getS());
 		    infoOK = true;
 		}
 	    }
@@ -558,9 +603,9 @@ void MFileArch::attach( const string &iname, bool full )
 
 	char s_char[100];
 	//Check to plain text archive
-	if(fgets(buf,sizeof(buf),f) == NULL)
+	if(fgets(buf,bufSz,f) == NULL)
 	    throw owner().err_sys(_("File '%s' header error!"), name().c_str());
-	string s_tmpl = mod->modId()+"%*s %99s %x %x";
+	string s_tmpl = MOD_ID "%*s %99s %x %x";
 	if(sscanf(buf,s_tmpl.c_str(),s_char,&mBeg,&mEnd) == 3) {
 	    // Attach plain text archive file
 	    mChars = s_char;
@@ -584,12 +629,12 @@ void MFileArch::attach( const string &iname, bool full )
 		string s_buf;
 
 		// Read full file to buffer
-		while((r_cnt=fread(buf,1,sizeof(buf),f))) s_buf.append(buf,r_cnt);
+		while((r_cnt=fread(buf,1,bufSz,f))) s_buf.append(buf, r_cnt);
 		fclose(f); f = NULL;
 
 		// Parse full file
 		mNode->load(s_buf);
-		if(mNode->name() != mod->modId()) {
+		if(mNode->name() != MOD_ID) {
 		    owner().mess_sys(TMess::Error, _("Archive file: '%s' is not mine."), name().c_str());
 		    mNode->clear();
 		    mErr = true;
@@ -625,7 +670,7 @@ void MFileArch::attach( const string &iname, bool full )
 			fclose(f);
 			return;
 		    }
-		} while(prm != mod->modId());
+		} while(prm != MOD_ID);
 		// Go to
 		while(true) {
 		    prm.clear();
@@ -674,7 +719,7 @@ bool MFileArch::put( TMess::SRec mess )
 	res.release(); attach(mName); res.request(true);
 	if(mErr || !mLoad) {
 	    mErr = true;
-	    throw owner().err_sys(_("Archive file '%s' isn't attached!"), mName.c_str());
+	    throw owner().err_sys(_("Archive file '%s' isn't attached!"), name().c_str());
 	}
     }
 
@@ -710,12 +755,13 @@ bool MFileArch::put( TMess::SRec mess )
     else {
 	unsigned int tTm, tTmU;
 	long mv_beg = 0, mv_off = 0;
-	char buf[STR_BUF_LEN];
+	int bufSz = STR_BUF_LEN;
+	char buf[bufSz+1]; buf[bufSz] = 0;
 	//Check to empty category and message
 	if(!mess.categ.size())	mess.categ = " ";
 	if(!mess.mess.size())	mess.mess = " ";
 	//Open file
-	FILE *f = fopen(mName.c_str(), "r+");
+	FILE *f = fopen(name().c_str(), "r+");
 	if(f == NULL) { mErr = true; return false; }
 	bool fOK = true;
 
@@ -729,9 +775,9 @@ bool MFileArch::put( TMess::SRec mess )
 	if(mess.time <= mEnd && (owner().prevDbl() || owner().prevDblTmCatLev())) {
 	    long c_off = cacheGet(FTM(mess));
 	    if(c_off) fseek(f, c_off, SEEK_SET);
-	    else fOK = (fgets(buf,sizeof(buf),f) != NULL);
+	    else fOK = (fgets(buf,bufSz,f) != NULL);
 
-	    while(fgets(buf,sizeof(buf),f) != NULL) {
+	    while(fgets(buf,bufSz,f) != NULL) {
 		int tLev = 0;
 		char tCat[1001];
 		if((sscanf(buf,"%x:%d %d %1000s",&tTm,&tTmU,&tLev,tCat)) < 4) continue;
@@ -757,8 +803,7 @@ bool MFileArch::put( TMess::SRec mess )
 	    //Update header
 	    if(mess.time != mEnd) {
 		mEnd = mess.time;
-		snprintf(buf, sizeof(buf), "%s %s %s %8x %8x\n",
-		    mod->modId().c_str(), mod->modInfo("Version").c_str(), mChars.c_str(), (unsigned int)mBeg, (unsigned int)mEnd);
+		snprintf(buf, bufSz, "%s %s %s %8x %8x\n", MOD_ID, MOD_VER, mChars.c_str(), (unsigned int)mBeg, (unsigned int)mEnd);
 		fOK = (fwrite(buf,strlen(buf),1,f) == 1);
 	    }
 	    //Put mess to end file
@@ -771,12 +816,12 @@ bool MFileArch::put( TMess::SRec mess )
 		// Get want position
 		long c_off = cacheGet(FTM(mess));
 		if(c_off) fseek(f,c_off,SEEK_SET);
-		else fOK = (fgets(buf,sizeof(buf),f) != NULL);
+		else fOK = (fgets(buf,bufSz,f) != NULL);
 
 		// Check mess records
 		int pass_cnt = 0;
 		time_t last_tm = 0;
-		while(!mv_beg && fgets(buf,sizeof(buf),f) != NULL) {
+		while(!mv_beg && fgets(buf,bufSz,f) != NULL) {
 		    sscanf(buf, "%x:%d %*d", &tTm, &tTmU);
 		    if(tTm > mess.time || (tTm == mess.time && (int)tTmU > mess.utime)) mv_beg = ftell(f) - strlen(buf);
 		    //  Add too big position to cache
@@ -793,12 +838,12 @@ bool MFileArch::put( TMess::SRec mess )
 		    int mv_end = ftell(f);
 		    int beg_cur;
 		    do {
-			beg_cur = ((mv_end-mv_beg) >= (int)sizeof(buf)) ? mv_end-sizeof(buf) : mv_beg;
+			beg_cur = ((mv_end-mv_beg) >= bufSz) ? mv_end-bufSz : mv_beg;
 			fseek(f, beg_cur, SEEK_SET);
 			fOK = fOK && (fread(buf, mv_end-beg_cur,1,f) == 1);
 			fseek(f, beg_cur+mv_off, SEEK_SET);
 			fOK = fOK && (fwrite(buf,mv_end-beg_cur,1,f) == 1);
-			mv_end -= sizeof(buf);
+			mv_end -= bufSz;
 		    } while(fOK && beg_cur != mv_beg);
 		}
 		//  Write a new message
@@ -812,7 +857,7 @@ bool MFileArch::put( TMess::SRec mess )
 	fseek(f, 0, SEEK_END);
 	mSize = ftell(f);
 	fclose(f);
-	if(!fOK) owner().mess_sys(TMess::Error, _("Write to the archive file '%s' error: %s(%d)"), mName.c_str(), strerror(errno), errno);
+	if(!fOK) owner().mess_sys(TMess::Error, _("Write to the archive file '%s' error: %s(%d)"), name().c_str(), strerror(errno), errno);
 
 	return fOK;
     }
@@ -830,8 +875,10 @@ time_t MFileArch::get( time_t bTm, time_t eTm, vector<TMess::SRec> &mess, const 
     if(!upTo) upTo = time(NULL) + STD_INTERF_TM;
 
     if(mPack) {
-	try { mName = mod->unPackArch(name()); } catch(TError &err) { mErr = true; throw; }
+	res.request(true);
+	try { if(mPack) mName = mod->unPackArch(name()); } catch(TError &err) { mErr = true; throw; }
 	mPack = false;
+	res.request(false);
     }
 
     mAcces = time(NULL);
@@ -875,20 +922,21 @@ time_t MFileArch::get( time_t bTm, time_t eTm, vector<TMess::SRec> &mess, const 
 	}
     }
     else {
-	char buf[102000];
+	int bufSz = 102000;
+	char buf[bufSz+1]; buf[bufSz] = 0;
 	//Open file
-	FILE *f = fopen(mName.c_str(), "r");
+	FILE *f = fopen(name().c_str(), "r");
 	if(f == NULL) { mErr = true; return eTm; }
 
 	//Get want position
 	bool rdOK = true;
 	long c_off = cacheGet((int64_t)bTm*1000000);
 	if(c_off) fseek(f, c_off, SEEK_SET);
-	else rdOK = (fgets(buf,sizeof(buf),f) != NULL);
+	else rdOK = (fgets(buf,bufSz,f) != NULL);
 	//Check mess records
 	int pass_cnt = 0;
 	time_t last_tm = 0;
-	while((rdOK=(fgets(buf,sizeof(buf),f)!=NULL)) && time(NULL) < upTo) {
+	while((rdOK=(fgets(buf,bufSz,f)!=NULL)) && time(NULL) < upTo) {
 	    char stm[51]; int off = 0, bLev;
 	    if(sscanf(buf,"%50s %d",stm,&bLev) != 2) continue;
 	    bRec.level = (TMess::Type)bLev;
@@ -934,12 +982,12 @@ void MFileArch::check( bool free )
     ResAlloc res(mRes, true);
     if(!mErr && mLoad && xmlM()) {
 	if(mWrite) {
-	    int hd = open(mName.c_str(), O_RDWR|O_TRUNC);
+	    int hd = open(name().c_str(), O_RDWR|O_TRUNC);
 	    if(hd > 0) {
 		string x_cf = mNode->save(XMLNode::XMLHeader|XMLNode::BrOpenPrev);
 		mSize = x_cf.size();
 		mWrite = !(write(hd,x_cf.c_str(),mSize) == mSize);
-		if(mWrite) owner().mess_sys(TMess::Error, _("Write to '%s' error!"), mName.c_str());
+		if(mWrite) owner().mess_sys(TMess::Error, _("Write to '%s' error!"), name().c_str());
 		close(hd);
 	    }
 	}
@@ -957,15 +1005,15 @@ void MFileArch::check( bool free )
 	int hd = open(name().c_str(), O_RDONLY);
 	if(hd > 0) { mSize = lseek(hd, 0, SEEK_END); close(hd); }
 
-	if(!owner().packInfoFiles()) {
+	if(!owner().packInfoFiles() || owner().infoTbl.size()) {
 	    // Write info to DB
-	    TConfig c_el(&mod->packFE());
-	    c_el.cfg("FILE").setS(name());
-	    c_el.cfg("BEGIN").setS(ll2s(begin(),TSYS::Hex));
-	    c_el.cfg("END").setS(ll2s(end(),TSYS::Hex));
-	    c_el.cfg("PRM1").setS(charset());
-	    c_el.cfg("PRM2").setS(i2s(xmlM()));
-	    SYS->db().at().dataSet(mod->filesDB(), mod->nodePath()+"Pack/", c_el, false, true);
+	    TConfig cEl(&mod->packFE());
+	    cEl.cfg("FILE").setS(name());
+	    cEl.cfg("BEGIN").setS(ll2s(begin(),TSYS::Hex));
+	    cEl.cfg("END").setS(ll2s(end(),TSYS::Hex));
+	    cEl.cfg("PRM1").setS(charset());
+	    cEl.cfg("PRM2").setS(i2s(xmlM()));
+	    SYS->db().at().dataSet((owner().infoTbl.size()?owner().infoTbl:mod->filesDB()), mod->nodePath()+"Pack/", cEl, false, true);
 	}
 	else if((hd=open((name()+".info").c_str(),O_WRONLY|O_CREAT|O_TRUNC,0666)) > 0) {
 	    // Write info to info file

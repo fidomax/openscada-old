@@ -1,7 +1,7 @@
 
 //OpenSCADA system module DAQ.OPC_UA file: mod_prt.cpp
 /***************************************************************************
- *   Copyright (C) 2009-2017 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2009-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -46,9 +46,9 @@ TProt::TProt( string name ) : TProtocol(PRT_ID)
     mEndPnt = grpAdd("ep_");
 
     //Node DB structure
-    mEndPntEl.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
-    mEndPntEl.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
-    mEndPntEl.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"300"));
+    mEndPntEl.fldAdd(new TFld("ID",_("Identifier"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
+    mEndPntEl.fldAdd(new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,OBJ_NM_SZ));
+    mEndPntEl.fldAdd(new TFld("DESCR",_("Description"),TFld::String,TFld::FullText|TFld::TransltText,"300"));
     mEndPntEl.fldAdd(new TFld("EN",_("To enable"),TFld::Boolean,0,"1","0"));
     mEndPntEl.fldAdd(new TFld("SerialzType",_("Serializer type"),TFld::Integer,TFld::Selected,"1","0","0",_("Binary")));
     mEndPntEl.fldAdd(new TFld("URL",_("URL"),TFld::String,0,"50","opc.tcp://localhost:4841"));
@@ -785,7 +785,7 @@ void OPCEndPoint::cntrCmdProc( XMLNode *opt )
 	if(ctrMkNode("area",opt,-1,"/ep",_("End point"))) {
 	    if(ctrMkNode("area",opt,-1,"/ep/st",_("State"))) {
 		ctrMkNode("fld",opt,-1,"/ep/st/status",_("Status"),R_R_R_,"root",SPRT_ID,1,"tp","str");
-		ctrMkNode("fld",opt,-1,"/ep/st/en_st",_("Enable"),RWRWR_,"root",SPRT_ID,1,"tp","bool");
+		ctrMkNode("fld",opt,-1,"/ep/st/en_st",_("Enabled"),RWRWR_,"root",SPRT_ID,1,"tp","bool");
 		ctrMkNode("fld",opt,-1,"/ep/st/db",_("DB"),RWRWR_,"root",SPRT_ID,4,
 		    "tp","str","dest","select","select","/db/list","help",TMess::labDB());
 	    }

@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_run.h
 /***************************************************************************
- *   Copyright (C) 2007-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -31,6 +31,7 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QPrinter>
+#include <QMenu>
 
 #include "tvision.h"
 
@@ -119,6 +120,7 @@ class VisRun : public QMainWindow
 	~VisRun( );
 
 	string	user( );
+	string	lang( );
 	string	password( );
 	string	VCAStation( );
 	int	period( )	{ return mPeriod; }
@@ -134,6 +136,10 @@ class VisRun : public QMainWindow
 	bool	connOK( )	{ return !conErr; }
 	QAction *aFullScr( )	{ return actFullScr; }
 
+	bool	winMenu( );
+	void	setWinMenu( bool act );
+
+	bool userSel( const string &hint = "" );
 	void setXScale( float vl )	{ x_scale = vl; }
 	void setYScale( float vl )	{ y_scale = vl; }
 	void setKeepAspectRatio( bool vl )	{ mKeepAspectRatio = vl; }
@@ -141,6 +147,7 @@ class VisRun : public QMainWindow
 	void setReqTm( unsigned rt )	{ reqtm = rt; }
 	void setStyle( int istl );
 
+	void messUpd( );
 	void initSess( const string &prjSes_it, bool crSessForce = false );	//Init session for project's item path
 	void callPage( const string &ses_it, bool updWdg = false );		//Call session page
 	void fullUpdatePgs( );
@@ -178,6 +185,9 @@ class VisRun : public QMainWindow
 
 	//Public attributes
 	bool isResizeManual;				//Manual resizing flag
+
+    signals:
+	void makeStarterMenu( );
 
     protected:
 	//Protected methods
@@ -225,22 +235,39 @@ class VisRun : public QMainWindow
 	};
 	//Private attributes
 	// Menu root items
-	QMenu	*menuFile,			//Menu "File"
-		*menuAlarm,			//Menu "Alarm"
-		*menuView,			//Menu "View"
-		*menuHelp;			//Menu "Help"
+	QMenu	menuFile,			//Menu "File"
+		menuAlarm,			//Menu "Alarm"
+		menuView,			//Menu "View"
+		menuHelp,			//Menu "Help"
+		*menuPrint,			//Menu "Print"
+		*menuExport;			//Menu "Export"
 
 	// Tool bars
 	QToolBar	*toolBarStatus;		//Status toolbar
 
 	// Actions
-	QAction *actFullScr,			//Full screen action
-	//  Alarms actions
+	QAction	*actClose,			//Close
+		*actQuit,			//Quit
+		*actFullScr,			//Full screen
+		*actPrintPg,			//Print the selected page
+		*actPrintDiag,			//Print the selected diagram
+		*actPrintDoc,			//Print the selected document
+		*actExpPg,			//Export the selected page
+		*actExpDiag,			//Export the selected diagram
+		*actExpDoc,			//Export the selected document
+		*actAbout,			//About
+		*actQtAbout,			//About Qt
+		*actProjManual,			//The project manual
+		*actManual,			//The module manual
+		*actManualSYS,			//OpenSCADA manual
+		*actWhatIs,			//What is
 		*actAlrmLev;			//Alarm level
 
 	// Main components
 	QTimer		*endRunTimer, *updateTimer;
+#ifndef QT_NO_PRINTER
 	QPrinter	*prPg, *prDiag, *prDoc;
+#endif
 	QFileDialog	*fileDlg;
 	bool		winClose;		//Close window flag
 	UserStBar	*mWUser;		//User status widget

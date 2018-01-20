@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tfunction.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -257,14 +257,14 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 		ctrMkNode("fld",opt,-1,"/func/st/use",_("Used"),R_R_R_,"root",grp,1,"tp","dec");
 	    }
 	    if(ctrMkNode("area",opt,-1,"/func/cfg",_("Configuration"))) {
-		ctrMkNode("fld",opt,-1,"/func/cfg/id",_("Id"),R_R_R_,"root",grp,1,"tp","str");
+		ctrMkNode("fld",opt,-1,"/func/cfg/id",_("Identifier"),R_R_R_,"root",grp,1,"tp","str");
 		ctrMkNode("fld",opt,-1,"/func/cfg/name",_("Name"),R_R_R_,"root",grp,1,"tp","str");
 		ctrMkNode("fld",opt,-1,"/func/cfg/descr",_("Description"),R_R_R_,"root",grp,3,"tp","str","cols","90","rows","5");
 	    }
 	}
 	if(ctrMkNode("area",opt,-1,"/io",_("IO")))
 	    if(ctrMkNode("table",opt,-1,"/io/io",_("IO"),R_R_R_,"root",grp)) {
-		ctrMkNode("list",opt,-1,"/io/io/0",_("Id"),R_R_R_,"root",grp,1,"tp","str");
+		ctrMkNode("list",opt,-1,"/io/io/0",_("Identifier"),R_R_R_,"root",grp,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/io/io/1",_("Name"),R_R_R_,"root",grp,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/io/io/2",_("Type"),R_R_R_,"root",grp,1,"tp","str");
 		ctrMkNode("list",opt,-1,"/io/io/3",_("Mode"),R_R_R_,"root",grp,1,"tp","str");
@@ -272,7 +272,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 		ctrMkNode("list",opt,-1,"/io/io/5",_("Default"),R_R_R_,"root",grp,1,"tp","str");
 	    }
 	if(ctrMkNode("area",opt,-1,"/exec",_("Execute"),RWRW__,"root",grp)) {
-	    ctrMkNode("fld",opt,-1,"/exec/en",_("Enable"),RWRW__,"root",grp,1,"tp","bool");
+	    ctrMkNode("fld",opt,-1,"/exec/en",_("Enabled"),RWRW__,"root",grp,1,"tp","bool");
 	    // Add test form
 	    if(mTVal) {
 		if(ctrMkNode("area",opt,-1,"/exec/io",_("IO")))
@@ -293,7 +293,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 			}
 		    }
 		// Add Calc button and Calc time
-		ctrMkNode("fld",opt,-1,"/exec/n_clc",_("Number runs"),RWRW__,"root",grp,1,"tp","dec");
+		ctrMkNode("fld",opt,-1,"/exec/n_clc",_("Number of calculations"),RWRW__,"root",grp,1,"tp","dec");
 		ctrMkNode("fld",opt,-1,"/exec/tm",_("Spent time"),R_R___,"root",grp,1,"tp","str");
 		ctrMkNode("comm",opt,-1,"/exec/calc",_("Execute"),RWRW__,"root",grp);
 	    }
@@ -352,7 +352,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 	}
     }
     else if(a_path == "/exec/n_clc" && mTVal) {
-	if(ctrChkNode(opt,"get",RWRW__,"root",grp,SEC_RD))	opt->setText(TBDS::genDBGet(nodePath()+"ntCalc","10",opt->attr("user")));
+	if(ctrChkNode(opt,"get",RWRW__,"root",grp,SEC_RD))	opt->setText(TBDS::genDBGet(nodePath()+"ntCalc","1",opt->attr("user")));
 	if(ctrChkNode(opt,"set",RWRW__,"root",grp,SEC_WR))	TBDS::genDBSet(nodePath()+"ntCalc",opt->text(),opt->attr("user"));
     }
     else if(a_path == "/exec/tm" && mTVal && ctrChkNode(opt,"get",R_R___,"root",grp,SEC_RD))
@@ -369,7 +369,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 	    }
     }
     else if(a_path == "/exec/calc" && mTVal && ctrChkNode(opt,"set",RWRW__,"root",grp,SEC_WR)) {
-	int n_tcalc = s2i(TBDS::genDBGet(nodePath()+"ntCalc","10",opt->attr("user")));
+	int n_tcalc = s2i(TBDS::genDBGet(nodePath()+"ntCalc","1",opt->attr("user")));
 	string wuser = opt->attr("user");
 	time_t tm_lim = SYS->sysTm()+STD_WAIT_TM;
 	int64_t t_cnt = TSYS::curTime();
@@ -384,7 +384,7 @@ void TFunction::cntrCmdProc( XMLNode *opt )
 //* IO                                            *
 //*************************************************
 IO::IO( const char *iid, const char *iname, IO::Type itype,  unsigned iflgs, const char *idef, bool ihide, const char *irez ) :
-    mId(iid), mName(iname), mType(itype), mFlg(iflgs), mHide(ihide), mDef(idef), mRez(irez), owner(NULL)
+    mId(iid), mName(iname), mType(itype), mFlg(iflgs), mDef(idef), mHide(ihide), mRez(irez), owner(NULL)
 {
 
 }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-27 19:54+0300\n"
+"POT-Creation-Date: 2018-01-13 20:12+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,16 +29,13 @@ msgstr ""
 msgid "Parameters table"
 msgstr ""
 
-msgid "Request data period (ms)"
-msgstr ""
-
 msgid "Acquisition schedule"
 msgstr ""
 
-msgid "Request task priority"
+msgid "Priority of the acquisition task"
 msgstr ""
 
-msgid "Restore timeout (s)"
+msgid "Restore timeout, seconds"
 msgstr ""
 
 msgid "Asynchronous write mode"
@@ -68,7 +65,7 @@ msgstr ""
 msgid "Parameter ID"
 msgstr ""
 
-msgid "ID"
+msgid "Identifier"
 msgstr ""
 
 msgid "Value"

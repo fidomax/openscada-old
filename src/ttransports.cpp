@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: ttransports.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -34,26 +34,26 @@ using namespace OSCADA;
 TTransportS::TTransportS( ) : TSubSYS(STR_ID, _("Transports"), true)
 {
     //Input transport BD structure
-    elIn.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
+    elIn.fldAdd(new TFld("ID",_("Identifier"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
     elIn.fldAdd(new TFld("MODULE",_("Transport type"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
-    elIn.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
-    elIn.fldAdd(new TFld("DESCRIPT",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"500"));
+    elIn.fldAdd(new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,OBJ_NM_SZ));
+    elIn.fldAdd(new TFld("DESCRIPT",_("Description"),TFld::String,TFld::FullText|TFld::TransltText,"500"));
     elIn.fldAdd(new TFld("ADDR",_("Address"),TFld::String,TFld::NoFlag,"100"));
     elIn.fldAdd(new TFld("PROT",_("Transport protocol"),TFld::String,TFld::NoFlag,i2s(s2i(OBJ_ID_SZ)*3).c_str()));
     elIn.fldAdd(new TFld("START",_("To start"),TFld::Boolean,TFld::NoFlag,"1"));
 
     //Output transport BD structure
-    elOut.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
+    elOut.fldAdd(new TFld("ID",_("Identifier"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
     elOut.fldAdd(new TFld("MODULE",_("Transport type"),TFld::String,TCfg::Key|TFld::NoWrite,OBJ_ID_SZ));
-    elOut.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
-    elOut.fldAdd(new TFld("DESCRIPT",_("Description"),TFld::String,TFld::FullText|TCfg::TransltText,"500"));
+    elOut.fldAdd(new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,OBJ_NM_SZ));
+    elOut.fldAdd(new TFld("DESCRIPT",_("Description"),TFld::String,TFld::FullText|TFld::TransltText,"500"));
     elOut.fldAdd(new TFld("ADDR",_("Address"),TFld::String,TFld::NoFlag,"100"));
     elOut.fldAdd(new TFld("START",_("To start"),TFld::Boolean,TFld::NoFlag,"1"));
 
     //External hosts' connection DB struct
     elExt.fldAdd(new TFld("OP_USER",_("Open user"),TFld::String,TCfg::Key,OBJ_ID_SZ));
-    elExt.fldAdd(new TFld("ID",_("ID"),TFld::String,TCfg::Key,OBJ_ID_SZ));
-    elExt.fldAdd(new TFld("NAME",_("Name"),TFld::String,TCfg::TransltText,OBJ_NM_SZ));
+    elExt.fldAdd(new TFld("ID",_("Identifier"),TFld::String,TCfg::Key,OBJ_ID_SZ));
+    elExt.fldAdd(new TFld("NAME",_("Name"),TFld::String,TFld::TransltText,OBJ_NM_SZ));
     elExt.fldAdd(new TFld("TRANSP",_("Transport"),TFld::String,0,OBJ_ID_SZ));
     elExt.fldAdd(new TFld("ADDR",_("Transport address"),TFld::String,0,"50"));
     elExt.fldAdd(new TFld("USER",_("Request user"),TFld::String,0,OBJ_ID_SZ));
@@ -97,9 +97,7 @@ string TTransportS::extHostsDB( )	{ return SYS->workDB()+".CfgExtHosts"; }
 void TTransportS::load_( )
 {
     //Load parameters from command line
-    string argCom, argVl;
-    for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
-	if(argCom == "h" || argCom == "help")	fprintf(stdout,"%s",optDescr().c_str());
+    if(s2i(SYS->cmdOpt("h")) || s2i(SYS->cmdOpt("help"))) fprintf(stdout, "%s", optDescr().c_str());
 
     //Load parameters from config-file
 
@@ -222,6 +220,15 @@ void TTransportS::save_( )
 	    SYS->db().at().dataDel(extHostsDB(),nodePath()+"ExtTansp",c_el,true,true,true);
 	    fld_cnt--;
 	}
+}
+
+void TTransportS::unload( )
+{
+    TSubSYS::unload();
+
+    extHostRes.lock(true);
+    extHostLs.clear();
+    extHostRes.unlock();
 }
 
 void TTransportS::subStart( )
@@ -428,7 +435,7 @@ int TTransportS::cntrIfCmd( XMLNode &node, const string &senderPref, const strin
 
     //Check for reforward
     off = 0; TSYS::strParse(station, 0, ".", &off);
-    if(off && off < station.size()) { node.setAttr("reforwardHost", station.substr(off)); station.erase(off-1); }
+    if(off && off < (int)station.size()) { node.setAttr("reforwardHost", station.substr(off)); station.erase(off-1); }
 
     //Connect to the transport
     off = 0;
@@ -463,7 +470,7 @@ void TTransportS::cntrCmdProc( XMLNode *opt )
 	if(ctrMkNode("area",opt,0,"/sub",_("Subsystem"),R_R_R_) &&
 	    ctrMkNode("table",opt,-1,"/sub/ehost",_("External hosts poll"),RWRWRW,"root",STR_ID,2,"s_com","add,del","key","id"))
 	{
-	    ctrMkNode("list",opt,-1,"/sub/ehost/id",_("Id"),RWRWRW,"root",STR_ID,1,"tp","str");
+	    ctrMkNode("list",opt,-1,"/sub/ehost/id",_("Identifier"),RWRWRW,"root",STR_ID,1,"tp","str");
 	    ctrMkNode("list",opt,-1,"/sub/ehost/name",_("Name"),RWRWRW,"root",STR_ID,1,"tp","str");
 	    ctrMkNode("list",opt,-1,"/sub/ehost/transp",_("Transport"),RWRWRW,"root",STR_ID,4,"tp","str",
 		"idm","1","dest","select","select","/sub/transps");
@@ -478,7 +485,7 @@ void TTransportS::cntrCmdProc( XMLNode *opt )
 	return;
     }
     //Process command to page
-    string a_path = opt->attr("path"), u = opt->attr("user");
+    string a_path = opt->attr("path"), u = opt->attr("user"), l = opt->attr("lang");
     if(a_path == "/sub/transps" && ctrChkNode(opt)) {
 	vector<string>  list;
 	modList(list);
@@ -504,7 +511,7 @@ void TTransportS::cntrCmdProc( XMLNode *opt )
 	    for(unsigned iH = 0; iH < list.size(); iH++) {
 		ExtHost &host = list[iH];
 		if(nId)		nId->childAdd("el")->setText(host.id);
-		if(nNm)		nNm->childAdd("el")->setText(trU(host.name,u));
+		if(nNm)		nNm->childAdd("el")->setText(trLU(host.name,l,u));
 		if(nTr)		nTr->childAdd("el")->setText(host.transp);
 		if(nAddr)	nAddr->childAdd("el")->setText(host.addr);
 		if(nUser)	nUser->childAdd("el")->setText(host.user);
@@ -528,7 +535,7 @@ void TTransportS::cntrCmdProc( XMLNode *opt )
 		host.id = opt->text();
 		extHostDel(u, opt->attr("key_id"), sysHostAcs);
 	    }
-	    else if(col == "name")	host.name = trSetU(host.name,u,opt->text());
+	    else if(col == "name")	host.name = trSetLU(host.name,l,u,opt->text());
 	    else if(col == "transp")	host.transp = opt->text();
 	    else if(col == "addr")	host.addr = opt->text();
 	    else if(col == "user")	host.user = opt->text();
@@ -615,7 +622,7 @@ void TTypeTransport::cntrCmdProc( XMLNode *opt )
 //* TTransportIn				 *
 //************************************************
 TTransportIn::TTransportIn( const string &iid, const string &idb, TElem *el ) :
-    TConfig(el), runSt(false), mId(cfg("ID")), mStart(cfg("START").getBd()), mDB(idb)
+    TConfig(el), runSt(false), mId(cfg("ID")), mStart(cfg("START").getBd()), mDB(idb), assTrRes(true), mLogLen(0)
 {
     mId = iid;
 }
@@ -689,7 +696,7 @@ void TTransportIn::save_( )
 void TTransportIn::stop( )
 {
     //Remove assigned output transports
-    ResAlloc resN(nodeRes(), true);
+    MtxAlloc resN(assTrRes, true);
     string oTrId;
     while(mAssTrO.size()) {
 	oTrId = mAssTrO.back().at().id();
@@ -703,7 +710,7 @@ vector<AutoHD<TTransportOut> > TTransportIn::assTrs( bool checkForCleanDisabled 
 {
     vector<AutoHD<TTransportOut> > rez;
 
-    ResAlloc resN(nodeRes(), true);
+    MtxAlloc resN(assTrRes, true);
 
     //Find proper for clean up stopped transports
     if(checkForCleanDisabled)
@@ -730,9 +737,30 @@ vector<AutoHD<TTransportOut> > TTransportIn::assTrs( bool checkForCleanDisabled 
     return rez;
 }
 
+void TTransportIn::setLogLen( int vl )
+{
+    MtxAlloc res(dataRes(), true);
+
+    vl = vmax(0, vmin(10000,vl));
+    while((int)mLog.size() > vl) mLog.pop_back();
+
+    mLogLen = vl;
+}
+
+void TTransportIn::pushLogMess( const string &vl )
+{
+    MtxAlloc res(dataRes(), true);
+
+    if(!logLen()) return;
+
+    mLog.push_front(ll2s(TSYS::curTime()) + "\n" + vl);
+
+    while((int)mLog.size() > logLen())	mLog.pop_back();
+}
+
 string TTransportIn::assTrO( const string &addr )
 {
-    ResAlloc resN(nodeRes(), true);
+    MtxAlloc resN(assTrRes, true);
     int trFor = -1;
     //Find proper for replace and clean up stopped transports
     for(int i_ass = 0; i_ass < (int)mAssTrO.size(); i_ass++) {
@@ -824,6 +852,11 @@ void TTransportIn::cntrCmdProc( XMLNode *opt )
 		ctrMkNode2("fld",opt,-1,"/prm/cfg/PROT",EVAL_STR,RWRWR_,"root",STR_ID,"dest","select","select","/prm/cfg/p_mod",NULL);
 	    }
 	}
+	if(ctrMkNode("area",opt,-1,"/log",_("IO log"),R_R___,"root",STR_ID)) {
+	    ctrMkNode("fld",opt,-1,"/log/logLen",_("Log length"),RWRW__,"root",STR_ID,4,"tp","dec","min","0","max","10000",
+		"help",_("Use zero for the log disabling."));
+	    if(logLen()) ctrMkNode("fld",opt,-1,"/log/log",_("Log"),R_R___,"root",STR_ID,3,"tp","str","rows","20","SnthHgl","1");
+	}
 	return;
     }
     //Process command to page
@@ -855,6 +888,28 @@ void TTransportIn::cntrCmdProc( XMLNode *opt )
 	    opt->childAdd("el")->setText(c_path+list[i_a]);
     }
     else if(a_path.compare(0,8,"/prm/cfg") == 0) TConfig::cntrCmdProc(opt,TSYS::pathLev(a_path,2),"root",STR_ID,RWRWR_);
+    else if(a_path == "/log/logLen") {
+	if(ctrChkNode(opt,"get",RWRW__,"root",STR_ID,SEC_RD))	opt->setText(i2s(logLen()));
+	if(ctrChkNode(opt,"set",RWRW__,"root",STR_ID,SEC_WR))	setLogLen(s2i(opt->text()));
+    }
+    else if(a_path == "/log/log") {
+	if(ctrChkNode(opt,"get",RWRW__,"root",STR_ID,SEC_RD)) {
+	    MtxAlloc res(dataRes(), true);
+	    for(unsigned iL = 0; iL < mLog.size(); iL++) {
+		int off = 0;
+		int64_t itTm   = s2ll(TSYS::strLine(mLog[iL],0,&off));
+		string  itDscr = TSYS::strLine(mLog[iL], 0, &off);
+		opt->setText(opt->text() + "[" + atm2s(itTm/1000000,"%Y-%m-%dT%H:%M:%S")+"."+i2s(itTm%1000000)+"] " +
+		    itDscr + ((off<(int)mLog[iL].size())?"\n"+TSYS::strDecode(mLog[iL].substr(off),TSYS::Bin,"<text>"):"") + "\n\n");
+	    }
+	}
+	if(ctrChkNode(opt,"SnthHgl",R_R___,"root",STR_ID,SEC_RD)) {
+	    opt->setAttr("font","Courier");
+	    opt->childAdd("rule")->setAttr("expr","^\\[[^\\]]+.+$")->setAttr("color","blue")->setAttr("font_italic","1")->
+		childAdd("rule")->setAttr("expr","^\\[[^\\]]+\\]")->setAttr("color","darkblue")->setAttr("font_weight","1");
+	    opt->childAdd("rule")->setAttr("expr","^[0-9a-fA-F]{2,} .+$")->setAttr("color","black");
+	}
+    }
     else TCntrNode::cntrCmdProc(opt);
 }
 
@@ -863,7 +918,7 @@ void TTransportIn::cntrCmdProc( XMLNode *opt )
 //************************************************
 TTransportOut::TTransportOut( const string &iid, const string &idb, TElem *el ) :
     TConfig(el), runSt(false), mId(cfg("ID")), mStart(cfg("START").getBd()),
-    mDB(idb), mStartTm(0), mPrm1(0), mPrm2(0)
+    mDB(idb), mStartTm(0), mPrm1(0), mPrm2(0), mReqRes(true), mLogLen(0)
 {
     mId = iid;
 }
@@ -942,6 +997,27 @@ void TTransportOut::messProtIO( XMLNode &io, const string &prot )
     SYS->protocol().at().at(prot).at().outMess(io, *this);
 }
 
+void TTransportOut::setLogLen( int vl )
+{
+    MtxAlloc res(dataRes(), true);
+
+    vl = vmax(0, vmin(10000,vl));
+    while((int)mLog.size() > vl) mLog.pop_back();
+
+    mLogLen = vl;
+}
+
+void TTransportOut::pushLogMess( const string &vl )
+{
+    MtxAlloc res(dataRes(), true);
+
+    if(!logLen()) return;
+
+    mLog.push_front(ll2s(TSYS::curTime()) + "\n" + vl);
+
+    while((int)mLog.size() > logLen())	mLog.pop_back();
+}
+
 TVariant TTransportOut::objFuncCall( const string &iid, vector<TVariant> &prms, const string &user )
 {
     // string messIO( string mess, real timeOut = 0, int inBufLen = -1 ) -
@@ -961,7 +1037,7 @@ TVariant TTransportOut::objFuncCall( const string &iid, vector<TVariant> &prms, 
 
 	return rez;
     }
-    // int messIO( XMLNodeObj req, string prt ) - sending the request <req> to the protocol <prt> for the implementation of a connection
+    // string messIO( XMLNodeObj req, string prt ) - sending the request <req> to the protocol <prt> for the implementation of a connection
     //      session through the transport by means of protocol.
     //  req - request into XML-tree
     //  prt - protocol name
@@ -973,7 +1049,7 @@ TVariant TTransportOut::objFuncCall( const string &iid, vector<TVariant> &prms, 
 	    messProtIO(req, prms[1].getS());
 	    AutoHD<XMLNodeObj>(prms[0].getO()).at().fromXMLNode(req);
 	} catch(TError &err) { return err.mess; }
-	return 0;
+	return "";
     }
     // string status( ) - the transport status
     if(iid == "status")	return getStatus();
@@ -1032,15 +1108,20 @@ void TTransportOut::cntrCmdProc( XMLNode *opt )
 	    ctrMkNode("fld",opt,-1,"/req/mode",_("Mode"),RWRW__,"root",STR_ID,4,"tp","dec","dest","select",
 		"sel_id","0;1;2;3","sel_list",_("Binary;Text(LF);Text(CR);Text(CR/LF)"));
 	    ctrMkNode("fld",opt,-1,"/req/toTmOut",_("Wait timeout"),RWRWR_,"root",STR_ID,2,"tp","bool","help",
-		_("Sign for expect by timeout when a response is received.\n"
-		  "Many systems in response to various protocols (HTTP) are send the response data in several pieces.\n"
-		  "Without this flag will be received and displayed only the first piece.\n"
-		  "When this flag will be set all the pieces awaiting an answer, until the lack of data during the timeout the transport elapsed ."));
+		_("A sign of waiting timeout when receiving an answer.\n"
+		  "Many systems, when responding to different protocols (such as HTTP), can send response data in several parts.\n"
+		  "Without this, only the first part will be received and displayed.\n"
+		  "When this flag is set, all parts of the response will be waiting up to missing data during the transport timeout."));
 	    ctrMkNode("fld",opt,-1,"/req/inBufSz",_("Input buffer size, bytes"),RWRW__,"root",STR_ID,4,"tp","dec","min","0","max",i2s(STR_BUF_LEN).c_str(),
-		"help",_("Direct set the input buffer size. Use 0 to disable waiting and reading to a data, only to write."));
+		"help",_("Direct set the input buffer size. Use 0 to disable waiting and reading for a data - only to write."));
 	    ctrMkNode("comm",opt,-1,"/req/send",_("Send"),RWRW__,"root",STR_ID);
-	    ctrMkNode("fld",opt,-1,"/req/req",_("Request"),RWRW__,"root",STR_ID,3,"tp","str","cols","90","rows","5");
-	    ctrMkNode("fld",opt,-1,"/req/answ",_("Answer"),RWRW__,"root",STR_ID,3,"tp","str","cols","90","rows","5");
+	    ctrMkNode("fld",opt,-1,"/req/req",_("Request"),RWRW__,"root",STR_ID,4,"tp","str","cols","90","rows","5","SnthHgl","1");
+	    ctrMkNode("fld",opt,-1,"/req/answ",_("Answer"),RWRW__,"root",STR_ID,4,"tp","str","cols","90","rows","5","SnthHgl","1");
+	}
+	if(ctrMkNode("area",opt,-1,"/log",_("IO log"),R_R___,"root",STR_ID)) {
+	    ctrMkNode("fld",opt,-1,"/log/logLen",_("Log length"),RWRW__,"root",STR_ID,4,"tp","dec","min","0","max","10000",
+		"help",_("Use zero for the log disabling."));
+	    if(logLen()) ctrMkNode("fld",opt,-1,"/log/log",_("Log"),R_R___,"root",STR_ID,3,"tp","str","rows","20","SnthHgl","1");
 	}
 	return;
     }
@@ -1086,10 +1167,16 @@ void TTransportOut::cntrCmdProc( XMLNode *opt )
 		    break;
 	    }
 	}
+	if(ctrChkNode(opt,"SnthHgl",RWRW__,"root",STR_ID,SEC_RD)) {
+	    opt->setAttr("font","Courier");
+	}
     }
     else if(a_path == "/req/answ") {
 	if(ctrChkNode(opt,"get",RWRW__,"root",STR_ID,SEC_RD))	opt->setText(TBDS::genDBGet(owner().nodePath()+"ReqAnsw","",opt->attr("user")));
 	if(ctrChkNode(opt,"set",RWRW__,"root",STR_ID,SEC_WR))	TBDS::genDBSet(owner().nodePath()+"ReqAnsw",opt->text(),opt->attr("user"));
+	if(ctrChkNode(opt,"SnthHgl",RWRW__,"root",STR_ID,SEC_RD)) {
+	    opt->setAttr("font","Courier");
+	}
     }
     else if(a_path == "/req/send" && ctrChkNode(opt,"set",RWRW__,"root",STR_ID,SEC_WR)) {
 	string answ;
@@ -1120,23 +1207,45 @@ void TTransportOut::cntrCmdProc( XMLNode *opt )
 	    int inBufSz = s2i(TBDS::genDBGet(owner().nodePath()+"InBufSz",i2s(STR_BUF_LEN),opt->attr("user")));
 	    char buf[inBufSz];
 	    if(!startStat()) start();
-	    ResAlloc resN(nodeRes(), true);
-	    int resp_len = messIO(req.data(), req.size(), buf, inBufSz, 0, true);
+	    MtxAlloc resN(reqRes(), true);
+	    int resp_len = messIO(req.data(), req.size(), buf, inBufSz);
 	    if(inBufSz) {
 		answ.assign(buf, resp_len);
 
 		bool ToTmOut = (bool)s2i(TBDS::genDBGet(owner().nodePath()+"ToTmOut","0",opt->attr("user")));
 		while(ToTmOut && resp_len > 0 && ((TSYS::curTime()-stm)/1000000) < STD_INTERF_TM) {
-		    try { resp_len = messIO(NULL, 0, buf, inBufSz, 0, true); } catch(TError &err) { break; }
+		    try { resp_len = messIO(NULL, 0, buf, inBufSz); } catch(TError &err) { break; }
 		    answ.append(buf, resp_len);
 		}
 	    }
 
 	    TBDS::genDBSet(owner().nodePath()+"ReqTm", tm2s(1e-6*(TSYS::curTime()-stm)), opt->attr("user"));
-	    TBDS::genDBSet(owner().nodePath()+"ReqAnsw", (mode==0)?TSYS::strDecode(answ,TSYS::Bin," "):answ, opt->attr("user"));
+	    TBDS::genDBSet(owner().nodePath()+"ReqAnsw", (mode==0)?TSYS::strDecode(answ,TSYS::Bin,"<text>"):answ, opt->attr("user"));
 	} catch(TError &err) {
 	    TBDS::genDBSet(owner().nodePath()+"ReqTm", tm2s(1e-6*(TSYS::curTime()-stm)), opt->attr("user"));
 	    throw;
+	}
+    }
+    else if(a_path == "/log/logLen") {
+	if(ctrChkNode(opt,"get",RWRW__,"root",STR_ID,SEC_RD))	opt->setText(i2s(logLen()));
+	if(ctrChkNode(opt,"set",RWRW__,"root",STR_ID,SEC_WR))	setLogLen(s2i(opt->text()));
+    }
+    else if(a_path == "/log/log") {
+	if(ctrChkNode(opt,"get",R_R___,"root",STR_ID,SEC_RD)) {
+	    MtxAlloc res(dataRes(), true);
+	    for(unsigned iL = 0; iL < mLog.size(); iL++) {
+		int off = 0;
+		int64_t itTm   = s2ll(TSYS::strLine(mLog[iL],0,&off));
+		string  itDscr = TSYS::strLine(mLog[iL], 0, &off);
+		opt->setText(opt->text() + "[" + atm2s(itTm/1000000,"%Y-%m-%dT%H:%M:%S")+"."+i2s(itTm%1000000)+"] " +
+		    itDscr + ((off<(int)mLog[iL].size())?"\n"+TSYS::strDecode(mLog[iL].substr(off),TSYS::Bin,"<text>"):"") + "\n\n");
+	    }
+	}
+	if(ctrChkNode(opt,"SnthHgl",R_R___,"root",STR_ID,SEC_RD)) {
+	    opt->setAttr("font","Courier");
+	    opt->childAdd("rule")->setAttr("expr","^\\[[^\\]]+.+$")->setAttr("color","blue")->setAttr("font_italic","1")->
+		childAdd("rule")->setAttr("expr","^\\[[^\\]]+\\]")->setAttr("color","darkblue")->setAttr("font_weight","1");
+	    opt->childAdd("rule")->setAttr("expr","^[0-9a-fA-F]{2,} .+$")->setAttr("color","black");
 	}
     }
     else TCntrNode::cntrCmdProc(opt);

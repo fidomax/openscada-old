@@ -1,13 +1,13 @@
 # OpenSCADA.DAQ.DAQGate translate to Russian.
 # This file is distributed under the same license as the OpenSCADA.DAQ.DAQGate package module.
 #
-# Roman Savochenko <rom_as@oscada.org>, 2007-2016.
+# Roman Savochenko <rom_as@oscada.org>, 2007-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.DAQ.DAQGate 0.9.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-15 17:03+0200\n"
+"POT-Creation-Date: 2017-12-16 15:59+0200\n"
 "PO-Revision-Date: 2007-10-29 12:40+0200\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <ru@li.org>\n"
@@ -31,17 +31,14 @@ msgstr ""
 msgid "Parameters cache table"
 msgstr "Таблица кеша параметров"
 
-msgid "Gather data period (s)"
-msgstr "Период сбора данных (с)"
-
 msgid "Acquisition schedule"
 msgstr "Планирование опроса"
 
 msgid "Gather task priority"
 msgstr "Уровень приоритета задачи сбора данных"
 
-msgid "Restore timeout (s)"
-msgstr "Интервал восстановления (с)"
+msgid "Restore timeout, seconds"
+msgstr "Интервал восстановления, секунд"
 
 msgid "Restore data depth time (hour)"
 msgstr "Глубина времени восстановления данных (часов)"
@@ -56,8 +53,8 @@ msgstr ""
 "==Отключить==;Отладка (0);Информация (1);Замечание (2);Предупреждение (3);"
 "Ошибка (4);Критически (5);Тревога (6);Авария (7)"
 
-msgid "Sync inter remote station period (s)"
-msgstr "Периодичность синхронизации с удалённой станцией (с)"
+msgid "Sync inter remote station period, seconds"
+msgstr "Периодичность синхронизации с удалённой станцией, секунд"
 
 msgid "Remote stations list"
 msgstr "Список удалённых станций"
@@ -77,6 +74,9 @@ msgstr "Адрес удалённого параметра"
 msgid "Attributes configuration cache"
 msgstr "Кеш конфигурации атрибутов"
 
+msgid "Presenting for stations"
+msgstr "Присутствие по станциям"
+
 msgid "Call now. "
 msgstr "Вызов сейчас. "
 
@@ -88,6 +88,7 @@ msgstr "Вызовы с периодом: %s. "
 msgid "Call next by cron '%s'. "
 msgstr "Следующий вызов по cron '%s'. "
 
+#, c-format
 msgid "Spent time: %s[%s]. "
 msgstr "Затрачено времени: %s[%s]. "
 
@@ -98,10 +99,6 @@ msgstr "Ошибка станции '%s', восстановление чере�
 #, c-format
 msgid "Requests to station '%s': %.6g."
 msgstr "Запросов к станции '%s': %.6g."
-
-#, c-format
-msgid "Enable: current stations: %d; parameters: %d."
-msgstr "Включение: текущих станций: %d; параметров: %d."
 
 #, c-format
 msgid "Enable: station '%s' processing item '%s' for parameters %d."
@@ -122,7 +119,7 @@ msgstr "DAQ.%s.%s: подключение к источнику данных: %s
 msgid "STOP"
 msgstr "ОСТАНОВЛЕН"
 
-msgid "10:Data not allow."
+msgid "10:Data is not allowed."
 msgstr "10:Данные не доступны."
 
 msgid "OK"
@@ -131,6 +128,10 @@ msgstr "НОРМА"
 #, c-format
 msgid "DAQ.%s.%s: connect to data source '%s': %s."
 msgstr "DAQ.%s.%s: подключение к источнику данных '%s': %s."
+
+#, c-format
+msgid "11:Station missed '%s'."
+msgstr "11:Станция отсутствует '%s'."
 
 msgid "Zero for disable archive access."
 msgstr "Ноль для отключения доступа к архивам."
@@ -175,7 +176,7 @@ msgstr "Состояние"
 msgid "Type"
 msgstr "Тип"
 
-msgid "Enable"
+msgid "Enabled"
 msgstr "Включен"
 
 msgid "Id"

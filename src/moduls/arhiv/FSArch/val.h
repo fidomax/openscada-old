@@ -1,7 +1,7 @@
 
 //OpenSCADA system module Archive.FSArch file: val.h
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -50,7 +50,7 @@ class VFileArch
 
 	void attach( const string &name );
 
-	string	&name( )	{ return mName; }
+	string	name( )		{ return mName; }
 	int	size( )		{ return mSize; }
 	int64_t	begin( )	{ return mBeg; }
 	int64_t	end( )		{ return mEnd; }
@@ -103,7 +103,9 @@ class VFileArch
 	void repairFile( int hd );
 
 	// Base parameters
-	string	mName;		//Name Archive file
+	ResMtx	dtRes;
+
+	MtxString mName;	//Name Archive file
 	int	mSize;		//Archive size
 	TFld::Type mTp;		//Value type
 	int64_t	mBeg;		//Begin of archive file
@@ -186,6 +188,7 @@ class ModVArch: public TVArchivator
 	ModVArch( const string &iid, const string &idb, TElem *cf_el );
 	~ModVArch( );
 
+	string infoDBnm( );
 	double curCapacity( );
 
 	double	fileTimeSize( )	{ return time_size; }
@@ -218,6 +221,8 @@ class ModVArch: public TVArchivator
     public:
 	//Methods
 	bool	chkANow;
+
+	MtxString	infoTbl;
 
     protected:
 	//Methods

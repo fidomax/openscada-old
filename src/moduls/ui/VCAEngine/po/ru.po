@@ -1,13 +1,13 @@
 # OpenSCADA.UI.VCAEngine translate to Russian.
 # This file is distributed under the same license as the OpenSCADA.UI.VCAEngine package module.
 #
-# Roman Savochenko <rom_as@oscada.org>, 2006-2016.
+# Roman Savochenko <rom_as@oscada.org>, 2006-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.UI.VCAEngine 1.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-03 12:33+0200\n"
+"POT-Creation-Date: 2018-01-13 20:58+0200\n"
 "PO-Revision-Date: 2007-10-30 10:48+0200\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <ru@li.org>\n"
@@ -43,7 +43,7 @@ msgstr "Библиотека"
 msgid "State"
 msgstr "Состояние"
 
-msgid "Enable"
+msgid "Enabled"
 msgstr "Включен"
 
 msgid "Library DB"
@@ -62,8 +62,8 @@ msgstr "Дата модификации"
 msgid "Configuration"
 msgstr "Конфигурация"
 
-msgid "Id"
-msgstr ""
+msgid "Identifier"
+msgstr "Идентификатор"
 
 msgid "Name"
 msgstr "Имя"
@@ -94,12 +94,8 @@ msgid "Widget is not container!"
 msgstr "Виджет не контейнер!"
 
 #, c-format
-msgid ""
-"You try to create widget with name '%s' of the widget that was the early "
-"inherited and deleted from base container!"
-msgstr ""
-"Вы пытаетесь создать виджет с именем '%s', который был ранее унаследован и "
-"удалён из базового контейнера!"
+msgid "Restoring '%s' from the base container!"
+msgstr "Восстановление '%s' из базового контейнера!"
 
 msgid "Library widget: "
 msgstr "Библиотечный виджет: "
@@ -302,11 +298,14 @@ msgstr "Режим"
 msgid "Standard;Checkable;Menu;Load;Save"
 msgstr "Стандарт;Переключатель;Меню;Загрузка;Сохранение"
 
+msgid "Items"
+msgstr "Элементы"
+
 msgid "Set value"
 msgstr "Установл. значение"
 
-msgid "Items"
-msgstr "Элементы"
+msgid "Multiple selection"
+msgstr "Множественный выбор"
 
 msgid "Check"
 msgstr "Выбор"
@@ -785,8 +784,8 @@ msgstr "Диаграмма"
 msgid "Diagram widget of the finite visualization."
 msgstr "Виджет диаграммы конечной визуализации."
 
-msgid "Tracing period (s)"
-msgstr "Период слежения (с)"
+msgid "Tracing period, seconds"
+msgstr "Период слежения, секунд"
 
 msgid "Trend;Spectrum;XY"
 msgstr "График;Спектр;XY"
@@ -1114,20 +1113,20 @@ msgstr "Время начала документа"
 msgid "Last time"
 msgstr "Последнее время"
 
-msgid "Repeat time (s)"
-msgstr "Время повтора (сек.)"
+msgid "Repeat time, seconds"
+msgstr "Время повтора, секунд"
 
-msgid "Repeat time (us)"
-msgstr "Время повтора (мксек.)"
+msgid "Repeat time, microseconds"
+msgstr "Время повтора, микросекунд"
 
 msgid "Repeat period"
 msgstr "Период повтора"
 
-msgid "Message time"
-msgstr "Время сообщения"
+msgid "Message time, seconds"
+msgstr "Время сообщения, секунд"
 
-msgid "Message time (mcs)"
-msgstr "Время сообщения (мкс)"
+msgid "Message time, microseconds"
+msgstr "Время сообщения, микросекунд"
 
 msgid "Message level"
 msgstr "Уровень сообщения"
@@ -1182,6 +1181,9 @@ msgstr "Блок данных %d: %0.2f%% загружено."
 msgid "Messages block %d: %0.2f%% loaded."
 msgstr "Блок сообщений %d: %0.2f%% загружено."
 
+msgid "Document generation terminated."
+msgstr "Прервана генерация документа."
+
 msgid "Built-in function"
 msgstr "Встроенная функция"
 
@@ -1195,10 +1197,10 @@ msgid "Elements box widget of the finite visualization."
 msgstr "Виджет группы элементов конечной визуализации."
 
 msgid "Page: open source"
-msgstr "Страница: источник открытия"
+msgstr "Стр.: источник открытия"
 
 msgid "Page: group"
-msgstr "Страница: группа"
+msgstr "Стр.: группа"
 
 msgid "Load project."
 msgstr "Загрузка проекта."
@@ -1263,9 +1265,6 @@ msgstr "Диагностика"
 msgid "Time"
 msgstr "Время"
 
-msgid "Size (s)"
-msgstr "Размер (сек)"
-
 msgid "Messages"
 msgstr "Сообщение"
 
@@ -1299,10 +1298,10 @@ msgid "Create new style"
 msgstr "Создать новый стиль"
 
 msgid "Page: open state"
-msgstr "Страница: открыта"
+msgstr "Стр.: открыта"
 
-msgid "Page: process no opened"
-msgstr "Страница: обрабатывать закрытой"
+msgid "Page: process not opened"
+msgstr "Стр.: обрабатывать не открытой"
 
 msgid "For page can use only Box-based widgets!"
 msgstr "Для страниц может быть использован только основанный на Боксе виджет!"
@@ -1388,7 +1387,7 @@ msgstr "Ошибка вычисления сессии '%s'."
 
 #, c-format
 msgid "Unregistered connection %d on the session."
-msgstr ""
+msgstr "Незарегистрированное подключени %d на сеансе."
 
 msgid "Session: "
 msgstr "Сеанс: "
@@ -1417,11 +1416,14 @@ msgstr "Время вычисления сеанса"
 msgid "Connections counter"
 msgstr "Счётчик подключений"
 
-msgid "Last request"
-msgstr "Последнее обращение"
+msgid "Last request time, user, language"
+msgstr "Время, пользователь, язык последн. запроса"
 
-msgid "Left to force close (s)"
-msgstr "Осталось до принудительного закрытия (с)"
+msgid "Last user action"
+msgstr "Последнее действие пользователя"
+
+msgid "Left to force close, seconds"
+msgstr "Осталось до принудительного закрытия, секунд"
 
 msgid "Period (ms)"
 msgstr "Период (мс)"
@@ -1488,9 +1490,6 @@ msgstr "Роман Савоченко"
 msgid "The main visual control area engine."
 msgstr "Общий движок среды визуализации и управления."
 
-msgid "ID"
-msgstr ""
-
 msgid "DB table"
 msgstr "Таблица БД"
 
@@ -1529,6 +1528,9 @@ msgstr "Конфигурационный шаблон"
 
 msgid "Configuration value"
 msgstr "Значение конфигурации"
+
+msgid "Child identifier"
+msgstr "Дочерний идентификатор"
 
 msgid "Attribute generic flags and type"
 msgstr "Основные флаги и тип атрибута"

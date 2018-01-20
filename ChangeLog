@@ -1,3 +1,626 @@
+2017-01-19 Roman (stable)
+- DB.AGLKS.St.db: ModBus tests expanded for reading a big PDU by the register 100 reading.
+- SYS:data/{debian,debian_mod}/rules: The configuration appended by the argument "--disable-static" to disable the static library of the OpenSCADA core build.
+- !:DOC: "Program Manual" continued to revision ongoing of it translation to Ukrainian.
+- !!:SYS,Archive.{DBArch,FSArch}: Most original messages and help ones of the subsystem "Archives-History" and some others were fixed and improved.
+- FIX:UI.QTStarter: Prevent from a multiple entry from processEvents() manual call, observed on QTCfg.
+- !!:UI.VCAEngine: Implemented for hot update of the widget procedures of the runtime mode.
+- !:FIX:UI.Vision: Prevent from the runtime window manual resize drop at the user change.
+    !:The view "List" of the primitive "FormEl" rewrote to implement the light updating, gor mobile devices like to Maemo, MeeGo.
+
+
+2017-01-13 Roman (stable)
+- DB.AGLKS.St.db: Appended by the documented Logical Level parameter experiment.CB7.
+- !:DOC: "Program Manual" continued to revision ongoing of it translation to Ukrainian.
+- SYS:Changelog: Some messages are fixed.
+- SYS,DAQ.{BFN,BlockCalc,DAQGate,FT3,JavaLikeCalc,LogicLev,ModBus,OPC_UA,Siemens},Protocol.UserProtocol,UI.{VCAEngine,Vision,WebUser}: "ID" renamed to "Identifier".
+- SYS: Help messages of the subsystem "Data acquisition" are improved.
+- !:FIX:SYS: Final counters dysplay set before the object "Mess" deletion.
+- !!:Transport.Serial: Added measuring of the maximum char symbol time of the output transports in the requesting mode in the Debugging.
+    Char timeout calculation expanded for take in account whether the device is local (ttyS{X}) where the char timeout multiply to 3 for not local ones.
+- !!!:UI.{QTStarter,QTCfg,Vision}: The QTStarter menu forming yet one time changed for make the actions independent but the problem of the native menu bar forming in Unity.
+    QTStarter toolbar forming moved direct to the end module.
+    Force visibility of the menubar disabled for the native menu bar.
+- UI.QTStarter: Qt Style and StyleSheets are temporary added, before full implementation of the custom look and fill control by itself.
+    Icon of the system tray and the main selection dialog appended for the custom project icon by its identifier.
+- UI.Vision: Main window of the runtime mode set to readjust at the user change.
+    Main menu of the main window of the runtime mode set to the not disable mode.
+
+
+2017-12-27 Roman (stable)
+- FIX:DB.LibsDB.vcaBase: doc.{docGasNodeDayA,docGasNodeMonthA} Fix the summary document generation data for the account hour 0.
+- SYS:*.spec,debian/*.links: Final switch straight links from "openscada_start" to "openscada".
+- SYS.{Mess,DAQ,Archives,Transports}: Expand for subsystem specific unloading by implement the function unload() for cleaner complex OpenSCADA projects switch.
+- SYS: "EmptySt" renamed to "InitSt" as the initial station by default.
+- FIX:DAQ.DAQGate: Fix for attributes in EVAL for the stopped and disabled modes.
+- !!!!:UI.QTStarter: Expanded for close (windows) and starting into the system tray.
+    !!!!: Significantly revised for the interface fully creation into the Qt events loop of exec() and WinControl functions moved to the StApp descendant of QApplication.
+    Menu of QTStarter with the Qt modules list was unified as the static storage of the actions for extending menus and toolbars of windows of
+	the Qt modules and the system tray icon.
+    Set icon of the QTStarter dialog to one of the actual project.
+- !!:FIX:UI.Vision: Maximizing, Fullscreen, return to the original size of the runtime windows of the visual projects made true and unified at last.
+
+
+2017-12-22 Roman (stable)
+- !!:FIX:DB.LibsDB.OscadaLibs: flb_doc.getVal fix for wrong archivators work out.
+- FIX:SYS:
+    FIX:openscada.spec: Fixed for building on %_vendor == "redhat" and oscada_plc.xml appended beside oscada_server.xml.
+    FIX:*: Some build warnigs are fixed.
+    *: Unwrapping all the shortcuts "(sec)" to ", seconds".
+    !!:XMLNodeObj,XMLNode: Full children clear set from the end for much speed up.
+    Changelog: Some messages are fixed.
+    Some original help messages fixed.
+    Add debug counters clean up into unload().
+- DB: Spare configuration area of the table object "/prm/cfg" removed.
+- FIX:Archive.DBArch: Appended by wrong archives pass of the values.
+- FIX:Archive.FSArch: Archive files multiple pack-unpack prevented.
+- DB.SQLite: Requests "BEGIN;" and "COMMIT;" moved under the critical section "connRes".
+- Protocol.HTTP: mNoFull renamed to mNotFull.
+- !!:Transport.{Sockets,SSL,Serial}: Output transports were appended by the responsible time measurement in the Debug mode.
+- !!:FIX:UI.QTCfg: Prevent error messages at resizing and make it after 0.5s.
+    !!:FIX: Fix vertical scalable widgets "Tables" and "Lists" by their placing at the end of the widgets stack.
+
+
+2017-12-16 Roman (stable)
+- DB.LibsDB.OscadaLibs: servProc.docOffLine appended by the documents Modules/{Quick_start,How_to}(without Ukrainian still) for the offline documentaion list.
+- DB.AGLKS.vca: Table "prj_AGLKS_incl" clear from spare records with "ATTRS"='' from old versions of OpenSCADA.
+- DB.Boiler.St: Table "prj_kotel9_incl" clear from spare records with "ATTRS"='' from old versions of OpenSCADA.
+- !:DOC: "Program Manual" continued to revision ongoing of it translation to Ukrainian.
+    Appended by Modules/{Quick_start,How_to}(without Ukrainian still).
+- !!:FIX:SYS,UI.QTStarter: The new project manager adapted to lighter reloading at the projects switching in way of holding UI.QTStarter
+    that fix some Qt configurations exactly for Maemo and seems for Android. Then the reloading performs now on the subsystems level with holding some modules.
+    FIX: Checking filesystem items of projects for presence some fixed.
+- !!!!:SYS: Switch to the new projects manager:
+    - for desktop files: openscada.desktop, openscada_AGLKS.desktop, openscada_Boiler.desktop;
+    - initial scripts of the daemon mode: debian/openscada-server.init;
+    - new configuration files of the projects "server" and "plc" of the daemon mode and their appending to debian and RPM packages,
+	for: oscada_server.xml, oscada_plc.xml; old direct configurations of this mode must be in function;
+    - the default configuration file oscada.xml moving to the exclusively projects initial configuration
+	where only module ui_QTStarter.so allowed to a project fast selection;
+    - the projects managing external script openscada-proj adapted to create projects' folders at their configuration file only availability,
+	mostly for the daemon mode projects "server" and "plc";
+    -the old project manager script openscada_start left to the compatibility of the early created *.desktop links.
+- !!:FIX:SYS.*: Full switch to cmdOpt() from getCmdOpt() and some command-line options ongoing processing fix
+    from early direct using of the system function: --messlev, --modPath.
+- !!!!:FIX:SYS: XMLNode fixed from spare string size reserving in encoding of the serialization which caused to its performance significant degradation
+    especially on big trees. It must significant rise overall performance in network interaction by XML.
+- SYS.*: Unwrapping all the shortcuts "(s)" to ", seconds".
+- SYS: Redundancy appended by the maximum value of measuring of the processing time.
+- Archives.*: Values and messages archivators appended by the maximum value of measuring of the processing.
+- DAQ.AMRDevs: Finish of translation to German.
+- !!:Transport.*: Appended by measurement of the current and maximum time of requesting to protocol, in the "Debug (0)" mode.
+- !!:UI.QTStarter: Set holded at reloading by signal SIGUSR2 of projects reloading.
+    Self menu for other modules made single one and placed also into property "menuStarterAddr" of the application main object.
+    Made some optimal for busy screen devices like Nokia N900.
+- !!:FIX:UI.VCAEngine: Document processing tasks closing at executions prevented by these executions processing.
+    !!: Different big (from the main task of the session) perioded widgets processing adapted to execution into different phases
+	then to make the main task loading plainer and lesser at all.
+- !!FIX:UI.Vision: Runtime menu creation moved to whole mode that is full creation at needs and full clearing at not needs,
+    for prevent the menu show at its inactive mode into some environments like Maemo and Unity.
+    In that menu creation there is used the property "menuStarterAddr" of the QTStarter menu from the main object of the application.
+
+
+2017-12-08 Roman (stable)
+- DB.LibsDB.OscadaLibs: DevLib.Nik2303I improved for natural termination criterion checking by Ruslan Yarmoliuk <rylio74@gmail.com>.
+    servProc.docOffLine appended by the documents Modules/{BFN(without Ukrainian still),SoundCard,SMH2Gi} for the offline documentaion list.
+- DB.AGLKS.St: A preconfigured sound controler object of DAQ.SoundCard set to "default".
+- !:DOC: Appended by Modules/{BFN(without Ukrainian still),SoundCard,SMH2Gi}.
+- !!!!:SYS,UI.QTStarter: Built-in manager of projects of OpenSCADA implementation is finished for:
+    - implementing of the platform specific placed to the script openscada-proj which also can be used independently and supports commands: list, proc, create, remove;
+    - directory of user projects set configurable by a command-line argument --projUserDir;
+    - multiple start preventing implemented by functions prjLockUpdPer(), prjLock() and a command-line argument --projLock;
+    - icons and statuses added to prolect's items of the list of selection;
+    - the actual project manager in a BASH script yet allowed but it will be switched to the new built-in at next turn-commit
+	and currently you can see it simple call "openscada".
+- SYS: Command-line option --coreDumpAllow replaced by --noCoreDump to generate core dumps by default.
+- SYS,DAQ.{BlockCalc,DAQGate},Protocol.{ModBus,OPC_UA,UserProtocol},UI.VCAEngine: State lablel "Enable" renamed to "Enabled".
+- !!:FIX:DAQ.SoundCard: Significant revised and fixed for work with the real hardware and virtual ones like PulseAudio and tested on sample rates up to 192000.
+- FIX:UI.WebVision: Calendar dialog closing fixed and set at the clear timeout also and set it to 10 seconds.
+
+
+2017-12-02 Roman (stable)
+- FIX:UI.QTStarter: Fix build for Qt5 in the main thread.
+- FIX:DB.LibsDB.OscadaLibs: servProc.docOffLine appended by the documents Modules/{Vision(without Ukrainian still),WebCfgD,WebCfg,WebVision,WebUser}
+    for the offline documentaion list.
+- !!!!:DB.LibsDB.OscadaLibs: DevLib is appended by implementing of electricity counters Nik2303I from Ruslan Yarmoliuk <rylio74@gmail.com>.
+- !:DOC: Appended by Modules/{Vision(without Ukrainian still),WebCfgD,WebCfg,WebVision,WebUser}.
+- SYS: Default DB of the config file oscada.xml changed to the same config file, mostly to prevent empty DB files creation at initial configurations.
+- !!!!:SYS,UI.QTStarter: Initial support of projects OpenSCADA was added in way of which there appended:
+    - strEncode() expanded by the mode "ToLower" for conversion to lower register;
+    - command-line options preloading and direct access-modification by a new function cmdOpt().
+    - subsystem's modules unloading by unload();
+    - stopping by user's signals into stop(), where SIGUSR2 reserved for projects switching;
+    - projects managing core functions: prjCustMode(), prjNm(), prjSwitch();
+    - UI.QTStarter: list of projects of OpenSCADA for controlled switching from initial (only a project selection) or other project;
+    - the actual project manager in a BASH script yet allowed and here left to implement:
+	RW projects copy, new projects creation at template, locking from multiple starting of single project.
+- DAQ.JavaLikeCalc: "Compile error ..." information expanded by the function ID.
+- !:FIX:UI.Vision: State of openned windows appended by their users.
+    Main dialogs of the developing mode size and splitter's properties storing and restoring were added.
+    Qt > 5.3 fix for wrong QAbstractTableModel::sibling() implementation by it reverting to QAbstractItemModel implementation.
+
+
+2017-11-25 Roman (stable)
+- FIX:DB.LibsDB.OscadaLibs: servProc.docOffLine appended by the documents Modules/{VCAEngine(without Ukrainian still),QTStarter,QTCfg,FLibSYS,SystemTests,FLibMath,FLibComplex1}
+    for the offline documentaion list.
+- !:DOC: "Program Manual" continued to revision ongoing of it translation to Ukrainian.
+    Appended by Modules/{VCAEngine(without Ukrainian still),QTStarter,QTCfg,FLibSYS,SystemTests,FLibMath,FLibComplex1}.
+- !:DB.SQLite: Journals removing before open any DB was added.
+- !!:DAQ.{BlockCalc,DAQGate,DCON,LogicLev,Siemens,System}: The deprecated attribute "Clock period (ms)" removed.
+- Special.SystemTests: Some original messages fixed.
+- UI.{QTCfg,Vision}: Main window (developing for Vision) size and splitter's properties storing and restoring were added.
+- UI.QTCfg: Pages refresh at vertical size changing was added.
+    Stop for cyclic refreshing at wait dialog termination was added before same termination.
+
+
+
+2017-11-17 Roman (stable)
+- FIX:DB.LibsDB.OscadaLibs: LowDevLib.BME280 next some fixed by Arcadiy Kisel.
+    FIX: servProc.wacko2media appended for processing "__", "!!(color)!!" and fixed for unpaired paddings before list symbol "   *".
+    servProc.docOffLine appended by the documents Modules/{ICP_DAS,Siemens,DiamondBoards,Comedi} for the offline documentaion list. The execution limit next rose to 240 seconds.
+- DB.LibsDB.vcaBase: Main.cntrPaspExt expanded to parameter name into the tittle.
+- !:DOC: "Program Manual" continued to revision ongoing of it translation to Ukrainian. Appended by Modules/{ICP_DAS,Siemens,DiamondBoards,Comedi}.
+- SYS: --enable-QtMainThrd set conditional in it default value that is "yes" for Qt5 and "no" for Qt4.
+- FIX:Archive.FSArch: Translation to German some fixed by Oleksiy Bondarchuk.
+- !!:FIX:DAQ.{DCON,ModBus,Siemens}: Mutex objects "enRes" and "reqRes" set to recursive ones by Alexey Bondarchuk.
+- Special.SystemTests: The name and description some expanded.
+- !!:FIX:UI.Vision: Main window restored for correct title into the runtime mode.
+    !!:FIX:View "Text" of the primitive "FormEl" fixed for crashes at placing on external windows of the runtime mode.
+    Spare Mutex Objects removed from the object "UserStBar".
+
+
+2017-11-14 Roman (stable)
+- FIX:DB.LibsDB.OscadaLibs: LowDevLib.BME280 fixed from SYS.Transport.SerialnodeAt().
+- !!:SYS.TConfig: Prevented from recursive entry to cfgChange() by a flag mInCfgCh.
+- FIX:SYS.Security: Prcessing of plain passwords storing was fixed for hashe's salt limit in 8 symbols.
+- FIX:Transport.Serial: SPI_MODE_0 using set to a direct number "0" but some environments miss the definition.
+
+
+2017-11-10 Roman (stable)
+- !!:DB.LibsDB.OscadaLibs: servProc.docOffLine appended by the document Modules/SNMP for the offline documentaion list. The execution limit rose to 180 seconds.
+    All templates of the library "LowDevLib" fixed for connection to a transport using nodeAt().
+    The templates libary "LowDevLib" appended by a new template "BME280" of the chip BME280 support implementation from Arcadiy Kisel.
+- !:DOC: "Program Manual" started to revision ongoing of it translation to Ukrainian. Appended by Modules/SNMP.
+- SYS,DAQ.SNMP: Some original messages were fixed.
+- SYS.Function: Number of manual calculations of internal procedures set to 1 again, by default.
+- SYS.Security: In hashed passwords their allowed to store in plain, mostly for the storages which are primarily in edition.
+- !!:Transport.Serial: Expanded for initial support the bus "SPI".
+- UI.{VCAEngine,Vision}: Deleted widgets from inherited containers resoring was added at alike widget creation try, instead incomprehensible messages.
+    That is the first service used the warnings mechanism of the control interfase of OpenSCADA!
+
+
+2017-11-03 Roman (stable)
+- !!!!:DOC: OpenSCADA switched to a new scheme of the project off-line documentation forming directly from the project Wiki just by the OpenSCADA procedure "docOffLine" execution.
+    Then folders doc/{en,uk,ru} of the source texts tree of the project were cleaned from previous old documentation in PDF and generated for a new one in HTML.
+    The new off-line documentation is not a completed one and will be appended in way of readiness of the documentation sorce on Wiki of the project!
+- !!!!:DB.LibsDB.OscadaLibs: The part of low level devices of the parameters template "DevLib" disjoined into a different library "LowDevLib"
+	and the remained part was mostly updated and translated.
+    JavaLikeCalc library "Service procedures(servProc)" appended by the function "wacko2media" of Wiki syntax convertion from WackoWiki to MediaWiki and
+	by the function "docOffLine" of the project offline documentation generation from the project Wiki.
+- !:SYS: Original messages of the program core some updated and number of calculations of internal procedures set to 1, by default.
+- !:SYS,UI.{QTCfg,QTStarter,Vision}: Off-line documentation call adapted to the new new scheme of the project off-line documentation forming.
+- !!!:SYS.XMLNodeObj: Appended by an user API function getElementsBy() of XML nodes list obtaining by tag name or some attribute value.
+- SYS.TArrayObj: arSet() adapted to the array end appending by a negative index.
+- !!:FIX:SYS.XMLNode: Unified and fixed in serialization to XHTML for: preventing self-finished tags for "script", "div;
+    preventing of symbols "'" and '"' encoding into text (also for generic XML);
+    UTF8 symbol 0xA0 encoding to "&nbsp;".
+- !!:FIX:Archive.FSArch: Some messages expanded for more information.
+    Name of objects of archive files moved under resource by using MtxString.
+    Added checking and clearing for zero archive files.
+    Buffers of archivation of messages and of info-files of values set safer, for possible random data reading.
+    Checking for parameters of value archives added to prevent crashes at wrong ones of deep broken archives.
+- DAQ.JavaLikeCalc: Original messages some updated.
+- FIX:UI.QTCfg: Prevented from high load at the respond waiting progress dialog.
+
+
+2017-10-21 Roman (stable)
+- !!!!:DB.LibsDB.{OscadaLibs,vcaBase}: JavaLikeCalc.Controllers.prescr and Main.{prescrEdit,prescrRun,prescrRunSimple}
+    expanded for backgrounded steps support and some fixes about pauses.
+- FIX:UI.Vision: View "CheckBox" of the primitive "FormEl" processing fixed for signals preventing at set value from the model.
+- FIX:UI.VCAEngine: Attribute "var{X}val" of the primitive "Text" set to translated for strings.
+
+
+2017-10-11 Roman (stable)
+- SYS,DAQ.{MMS.libMMS,OPC_UA.libOPC_UA}: After adaption to build for OpenWrt and with uCLibC, resourcesAllow true checking some changed but it has yet problems with Automake 1.9.
+- FIX:SYS.Mess: {mLang2CodeBase,mLang2Code} moved under the data resource. Strings' encoding disabled for language "C" and the encoding "ASCII".
+- FIX:SYS.Security: Fixed for crash on try login at not initiated empty password with its hashing support.
+    Functions crypt_r() and crypt() processing was added.
+- Special.FLibSYS: Function str2real() moved to use s2r().
+
+
+2017-10-06 Roman (stable)
+- SYS: In way of adaption to build for OpenWrt and with uCLibC there was made:
+    - resourcesAllow true checking for build without the resources (folders "data" and "doc"), mostly by problems at "automake" here execution;
+    - librt checking changed from the function clock_gettime() to clock_nanosleep();
+    - for libcrypt checking there used function "crypt";
+    - including <stdarg.h> to src/tmess.h;
+    - checking for __UCLIBC__ into TUser::auth();
+    - iconv buffer set to "const char *".
+- SYS,UI.QTStarter: Word "system" mostly replaced by the word "program".
+- !!!!:SYS,DAQ.{AMRDevs,FastWel,ICP_DAS,SMH2Gi}: A self implementation was added and used for the function atof() and strtod() in the function TSYS::str2real() and its shortcut s2r()
+    and for understand both radix symbols of float point value that is "." and ",".
+    That doing was made in way of switching to native LC_NUMERIC value but here yet present other problems: scanf() for floats and external
+    environments work, like JavaScript of WWW.
+- DAQ.{MMS.libMMS,OPC_UA.libOPC_UA}: Function TSYS::str2real() and its shortcut s2r() placed and used to the independent library.
+- FIX:SYS: Call for online documentation fixed for the main page "Documents/".
+- SYS,Transport: Offset part in left added to binaries decoding by the argument's value "<text>".
+- FIX:SYS.XMLNode: Encoding UTF code 0xA0 to "&nbsp;" replaced to "&#x00A0;" but "&nbsp;" caused errors on pure XML (not XHTML), observed on UI.WebCfgD.
+- DAQ.BlockCalc: Attributes description format some rewrote.
+- !!:Special.FLibSYS: VArch::set() expanded for single value writing to the archivator of the archive.
+- UI.{QTCfg,WebCfgD}: Scalable items set optimal for vertical fitting, but straight increasing per 5 pixels too slow on some graphical environments like virtual machines and VNC.
+- FIX:UI.{VCAEngine,Vision,WebVision}: Adapted to mark service commands, like primitive's "Diagram" tracing", to "noUser" and doesn't perform updating UserActTm on their.
+
+
+2017-09-23 Roman (stable)
+- SYS.DB: Height of the field of the SQL requests decreased to 2 rows.
+- SYS: Binaries decoding expanded by the argument's value "<text>" for text field in right forming.
+- FIX:SYS: Call for online documentation fixed for correct translation of opened document's page and for some pages: "Documents/Program_manual".
+- !!!!:SYS.Transports,Transports.*: Generic IO log for both input and output transports was added into the core and all transport modules.
+    Resource lock object nRes renamed to assTrRes, its type changed to ResMtx and function nodeRes() removed for the input transport object.
+    Manual requests result of the output transports in binary mode switched to the new variant "<text>".
+- Protocol.ModBus: Resource object nodeRes() (nRes) replaced by the system one dataRes().
+- Protocol.SelfSystem: Some renamed.
+- Archive.FSArch,Protocol.{ModBus,HTTP},UI.{QTCfg,QTStarter,Vision,WebVision},Special.SystemTests: Some source codes cleaned.
+
+
+2017-09-14 Roman (stable)
+- FIX:SYS: Disable wrong DB.LDAP building for all Debian based.
+- DB.LibsDB.vcaBase: export="1" for all documents with values was added.
+- SYS: Checking for ldap.h for module DB.LDAP was added.
+- SYS: data/debian/control: Appended by a commented dependency for libldap2-dev.
+- !:SYS,UI.{QTCfg,QTStarted,Vision}: The online documentation call was switched for call ones from the new Wiki but some pages are not alowed here now before them moving.
+- !!:DB: Tables' content display set to configurable limited, by default it is 100 rows.
+- FIX:SYS.TRegExp fix in function match(), for hang and crash prevent.
+- !!:DB.{SQLite,MySQL,PostgreSQL,FireBird}: Preloading of fieldSeek() set limited on 100 records, for long unterminated hangs prevent.
+- UI.QTCfg: Shorted long helps for ToolTips were appended by "Shift+F1".
+- UI.WebCfgD: Adapted to hierarchical help pages, for symbol "/" encoding.
+
+
+2017-09-08 Roman (stable)
+- !!:DB.LibsDB.vcaBase: doc.docGasNodeMgn fixed for the table title.
+- !!!!:DB: A new module LDAP was added.
+
+
+2017-08-25 Roman (stable)
+- !!!!:SYS.Transports,Transports.*,DAQ.{AMRDevs,DCON,MMS,OPC_UA,SMH2Gi,Siemens,ICP_DAS,FT3},Protocol.{ModBus,HTTP,SelfSystem,UserProtocol}:
+    The generic accessing lock of the outgoing transport was moved to mutex and the argument "noRes" was removed from the function messIO()
+    to prevent from unexpected outcomes from the critical section of requests.
+- DB.LibsDB.OscadaLibs: The template base.gasPoint was expanded for connection to a real diaphragm.
+- !!:DB.LibsDB.vcaBase: doc.{docGasNodeDayA,docGasNodeMgn,docGasNodeDayOrder} was adapted to generic nodes link as a template and
+    the translations were fixed.
+    All documents of the library "Documents" were some updated and their procedures were set to not translated.
+- FIX:DB.Model.AGLKS.{St,vca}: Generic flow-account node was linked to diphragm PP1 of the model of the technological process AGLKS both
+    for the DAQ object and its documents.
+- SYS.TFunction: Expanded by a field language for functions lang(), setLang().
+    OpenSCADA control items from "/tr/langs" of the tab "Translation" of the main page were moved to permition RWRW__.
+- DAQ.JavaLikeCalc: Expanded in translation command tr() for set and use force language.
+- !:Protocol.HTTP: Expanded by a list of users allowed for auth.
+- !!!!:Transport.{SSL,Sockets}.out: Transport's functional lock of resources was merged with reqRes().
+- Transport.Serial.out: Input buffer clear set to double one and moved closer before same writing.
+- !!:UI.VCAEngine: Next level of improving of dynamic messages translation for requesting user and language:
+	into primitive "Document" and its procedure, session attributes.
+    !: Added control for user action by its last action time.
+    Appended by user functions of the session space: reqTm(), reqUser(), reqLang(), userActTm().
+    FIX: Restored for values and configurations translation of user's attributes.
+- !!: UI.Vision: Added control for the runtime user by a visualizer specific attribute "userSetVis" of the main page
+    and by expanding of the user's status widget and the selection dialog.
+
+
+2017-08-18 Roman (stable)
+- FIX:DB.Model.AGLKS.vca: Signal objects KM101 name translation was also fixed.
+- !!!!:SYS,DB.*,DAQ.{BFN,BlockCalc,JavaLikeCalc,LogicLev,ModBus},Protocol.{ModBus,OPC_UA,UserProtocol},UI.VCAEngine:
+    The flag TCfg::TransltText was moved to TFld::TransltText and used instead TFld::NoStrTransl also which removed.
+- !!!!:FIX:SYS,*: The dynamic messages translation mostly finished and expanded after gettext adaption to the dynamic messages translation:
+    !!: Gettext translation was expanded by language selection different from system one into functions
+	TMess::I18N(), TMess::I18Ns() and their moving to not static ones, TModule::I18N().
+    !!:*,UI.VCAEngine: Functions set of the dynamic translation was expanded for complex translation by pointed language and user next; by functions:
+	trLU(), TMess::translGetLU(), trSetLU(), TMess::translSetLU().
+    !!: The OpenSCADA control interface was expanded by generic attribute "lang" additional to "user" one for
+	the dynamic messages language checking firstly.
+    FIX: The config file accessing functions were fixed and closely adaptred to the dynamic messages translation.
+    !!:TModule,DAQ.JavaLikeCalc,Special.SystemTests,UI.{QTCfg,QTStarter,VCAEngine,Vision,WebCfg,WebCfgD,WebUser,WebVision}:
+	modInfo(): expanded for name syntax "{NAME}[:{lng}]" and request for information translation in pointed language.
+    TModule: Twice translation try was disabled for modules - first is self and second is from core.
+    FIX:DB.{SQLite,MySQL,PostgreSQL,FireBird}: Dynamic messages translation saving was fixed for not base languages.
+    !!!!:Protocol.HTTP,UI.{WebUser,WebVision}: Expanded for multi-languages interface by: URL parameter "lang", auth user's language, Web browser's language.
+	Templates also set to support multilanguage.
+    !!!!:UI.Vision: Mostly adapted to system menus and dialogs dynamic messages translation of the run-time interface.
+	Left untranslated only Qt-internal messages which unalowed to dynamic translation and without all system locale changing!
+
+
+2017-08-05 Roman (stable)
+- DB.LibsDB.vcaBase: Main.TextLab adapted for only color dynamic control.
+    doc.{docGasNodeDayA,docGasNodeMonthA} significant expanded for new methods, to control archivator and the report hour.
+- DB.LibsDB.vcaElectroEls: Expanded by new widgets: Transformer (tr), Transformer (tr1), Switch (sw).
+- FIX:DB.Model.AGLKS.vca: Signal objects KM102, KM201, KM202, KM301, KM302 name translation was fixed.
+- FIX:UI.VCAEngine: Improper pages closing was fixed for multiple container pages.
+
+
+2017-07-28 Roman (stable)
+- !!:DB.LibsDB.OscadaLibs: flb_doc.{getVal,sumVal,averVal} were significant cleaned, rewrote and expanded but with back compatibility saving.
+- !!:FIX:DB.LibsDB.vcaElectroEls: Significant clearing and full translation were finished. Procedure of the item "Key" was fixed.
+- Archives: Tabs "Messages archive" and "Value archives" of the control page were renamed to "Messages" and "Values" respectively.
+- !!!!:FIX:DAQ.JavaLikeCalc: The resource fRes() dead locking was prevented after the wrong optimization.
+- FIX:UI.QTCfg: Function ConfApp::pageDisplay() double call sometime was prevented.
+- UI.WebVision: The source code was some cleared.
+
+
+2017-07-21 Roman (stable)
+- SYS: "langinfo.h" and "syscall.h" were set for conditional one, initially for Android original NDK.
+    __ANDROID_API__ getting was added to deep control for conditions of Android, initially it is for pthread_condattr_setclock().
+- !:UI.Vision: Working without printers by QT_NO_PRINTER was added, initially it is for Qt 5.8 on CrystaxNDKr10.
+
+
+2017-07-14 Roman (stable)
+- !!:DB.LibsDB.vcaElectroEls: Significant cleared and expanded. Will be continued to finish the cleaning and translation.
+- UI.VCAEngine: Limit of the generic attributes "geomXsc" and "geomYsc" was expanded from [0.1:100] to [0.01:100].
+- FIX:UI.Vision: ID of copying and moving widgets was set to encode for TSYS::oscdID to prevent errors here for wrong symbols.
+    FIX:Included widgets resizing and moving in the developing mode by keyboard were fixed for mouse cursor position changing even to the widget's changes.
+    !!!:FIX: Main window maximizing and opening to full-screen were fixed to prevent the operations by the visualizer specific attribute "runWin"
+	working only from the master page. The main window size was set to fit the master page size after return from maximizing or the full-screen
+	and opening in the original size.
+- FIX:UI.WebVision: Text of buttons into the custom mode was fixed for next line symbol "\n" and words breaking at overflow by CSS property "word-break".
+
+
+2017-07-05 Roman (stable)
+- FIX:DB.LibsDB.vcaBase: doc.docMessRep was final fixed for filtering by level, for all languages.
+- FIX:DB.LibsDB.vcaElectroEls: Fixed for procedures of the last items: "stGen", "stGen1", "conBus".
+- SYS.acinclude.m4: Macro AX_PTHREAD was updated to last version.
+- SYS:Changelog: Significant cleaned in process of releasing 0.8.18 LTS.
+- SYS,DAQ.OPC_UA.libOPC_UA: ieee754.h included to adapt for float point in IEEE754.
+- DAQ.{LogicLev,ModBus}: Values size of the stored attributes of the logical parameters expanded from 200 to 1000000.
+- FIX:DAQ.LogicLev: Fixed for uninitiated access to "err(f_err)" attribute into the debug mode.
+- FIX:{DAQ,Protocol}.ModBus: The extended type "String" was fixed to ModBus register's natural order in "BigEndian", seen on Sycon Instruments STM-3.
+    FIX:Syntax highlighting was fixed for four digits-registers for extended types "_u4", "_d".
+- UI.QTCfg: Binary data representation changed to view "B[{ByteStream}]".
+- FIX:UI.{Vision,WebVision}: Some original messages were fixed.
+- UI.Vision: Items visibility were restored for editing widget and for: "VisItClear", "VisItChDown", "VisItProp".
+
+
+2017-06-30 Roman (stable)
+- SYS:data/{debian,debian_mod}/control: Build with MariaDB as a variant of MySQL was added.
+- SYS:Changelog: Significant cleaned in process of releasing 0.8.18 LTS.
+- FIX:DAQ.DAQGate: Was finally fixed and tested for hierarchical parameters processing for levels more at 2.
+- SYS.Transport.SSL: The method "SSLv2" was finally removed but it is not secured and fully removed from OpenSSL 1.1.
+- UI.QTStarter: A first module starting at empty list of started modules was disabled.
+- FIX:UI.VCAEngine: The translations were some fixed.
+- FIX:UI.Vision: Images of primitive "Media" clean at an empty string set was added.
+- FIX:UI.WebCfgD: Table of the table items wrong indent was fixed.
+- FIX:UI.WebVision: Scale dimension was increased to 3 digits after dot for correct scaling to big screen.
+
+
+2017-06-23 Roman (stable)
+- DB.LibsDB.vcaBase: doc.docMessRep was fixed for filtering by level.
+- DB.LibsDB.vcaTest: test.gen was decreased to fit the cadre into project AGLKS.
+- FIX:DB.Model.AGLKS.vca: The project was fixed for "frame" removing from pasport's widget.
+- SYS: An command-line option "lang" was added, initially for Android. Generic integration to call from Android JNI finished.
+- SYS.SSL,Transport.SSL: Symbol for checking SSL library changed to "SSL_free" but SSL_library_init missed on OpenSSL 1.1.
+    The method "SSLv2" was removed (commented) but it is not secured and fully removed from OpenSSL 1.1.
+- SYS: Values' (attributes of parameters of DAQ) info were appended by state "Read only".
+- FIX:DAQ.DAQGate: Was fixed for hierarchical parameters processing for levels more at 2.
+    Expanded for allow write to configure's attributes "NAME" and "DESCR".
+- UI.{VCAEngine,Vision,WebVision}: An attribute "mult" was added to view "List" of the primitive "FormEl" to able multiple lines selection.
+
+
+2017-06-21 Roman (test)
+- DB.LibsDB.vcaBase: Main_io.cntrPaspExt was expanded for: full-frame mode of "View" at other modes hide, hidden attributes list support into "hideAttrs", removing "frame".
+- FIX:SYS: Qt checking macro was fixed for Qt4 checking before.
+- SYS: TMess::getUTF8() function was added and used for UTF-8 symbols detect into XMLNode::encode().
+- FIX:Transport.out: User API function messIO() was expanded for return string type everywhere.
+- !!!:XMLNode: User API function text() was expanded by argument "full" for all child's texts combine.
+    Functions save() and saveNode() set to constant ones.
+    !!!: The serializer was expanded to true check for UTF-8 symbols and "&nbsp;" processing in function encode().
+    !!: The parser was expanded for entity "&nbsp;" processing on UTF-8.
+- DAQ.DAQGate: Size of the configuration field STATIONS was decreased to two rows.
+- !!!:UI.QTCfg: Scalable vertically items were finished to implement their true fitting for: texts, tables and lists.
+
+
+2017-06-16 Roman (stable)
+- DB.LibsDB.vcaBase: Icons of views of the main page were restored to opaque but not in full size, for buttons' background seeing.
+- DB.LibsDB.vcaElectroEls: Was appended by some new items.
+- FIX:SYS,DAQ.JavaLikeCalc,Protocol.{ModBus,UserProtocol}: Some original massages were fixed.
+- Protocol.{ModBus,UserProtocol},UI.WebUser: Expanded for tracing and notification for program's changing.
+- UI.QTCfg: Text items size was fixed.
+- UI.QTStarter: Splash ensuring was disabled for Qt starting not into main thread.
+- FIX:UI.Vision: Separator "\n" was set for encoding by TSYS::base64 to storages.
+    FIX:Opening to developing windows fitting was set conditional for an active and maximized window miss but there has a problem in Qt.
+- UI.WebCfgD: Acknowledgement buttons of text items moved to left, for big screens.
+- UI.WebVision: Switched to use filters for display inactive images into buttons.
+
+
+2017-06-09 Roman (stable)
+- !!!:FIX:SYS: A new configure option --with-qt5 was added for Qt5 forcely checking and using.
+    A new configuration option --enable-QtMainThrd was added to switch the module UI.QTStarter for working in main thread of the program.
+    A new configuration option --disable-CoreLibVersion was added to disable version of the core library.
+    Android messages support was added.
+    Modules separator of option "ModDir" of OpenSCADA was changed to ';'.
+    FIX: The function TSYS::sysTm() was set adaptive one for the task "SYS_HighPriority" execution.
+- DAQ.JavaLikeCalc: Entry to procedures of the module set more optimal by direct locking the critical section.
+- FIX:DAQ.LogicLev: The parameter's debug mode was disabled for passive modes (f_err is EVAL) of the parameters but the debug message accumulates into the attribute "err".
+- !!!:Protocol.HTTP,UI.{WebUser,WebVision}: ACL support was added to control access and visibility of items of indexes of Web resources.
+- FIX:UI.QTCfg: sizeHint() and minimumSizeHint() processing was fixed.
+- !!!!:FIX:UI.QTStarter: Two modes of execution Qt were added, first is old one into different thread (by default) and second is new one into main thread (by the configure option -enable-QtMainThrd).
+    FIX: Splash set to passive one for second mode.
+- UI.WebVision: Font of title of the child's windows was set to 12pt.
+
+
+2017-06-02 Roman (stable)
+- !!!!:DB.LibsDB.OscadaLibs: DevLib is appended by implementing of electricity counters Mercury 200 and 230 from Arsen Zakojan <godzilla919@gmail.com>.
+- FIX:DB.Model.AGLKS.vca: Fixed for a spare horizontal line.
+- !!!:FIX:SYS.ModSchedule: Modules closing at exit was set to all the modules closing firstly and next all the module's libraries unlinking. For fix like to WebKit crashes at exit.
+    !!!: Modules scanning procedure was expanded by the module's name template into the end of the path, mostly for Android where all libraries place into one folder.
+    Function ScanDir() and CheckFile() were renamed to dirScan() and fileCheck() respectively.
+- !!!!:FIX:SYS: Some original messages were fixed.
+    !!!!: The system core in generic expanded for support main thread monopoly modules, like Qt GUI main thread into QtStarter.
+	Generic service calls moved to a different thread "SYS_Service".
+    The main function main() appended to OpenSCADA core library for builds for Android.
+- FIX:DAQ.ModBus: Managing of duplicate attributes of the standard parameter was fixed.
+- FIX:Special.FLibComplex1: The translation was some fixed.
+- !!!!: UI.QTStarter: Moved to Qt execution into the main thread by main thread monopoly modules mechanism of OpenSCADA core.
+- UI.VCAEngine: Links checking for activity was added to the dynamic linking mechanism.
+- FIX:UI.Vision: Icons setting of internal windows moved before the window show, for the development mode.
+- FIX:UI.WebVision: The property "wordWrap" of primitive "Text" support was added.
+
+
+2017-05-26 Roman (stable)
+- DB.LibsDB.vcaBase: A new cadre "Main.alarmsAct" of table of active alarms is added and used into main page of the project AGLKS.
+    A new cadre "doc.docMessRep" of unified protocol of messages is added and used into the project "archBrowser".
+    The generic page implementing expanded by buttons of views hide at pages miss here.
+    The project "archBrowser" moved to an unmodified main page, graphics group "grpGraph10" using and a new cadre "doc.docMessRep" appending to generic messages observe.
+    Translation some updated.
+- FIX:Archive.FSArch: Fix for translation.
+- FIX:UI.Vision: Fixed for opened to edition widgets size on big screens.
+
+
+2017-05-19 Roman (stable)
+- DB.LibsDB.vcaBase: Main.objProps adapted to the first column hide.
+- Archive.{DBArch,FSArch},DAQ.LogicLev: Some original messages were fixed.
+- !!!:Archive.FSArch: Expanded for INFO files store into a standalone DB file of SQLite into the archivator's folder.
+- FIX:UI.WebVision: Borders and transparent backgrounds processing was fixed. Spaces processing for primitive "Text" was set to "white-space: pre-wrap".
+
+
+2017-05-12 Roman (stable)
+- !!:FIX:DB.LibsDB.vcaBase: Main.RootPgSo some fixed for the combobox with the allowed for directly select pages.
+    FIX: Main page of the project "archBrowser" expanded for the combobox with the allowed for directly select pages.
+    !!:Projects "tmplSO" and "archBrowser" were switched to the extended pasport of the standard parameters.
+    The external pasport (Main.cntrPaspExt) adapted some to display by UI.WebVision.
+- !!:DB.ModelsDB.{AGLKS.vca.db,Boiler.St.db}: The Project was switched to the extended pasport of the standard parameters.
+- FIX:DAQ.DAQGate: Requests were fixed after moving to different station.
+- FIX:DAQ.System: Some warnings from Valgrind were fixed.
+- !!!!:FIX:Transport.SSL: Fixed into client's part for correct free which caused for crashes and blockings.
+    !!!!: Wide tested on browsers Chrome, FireFox; for file handlers free and into Valgrind.
+- FIX:UI.VCAEngine: Some original messages were fixed.
+- UI.Vision: The view "Table" of the primitive "FormEl" was expanded for field "width" equal to 0 processing to hide the column.
+- UI.WebCfgD: The navigation tree and dialogs forming were some improved.
+- !!!!:FIX:UI.WebVision: View "Tree" of the primitive "FormEl" implemented.
+    FIX: Dialogs, small built-in windows, forming was some fixed and improved.
+    FIX: System context menu oppressed for active widgets.
+    FIX: View "Table" expanded for columns hide by field "width" equal to 0 and selection lost was prevented.
+
+
+2017-05-05 Roman (stable)
+- DB.LibsDB.vcaBase: Main.RootPgSo expanded by yet one pages navigation element that is combobox with the allowed for directly select pages.
+- SYS: The generic node was expanded by a user API function "messSys".
+- !!:FIX:Transport.SSL: Fixed for SSL_free() missing and variables "ctx", "ssl", "conn" clean at second start, into the output part.
+- !!:FIX:UI.WebCfgD: The "Table" element processing for big content was some improved and fixed for key items edition.
+
+
+2017-04-21 Roman (stable)
+- UI.WebVision: Items edition implemented for the view "Table" of the primitive "FormEl".
+
+
+2017-04-14 Roman (stable)
+- DAQ.ModBus: Set for using ID at empty Name part of DAQ.
+- UI.WebVision: Active mode for selection for the view "Table" of the primitive "FormEl" implemented,
+    Next task are edition of content of the cells of the table...
+
+
+2017-04-07 Roman (stable)
+- SYS:configure.ac: Checking for "libintl" was changed for function "libintl_bindtextdomain" and checking for libiconv was moved before.
+- FIX:DB.LibsDB.vcaBase: Main.objProps fixed for checking to the write mode.
+- UI.Vision: X scaling used into result column width of the view "Table" of the primitive "FormEl".
+- UI.WebVision: Context display for view "Table" of the primitive "FormEl" mostly implemented.
+    Next tasks are selection processing of items (cell, column, row)...
+
+
+2017-04-02 Roman (stable)
+- SYS:configure.ac: Checking for LibGD was set combined with and next without PKG_CHECK_MODULES(pkg-config).
+- SYS:configure.ac: Fix for Fedora 12
+- SYS:configure.ac: Checking for LibGD was moved to PKG_CHECK_MODULES(pkg-config) for proper static linking.
+- SYS: The environment variable HAVE_GD_CORE was renamed to HAVE_GD_FORCE. Checking for HAVE_CONFIG_H was added for "config.h".
+- DAQ.ICP_DAS,UI.{QTStarter,QTCfg,Vision,WebCfgD,WebVision}:Makefile.am: *_LIBADD was replaced to *_LDFLAGS.
+- FIX:UI.WebCfgD: Checking for "gd.h" was fixed.
+- FIX:UI.Vision: The primitive "FormEl" in view "Table" was fixed for properties of columns.
+
+
+2017-04-01 Roman (stable)
+- DB.LibsDB.vcaTest.db: Tests collection cadre of primitive "FormEl" expanded for view "List" and "Table".
+- SYS:configure.ac: Checking for "linux/can.h" moved to same the module Transport.Sockets.
+    Checking for "inux/serial.h" was added for the module Transport.Serial.
+    Checking for LibGD was removed from the module UI.WebCfgD.
+    The order of modules of the subsystem "Special" was set to the priority one.
+- SYS:acinclude.m4: LibGD checking macro was expanded for dependencies "-lpng -ljpeg -lfontconfig -lexpat -lfreetype"
+    to allow the libraries linking statically.
+- FIX:SYS,DAQ.System: Some original messages were fixed.
+- Transport.SSL: Adpated to tmpnam() wrong placing into "/tmp/??" on Android.
+- FIX:Transport.Serial: Checking for "linux/serial.h" was added and for "linux/i2c-dev.h" was fixed.
+- FIX:UI.Vision: The primitive "FormEl" in view "Table" was fixed for properties of columns.
+- !!!:FIX:UI.WebVision: Expanded for view "Table" of the primitive "FormEl" initial implementation.
+    Internal functions nodeText() and setNodeText() were replaced to "textContent".
+    FIX: The view "Button" of the primitive "FormEl" was fixed for words wrap on Chrome browser.
+    Views of "Combo box" and "List" of the primitive "FormEl" were made simplified.
+
+
+2017-03-25 Roman (stable)
+- SYS:configure.ac: Test AX_LIB_OpenSSL() call fix for DAQ.OPC_UA.
+- SYS:configure.ac: String [0.9] of the replacing version of the OpenSCADA building fix.
+
+
+2017-03-24 Roman (stable)
+- FIX:DB.LibsDB.vcaBase: wlb_Main.graphSelPrm fixed for linking "/DAQGate/..." and for current item's address correct display into the "prm_" prefix.
+- SYS:configure.ac,acinclude.m4: The source texts were mostly cleaned for the formation style and messages.
+- SYS:acinclude.m4,Special.FLibSYS: OpenSSL checking macro was expanded by the optional test "AX_LIB_OpenSSL_opt" and
+    the tests were appended by the libcrypto checking.
+- SYS:configure.ac: Checking for spare header's files was removed. Checking macros of the modules OpenSCADA was placed into the importance order.
+- SYS: Some spare headers were removed from the source code.
+- SYS:TModSchedul: Adapted for optional pointing the core library name and path by the configure environment "CoreLibNmToDlOpen",
+    on LibC variant Bionic of Android.
+- SYS:TSecurity: Support of the hashed passwords was expanded to use the locked function crypt() on crypt_r() miss.
+- FIX:DAQ.DCON: Include/builtin to the OpenSCADA core fixed.
+- FIX:DAQ.{LogicLev,Siemens,System}: Some originale messages were fixed.
+- DAQ.OPC_UA: Adapted to include/builtin into the OpenSCADA core.
+    libOPC_UA: Needed parts of ieee754.h were moved to the file directly.
+- Special.FLibSYS: Description of the function dbReqSQL() was expanded.
+- Transport.SSL: The function getservbyname_r() was switched to getservbyname(), for Android.
+    SSLv3_server_method() and SSLv3_client_method() functions were set to disabled by OPENSSL_NO_SSL3 definition.
+- !!!:FIX:UI.WebVision: Width of the popupmenu was fixed for context menus.
+    FIX: Behavior of the primitive "Media" for not "Fit" mode was fixed to prevent the scale problems in way of full removing the tag <img>.
+	Vertical alignment was added to images of the primitive.
+    !!!: The views "Spin bar" and "Scroll bar" were implemented. The view "Scroll bar" is equal to "Spin bar" now.
+
+
+2017-03-19 Roman (stable)
+- SYS:build: Into configure.ac the AC_CHECK_LIB was replaced by AC_SEARCH_LIBS mostly and the library "librt" checking was added.
+
+
+2017-03-18 Roman (stable)
+- SYS:data/{debian,debian_mod}/rules: dh_compress was prevented from files of documentation in ODT compression also.
+- SYS: Some pre-adapting to Android by:
+    build: The macro AX_PTHREAD was appended and used. AM_INIT_AUTOMAKE call was set shorter.
+	Libraries were moved from their direct pointing into src/Makefile.am to checking, for: -lpthread, -lm, -ldl, -lcrypt, -lz, -lpcre
+	Some messages into configure.ac were fixed.
+    ResAlloc: Check and define "__GLIBC_PREREQ" to 1. pthread_condattr_setclock() disabled for Android as it missed.
+    Needed parts of ieee754.h were moved to the file. Multi CPU management and pthread_attr_setinheritsched() were disabled for Android.
+    Mess: Messages encoding was disabled for a charset "US-ASCII", it's default one on Android.
+    Security: libcrypt checking was expanded for crypt.h.
+    Transport.Sockets: The function getservbyname_r() switched to getservbyname() for Android.
+- DAQ.Siemens: "INCLUDES" was replaced by "daq_Siemens_la_CFLAGS" and "daq_Siemens_la_CXXFLAGS".
+- Special.FLibSYS: The user API function dbReqSQL() was moved to the features of the function SYS.BD["TypeDB"]["DB"].SQLReq().
+- !!!:UI.WebVision: View "Line" of the primitive "FormEl" was expanded by the calendar dialog for date variants.
+    Generic CSS properties moved to *.html file.
+    Processing event of the wide combobox (list) was changed from "onchange" to "onclick" to the processing guaranty.
+    Generic improvement.
+
+
+2017-03-13 Roman (stable)
+- SYS:data/{debian,debian_mod}/rules: dh_compress prevented from files of documentation in PDF compression,
+    to allow its using from UI.QTCfg mostly.
+- FIX:UI: docGet() is fixed at online documentation processing after the local one unsuccessful processing.
+
+
+2017-03-12 Roman (stable)
+- FIX:UI.QTCfg: InputDlg wrong initialization on the previous commit fixed.
+
+
+2017-03-11 Roman (stable)
+- UI.QTCfg: Fields "ID" and "NAME" of the node control dialog were set to the unlimited size
+    for next these changing from inforamtion of the control interface.
+- !!:UI.WebVision: The visualizer specific attributes support was added through its activation.
+    !!:Main page scaling to fit to the window of the browser allowed space was added, only to grow and with the aspect ratio control.
+    !: Background of the primitives processing was moved to common and after the ones processing and
+	the background transparency-opaque support was added by a separated block (div) creation with the opaque level.
+
+
 2017-03-05 Roman (stable)
 - DB.LibsDB.OscadaLibs.db: DevLib.1602A expanded to connect by I2C (PCF8574).
 - DB.LibsDB.vcaBase: Main.ElViewGraph expanded to the name "<No selected>" blink prevent and
@@ -11,37 +634,37 @@
 
 2017-03-03 Roman (stable)
 - SYS: The user API functions are appended by function utime() and mtime().
-- !!:FIX:Archive: Fix for checking for a propper archivator by its periodicity,
+- !!:FIX:Archive: Fixed for checking for a proper archivator by its periodicity,
     which allow for correct selection archivators in periodicity more then one minute in graphics building.
-- !!:FIX:Archive.FSArch: Fix for too long messages back reading and wrong messages reading prevented at all.
+- !!:FIX:Archive.FSArch: Fixed for too long messages back reading and wrong messages reading was prevented at all.
     Function of archivators checking is fixed for correct processing of the capacity limit of the values archiving
-    by the archives sorting to remove its files at its maximum quantity.
-- !!!:UI.WebCfgD: Fit to allowed space for scalable by vertical elements.
-    Border color of the input elements changed to "gray".
-    The structural class "SSess" moved to the strucure type.
-- !!:UI.WebVision: Moved the XHTML part of a page to an separated file like the JavaScript one. All generic CSS rules moved to the XHTML file.
-    Finish of moving to using pgCreator(). pgCreator() expanded for simple requests local processing.
-    The structural class "SSess" moved to the strucure type.
+    by the archives sorting to remove its files at maximum quantity.
+- !!!:UI.WebCfgD: Fitted to allowed space for scalable by vertical elements: texts, tables, lists.
+    Border color of the input elements was changed to "gray".
+    The structural class "SSess" was moved to strucure type.
+- !!:UI.WebVision: The XHTML part of page was moved to an separated file like the JavaScript one. All generic CSS rules were moved to the XHTML file.
+    Moving to using pgCreator() was finished. pgCreator() was expanded for simple requests processing in local.
+    The structural class "SSess" was moved to strucure type.
 
 
 2017-02-26 Roman (stable)
 - SYS: data/openscada_start.in: workarounded for bug into "zenity", for sending selection items as "{item}|{item}" (observed on Ubuntu 14.04).
 - Archive.Value: User API functions were appended by setVal().
-    Direct writing to archives expanded for all buffer's wich aren't the buffer of archive.
-- FIX:DB.{.,SQLite,MySQL}: Some control items were fixed for their permition.
+    Direct writing to archives was expanded for all buffer's which aren't the buffer of archive.
+- FIX:DB.{.,SQLite,MySQL}: Some control items of OpenSCADA control interface were fixed for their permition.
 - DAQ: Some fields of the diagnostic request dialog are merged to single line, for controller object.
 - FIX:UI.{docGet(),QTCfg,QTStarter,Vision}: Force documents in background execution for online ones.
     Checking for online documents is disabled by it's can be long and wrong, then there use only links to default language pages (EN).
     Function rewrote for options as flags.
-- !!!:UI.WebCfgD: Library GD relaced by the CSS filters and set optional by --enable-LibGD.
-    FIX: Processing of list items fix for ones without ID.
-    Internal dialogs expanded by drop shadow and a transparent background for disable access to the main area.
+- !!!:UI.WebCfgD: GD library was replaced by the CSS filters and set optional by --enable-LibGD.
+    FIX: List items processing was fixed for ones without ID.
+    Internal dialogs were expanded by drop shadow and a transparent background for disable access to the main area.
     Date fields were moved to a type "datetime-local" of the tag "input".
-    Online documentation call added.
-    Elements merging into single line fixed by CSS rule "white-space: nowrap;" but the constant set to "white-space: normal;".
-    Elements indent set to "padding-left: 10px; text-indent: -10px;".
-    Length of the number elements set to fixed by 10 symbols.
-    Item copy is expanded by copy to its root through self.
+    Online documentation call was added.
+    FIX: Elements merging into single line was fixed by CSS rule "white-space: nowrap;" but the constant was set to "white-space: normal;".
+    Elements indent was set to "padding-left: 10px; text-indent: -10px;".
+    Length of the number elements was set to the fixed one by 10 symbols.
+    Item copy was expanded by it copy to its root through self.
 
 
 2017-02-16 Roman (stable)
@@ -49,8 +672,8 @@
 - FIX:Protocol.OPC_UA{*.libOPC_UA}: The resource "mtxData" added to object Server and used for the security channels container management.
 - Special.FLibSYS: The static function str2int() expanded for 64 bits.
 - Transport.Serial: Checking to present the header file linux/i2c-dev.h added to build on Linux distributives like SuSE.
-- FIX:UI.WebCfgD: List units expanded for commands for empty list.
-    Self dialogs expanded by the main space lock and a box shadow appended to them.
+- FIX:UI.WebCfgD: List items were expanded for commands to empty list.
+    Self dialogs were expanded for the main space locking and for a box shadow appendeding to them.
 
 
 2017-02-11 Roman (stable)
@@ -565,7 +1188,7 @@
 - !!!!:SYS: Node's function load() and load_() expanded by argument TConfig *cfg for allow direct loading after the seeking request.
     All parts adapted to the new argument "cfg" of loading functions, preloaded dataSeek() and the direct loading after the seeking request.
     Overall loading time decresed from 36% (Core) to 15% (VCAEngine) and some parts down to 80%.
-    Argument "force" of node's function load() was removed and relaced by modifG() pre-call.
+    Argument "force" of node's function load() was removed and replaced by modifG() pre-call.
     Modules version of the subsystem "DB", "DAQ", "Archive", "Protocol", "UI" rose to 12.
     Modules version of the subsystem "Transport" rose to 13.
     Primary commands transmission by "rdStRequest()" prevented from exceptions.
@@ -647,7 +1270,7 @@
 
 
 2016-06-20 Roman
-- !!!!:FIX:SYS.TCntrNode: Free of locked nodes and attach to disabled ones are prevented by propper resource locking to mUse.
+- !!!!:FIX:SYS.TCntrNode: Free of locked nodes and attach to disabled ones are prevented by proper resource locking to mUse.
 - SYS:data/openscada_start.in is adapted to working without "gettext", mostly for N800.
     data/{debian,debian_mod}/changelog: Author set to OpenSCADA <oscada@oscada.org>, mostly for allow the sign after build by that key.
 - DB: Resource's of the DB allocation TBD::resTbls is added. For now that is experimental and used in generic functions of the tables open(), close().
@@ -885,7 +1508,7 @@
 2016-04-04 Roman
 - SYS: TSYS::strEncode() in variant SQL expanded by the doubling method of the pointed symbols.
 - DB.{PostgreSQL,SQLite}: TSYS::strEncode() in doubling method is used.
-- UI.VCAEngine: Manual creation mark for pages is added. Mostly for modification of the childs clean up and it's inheritance storing prevent
+- UI.VCAEngine: Manual creation mark for pages is added. Mostly for modification of the children clean up and it's inheritance storing prevent
     by it is spare and sometime problematic on the parent update, like messages about impossible to enable a widget.
 - FIX:DB.PostgreSQL: Fixed for symbols "'" '"' encoding by it replace to the doubling method.
 
@@ -965,7 +1588,7 @@
 
 2016-02-28 Roman
 - DB.Model.{AGLKS.vca.db,Boiler.St.db}: Visualizer's UI.Vision specific attributes moved to the project's root-page.
-- FIX:SYS: User's space flags to generic nodes (TCntrNode) processing fixed, mostly for "RM_Full" flag and DAQ paramter's archives propper removing.
+- FIX:SYS: User's space flags to generic nodes (TCntrNode) processing fixed, mostly for "RM_Full" flag and DAQ paramter's archives proper removing.
 - UI.Vision: Global modification mark processing moved to different function modifyGlbStUpdate() and some changed.
 - FIX:UI.Vision: Included to container's pages align processing rewrote to trace on the widget's geometry update and
     to the misaligned scroll-bars appearing sometime prevent.
@@ -1531,7 +2154,7 @@
     Condensed "TABLE.data" style for mostly document's tables apply, for thin to one pixel borders set.
 - !!:FIX:UI.VCAEngine: The function resource to a widgets library and a project loading and enabling by need multiple entry and perform prevent.
     Some crashes and not full the data access prevent for the remote players.
-- !!:FIX:SYS: TCntrNode::isModify() rewrote for race-condition prevent by the chain locking from the parent to all childs, mostly by previous case.
+- !!:FIX:SYS: TCntrNode::isModify() rewrote for race-condition prevent by the chain locking from the parent to all children, mostly by previous case.
 - FIX:UI.Vision: "Timeouted" messages at the running session restoring try, by the background project's data loading wait,
     oppressed and the window closing ceased.
 
@@ -1555,7 +2178,7 @@
 
 2015-04-12 Roman
 - FIX:SYS: The internationalisation  files for included to the core modules also placed to the package debian_mod/openscada-core.install.
-    User API object XMLNodeObj expanded by function clear() for allow fast a node clean up from childs, text and/or attributes.
+    User API object XMLNodeObj expanded by function clear() for allow fast a node clean up from children, text and/or attributes.
     The User API generic object's data resource Res replaced by pthread_mutex_t and the also used for connections to objects.
 - !!:TVArchive: User API functions for the object are added: status(), end(), begin(), period(), archivatorList(), getVal().
 - TVArchivator: User API function status() for the object is added.
@@ -1721,7 +2344,7 @@
 - DB: LibsDB.vcaBase.db: Main.{ElCadr,TextLab}: expanded by free commands into "digComs" and writing to "com_text".
     For Main.ElCadr also appened "st_text" for current state.
 - DAQ.DAQGate: Configuration "SYNCPER" type changed from real to int.
-- !!!!:DAQ.ICP_DAS: libi8k.a and the headers updated to one wich I-8014 support and for all.
+- !!!!:DAQ.ICP_DAS: libi8k.a and the headers updated to one which I-8014 support and for all.
     Watchdog for I-8x81 by EnableWDT() replaced by EnableSysWDT().
 - !!:DAQ.MMS: Expanded for prevent requests to no connOK(), getNameList service caching.
     Configuration "SYNCPER" type changed from real to int.
@@ -1823,8 +2446,8 @@
 - DAQ.OPC_UA: Addition debug messages is added to service TranslateBrowsePathsToNodeIdsRequest.
 - UI.VCAEngine.Diagram: Cursor attributes "curSek", "curUSek", "curColor" set allowed for all types.
     Attribute "sclHor" set to generic for all types.
-- UI.{Vision,WebVision}.Diagram: Attribute "prm{N}val" set to curent value for type XY is added.
-    Also set "curSek" and "curUSek" to curent value time.
+- UI.{Vision,WebVision}.Diagram: Attribute "prm{N}val" set to current value for type XY is added.
+    Also set "curSek" and "curUSek" to current value time.
 - FIX:UI.WebVision: Resource lock replaced to mutex and some potential bugs fixed.
 
 
@@ -1888,7 +2511,7 @@
 
 
 2015-01-05 Roman
-- !!!!:SYS: Generic node resources locking separated to the childs (function) and the common data methods and the moved to mutex from RW-locks
+- !!!!:SYS: Generic node resources locking separated to the children (function) and the common data methods and the moved to mutex from RW-locks
 	for prevent some locks workaraund and dead locks at try relock Read after lock as Write or contrary from the complex node accessing.
     TCntrNode::nodeRes() moved and for generic resources locking access new dataRes() provided.
     Removed static resource locking "TCntrNode::connM" and instead used new TCntrNode::dataRes().
@@ -1917,7 +2540,7 @@
     Main.anShow1 fixed for the selection blink by it's control panel set.
 - FIX:DB.{SQLite,MySQL,PostgreSQL,FireBird}: Fixed for prevent load translation from no empty translation's DB field
     but disabled to translation.
-- FIX:UI.VCAEngine: Unpropper syntax highlighting rules apply into primitive "FormEl" fixed.
+- FIX:UI.VCAEngine: Unproper syntax highlighting rules apply into primitive "FormEl" fixed.
 - FIX:UI.Vision: Changes update after that apply into attributes manager of the widgets into group mode fixed
     to update different widget's attributes into the group and on the contrary for first widget into the group.
 
@@ -2922,7 +3545,7 @@
 - UI.Vision: Cursor position into status display on "Ctrl" hold is added.
     QRectMask set pass only for edition border.
     FIX: Items editable is disabled for view "Table" of primitive "FormEl".
-    FIX: Real last-curent data obtain and display for primitive "Diagram".
+    FIX: Real last-current data obtain and display for primitive "Diagram".
 
 
 2014-01-22 Roman
@@ -3398,8 +4021,8 @@
 - DAQ.DAQGate: Alarms generation on connection problems is added.
 - DAQ.SMH2Gi: The controller object re-enable on flag "Reinit" set for modules MR/MC is added.
 - !!:FIX:Transport.{Sockets,Serial}: Check for write() errors and EAGAIN by select() into input transports is added.
-- FIX:UI.{Vision,WebVision}: The primitive "Diagram" data buffer's loading by curent data and lost old data by limit is fixed by
-    write curent values to pixel-size alignement time.
+- FIX:UI.{Vision,WebVision}: The primitive "Diagram" data buffer's loading by current data and lost old data by limit is fixed by
+    write current values to pixel-size alignement time.
 
 
 2013-07-01 Roman
@@ -3410,7 +4033,7 @@
 
 2013-06-27 Roman
 - TSYS: Some building stage warnigs is removed and cycleLost counter lower limit is set to 0.
-- !!!:TCntrNode: Force save parent nodes on save childs is added, for timestamp control.
+- !!!:TCntrNode: Force save parent nodes on save children is added, for timestamp control.
     For flags, and for modifications also, used connections' mutex instead node resource.
     Deprecated feature removed from save().
 - FIX:DAQ.{ModBus,LogicLev,BlockCalc,Siemens}: Preventing executable context reload from DB on the controller run is fixed for re-enable.
@@ -3849,7 +4472,7 @@
 - FIX:DAQ.SMH2Gi: Significant updated for fix some bug after testing on real hardware.
     Broadcast write request for MR modules moved to controller level.
     Alarms processing is added.
-- UI.WebVision: Childs update is added on "geomXsc" or "geomYsc" attributes modify.
+- UI.WebVision: children update is added on "geomXsc" or "geomYsc" attributes modify.
 
 
 2012-10-13 Roman
@@ -3996,7 +4619,7 @@
 - SYS: Libraries "Phonon" and "QTWebKit" using force disable is added for without build to pure environments with litle memory set.
 - FIX:DAQ.ICP_DAS: return into virtual function "bool DA::cntrCmdProc( TMdPrm *prm, XMLNode *opt )" is fixed.
 - FIX:DB: Into vcaBase.db the archives parameters select dialog, pasport dialog is some fixed and root page is expanded for SO buttons placement tune.
-- UI.Vision: Widget's childs update at single "geomXsc" and "geomYsc" changing is added, for full scale update to the subtree.
+- UI.Vision: Widget's children update at single "geomXsc" and "geomYsc" changing is added, for full scale update to the subtree.
     setAllAttrLoad(x) use for set geometry attributes group into DevelWdgView::saveGeom() function.
 
 
@@ -4230,7 +4853,7 @@
 - FIX:Archive: Value archive's link address to DAQ parameter's attribute is fixed for old address format process.
     The problem detected on DAQ.DAQGate.
 - SYS: Nodes modify control is expanded to modify state save into load_() functions, need for DAQ.DAQGate.
-- FIX:DAQ.DAQGate: Parameters cache load/save is fixed. Attributes init fixed for XMLNodes childs process.
+- FIX:DAQ.DAQGate: Parameters cache load/save is fixed. Attributes init fixed for XMLNodes children process.
 - DAQ.DAQGate: Removed self code for archives connection restore. Remove attributes is added.
 - !!!:FIX:UI.VCAEngine: Set widgets to process into sessions on add to development is added.
     Resources to attributes is set to individual access to operation for prevent possible hide deadlocks.
@@ -4510,7 +5133,7 @@
 
 2012-02-08 Roman
 - !!!!:TConfig: TCfg is set based on TVariant for items. Access to object TCfg is made clear and it allow using by link without main types.
-- !!!!:SYS: Childs storing into map for base object TCntrNode is set to "const char*" key and all nodes have been
+- !!!!:SYS: children storing into map for base object TCntrNode is set to "const char*" key and all nodes have been
     adapted to identifiers constant.
 
 
@@ -5934,7 +6557,7 @@
 
 2011-02-15 Roman
 - FIX:UI.Vision, UI.QTCfg: Some bugs is fixed for processing not full responds from remote connection by "SelfSystem" protocol.
-    Node childs is made clear for that reason.
+    Node children is made clear for that reason.
 
 
 2011-02-14 Roman
@@ -6081,7 +6704,7 @@
 
 2010-12-24 Roman
 - SYS: Some titles for big configuration tables is set short.
-- FIX:SYS.TCntrNode: User name copy to childs for group control request "CntrReqs" is set.
+- FIX:SYS.TCntrNode: User name copy to children for group control request "CntrReqs" is set.
 - FIX:UI.QTCfg: Twice page's content request is fixed.
 - !!!!:UI.QTCfg: Group request "CntrReqs" is used for page's content request.
     A table selectable item's variants list requests for each rowis fixed.
@@ -7316,7 +7939,7 @@
 - DAQ.DAQGate: Archive processing disable support is added. Into this mode for current archives is set current time.
 - DAQ.ICP_DAS: Connection's error display into attribute "err" is added.
 - DAQ.LogicLev: A parameter main attributes (SHIFR,NAME and DESCR) bridging to template support is added.
-- UI.Vision: The childs window of main window into runtime is made not resizible and not minimizable.
+- UI.Vision: The children window of main window into runtime is made not resizible and not minimizable.
 - FIX:Archive.Val: Zero time return for up ordered request to value buffer is fixed. Can hang system on time first buffers values drop to archive.
 - FIX:UI.VCAEngine: Copy items is fixed for check inherit flag previous attribute.
 
@@ -8567,7 +9190,7 @@
 - /UI/WebVision: Open popup windows support is added.
 - /UI/WebVision: Active mode check is added for primitive 'FormEl'.
 - /UI/WebVision: No write to user's modified primitive 'FormEl' support is added.
-- !!:/UI/QTCfg: Use new, optimal for time, childs requst to tree build.
+- !!:/UI/QTCfg: Use new, optimal for time, children requst to tree build.
 - FIX:/UI/QTCfg: Some fixes made.
 - !!:/UI: Icons types "png", "gif", "jpg" and "jpeg" get support is added.
 - FIX:/UI/Vision: Lost inspector's attributes content after closing Color and Font selection dialogs is fixed. Focus set to inspector attributes strong.
@@ -8577,7 +9200,7 @@
 - /SYS: Icons for Web-tree build is included. Add icons: line.png, disconnect.png, UI.WebCfgD.png.
 - !:/SYS: Icon path configuration field is added. The module path configuration field move to main OpenSCADA system page.
 - !!:/SYS: Node's identifier encoding is added for all need subsystems. Used for remove spaces and other special simbols from identifier.
-- !!:/SYS: Node childs control interface's request is added. Used for faster build navigation trees (QTCfg, WebCfgD).
+- !!:/SYS: Node children control interface's request is added. Used for faster build navigation trees (QTCfg, WebCfgD).
 - !:/SYS: Translation for Russian and Ukrainian is updated.
 - /DB/MySQL: Icon is updated.
 - !:/Archive/DBArch, /Archive/FSArch: Translation to German is added by Aleksey and Irina Popkov.
@@ -8591,7 +9214,7 @@
 
 2008-12-11 Maxim
 - FIX:/UI/Vision: A lot of little fixes is done for primitive ElFigure.
-- !!!/UI/Vision: Conception of painting is changed for primitive ElFigure, by means of wich performance is greatly improved in both: the runtime and the devel modes.
+- !!!/UI/Vision: Conception of painting is changed for primitive ElFigure, by means of which performance is greatly improved in both: the runtime and the devel modes.
 
 
 2008-12-04 Maxim
@@ -9107,7 +9730,7 @@
 
 
 2008-07-05 Roman
-- FIX:/UI/Vision: Move childs widgets on development is fixed.
+- FIX:/UI/Vision: Move children widgets on development is fixed.
 - !:/UI/Vision: Media shape is moved to new individual data per widget store mechanism.
 
 
@@ -9495,7 +10118,7 @@
 2008-03-16 Roman
 - !!:/SYS: Resource files (icons and menu links) for menu OpenSCADA execution is added.
 - /SYS: RPM spec file is updated for new resources file support.
-- !!:/SYS/Node: TCntrNode::nodeDel() finction is added.
+- !!:/SYS/Node: TCntrNode::nodeDel() function is added.
 - FIX:/UI/VCAEngine: Self widget attributes deletion on object destroy is fixed.
 - FIX:/UI/VCAEngine: No deletion inheritor widgets on time of parent widget deletion is fixed
 - /UI/Vision: Widget's level icons is changed.
@@ -9817,7 +10440,7 @@
 - FIX:/UI/VCAEngine: Creation pages into no container or no template is fixed.
 - FIX:/UI/Vision: Primitive "ElFig" panel activation is fixed.
 - FIX:/UI/Vision: Enabling item containers, after creation, is made.
-- FIX:/UI/Vision: Resize widgets priority (box and childs) is fixed.
+- FIX:/UI/Vision: Resize widgets priority (box and children) is fixed.
 - FIX:/UI/Vision: Lost edit focus, on time atributes edit, is fixed.
 - FIX:/UI/Vision: Primitive "Protocol" edit and select ability is fixed.
 - FIX:/UI/WebVision: Some fixes is made.
@@ -9930,7 +10553,7 @@
 2007-10-05 Roman
 - /UI/VCAEngine: Individual process period for widgets is added.
 - /UI/VCAEngine: The process session object address is transfered to all 
-    childs of session (pages and session's widgets).
+    children of session (pages and session's widgets).
 - !!!:/UI/VCAEngine, /UI/Vision: The only changed session widget update mechanism is added.
 - FIX:/UI/Vision: No reform primitive "Text" on field "text" changing is fixed.
 
@@ -9986,7 +10609,7 @@
 - FIX:/SYS: Default config file DB file name is fixed.
 - !!:/SYS: The source tree version changed to 0.6.0.
 - FIX:/Config: Automatic fields view mechanism fixed.
-- FIX:/Control: A dublicate childs object no deleting is fixed.
+- FIX:/Control: A dublicate children object no deleting is fixed.
 - FIX:/DB/MySQL: Error structured DB filed process is fixed.
 - FIX:/DB/SQLite: Error structured DB filed process is fixed.
 - !:/DAQ/DiamondBoards: Diamond boards driver updated and multiboard bug detected.
@@ -10315,7 +10938,7 @@ archive access (UI trend access).
 - !!:/SYS/TCntrNode: The subtree request identification support is added to control interface build function ctrMkNode().
     All system use the subtree request identification is made.
 - /SYS/TCntrNode: String aliases to permition codes is added.
-- /SYS/TCntrNode: Finctions connect() and disConnect() is renamed to AHDConnect() and AHDDisConnect().
+- /SYS/TCntrNode: Functions connect() and disConnect() is renamed to AHDConnect() and AHDDisConnect().
 - FIX:/SYS/TCntrNode: Child ordering is fixed.
 - FIX:/SYS/TCntrNode: Dead locking into functions AHDConnect() and AHDDisConnect() is fixed.
 - /SYS/XMLNode: Clear attributes function (attrClear()) is added.
@@ -10973,7 +11596,7 @@ theme Aloy!
 - !!!!: Replace functions checkCommandLine() and updateOpt() at load() everywhere.
 - !!!!: TKernel: Add function load() and start() instead run().
 - !!!!: TKernel: Rename subsystem's names.
-- !!!!: TGrpModule and childs: Replace function gmdInit() to gmdLoad().
+- !!!!: TGrpModule and children: Replace function gmdInit() to gmdLoad().
 - TGrpModule: Add function gmdStart() and gmdStop().
 - !!!!: TMessage: Rename to TMess.
 - !!!!: TMess: Set message level to union Type.
@@ -11123,7 +11746,7 @@ TContrNode::pre[post]Disable().
 - SYS: Use environment: LANGUAGE, LANG and LC_MESSAGES for full language controll.
 - SYS: Add short time dimension functions: sysClk() and shrtCnt().
 - TModSchedul: Change Module's links storing.
-- TModule: Change acces to export finctions. Change function modGetFunc() and
+- TModule: Change acces to export functions. Change function modGetFunc() and
 modFreeFunc() to modFunc().
 - TModule: Add register function modFuncReg();
 - XML: Add copying operator: operator=();
@@ -11185,7 +11808,7 @@ modFreeFunc() to modFunc().
 - UI::qtcfg: Add files: dlguser.cpp, dlguser.h for user dialog!
 - UI::qtcfg: Delete file: qtcfg.ui!
 - UI::qtcfg: Add images to repository!
-- UI::qtcfg: Fix go childs method!
+- UI::qtcfg: Fix go children method!
 - Remove from repository all *.pot files!
 - TFld&TElem: Change method create/load new fields!
 - TMessage: rename and replace structure SBufRec to TMessage::SRec;
@@ -11229,7 +11852,7 @@ modFreeFunc() to modFunc().
 - Add exception to last Control functions ctr_din_get(), ctr_din_set() ....
 - Fix Controll chains for all;
 - TMessage: change prototip functions: Sconv(), SConvIn(), SConvOut();
-- XML: add clean_childs() function and fix destructor!
+- XML: add clean_children() function and fix destructor!
 - Protocol::http: Go to XHTML1.0 standard!
 - Controller::virtual_v1: Experemental add TFrm;
 - !!!!: Add UI::QTCfg modul!
@@ -11849,7 +12472,7 @@ modFreeFunc() to modFunc().
 
 2003-08-26  CVS commit
 - Start changelog file!
-- fix destructor ~TGRPModule and into childs;
+- fix destructor ~TGRPModule and into children;
 - fix pr_opr_descr anywhere;
 - change sheme of connect modules;
 - delete function: TModule->Connect and other

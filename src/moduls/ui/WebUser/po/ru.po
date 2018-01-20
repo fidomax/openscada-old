@@ -1,13 +1,13 @@
 # OpenSCADA.UI.WebUser translate to Russian.
 # This file is distributed under the same license as the OpenSCADA.UI.WebUser package module.
 #
-# Roman Savochenko <rom_as@oscada.org>, 2010-2017.
+# Roman Savochenko <rom_as@oscada.org>, 2010-2018.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenSCADA.UI.WebUser 0.6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-19 08:26+0200\n"
+"POT-Creation-Date: 2018-01-13 21:18+0200\n"
 "PO-Revision-Date: 2010-03-05 15:57+0200\n"
 "Last-Translator: Roman Savochenko <rom_as@oscada.org>\n"
 "Language-Team: <ru@li.org>\n"
@@ -28,8 +28,8 @@ msgstr ""
 "Позволяет создавать собственные пользовательские web-интерфейсы на языке "
 "OpenSCADA."
 
-msgid "ID"
-msgstr ""
+msgid "Identifier"
+msgstr "Идентификатор"
 
 msgid "Name"
 msgstr "Имя"
@@ -113,6 +113,9 @@ msgstr "Отключен. "
 msgid "Enabled. "
 msgstr "Включен. "
 
+msgid "Modified, re-enable to apply! "
+msgstr "Модифицирован, перевключить для применения! "
+
 #, c-format
 msgid "Requests %.4g."
 msgstr "Запросов %.4g."
@@ -126,7 +129,7 @@ msgstr "Состояние"
 msgid "Status"
 msgstr "Состояние"
 
-msgid "Enable"
+msgid "Enabled"
 msgstr "Включен"
 
 msgid "DB"

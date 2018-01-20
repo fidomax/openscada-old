@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_devel.cpp
 /***************************************************************************
- *   Copyright (C) 2006-2014 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2006-2018 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,10 +32,11 @@
 #include <QWhatsThis>
 #include <QTimer>
 #include <QScrollArea>
+#include <QScrollBar>
 #include <QCheckBox>
 #include <QMdiSubWindow>
 
-#include <config.h>
+// #include <config.h>
 #include <tsys.h>
 #include "vis_shapes.h"
 #include "vis_devel_dlgs.h"
@@ -50,8 +51,7 @@ VisDevelop::VisDevelop( const string &open_user, const string &user_pass, const 
     fileDlg(NULL), winClose(false), mWaitCursorSet(false), copy_buf("0"), prjLibPropDlg(NULL), visItPropDlg(NULL)
 {
     setAttribute(Qt::WA_DeleteOnClose, true);
-
-    setProperty("QTStarterToolDis", true);
+    connect(this, SIGNAL(makeStarterMenu()), qApp, SLOT(makeStarterMenu()));
 
     setDockOptions(dockOptions() | QMainWindow::VerticalTabs);
     mod->regWin(this);
@@ -107,20 +107,20 @@ VisDevelop::VisDevelop( const string &open_user, const string &user_pass, const 
     //  Vision manual
     if(!ico_t.load(TUIS::icoGet("manual",NULL,true).c_str())) ico_t.load(":/images/manual.png");
     QAction *actManual = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg(mod->modId().c_str()),this);
-    actManual->setProperty("doc", "Modules/UI.Vision|Vision");
+    actManual->setProperty("doc", "Modules/Vision|Modules/Vision");
     actManual->setShortcut(Qt::Key_F1);
     actManual->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg(mod->modId().c_str()));
     actManual->setStatusTip(QString(_("Press to get the using %1 manual.")).arg(mod->modId().c_str()));
     connect(actManual, SIGNAL(triggered()), this, SLOT(enterManual()));
     //  VCAEngine manual
     QAction *actManualVCA = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg("VCAEngine"),this);
-    actManualVCA->setProperty("doc", "Modules/UI.VCAEngine|VCAEngine");
+    actManualVCA->setProperty("doc", "Modules/VCAEngine|Modules/VCAEngine");
     actManualVCA->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg("VCAEngine"));
     actManualVCA->setStatusTip(QString(_("Press to get the using %1 manual.")).arg("VCAEngine"));
     connect(actManualVCA, SIGNAL(triggered()), this, SLOT(enterManual()));
     //  OpenSCADA manual index
     QAction *actManualSYS = new QAction(QPixmap::fromImage(ico_t),QString(_("%1 manual")).arg(PACKAGE_STRING),this);
-    actManualSYS->setProperty("doc", "index|/");
+    actManualSYS->setProperty("doc", "index|Documents");
     actManualSYS->setWhatsThis(QString(_("The button for getting the using %1 manual")).arg(PACKAGE_STRING));
     actManualSYS->setStatusTip(QString(_("Press to get the using %1 manual.")).arg(PACKAGE_STRING));
     connect(actManualSYS, SIGNAL(triggered()), this, SLOT(enterManual()));
@@ -514,6 +514,8 @@ VisDevelop::VisDevelop( const string &open_user, const string &user_pass, const 
     mn_help->addAction(actManualSYS);
     mn_help->addSeparator();
     mn_help->addAction(actWhatIs);
+    // QTStarter
+    emit makeStarterMenu();
 
     //Init tool bars
     // Visual items tools bar
@@ -585,13 +587,13 @@ VisDevelop::VisDevelop( const string &open_user, const string &user_pass, const 
     w_scale->setToolTip(_("Field for display widgets' scaling mode."));
     w_scale->setStatusTip(_("Click to change widgets' scaling mode."));
     statusBar()->insertPermanentWidget(0,w_scale);
-    mStModify = new WMdfStBar( this );
+    mStModify = new WMdfStBar(this);
     connect(mStModify, SIGNAL(press()), this, SLOT(itDBSave()));
     mStModify->setWhatsThis(_("This label displays modifying."));
     mStModify->setToolTip(_("Field for display modifying."));
     mStModify->setStatusTip(_("Click to save all modifyings."));
     statusBar()->insertPermanentWidget(0,mStModify);
-    mWVisScale = new QLabel( "100%", this );
+    mWVisScale = new QLabel("100%", this);
     mWVisScale->setWhatsThis(_("This label displays current widget's scale."));
     mWVisScale->setToolTip(_("Field for display the scale of the current widget."));
     statusBar()->insertPermanentWidget(0,mWVisScale);
@@ -643,16 +645,23 @@ VisDevelop::VisDevelop( const string &open_user, const string &user_pass, const 
     waitCursorClear->setInterval(50);
     connect(waitCursorClear, SIGNAL(timeout()), SLOT(waitCursorSet()));
 
-    //resize( 1000, 800 );
-    setWindowState(Qt::WindowMaximized);
-    menuBar()->setVisible(true);
+    //resize(1000, 800);
+    //setWindowState(Qt::WindowMaximized);
+
+    //menuBar()->setVisible(true);	//!!!! Spare for Qt5 and the native menu bar
 
     wdgTree->updateTree("", true);	//Initial for allow the widgets loading on the server side mostly
     prjTree->updateTree("", NULL, true);//Initial for allow the projects loading on the server side mostly
 
     //Restore main window state
-    string st = TSYS::strDecode(mod->uiPropGet("devWinState",user()),TSYS::base64);
-    restoreState(QByteArray(st.data(),st.size()));
+    int off = 0;
+    string rst = mod->uiPropGet("devWinState", user());
+    string sRst = TSYS::strDecode(TSYS::strParse(rst,0,":",&off), TSYS::base64);
+    if(sRst.size()) restoreState(QByteArray(sRst.data(),sRst.size()));
+    int	wH = s2i(TSYS::strParse(rst,0,":",&off)),
+	wW = s2i(TSYS::strParse(rst,0,":",&off));
+    if(wH > 100 && wW > 100) resize(wH, wW);
+
     //Restore ToolBars icons size
     for(int i_ch = 0; i_ch < children().size(); i_ch++) {
 	if(!qobject_cast<QToolBar*>(children()[i_ch])) continue;
@@ -674,7 +683,7 @@ VisDevelop::~VisDevelop( )
 
     //Save main window state
     QByteArray st = saveState();
-    mod->uiPropSet("devWinState",TSYS::strEncode(string(st.data(),st.size()),TSYS::base64),user());
+    mod->uiPropSet("devWinState", TSYS::strEncode(string(st.data(),st.size()),TSYS::base64,"")+":"+i2s(width())+":"+i2s(height()), user());
 
     //Timers stop
     endRunTimer->stop();
@@ -759,32 +768,32 @@ QMenu *VisDevelop::createPopupMenu( )
     if(qobject_cast<QToolBar*>(ucw) && !mn->children().isEmpty()) {
 	QAction *first = mn->actions().isEmpty() ? NULL : mn->actions()[0];
 	QMenu *iSz = new QMenu(_("Icons size"));
-	mn->insertMenu(first,iSz);
+	mn->insertMenu(first, iSz);
 	mn->insertSeparator(first);
 
-	QAction *act = new QAction(_("Small (16x16)"),iSz);
+	QAction *act = new QAction(_("Small (16x16)"), iSz);
 	connect(act, SIGNAL(triggered()), this, SLOT(setToolIconSize()));
-	act->setObjectName("16"); 
-	act->setProperty("toolAddr",TSYS::addr2str(ucw).c_str());
-	iSz->addAction( act );
+	act->setObjectName("16");
+	act->setProperty("toolAddr", TSYS::addr2str(ucw).c_str());
+	iSz->addAction(act);
 
-	act = new QAction(_("Medium (22x22)"),iSz);
+	act = new QAction(_("Medium (22x22)"), iSz);
 	connect(act, SIGNAL(triggered()), this, SLOT(setToolIconSize()));
 	act->setObjectName("22");
-	act->setProperty("toolAddr",TSYS::addr2str(ucw).c_str());
-	iSz->addAction( act );
+	act->setProperty("toolAddr", TSYS::addr2str(ucw).c_str());
+	iSz->addAction(act);
 
-	act = new QAction(_("Big (32x32)"),iSz);
+	act = new QAction(_("Big (32x32)"), iSz);
 	connect(act, SIGNAL(triggered()), this, SLOT(setToolIconSize()));
 	act->setObjectName("32");
-	act->setProperty("toolAddr",TSYS::addr2str(ucw).c_str());
-	iSz->addAction( act );
+	act->setProperty("toolAddr", TSYS::addr2str(ucw).c_str());
+	iSz->addAction(act);
 
-	act = new QAction(_("Huge (48x48)"),iSz);
+	act = new QAction(_("Huge (48x48)"), iSz);
 	connect(act, SIGNAL(triggered()), this, SLOT(setToolIconSize()));
 	act->setObjectName("32");
-	act->setProperty("toolAddr",TSYS::addr2str(ucw).c_str());
-	iSz->addAction( act );
+	act->setProperty("toolAddr", TSYS::addr2str(ucw).c_str());
+	iSz->addAction(act);
     }
 
     return mn;
@@ -1152,7 +1161,8 @@ void VisDevelop::visualItAdd( QAction *cact, const QPointF &pnt, const string &i
 	// Create widget
 	int err = cntrIfCmd(req);
 	if(err) mod->postMess(req.attr("mcat").c_str(), req.text().c_str(), TVision::Error, this);
-	else {
+	if(err == 1)	emit modifiedItem(new_wdg+req.attr("id"));					//Warning
+	else if(!err) {
 	    new_wdg += req.attr("id");
 	    //  Set some parameters
 	    req.clear()->setName("set");
@@ -1295,33 +1305,37 @@ void VisDevelop::visualItEdit( )
 	scrl->setAlignment(Qt::AlignCenter);
 #endif
 	QPalette plt = scrl->palette();
-        plt.setBrush(QPalette::Window,QBrush("grey",Qt::Dense7Pattern));
+        plt.setBrush(QPalette::Window,QBrush("grey", Qt::Dense7Pattern));
 	scrl->setPalette(plt);
 	//scrl->setBackgroundRole(QPalette::Dark);
 	scrl->setAttribute(Qt::WA_DeleteOnClose);
 	scrl->setWindowTitle(w_title);
 
-	//Make and place view widget
-	DevelWdgView *vw = new DevelWdgView(ed_wdg,0,this,0,scrl);
+	//Make and place widget's view
+	DevelWdgView *vw = new DevelWdgView(ed_wdg, 0, this, 0, scrl);
 	vw->load("");
 	connect(vw, SIGNAL(selected(const string&)), this, SLOT(selectItem(const string&)));
 	connect(vw, SIGNAL(apply(const string&)), this, SIGNAL(modifiedItem(const string&)));
 	connect(this, SIGNAL(modifiedItem(const string&)), vw, SLOT(load(const string&)));
 
 	scrl->setWidget(vw);
-	scrl->resize(vmax(300,vmin(950,vw->size().width()+10)),vmax(200,vmin(650,vw->size().height()+10)));
 	work_space->addSubWindow(scrl);
-	scrl->show();
 
 	//Set window icon
 	XMLNode req("get");
 	req.setAttr("path",ed_wdg+"/%2fico");
 	if(!cntrIfCmd(req)) {
 	    QImage ico_t;
-	    string simg = TSYS::strDecode(req.text(),TSYS::base64);
+	    string simg = TSYS::strDecode(req.text(), TSYS::base64);
 	    if(ico_t.loadFromData((const uchar*)simg.data(),simg.size()))
 		scrl->parentWidget()->setWindowIcon(QPixmap::fromImage(ico_t));	//parentWidget is QMdiSubWindow
 	}
+
+	scrl->parentWidget()->show();
+
+	if(/*work_space->subWindowList().length() <= 1*/ !(work_space->activeSubWindow() && work_space->activeSubWindow()->isMaximized()))
+	    scrl->parentWidget()->resize(fmax(300,fmin(work_space->width(),vw->size().width()+(scrl->parentWidget()->width()-scrl->width())+5)),
+				     fmax(200,fmin(work_space->height(),vw->size().height()+(scrl->parentWidget()->height()-scrl->height())+5)));
     }
 }
 
@@ -1502,6 +1516,7 @@ void VisDevelop::visualItPaste( const string &wsrc, const string &wdst, const st
 	    dlg.edLay()->addWidget(wInher, 2, 1);
 	}
 	if(!wsrc.empty() || dlg.exec() == QDialog::Accepted) {
+	    dlg.setId(TSYS::strEncode(dlg.id().toStdString(),TSYS::oscdID).c_str());
 	    if(wdst.empty() && dlg.id().toStdString() != t1_el) {
 		unsigned i_w = 0;
 		for( ; i_w < req.childSize() && req.childGet(i_w)->attr("id") != dlg.id().toStdString(); i_w++) ;
@@ -1531,7 +1546,7 @@ void VisDevelop::visualItPaste( const string &wsrc, const string &wdst, const st
 		req.clear()->setName("set")->setAttr("path", "/%2fprm%2fcfg%2fcp%2fcp")->
 		    setAttr("src", s_elp+"/"+s_el)->setAttr("dst", d_elp+"/"+d_el);
 		if(cntrIfCmd(req))
-		    mod->postMess(req.attr("mcat").c_str(),req.text().c_str(),TVision::Error,this);
+		    mod->postMess(req.attr("mcat").c_str(), req.text().c_str(), TVision::Error, this);
 		else {
 		    if(it_nm.size()) {
 			req.clear()->setName("set")->setText(it_nm);

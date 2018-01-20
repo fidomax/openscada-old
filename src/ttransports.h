@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: ttransports.h
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -78,9 +78,12 @@ class TTransportIn : public TCntrNode, public TConfig
 
 	vector<AutoHD<TTransportOut> > assTrs( bool checkForCleanDisabled = false );	//Assigned transports
 
-	TTypeTransport &owner( ) const;
+	// IO log
+	int logLen( )	{ return mLogLen; }
+	void setLogLen( int vl );
+	void pushLogMess( const string &vl );
 
-	ResRW &nodeRes( )	{ return nRes; }
+	TTypeTransport &owner( ) const;
 
     protected:
 	//Methods
@@ -108,8 +111,13 @@ class TTransportIn : public TCntrNode, public TConfig
 	TCfg	&mId;
 	char	&mStart;
 	string	mDB;
-	ResRW	nRes;
+
+	ResMtx	assTrRes;
 	vector<AutoHD<TTransportOut> >	mAssTrO;
+
+	// IO log
+	int		mLogLen;
+	deque<string>	mLog;
 };
 
 //************************************************
@@ -154,14 +162,19 @@ class TTransportOut : public TCntrNode, public TConfig
 	virtual void start( int time = 0 );
 	virtual void stop( )			{ };
 
-	virtual int messIO( const char *oBuf, int oLen, char *iBuf = NULL, int iLen = 0, int time = 0, bool noRes = false )
+	virtual int messIO( const char *oBuf, int oLen, char *iBuf = NULL, int iLen = 0, int time = 0 )
 	{ return 0; }
 
 	void messProtIO( XMLNode &io, const string &prot );
 
+	// IO log
+	int logLen( )	{ return mLogLen; }
+	void setLogLen( int vl );
+	void pushLogMess( const string &vl );
+
 	TTypeTransport &owner( ) const;
 
-	ResRW &nodeRes( )			{ return nRes; }
+	ResMtx &reqRes( )			{ return mReqRes; }
 
     protected:
 	//Methods
@@ -191,7 +204,11 @@ class TTransportOut : public TCntrNode, public TConfig
 	// Reserve parameters
 	time_t	mStartTm;
 	int64_t	mPrm1, mPrm2;
-	ResRW	nRes;
+	ResMtx	mReqRes;
+
+	// IO log
+	int		mLogLen;
+	deque<string>	mLog;
 };
 
 //************************************************
@@ -286,6 +303,8 @@ class TTransportS : public TSubSYS
 
 	// Request to remote or local OpenSCADA control interface
 	int cntrIfCmd( XMLNode &node, const string &senderPref, const string &user = "" );
+
+	void unload( );
 
 	void subStart( );
 	void subStop( );

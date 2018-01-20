@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.Vision file: vis_run_widgs.cpp
 /***************************************************************************
- *   Copyright (C) 2007-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2007-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,6 +25,7 @@
 #include <QPainter>
 #include <QComboBox>
 #include <QStatusBar>
+#include <QDesktopWidget>
 
 #include <tsys.h>
 
@@ -32,6 +33,9 @@
 #include "vis_shapes.h"
 #include "vis_run.h"
 #include "vis_run_widgs.h"
+
+#undef _
+#define _(mess) mod->I18N(mess, mainWin()->lang().c_str())
 
 using namespace VISION;
 
@@ -205,19 +209,24 @@ bool RunWdgView::attrSet( const string &attr, const string &val, int uiPrmPos, b
 	    setPermView(s2i(val)&SEC_RD);
 	    return true;
 	case A_NO_ID:
-	    //User's status line items
+	    // User's status line items
 	    if(attr == "statLine")		mainWin()->usrStatus(val, dynamic_cast<RunPageView*>(this));
-	    else if(attr == "runWin") {
-		if(mainWin()->isResizeManual) return true;
+	    else if(attr == "runWin" && !mainWin()->isResizeManual && (!mainWin()->masterPg() || this == mainWin()->masterPg())) {
 		switch(s2i(val)) {
 		    case 0: mainWin()->aFullScr()->setChecked(false); mainWin()->setWindowState(Qt::WindowNoState);	break;
 		    case 1: mainWin()->aFullScr()->setChecked(false); mainWin()->setWindowState(Qt::WindowMaximized);	break;
-		    case 2: mainWin()->aFullScr()->setChecked(true);	break;
+		    case 2: mainWin()->aFullScr()->setChecked(true);							break;
 		}
 	    }
 	    else if(attr == "keepAspectRatio")	mainWin()->setKeepAspectRatio(s2i(val));
 	    else if(attr == "stBarNoShow")	mainWin()->statusBar()->setVisible(!s2i(val));
 	    else if(attr == "winPosCntrSave")	mainWin()->setWinPosCntrSave(s2i(val));
+	    else if(attr == "userSetVis") {
+		if(val.size() && val != mainWin()->user() && val != property("userSetVis").toString().toStdString()) {
+		    setProperty("userSetVis", QString(val.c_str()));
+		    mainWin()->userSel(val);
+		} else setProperty("userSetVis", QString(val.c_str()));
+	    }
 	    else break;
 	    return true;
 	case A_PG_NAME:	setWindowTitle(val.c_str());	break;
@@ -715,16 +724,16 @@ bool StylesStBar::styleSel( )
 
     if(req.childSize() <= 1) return false;
 
-    InputDlg dlg(this, mainWin()->windowIcon(), _("Select your style from list."), _("Style select"), false, false);
+    InputDlg dlg(this, mainWin()->windowIcon(), _("Select your style from list."), _("Style select"), false, false, mainWin()->lang());
     QLabel *lab = new QLabel(_("Style:"),&dlg);
     lab->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred));
     dlg.edLay()->addWidget(lab, 0, 0);
     QComboBox *stls = new QComboBox(&dlg);
     dlg.edLay()->addWidget(stls, 0, 1);
-    for(unsigned i_s = 0; i_s < req.childSize(); i_s++) {
-	stls->addItem(req.childGet(i_s)->text().c_str(),s2i(req.childGet(i_s)->attr("id")));
-	if(s2i(req.childGet(i_s)->attr("id")) == style())
-	    stls->setCurrentIndex(i_s);
+    for(unsigned iS = 0; iS < req.childSize(); iS++) {
+	stls->addItem(req.childGet(iS)->text().c_str(),s2i(req.childGet(iS)->attr("id")));
+	if(s2i(req.childGet(iS)->attr("id")) == style())
+	    stls->setCurrentIndex(iS);
     }
     dlg.resize(300, 120);
     if(dlg.exec() == QDialog::Accepted && stls->currentIndex() >= 0) {

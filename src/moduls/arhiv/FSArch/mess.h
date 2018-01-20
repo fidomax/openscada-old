@@ -1,7 +1,7 @@
 
 //OpenSCADA system module Archive.FSArch file: mess.h
 /***************************************************************************
- *   Copyright (C) 2003-2015 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -53,7 +53,7 @@ class MFileArch
 	//  free - surely free used memory
 	void check( bool free = false );
 
-	string	&name( )	{ return mName; }
+	string	name( )		{ return mName; }
 	bool	xmlM( )		{ return mXML; }
 	int	size( )		{ return mSize; }
 	time_t	begin( )	{ return mBeg; }
@@ -74,7 +74,9 @@ class MFileArch
 	void	cacheUpdate( int64_t tm, long v_add );
 
 	// Base parameters
-	string	mName;		// name Archive file;
+	ResMtx	dtRes;
+
+	MtxString mName;	// name Archive file;
 	bool	mXML;		// XML mode file
 	int	mSize;		// Archive size
 	string	mChars;		// Archive charset;
@@ -110,6 +112,8 @@ class ModMArch: public TMArchivator
 	ModMArch( const string &iid, const string &idb, TElem *cf_el );
 	~ModMArch( );
 
+	string infoDBnm( );
+
 	time_t begin();
 	time_t end();
 	bool put( vector<TMess::SRec> &mess, bool force = false );
@@ -141,6 +145,9 @@ class ModMArch: public TMArchivator
 
 	void checkArchivator( bool now = false );
 
+	//Attributes
+	MtxString	infoTbl;
+
     protected:
 	//Methods
 	void load_( );
@@ -162,7 +169,7 @@ class ModMArch: public TMArchivator
 		mPrevDblTmCatLev;// mean and prevent to duples by time, category and level
 
 	ResRW	mRes;		// resource to access;
-	double	tmCalc;		// Archiving time
+	float	tmProc, tmProcMax; // Archiving time
 	time_t	mLstCheck;	// Last check directory time
 
 	deque<MFileArch *>	files;

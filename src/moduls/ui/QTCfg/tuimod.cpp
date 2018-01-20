@@ -1,7 +1,7 @@
 
 //OpenSCADA system module UI.QTCfg file: tuimod.cpp
 /***************************************************************************
- *   Copyright (C) 2004-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2004-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -37,7 +37,7 @@
 #define MOD_TYPE	SUI_ID
 #define VER_TYPE	SUI_VER
 #define SUB_TYPE	"Qt"
-#define MOD_VER		"3.2.6"
+#define MOD_VER		"3.4.1"
 #define AUTHORS		_("Roman Savochenko")
 #define DESCRIPTION	_("Provides the Qt-based configurator of the OpenSCADA system.")
 #define LICENSE		"GPL2"
@@ -73,7 +73,7 @@ using namespace QTCFG;
 //*************************************************
 //* TUIMod                                        *
 //*************************************************
-TUIMod::TUIMod( string name ) : TUI(MOD_ID), mTmConChk(dataRes()), mStartPath(dataRes()), mStartUser(dataRes()), mEndRun(false)
+TUIMod::TUIMod( string name ) : TUI(MOD_ID), mTmConChk(dataRes()), mStartUser(dataRes()), mStartPath(dataRes()), mEndRun(false)
 {
     mod = this;
 
@@ -91,22 +91,25 @@ TUIMod::~TUIMod( )
     if(runSt) modStop();
 }
 
-string TUIMod::modInfo( const string &name )
-{
-    if(name == "SubType") return SUB_TYPE;
-    return TModule::modInfo(name);
-}
-
 void TUIMod::modInfo( vector<string> &list )
 {
     TModule::modInfo(list);
     list.push_back("SubType");
 }
 
+string TUIMod::modInfo( const string &iname )
+{
+    string name = TSYS::strParse(iname, 0, ":");
+
+    if(name == "SubType") return SUB_TYPE;
+
+    return TModule::modInfo(name);
+}
+
 string TUIMod::optDescr( )
 {
     return TSYS::strMess(_(
-	"======================= The module <%s:%s> options =======================\n"
+	"======================= Module <%s:%s> options =======================\n"
 	"---------- Parameters of the module section '%s' in config-file ----------\n"
 	"StartPath  <path>    Configurator start path.\n"
 	"StartUser  <user>    No password requested start user.\n\n"),
@@ -115,12 +118,10 @@ string TUIMod::optDescr( )
 
 void TUIMod::load_( )
 {
-    mess_debug(nodePath().c_str(),_("Load module."));
+    mess_debug(nodePath().c_str(), _("Load module."));
 
     //Load parameters from command line
-    string argCom, argVl;
-    for(int argPos = 0; (argCom=SYS->getCmdOpt(argPos,&argVl)).size(); )
-	if(argCom == "h" || argCom == "help")	fprintf(stdout,"%s",optDescr().c_str());
+    if(s2i(SYS->cmdOpt("h")) || s2i(SYS->cmdOpt("help"))) fprintf(stdout, "%s", optDescr().c_str());
 
     //Load parameters from config-file and DB
     setTmConChk(TBDS::genDBGet(nodePath()+"TmConChk",tmConChk()));
@@ -253,7 +254,7 @@ void TUIMod::cntrCmdProc( XMLNode *opt )
 
 void TUIMod::postMess( const string &cat, const string &mess, TUIMod::MessLev type, QWidget *parent )
 {
-    //Put the system message
+    //Put the program message
     message(cat.c_str(),(type==TUIMod::Crit)?TMess::Crit:
 	(type==TUIMod::Error)?TMess::Error:
 	(type==TUIMod::Warning)?TMess::Warning:TMess::Info, "%s", mess.c_str());

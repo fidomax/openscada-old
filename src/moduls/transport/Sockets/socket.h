@@ -1,7 +1,7 @@
 
 //OpenSCADA system module Transport.Sockets file: socket.h
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -54,13 +54,15 @@ class SSockIn
 {
     public:
 	SSockIn( TSocketIn *is, int isock, const string &isender ) :
-	    pid(0), sock(isock), sender(isender), tmCreate(time(NULL)), tmReq(time(NULL)), trIn(0), trOut(0), s(is)	{ }
+	    pid(0), sock(isock), sender(isender), tmCreate(time(NULL)), tmReq(time(NULL)),
+	    trIn(0), trOut(0), prcTm(0), prcTmMax(0), clntDetchCnt(0), s(is)	{ }
 
 	pthread_t pid;		//Client's thread id
 	int	sock;
 	string	sender;
 	time_t	tmCreate, tmReq;
 	uint64_t trIn, trOut;	//Traffic in and out counters
+	float	prcTm, prcTmMax, clntDetchCnt;
 
 	TSocketIn	*s;
 };
@@ -132,7 +134,7 @@ class TSocketIn: public TTransportIn
 
 	//Attributes
 	int		sockFd;
-	ResMtx		sockRes;
+	ResMtx		sockRes, wrToRes;
 
 	bool		endrun;			//Command for stop task
 	bool		endrunCl;		//Command for stop client tasks
@@ -158,6 +160,7 @@ class TSocketIn: public TTransportIn
 
 	// Status atributes
 	uint64_t	trIn, trOut;		// Traffic in and out counter
+	float		prcTm, prcTmMax, clntDetchCnt;
 	int		connNumb, connTm, clsConnByLim;	// Connections number
 };
 
@@ -192,7 +195,7 @@ class TSocketOut: public TTransportOut
 	void start( int time = 0 );
 	void stop( );
 
-	int messIO( const char *oBuf, int oLen, char *iBuf = NULL, int iLen = 0, int time = 0, bool noRes = false );
+	int messIO( const char *oBuf, int oLen, char *iBuf = NULL, int iLen = 0, int time = 0 );
 
     protected:
 	//Methods
@@ -218,7 +221,7 @@ class TSocketOut: public TTransportOut
 
 	// Status atributes
 	uint64_t	trIn, trOut;		//Traffic in and out counter
-	ResMtx		wres;
+	float		respTm, respTmMax;
 	int64_t		mLstReqTm;
 };
 

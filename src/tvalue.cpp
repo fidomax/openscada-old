@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: tvalue.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2016 by Roman Savochenko, <rom_as@oscada.org>      *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -76,9 +76,9 @@ void TValue::setVlCfg( TConfig *cfg )
     //Detach old configurations
     if(mCfg) {
 	mCfg->cfgList(list);
-	for(unsigned i_cf = 0; i_cf < list.size(); i_cf++)
-	    if(!(mCfg->cfg(list[i_cf]).fld().flg()&TCfg::NoVal) && vlPresent(list[i_cf])) {
-		chldDel(mVl, list[i_cf]);
+	for(unsigned iCf = 0; iCf < list.size(); iCf++)
+	    if(!(mCfg->cfg(list[iCf]).fld().flg()&TCfg::NoVal) && vlPresent(list[iCf])) {
+		chldDel(mVl, list[iCf]);
 		lCfg--;
 	    }
 	mCfg = NULL;
@@ -86,10 +86,10 @@ void TValue::setVlCfg( TConfig *cfg )
     //Attach new config
     if(cfg) {
 	cfg->cfgList(list);
-	for(unsigned i_cf = 0; i_cf < list.size(); i_cf++)
-	    if(!(cfg->cfg(list[i_cf]).fld().flg()&TCfg::NoVal) && !vlPresent(list[i_cf])) {
+	for(unsigned iCf = 0; iCf < list.size(); iCf++)
+	    if(!(cfg->cfg(list[iCf]).fld().flg()&TCfg::NoVal) && !vlPresent(list[iCf])) {
 		TVal *vl = vlNew();
-		vl->setCfg(cfg->cfg(list[i_cf]));
+		vl->setCfg(cfg->cfg(list[iCf]));
 		chldAdd(mVl, vl, lCfg);
 		lCfg++;
 	    }
@@ -147,7 +147,7 @@ void TValue::chldAdd( int8_t igr, TCntrNode *node, int pos, bool noExp )
 void TValue::cntrCmdProc( XMLNode *opt )
 {
     vector<string> vLs;
-    string a_path = opt->attr("path"), u = opt->attr("user");
+    string a_path = opt->attr("path"), u = opt->attr("user"), l = opt->attr("lang");
     //Service commands process
     if(a_path == "/serv/attr") {	//Attributes access
 	vlList(vLs);
@@ -271,8 +271,9 @@ void TValue::cntrCmdProc( XMLNode *opt )
 			TSYS::strMess(_("Parameter's attribute\n"
 			    "  ID: '%s'\n"
 			    "  Name: '%s'\n"
-			    "  Type: '%s'"),
-			    vl.at().fld().name().c_str(),vl.at().fld().descr().c_str(),sType.c_str()));
+			    "  Type: '%s'\n"
+			    "  Read only: %d"),
+			    vl.at().fld().name().c_str(),vl.at().fld().descr().c_str(),sType.c_str(),(vl.at().fld().flg()&TFld::NoWrite)?1:0));
 		    if(vl.at().fld().values().size())
 			n_e->setAttr("help",n_e->attr("help")+_("\n  Values: ")+vl.at().fld().values());
 		    if(vl.at().fld().selNames().size())
@@ -281,7 +282,7 @@ void TValue::cntrCmdProc( XMLNode *opt )
 	    }
 	}
 	if(ctrMkNode("area",opt,-1,"/arch",_("Archiving"))) {
-	    //>>> Archiving
+	    //  Archiving
 	    if(ctrMkNode("table",opt,-1,"/arch/arch",_("Archiving"),RWRWR_,"root",SARH_ID,1,"key","atr")) {
 		vector<string> vLs2;
 		ctrMkNode("list", opt, -1, "/arch/arch/atr", _("Attribute"), R_R_R_, "root", SARH_ID, 1, "tp", "str");
@@ -310,10 +311,10 @@ void TValue::cntrCmdProc( XMLNode *opt )
 	if(ctrChkNode(opt,"get",(vl.at().fld().flg()&TFld::NoWrite)?R_R_R_:RWRWR_,"root",SDAQ_ID,SEC_RD))
 	    opt->setText((vl.at().fld().type()==TFld::Real) ?
 		    ((vl.at().getR()==EVAL_REAL) ? EVAL_STR : r2s(vl.at().getR(),6)) :
-		    ((Mess->translDyn() && vl.at().fld().type()==TFld::String) ? trU(vl.at().getS(),u) :
+		    ((Mess->translDyn() && vl.at().fld().type()==TFld::String) ? trLU(vl.at().getS(),l,u) :
 		    vl.at().getS()));
 	if(ctrChkNode(opt,"set",(vl.at().fld().flg()&TFld::NoWrite)?R_R_R_:RWRWR_,"root",SDAQ_ID,SEC_WR))
-	    vl.at().setS((Mess->translDyn() && vl.at().fld().type() == TFld::String) ? trSetU(vl.at().getS(),u,opt->text()) : opt->text());
+	    vl.at().setS((Mess->translDyn() && vl.at().fld().type() == TFld::String) ? trSetLU(vl.at().getS(),l,u,opt->text()) : opt->text());
     }
     else if(a_path == "/arch/arch") {
 	if(ctrChkNode(opt,"get",RWRWR_,"root",SARH_ID,SEC_RD)) {
@@ -812,7 +813,7 @@ TVariant TVal::objFuncCall( const string &iid, vector<TVariant> &prms, const str
 	    if(prms.size() >= 2) tm += prms[1].getI();
 	    bool isSys = false;
 	    if(prms.size() >= 3) isSys = prms[2].getB();
-	    rez = get(&tm,isSys);
+	    rez = get(&tm, isSys);
 	    if(prms.size() >= 1) { prms[0].setI(tm/1000000); prms[0].setModify(); }
 	    if(prms.size() >= 2) { prms[1].setI(tm%1000000); prms[1].setModify(); }
 

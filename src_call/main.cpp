@@ -1,7 +1,7 @@
 
 //OpenSCADA system file: main.cpp
 /***************************************************************************
- *   Copyright (C) 2003-2015 by Roman Savochenko, <rom_as@oscada.org>      *                                                     *
+ *   Copyright (C) 2003-2017 by Roman Savochenko, <rom_as@oscada.org>      *                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -58,16 +58,9 @@ int main( int argc, char *argv[], char *envp[] )
 	}
 
     //Check for other system's command line parameters
+    bool coreDump = true;
     for(int argPos = 0; (argCom=TSYS::getCmdOpt_(argPos,&argVl,argc,argv)).size(); )
-	if(strcasecmp(argCom.c_str(),"coredumpallow") == 0) {
-	    // Set the Dumpable state to be enabled
-	    prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
-	    // Set the core dump limitation to be unlimited
-	    struct rlimit rlim;
-	    rlim.rlim_cur = RLIM_INFINITY;
-	    rlim.rlim_max = RLIM_INFINITY;
-	    setrlimit(RLIMIT_CORE, &rlim);
-	}
+	if(strcasecmp(argCom.c_str(),"nocoredump") == 0) coreDump = false;
 	else if((strcasecmp(argCom.c_str(),"pidfile") == 0 || strcasecmp(argCom.c_str(),"pid-file") == 0) &&
 	    argVl.size() && (pid=open(argVl.c_str(),O_CREAT|O_TRUNC|O_WRONLY,0664)) >= 0)
 	{
@@ -77,12 +70,27 @@ int main( int argc, char *argv[], char *envp[] )
 	    close(pid);
 	}
 
+    //Set the Dumpable state to be enabled
+    if(coreDump) {
+	prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
+	// Set the core dump limitation to be unlimited
+	struct rlimit rlim;
+	rlim.rlim_cur = RLIM_INFINITY;
+	rlim.rlim_max = RLIM_INFINITY;
+	setrlimit(RLIMIT_CORE, &rlim);
+    }
+
     //Same load and start the core object TSYS
     SYS = new TSYS(argc, argv, envp);
     try {
-	SYS->load();
-	if((rez=SYS->stopSignal()) > 0) throw TError(SYS->nodePath().c_str(),"Stop by signal %d on load.",rez);
-	rez = SYS->start();
+	while(true) {
+	    SYS->load();
+	    if((rez=SYS->stopSignal()) && rez != SIGUSR2)
+		throw TError(SYS->nodePath().c_str(), "Stop by signal %d on load.", rez);
+	    if(!rez) rez = SYS->start();
+	    if(rez != SIGUSR2)	break;
+	    SYS->unload();
+	}
     } catch(TError err) { mess_err(err.cat.c_str(), "%s", err.mess.c_str()); }
 
     //Free OpenSCADA system's root object
